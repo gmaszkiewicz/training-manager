@@ -6,7 +6,20 @@ Auto-deploy na `main` robi **Workers Builds** (integracja Git Cloudflare), nie G
 
 Masz konto Cloudflare, **nie** masz jeszcze hostowanego Supabase. Worker wstanie bez auth (starter już to obsługuje: `SUPABASE_URL` / `SUPABASE_KEY` są `optional` w [astro.config.mjs](../../../astro.config.mjs)). Auth włączysz po utworzeniu projektu Supabase i `wrangler secret put`.
 
-Lokalny branch to `main`, remote to `origin` (`gmaszkiewicz/training-manager`). Nie ma jeszcze commitów — Workers Builds wystartuje po pierwszym pushu na `main`.
+Lokalny branch to `main`, remote to `origin` (`gmaszkiewicz/training-manager`). Pierwszy commit jest na GitHubie. Worker: `https://training-manager.grzegorz-b5b.workers.dev`.
+
+## Status
+
+- [x] Przygotowanie repo (nazwa Workera, `npm run deploy`, docs)
+- [x] `npx wrangler login` / `whoami`
+- [x] Pliki `.env` i `.dev.vars` w katalogu projektu
+- [ ] `npx supabase start` i wklejenie anon key do `.env` oraz `.dev.vars`
+- [x] Pierwszy `npm run deploy` — `https://training-manager.grzegorz-b5b.workers.dev`
+- [x] Auto Minify — opcji nie ma w dashboardzie; na `*.workers.dev` nie dotyczy
+- [x] Pierwszy commit i `git push -u origin main`
+- [x] Zmienna builda `NODE_VERSION=22` (Settings → Builds → Build variables and secrets)
+- [ ] Workers Builds: zapisany Connect na `main` (`npm run build` + `npx wrangler deploy`) i zielony build w Deployments
+- [ ] Hostowany Supabase + `wrangler secret put`
 
 ```mermaid
 flowchart LR
@@ -17,7 +30,7 @@ flowchart LR
   cli["npx wrangler deploy"] --> prod
 ```
 
-## 1. Przygotowanie repo (agent)
+## 1. Przygotowanie repo (agent) — zrobione
 
 - W [wrangler.jsonc](../../../wrangler.jsonc) zmienić `"name": "10x-astro-starter"` na `"training-manager"` — nazwa dashboardu i `name` w Wranglerze **muszą być identyczne**, inaczej Builds pada.
 - W [package.json](../../../package.json) zmienić `name` na `training-manager` i dodać skrypt `deploy`: `npm run build && wrangler deploy` (lokalny/ręczny deploy; Builds użyje wranglera z `devDependencies`).
@@ -26,7 +39,7 @@ flowchart LR
 
 Nie ruszać `main: "@astrojs/cloudflare/entrypoints/server"` ani `compatibility_flags: ["nodejs_compat"]`.
 
-## 2. Konfiguracja Wrangler CLI (Ty)
+## 2. Konfiguracja Wrangler CLI (Ty) — login zrobiony, sekrety po hostowanym Supabase
 
 Wrangler jest w `devDependencies` (`^4.131.1`). Nie instaluj drugiej, globalnej kopii.
 
@@ -52,7 +65,7 @@ npx wrangler secret put SUPABASE_KEY
 
 Dwa osobne środowiska. Adres `127.0.0.1` z lokalnego Dockera nie działa na Workers.
 
-### Lokalnie (dev)
+### Lokalnie (dev) — pliki utworzone, stack Supabase jeszcze nie uruchomiony
 
 Folder `supabase/` już istnieje, więc `npx supabase init` nie jest potrzebny. Potrzebny jest Docker.
 
@@ -83,12 +96,12 @@ Po pierwszym deployu, gdy znasz URL `*.workers.dev`:
 
 Bez tych sekretów Worker wstaje, a auth zostaje wyłączone. `src/lib/supabase.ts` zwraca wtedy `null`, a formularze pokazują „Supabase is not configured”.
 
-## 4. Pierwszy ręczny deploy (agent + Ty)
+## 4. Pierwszy ręczny deploy (agent + Ty) — zrobione
 
 Ty (jednorazowo, interaktywne):
 
 1. `npx wrangler login` i `npx wrangler whoami` (sekcja 2).
-2. W dashboardzie Cloudflare: wyłączyć **Auto Minify** dla tej strefy/Workera (inaczej hydracja React islands może paść).
+2. Auto Minify: pominięte. Cloudflare usunęło opcję z dashboardu, a `*.workers.dev` nie ma strefy DNS.
 
 Agent:
 
@@ -100,14 +113,14 @@ Agent:
 
 Bez GHA tokenów (`CLOUDFLARE_API_TOKEN` nie jest potrzebny). Cloudflare sam tworzy token dla Builds.
 
-1. Pierwszy commit na `main` i push do `origin` (`https://github.com/gmaszkiewicz/training-manager.git`). Branch produkcyjny to `main`.
-2. W dashboardzie: Worker `training-manager` → **Settings → Builds → Connect** (Cloudflare Workers & Pages GitHub App).
+1. [x] Pierwszy commit na `main` i push do `origin` (`https://github.com/gmaszkiewicz/training-manager.git`). Branch produkcyjny to `main`.
+2. [ ] W dashboardzie: Worker `training-manager` → **Settings → Builds → Connect** (Cloudflare Workers & Pages GitHub App).
 3. Ustawienia builda (z [dokumentacji Builds](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)):
    - Git branch: **`main`**
    - Build command: `npm run build`
    - Deploy command: `npx wrangler deploy`
    - Builds for non-production branches: **wyłączone** (tylko produkcja na `main`)
-   - Build variable: `NODE_VERSION=22` (zgodne z `.nvmrc`)
+   - [x] Build variable: `NODE_VERSION=22` (zgodne z `.nvmrc`)
 4. Push na `main` → build → `wrangler deploy` → Active Deployment.
 5. Zweryfikować w dashboardzie **Deployments / build history**, że push faktycznie wypchnął nową wersję.
 
