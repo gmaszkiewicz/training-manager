@@ -4,7 +4,7 @@ Platforma: **Cloudflare Workers** ([context/foundation/infrastructure.md](../../
 
 Auto-deploy na `main` robi **Workers Builds** (integracja Git Cloudflare), nie GitHub Actions. Istniejący [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) zostaje bez zmian: lint / `astro check` / build / smoke. Żadnego joba `deploy`.
 
-Masz konto Cloudflare, **nie** masz jeszcze hostowanego Supabase. Worker wstanie bez auth (starter już to obsługuje: `SUPABASE_URL` / `SUPABASE_KEY` są `optional` w [astro.config.mjs](../../../astro.config.mjs)). Auth włączysz po utworzeniu projektu Supabase i `wrangler secret put`.
+Hostowany Supabase jest podpięty do Workera (`wrangler secret put`). Baner „Supabase nie jest skonfigurowany” na `https://training-manager.grzegorz-b5b.workers.dev` zniknął.
 
 Lokalny branch to `main`, remote to `origin` (`gmaszkiewicz/training-manager`). Pierwszy commit jest na GitHubie. Worker: `https://training-manager.grzegorz-b5b.workers.dev`.
 
@@ -13,13 +13,14 @@ Lokalny branch to `main`, remote to `origin` (`gmaszkiewicz/training-manager`). 
 - [x] Przygotowanie repo (nazwa Workera, `npm run deploy`, docs)
 - [x] `npx wrangler login` / `whoami`
 - [x] Pliki `.env` i `.dev.vars` w katalogu projektu
-- [ ] `npx supabase start` i wklejenie anon key do `.env` oraz `.dev.vars`
+- [x] Lokalny Docker Supabase — pominięty; dev używa hostowanego projektu w `.env` i `.dev.vars`
 - [x] Pierwszy `npm run deploy` — `https://training-manager.grzegorz-b5b.workers.dev`
 - [x] Auto Minify — opcji nie ma w dashboardzie; na `*.workers.dev` nie dotyczy
 - [x] Pierwszy commit i `git push -u origin main`
 - [x] Zmienna builda `NODE_VERSION=22` (Settings → Builds → Build variables and secrets)
-- [ ] Workers Builds: zapisany Connect na `main` (`npm run build` + `npx wrangler deploy`) i zielony build w Deployments
-- [ ] Hostowany Supabase + `wrangler secret put`
+- [x] Workers Builds na `main` — wersja `95e71a29-08fe-4866-af11-7e6bcd924a4f` z pusha `Init auto-deploy`
+- [x] Hostowany Supabase + `wrangler secret put` — baner konfiguracji zniknął
+- [x] Smoke logowania na `https://training-manager.grzegorz-b5b.workers.dev/auth/signin`
 
 ```mermaid
 flowchart LR
@@ -92,7 +93,7 @@ Po pierwszym deployu, gdy znasz URL `*.workers.dev`:
 3. W **Authentication → URL Configuration** ustaw Site URL na adres Workera, na przykład `https://training-manager.<konto>.workers.dev`, i dodaj ten sam origin do Redirect URLs. Potwierdzenie maila wraca na Site URL.
 4. Te same dwie wartości wstaw jako sekrety Wranglera (`SUPABASE_URL`, `SUPABASE_KEY`). W dashboardzie to **Settings → Variables and Secrets** Workera, nie zmienne builda. Zmienne builda nie są widoczne w runtime.
 5. Lokalnie możesz wkleić te same wartości do `.env` i `.dev.vars`, jeśli chcesz developować przeciwko chmurze zamiast Dockera.
-6. Jeden smoke logowania na HTTPS.
+6. [x] Jeden smoke logowania na HTTPS.
 
 Bez tych sekretów Worker wstaje, a auth zostaje wyłączone. `src/lib/supabase.ts` zwraca wtedy `null`, a formularze pokazują „Supabase is not configured”.
 
@@ -114,7 +115,7 @@ Agent:
 Bez GHA tokenów (`CLOUDFLARE_API_TOKEN` nie jest potrzebny). Cloudflare sam tworzy token dla Builds.
 
 1. [x] Pierwszy commit na `main` i push do `origin` (`https://github.com/gmaszkiewicz/training-manager.git`). Branch produkcyjny to `main`.
-2. [ ] W dashboardzie: Worker `training-manager` → **Settings → Builds → Connect** (Cloudflare Workers & Pages GitHub App).
+2. [x] W dashboardzie: Worker `training-manager` → **Settings → Builds → Connect** (Cloudflare Workers & Pages GitHub App).
 3. Ustawienia builda (z [dokumentacji Builds](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)):
    - Git branch: **`main`**
    - Build command: `npm run build`
