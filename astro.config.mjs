@@ -9,6 +9,9 @@ import cloudflare from "@astrojs/cloudflare";
 // https://astro.build/config
 export default defineConfig({
   output: "server",
+  // Auth uses Supabase cookies, not Astro.session — skip the default SESSION KV
+  // binding so Cloudflare Workers Preview deploys do not fail with code 10021.
+  session: false,
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
