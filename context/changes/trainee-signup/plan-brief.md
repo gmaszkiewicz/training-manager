@@ -16,14 +16,14 @@ Someone who registers while a session already exists lands on `/dashboard` and s
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) | Source |
-| --- | --- | --- | --- |
-| Role control | No picker; always store `trainee` | S-01 only records the trainee role; the trainer picker is S-03 | Plan |
-| Journal surface | Empty journal replaces the welcome on `/dashboard` | One protected page for S-02 to extend; the nav link stays `Dashboard` | Plan |
-| When it opens | `/dashboard` when `signUp` returns a session; otherwise confirm-email, and sign-in opens the journal | Matches "register and open an empty journal" without skipping a required email confirmation | Plan |
-| Pre-existing accounts | Create a trainee row on the first authenticated journal open; never overwrite an existing role | Scaffold accounts are not stranded, and a future trainer row stays put | Plan |
-| Write path | App insert on the dashboard render, not an `auth.users` trigger | A trigger would create a profile before a session exists | Plan |
-| Scope | FR-001 only | Trainer registration and measurement entries are later slices | Roadmap |
+| Decision              | Choice                                                                                               | Why (1 sentence)                                                                            | Source  |
+| --------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------- |
+| Role control          | No picker; always store `trainee`                                                                    | S-01 only records the trainee role; the trainer picker is S-03                              | Plan    |
+| Journal surface       | Empty journal replaces the welcome on `/dashboard`                                                   | One protected page for S-02 to extend; the nav link stays `Dashboard`                       | Plan    |
+| When it opens         | `/dashboard` when `signUp` returns a session; otherwise confirm-email, and sign-in opens the journal | Matches "register and open an empty journal" without skipping a required email confirmation | Plan    |
+| Pre-existing accounts | Create a trainee row on the first authenticated journal open; never overwrite an existing role       | Scaffold accounts are not stranded, and a future trainer row stays put                      | Plan    |
+| Write path            | App insert on the dashboard render, not an `auth.users` trigger                                      | A trigger would create a profile before a session exists                                    | Plan    |
+| Scope                 | FR-001 only                                                                                          | Trainer registration and measurement entries are later slices                               | Roadmap |
 
 ## Scope
 
@@ -47,17 +47,17 @@ Someone who registers while a session already exists lands on `/dashboard` and s
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
-| 1. Trainee profile | Migration, RLS, and create-if-missing on `/dashboard` | An upsert-style write would overwrite a later role |
-| 2. Empty journal | Empty state, session redirects, smoke | CI has confirmations off, so smoke must expect `/dashboard` |
+| Phase              | What it delivers                                      | Key risk                                                    |
+| ------------------ | ----------------------------------------------------- | ----------------------------------------------------------- |
+| 1. Trainee profile | Migration, RLS, and create-if-missing on `/dashboard` | An upsert-style write would overwrite a later role          |
+| 2. Empty journal   | Empty state, session redirects, smoke                 | CI has confirmations off, so smoke must expect `/dashboard` |
 
 **Prerequisites:** Auth scaffold and local Supabase are already in place. No earlier slice.
 **Estimated effort:** About 1–2 sessions across 2 phases.
 
 ## Open Risks & Assumptions
 
-- Nothing applies migrations to hosted Supabase. Run `npx supabase db push` before merging to `main`, or production `/dashboard` fails for everyone.
+- Workers Builds applies migrations on `main` via `npm run build:workers` before building the Worker (see plan Addenda).
 - The hosted "confirm email" setting is not in the repo. The plan branches on `data.session`, and the confirmation-on path is a manual check.
 - Every pre-existing auth user who opens the journal becomes a trainee. That was accepted; none of those accounts have a stored role today.
 - S-03 must widen the role check and the insert policy before it can store `trainer`.
