@@ -1,0 +1,14 @@
+---
+description: Resolve roadmap slice IDs (S-01, S-02, ...) to their Change ID when creating or referencing change folders
+alwaysApply: true
+---
+
+# Change folders use the roadmap Change ID
+
+When a command such as `/10x-new`, `/10x-plan`, `/10x-implement` or `/10x-archive` receives a roadmap slice ID (`S-02`, `s-02`, "slice 2") instead of a kebab-case change-id:
+
+1. Look up the slice in `context/foundation/roadmap.md`.
+2. Use its `**Change ID:**` value (e.g. `S-02` → `trainee-measurement-delta`) as the change-id and folder name under `context/changes/`.
+3. Derive the `change.md` title from the slice heading and put the slice outcome plus `S-xx` and PRD refs in `## Notes`.
+
+Never create a folder named after the slice ID (`context/changes/s-02/`). If the slice has no Change ID, ask before creating anything.
