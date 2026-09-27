@@ -128,7 +128,7 @@ SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
 ```
 
-The hosted project needs a one-time `npx supabase link --project-ref <ref>`, then `npx supabase db push` right after merging migrations to `main`. Workers Builds deploys the Worker, and nothing applies SQL to hosted Supabase.
+Migrations reach the hosted project automatically: on pushes to `main`, the Workers Builds build command runs `npx supabase db push --db-url "$SUPABASE_DB_URL"` before `npm run build`, so a failed migration stops the deploy. `SUPABASE_DB_URL` is the Session pooler connection string, stored as a Workers Builds secret. `npm run deploy` does not apply migrations; run `npx supabase db push` yourself when deploying manually.
 
 ### Email confirmation in local development
 
