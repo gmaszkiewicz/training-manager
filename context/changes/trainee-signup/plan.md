@@ -209,7 +209,13 @@ Nothing in the repo applies migrations to the hosted Supabase project; CI runs l
 
 There is no SQL backfill. Auth users created before this migration get a `profiles` row the first time they open `/dashboard` with a session. Unconfirmed sign-ups get no row until that visit. An existing row's role is never rewritten.
 
-Worker rollback does not drop `public.profiles`. This slice does not ship a down migration. S-03 must widen both the `role = 'trainee'` check and the insert policy before it can store `trainer`.
+Worker rollback does not drop `public.profiles`. This slice does not ship a down migration. S-03 must widen both the `role = 'trainee'` check and the insert policy before it can store `trainer`, and must also widen `Profile.role` in `src/types.ts` and the `role !== "trainee"` rejection in `ensureTraineeProfile`, which otherwise renders `Could not open your journal` for a trainer row.
+
+## Addenda
+
+- **Supabase CLI config alignment (Phase 1, 84b8cfb).** `supabase/config.toml` was regenerated for Supabase CLI 2.118 so local `supabase start` accepts it: `[inbucket]` → `[local_smtp]`, `project_id` → `tm-project` (local Docker volumes from the old id are orphaned), and new commented defaults plus `[experimental.pgdelta]`. `[storage.vector]` stays disabled. CI installs the latest CLI, so it reads the same keys.
+- **Lint ignores (Phase 1, 84b8cfb).** `eslint.config.js` ignores `.cursor/**` and `.agents/**` so synced course skills are not linted.
+- **Explicit grants (review F3).** `supabase/migrations/20260927100031_profiles_explicit_grants.sql` revokes default table privileges from `anon` and `authenticated`, then grants `authenticated` only `SELECT` and `INSERT`, matching the RLS policies. Push it to hosted together with the profile migration.
 
 ## References
 
@@ -250,8 +256,8 @@ Worker rollback does not drop `public.profiles`. This slice does not ship a down
 #### Manual
 
 - [x] 2.4 With confirmation off, signup lands on `/dashboard` showing `No measurements yet` and no measurement form — 8bd34dd
-- [x] 2.5 With confirmation required, signup lands on `/auth/confirm-email`, and the first sign-in lands on `/dashboard` showing `No measurements yet` — 8bd34dd
+- [ ] 2.5 With confirmation required, signup lands on `/auth/confirm-email`, and the first sign-in lands on `/dashboard` showing `No measurements yet`
 - [x] 2.6 A pre-migration account that signs in and opens `/dashboard` gets a trainee profile and sees `No measurements yet` — 8bd34dd
 - [x] 2.7 The top bar link still reads `Dashboard` and points at `/dashboard` — 8bd34dd
 - [x] 2.8 Sign out returns to `/`, and the next `/dashboard` visit redirects to `/auth/signin` — 8bd34dd
-- [x] 2.9 Hosted Supabase has `public.profiles` from `npx supabase db push` before the merge to `main` — 8bd34dd
+- [ ] 2.9 Hosted Supabase has `public.profiles` from `npx supabase db push` before the merge to `main`
