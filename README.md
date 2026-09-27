@@ -112,7 +112,7 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+`public.profiles` stores the trainee role. Migrations under `supabase/migrations/` apply locally on `supabase start`.
 
 ### Using a cloud Supabase project instead
 
@@ -127,6 +127,8 @@ If you prefer to use a hosted Supabase project, add these variables to your `.en
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
 ```
+
+The hosted project needs a one-time `npx supabase link --project-ref <ref>`, then `npx supabase db push` right after merging migrations to `main`. Workers Builds deploys the Worker, and nothing applies SQL to hosted Supabase.
 
 ### Email confirmation in local development
 
@@ -144,8 +146,8 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 | --------------------- | ----------------------------------------------------------------------- |
 | `/auth/signin`        | Email/password sign-in form                                             |
 | `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
+| `/auth/confirm-email` | "Check your inbox" page, shown after signup when no session is returned |
+| `/dashboard`          | Trainee journal (redirects to `/auth/signin` if unauthenticated)        |
 
 Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
 
