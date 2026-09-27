@@ -128,7 +128,7 @@ SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
 ```
 
-The hosted project needs a one-time `npx supabase link --project-ref <ref>`, then `npx supabase db push`, before merging to `main`. Workers Builds deploys the Worker, and nothing applies SQL to hosted Supabase.
+The hosted project needs a one-time `npx supabase link --project-ref <ref>`, then `npx supabase db push` right after merging migrations to `main`. Workers Builds deploys the Worker, and nothing applies SQL to hosted Supabase.
 
 ### Email confirmation in local development
 
