@@ -205,7 +205,7 @@ Make `/dashboard` the empty journal and open it whenever a session exists after 
 
 ## Migration Notes
 
-Nothing in the repo applies migrations to the hosted Supabase project; CI runs local Supabase only, and Workers Builds deploys the Worker on push to `main`. Run `npx supabase db push` against the linked hosted project right after merging to `main` (see Addenda: hosted Supabase is only reachable from `main`). Until the push lands, every production `/dashboard` shows `Could not open your journal`, so push immediately after the Workers Build finishes.
+Nothing in the repo applies migrations to the hosted Supabase project; CI runs local Supabase only, and Workers Builds deploys the Worker on push to `main`. Superseded after merge: the Workers Builds build command applies migrations on `main` before building the Worker (see Addenda).
 
 There is no SQL backfill. Auth users created before this migration get a `profiles` row the first time they open `/dashboard` with a session. Unconfirmed sign-ups get no row until that visit. An existing row's role is never rewritten.
 
@@ -217,6 +217,7 @@ Worker rollback does not drop `public.profiles`. This slice does not ship a down
 - **Lint ignores (Phase 1, 84b8cfb).** `eslint.config.js` ignores `.cursor/**` and `.agents/**` so synced course skills are not linted.
 - **Explicit grants (review F3).** `supabase/migrations/20260927100031_profiles_explicit_grants.sql` revokes default table privileges from `anon` and `authenticated`, then grants `authenticated` only `SELECT` and `INSERT`, matching the RLS policies. Push it to hosted together with the profile migration.
 - **Hosted push moves after merge.** Hosted Supabase is only used from `main`, so 2.9 is done right after the merge (`npx supabase db push`, then confirm `public.profiles` in Studio), not before it as the step title says. Production `/dashboard` shows `Could not open your journal` between the Workers Build and the push.
+- **Migrations automated in Workers Builds (after merge, fe8eed4).** The Workers Builds build command now runs `npx supabase db push --db-url "$SUPABASE_DB_URL"` on `main` before `npm run build`, so migrations land before the Worker and a failed migration blocks the deploy. 2.9 was satisfied by the merge build; the manual post-merge push above no longer applies.
 - **2.5 checked locally.** With `enable_confirmations = true` in local Supabase, signup redirects to `/auth/confirm-email` and sign-in is refused until the Mailpit link is clicked. The confirm page chose its copy by `import.meta.env.DEV` and told dev users "You can now sign in"; it now always says "Check your email", since signup reaches it only when there is no session.
 
 ## References
@@ -262,4 +263,4 @@ Worker rollback does not drop `public.profiles`. This slice does not ship a down
 - [x] 2.6 A pre-migration account that signs in and opens `/dashboard` gets a trainee profile and sees `No measurements yet` — 8bd34dd
 - [x] 2.7 The top bar link still reads `Dashboard` and points at `/dashboard` — 8bd34dd
 - [x] 2.8 Sign out returns to `/`, and the next `/dashboard` visit redirects to `/auth/signin` — 8bd34dd
-- [ ] 2.9 Hosted Supabase has `public.profiles` from `npx supabase db push` before the merge to `main`
+- [x] 2.9 Hosted Supabase has `public.profiles` from `npx supabase db push` before the merge to `main` — fe8eed4
