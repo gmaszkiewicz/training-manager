@@ -229,29 +229,29 @@ Worker rollback does not drop `public.profiles`. This slice does not ship a down
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npx astro check` passes
+- [x] 1.1 `npm run lint` passes — 84b8cfb
+- [x] 1.2 `npx astro check` passes — 84b8cfb
 
 #### Manual
 
-- [ ] 1.3 Local Supabase applies the migration and `public.profiles` has RLS enabled
-- [ ] 1.4 A signed-in open of `/dashboard` creates one `role = trainee` row, and a second open leaves it unchanged
-- [ ] 1.5 An insert with a role other than `trainee`, or with another user's id, is rejected
-- [ ] 1.6 An anonymous `GET /dashboard` redirects to `/auth/signin` and creates no profile row
+- [x] 1.3 Local Supabase applies the migration and `public.profiles` has RLS enabled
+- [x] 1.4 A signed-in open of `/dashboard` creates one `role = trainee` row, and a second open leaves it unchanged
+- [x] 1.5 An insert with a role other than `trainee`, or with another user's id, is rejected
+- [x] 1.6 An anonymous `GET /dashboard` redirects to `/auth/signin` and creates no profile row
 
 ### Phase 2: Empty journal
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npx astro check` passes
-- [ ] 2.3 `npm run smoke` passes with confirmation off: signup and sign-in redirect to `/dashboard`, and the signed-in dashboard body contains `No measurements yet`
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npx astro check` passes
+- [x] 2.3 `npm run smoke` passes with confirmation off: signup and sign-in redirect to `/dashboard`, and the signed-in dashboard body contains `No measurements yet`
 
 #### Manual
 
-- [ ] 2.4 With confirmation off, signup lands on `/dashboard` showing `No measurements yet` and no measurement form
-- [ ] 2.5 With confirmation required, signup lands on `/auth/confirm-email`, and the first sign-in lands on `/dashboard` showing `No measurements yet`
-- [ ] 2.6 A pre-migration account that signs in and opens `/dashboard` gets a trainee profile and sees `No measurements yet`
-- [ ] 2.7 The top bar link still reads `Dashboard` and points at `/dashboard`
-- [ ] 2.8 Sign out returns to `/`, and the next `/dashboard` visit redirects to `/auth/signin`
-- [ ] 2.9 Hosted Supabase has `public.profiles` from `npx supabase db push` before the merge to `main`
+- [x] 2.4 With confirmation off, signup lands on `/dashboard` showing `No measurements yet` and no measurement form
+- [x] 2.5 With confirmation required, signup lands on `/auth/confirm-email`, and the first sign-in lands on `/dashboard` showing `No measurements yet`
+- [x] 2.6 A pre-migration account that signs in and opens `/dashboard` gets a trainee profile and sees `No measurements yet`
+- [x] 2.7 The top bar link still reads `Dashboard` and points at `/dashboard`
+- [x] 2.8 Sign out returns to `/`, and the next `/dashboard` visit redirects to `/auth/signin`
+- [x] 2.9 Hosted Supabase has `public.profiles` from `npx supabase db push` before the merge to `main`
