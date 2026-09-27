@@ -205,7 +205,7 @@ Make `/dashboard` the empty journal and open it whenever a session exists after 
 
 ## Migration Notes
 
-Nothing in the repo applies migrations to the hosted Supabase project; CI runs local Supabase only, and Workers Builds deploys the Worker on push to `main`. Run `npx supabase db push` against the linked hosted project before merging. The table is additive and nothing reads it before this Worker ships, so pushing first is safe. Merging first makes every production `/dashboard` show `Could not open your journal`.
+Nothing in the repo applies migrations to the hosted Supabase project; CI runs local Supabase only, and Workers Builds deploys the Worker on push to `main`. Run `npx supabase db push` against the linked hosted project right after merging to `main` (see Addenda: hosted Supabase is only reachable from `main`). Until the push lands, every production `/dashboard` shows `Could not open your journal`, so push immediately after the Workers Build finishes.
 
 There is no SQL backfill. Auth users created before this migration get a `profiles` row the first time they open `/dashboard` with a session. Unconfirmed sign-ups get no row until that visit. An existing row's role is never rewritten.
 
@@ -216,6 +216,8 @@ Worker rollback does not drop `public.profiles`. This slice does not ship a down
 - **Supabase CLI config alignment (Phase 1, 84b8cfb).** `supabase/config.toml` was regenerated for Supabase CLI 2.118 so local `supabase start` accepts it: `[inbucket]` → `[local_smtp]`, `project_id` → `tm-project` (local Docker volumes from the old id are orphaned), and new commented defaults plus `[experimental.pgdelta]`. `[storage.vector]` stays disabled. CI installs the latest CLI, so it reads the same keys.
 - **Lint ignores (Phase 1, 84b8cfb).** `eslint.config.js` ignores `.cursor/**` and `.agents/**` so synced course skills are not linted.
 - **Explicit grants (review F3).** `supabase/migrations/20260927100031_profiles_explicit_grants.sql` revokes default table privileges from `anon` and `authenticated`, then grants `authenticated` only `SELECT` and `INSERT`, matching the RLS policies. Push it to hosted together with the profile migration.
+- **Hosted push moves after merge.** Hosted Supabase is only used from `main`, so 2.9 is done right after the merge (`npx supabase db push`, then confirm `public.profiles` in Studio), not before it as the step title says. Production `/dashboard` shows `Could not open your journal` between the Workers Build and the push.
+- **2.5 checked locally.** With `enable_confirmations = true` in local Supabase, signup redirects to `/auth/confirm-email` and sign-in is refused until the Mailpit link is clicked. The confirm page chose its copy by `import.meta.env.DEV` and told dev users "You can now sign in"; it now always says "Check your email", since signup reaches it only when there is no session.
 
 ## References
 
@@ -256,7 +258,7 @@ Worker rollback does not drop `public.profiles`. This slice does not ship a down
 #### Manual
 
 - [x] 2.4 With confirmation off, signup lands on `/dashboard` showing `No measurements yet` and no measurement form — 8bd34dd
-- [ ] 2.5 With confirmation required, signup lands on `/auth/confirm-email`, and the first sign-in lands on `/dashboard` showing `No measurements yet`
+- [x] 2.5 With confirmation required, signup lands on `/auth/confirm-email`, and the first sign-in lands on `/dashboard` showing `No measurements yet`
 - [x] 2.6 A pre-migration account that signs in and opens `/dashboard` gets a trainee profile and sees `No measurements yet` — 8bd34dd
 - [x] 2.7 The top bar link still reads `Dashboard` and points at `/dashboard` — 8bd34dd
 - [x] 2.8 Sign out returns to `/`, and the next `/dashboard` visit redirects to `/auth/signin` — 8bd34dd
