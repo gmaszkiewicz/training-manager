@@ -128,17 +128,13 @@ SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
 ```
 
-Migrations reach the hosted project automatically: on pushes to `main`, the Workers Builds build command runs `npx supabase db push --db-url "$SUPABASE_DB_URL"` before `npm run build`, so a failed migration stops the deploy. `SUPABASE_DB_URL` is the Session pooler connection string, stored as a Workers Builds secret. `npm run deploy` does not apply migrations; run `npx supabase db push` yourself when deploying manually.
+Migrations reach the hosted project automatically: the Workers Builds build command is `npm run build:workers`, which runs `npx supabase db push --db-url "$SUPABASE_DB_URL"` on `main` only (see `scripts/workers-build.mjs`) before `npm run build`, so a failed migration stops the deploy. `SUPABASE_DB_URL` is the Session pooler connection string, stored as a Workers Builds secret. `npm run deploy` does not apply migrations; run `npx supabase db push` yourself when deploying manually.
 
 ### Email confirmation in local development
 
-By default Supabase requires email confirmation before a user can sign in. To skip this during local development:
+Local Supabase reads `enable_confirmations` under `[auth.email]` in `supabase/config.toml`. It is `false`, so signup returns a session and opens `/dashboard`; smoke and CI rely on that. To test the confirmation flow, set it to `true` and restart with `npx supabase stop && npx supabase start` (the running stack does not reload `config.toml`). Confirmation emails land in Mailpit at `http://127.0.0.1:54324` and link back to `http://localhost:4321`. Set it back to `false` and restart again before running smoke.
 
-1. Open the Supabase dashboard for your project
-2. Go to **Authentication → Email → Confirm email**
-3. Toggle it **off**
-
-Users can then sign in immediately after sign-up without clicking a confirmation link.
+For a cloud project, the same switch is **Authentication → Email → Confirm email** in the Supabase dashboard. With it on, signup shows `/auth/confirm-email` and the first sign-in after confirming opens `/dashboard`.
 
 ### Auth routes
 
