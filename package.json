@@ -6,6 +6,7 @@
     "deploy": "npm run build && wrangler deploy",
     "dev": "astro dev",
     "build": "astro build",
+    "build:workers": "node scripts/workers-build.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint .",

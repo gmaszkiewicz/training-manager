@@ -49,7 +49,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Local Supabase: `npx supabase start` (requires Docker)
 - Cloudflare local dev: secrets go in `.dev.vars` (gitignored)
 - Deploy: `npm run deploy` (`npm run build && wrangler deploy`). Requires `npx wrangler login`. Do not use `wrangler pages deploy`.
-- Auto-deploy: Cloudflare Workers Builds on push to `main` (build `npx supabase db push --db-url "$SUPABASE_DB_URL"` on `main` only, then `npm run build`; deploy `npx wrangler deploy`). GitHub Actions does not deploy. `SUPABASE_DB_URL` is a Workers Builds secret. `npm run deploy` does not apply migrations.
+- Auto-deploy: Cloudflare Workers Builds on push to `main` (build `npm run build:workers`, deploy `npx wrangler deploy`). `scripts/workers-build.mjs` runs `supabase db push` only when `WORKERS_CI_BRANCH` is `main`, then `npm run build`. GitHub Actions does not deploy. `SUPABASE_DB_URL` is a Workers Builds secret. `npm run deploy` does not apply migrations.
 - Migrations must be backward compatible: they reach hosted Supabase before the new Worker, so the previous Worker briefly runs on the new schema. Add first, drop in a later release.
 
 ## CI
