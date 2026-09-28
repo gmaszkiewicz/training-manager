@@ -1,21 +1,36 @@
 ---
+import MeasurementForm from "@/components/measurements/MeasurementForm";
+import MeasurementList from "@/components/measurements/MeasurementList.astro";
 import Layout from "@/layouts/Layout.astro";
 import { ensureTraineeProfile } from "@/lib/services/ensure-trainee-profile";
+import { listMeasurements } from "@/lib/services/measurements";
 import { createClient } from "@/lib/supabase";
+import type { MeasurementWithDeltas } from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
+const serverError = Astro.url.searchParams.get("error");
 
 let journalReady = false;
+let measurementsLoaded = false;
+let entries: MeasurementWithDeltas[] = [];
+
 if (supabase && user) {
   const ensured = await ensureTraineeProfile(supabase, user.id);
   journalReady = ensured.ok;
+  if (journalReady) {
+    const listed = await listMeasurements(supabase, user.id);
+    measurementsLoaded = listed.ok;
+    if (listed.ok) {
+      entries = listed.entries;
+    }
+  }
 }
 ---
 
 <Layout title="Dashboard">
   <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
-    <div class="rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
+    <div class="w-full max-w-2xl rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
       <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
         {journalReady ? "Journal" : "Dashboard"}
       </h1>
@@ -24,7 +39,20 @@ if (supabase && user) {
           <p class="text-blue-100/80">
             Welcome, <span class="font-semibold text-white">{user?.email}</span>
           </p>
-          <p class="mt-2 text-sm text-blue-100/50">No measurements yet</p>
+          {measurementsLoaded ? (
+            <>
+              <div class="mt-6">
+                <MeasurementForm serverError={serverError} client:load />
+              </div>
+              {entries.length === 0 ? (
+                <p class="mt-6 text-sm text-blue-100/50">No measurements yet</p>
+              ) : (
+                <MeasurementList entries={entries} />
+              )}
+            </>
+          ) : (
+            <p class="mt-2 text-sm text-blue-100/80">Could not load your measurements</p>
+          )}
         </>
       ) : (
         <p class="text-blue-100/80">Could not open your journal</p>

@@ -1,44 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/db/database.types";
 import type { Profile } from "@/types";
 
 const UNIQUE_VIOLATION = "23505";
 
-interface ProfileRow extends Record<string, unknown> {
-  id: string;
-  role: string;
-  created_at: string;
-}
-
-interface ProfileInsert extends Record<string, unknown> {
-  id: string;
-  role: Profile["role"];
-  created_at?: string;
-}
-
-interface ProfilesDatabase {
-  public: {
-    Tables: {
-      profiles: {
-        Row: ProfileRow;
-        Insert: ProfileInsert;
-        Update: Partial<ProfileInsert>;
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-  };
-}
-
-type ProfilesClient = SupabaseClient<ProfilesDatabase>;
-
 type FindProfileResult = { status: "found"; profile: Profile } | { status: "missing" } | { status: "error" };
 
-function profilesClient(supabase: SupabaseClient): ProfilesClient {
-  return supabase as ProfilesClient;
-}
-
-async function findProfile(supabase: ProfilesClient, userId: string): Promise<FindProfileResult> {
+async function findProfile(supabase: SupabaseClient<Database>, userId: string): Promise<FindProfileResult> {
   const { data, error } = await supabase.from("profiles").select("id, role").eq("id", userId).maybeSingle();
 
   if (error || !data) {
@@ -53,12 +21,11 @@ async function findProfile(supabase: ProfilesClient, userId: string): Promise<Fi
 }
 
 export async function ensureTraineeProfile(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
 ): Promise<{ ok: true; role: "trainee" } | { ok: false }> {
   try {
-    const client = profilesClient(supabase);
-    const existing = await findProfile(client, userId);
+    const existing = await findProfile(supabase, userId);
 
     if (existing.status === "error") {
       return { ok: false };
@@ -68,7 +35,7 @@ export async function ensureTraineeProfile(
       return { ok: true, role: existing.profile.role };
     }
 
-    const { error: insertError } = await client.from("profiles").insert({ id: userId, role: "trainee" });
+    const { error: insertError } = await supabase.from("profiles").insert({ id: userId, role: "trainee" });
 
     if (!insertError) {
       return { ok: true, role: "trainee" };
@@ -78,7 +45,7 @@ export async function ensureTraineeProfile(
       return { ok: false };
     }
 
-    const raced = await findProfile(client, userId);
+    const raced = await findProfile(supabase, userId);
     if (raced.status !== "found") {
       return { ok: false };
     }
