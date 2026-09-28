@@ -202,7 +202,7 @@ The trainer dashboard lists protégés A–Z and shows one measurement list: the
 
 **Intent**: Lock one-list preview, the latest-link default, and the unchanged trainee journal.
 
-**Contract**: The trainee already used by smoke needs two measurements and a note before the trainer opens the preview, so the second entry has a delta. Link a second trainee as well, after the first, and give that second trainee a different note. `GET /dashboard` as the trainer, with no query, contains the later-linked email and that trainee's note, contains a delta marker (`↑` or `↓`), and does not contain `Add measurement`. `GET /dashboard?trainee=<earlier id>` contains the earlier note and does not contain the later note. The trainee's own `GET /dashboard` still contains `Add measurement`.
+**Contract**: Link the trainee already used by smoke first, and give that trainee a note that appears on their list. Link a second trainee after the first. The later trainee gets two measurements with different weights, so the newer entry has an arrow, and a different note. `GET /dashboard` as the trainer, with no query, contains the later-linked email, that trainee's note, and a delta marker (`↑` or `↓`), and does not contain `Add measurement` or the earlier trainee's note. `GET /dashboard?trainee=<earlier id>` contains the earlier note and does not contain the later note. The trainee's own `GET /dashboard` still contains `Add measurement`.
 
 ### Success Criteria:
 
@@ -211,7 +211,7 @@ The trainer dashboard lists protégés A–Z and shows one measurement list: the
 - `npm run lint` passes
 - `npx astro check` passes
 - `npm test` passes, including preview selection: a matching `trainee` param wins; a missing or unknown param selects the greatest `linked_at` and, on a tie, the lower `trainee_id`; an empty link list selects nothing
-- `npm run smoke` passes: with two protégés, `/dashboard` with no query contains the later-linked email and that trainee's note and a delta marker, and does not contain `Add measurement`; opening the earlier protégé's `?trainee=` contains that trainee's note and not the later trainee's note; a trainee dashboard still contains `Add measurement`
+- `npm run smoke` passes: with two protégés, `/dashboard` with no query contains the later-linked email, that trainee's note, and a delta marker, and does not contain `Add measurement` or the earlier trainee's note; opening the earlier protégé's `?trainee=` contains that trainee's note and not the later trainee's note; a trainee dashboard still contains `Add measurement`
 
 #### Manual Verification:
 
@@ -300,7 +300,7 @@ The migration only adds a table, a function, and a permissive `SELECT` policy. W
 - [ ] 3.1 `npm run lint` passes
 - [ ] 3.2 `npx astro check` passes
 - [ ] 3.3 `npm test` passes, including preview selection: a matching `trainee` param wins; a missing or unknown param selects the greatest `linked_at` and, on a tie, the lower `trainee_id`; an empty link list selects nothing
-- [ ] 3.4 `npm run smoke` passes: with two protégés, `/dashboard` with no query contains the later-linked email and that trainee's note and a delta marker, and does not contain `Add measurement`; opening the earlier protégé's `?trainee=` contains that trainee's note and not the later trainee's note; a trainee dashboard still contains `Add measurement`
+- [ ] 3.4 `npm run smoke` passes: with two protégés, `/dashboard` with no query contains the later-linked email, that trainee's note, and a delta marker, and does not contain `Add measurement` or the earlier trainee's note; opening the earlier protégé's `?trainee=` contains that trainee's note and not the later trainee's note; a trainee dashboard still contains `Add measurement`
 
 #### Manual
 
