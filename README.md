@@ -112,7 +112,7 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-`public.profiles` stores `trainee` or `trainer`. Migrations under `supabase/migrations/` apply locally on `supabase start`. `public.measurements` holds a trainee's entries (owner-only RLS), and `npm run db:types` regenerates `src/db/database.types.ts` after a migration (local Supabase running).
+`public.profiles` stores `trainee` or `trainer`. Migrations under `supabase/migrations/` apply locally on `supabase start`. `public.measurements` holds a trainee's entries (owner-only RLS). `public.trainer_links` stores a trainer's link to a trainee, and a trainer can select that trainee's `measurements` rows. `npm run db:types` regenerates `src/db/database.types.ts` after a migration (local Supabase running).
 
 ### Using a cloud Supabase project instead
 
