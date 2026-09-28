@@ -334,18 +334,18 @@ The migration only adds a table, so it is backward compatible: Workers Builds ap
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 `npx astro check` passes
-- [x] 3.3 `npm test` passes
-- [x] 3.4 `npm run build` passes
-- [x] 3.5 `npm run smoke` passes against the preview, including the anonymous POST, invalid weight, two saves, and `↓ 1.5` steps
+- [x] 3.1 `npm run lint` passes — 7e7e268
+- [x] 3.2 `npx astro check` passes — 7e7e268
+- [x] 3.3 `npm test` passes — 7e7e268
+- [x] 3.4 `npm run build` passes — 7e7e268
+- [x] 3.5 `npm run smoke` passes against the preview, including the anonymous POST, invalid weight, two saves, and `↓ 1.5` steps — 7e7e268
 
 #### Manual
 
-- [x] 3.6 The first entry shows its values and no comparison; after a second entry, each field shows `↑`/`↓` with the difference, or `0.0` with no arrow when equal
-- [x] 3.7 Backfilling an older date places it in date order, and the next entry's deltas change to compare against it
-- [x] 3.8 Two entries on the same date: the later-added one compares to the earlier one
-- [x] 3.9 An out-of-range value, a value with two decimals, or an empty field is blocked in the form with a field message; the same input sent past the client (e.g. devtools) returns to `/dashboard` with the server error shown
-- [x] 3.10 The date picker does not offer tomorrow, and the note is shown on its entry
-- [x] 3.11 A second trainee's journal does not show the first trainee's entries
+- [x] 3.6 The first entry shows its values and no comparison; after a second entry, each field shows `↑`/`↓` with the difference, or `0.0` with no arrow when equal — 7e7e268
+- [x] 3.7 Backfilling an older date places it in date order, and the next entry's deltas change to compare against it — 7e7e268
+- [x] 3.8 Two entries on the same date: the later-added one compares to the earlier one — 7e7e268
+- [x] 3.9 An out-of-range value, a value with two decimals, or an empty field is blocked in the form with a field message; the same input sent past the client (e.g. devtools) returns to `/dashboard` with the server error shown — 7e7e268
+- [x] 3.10 The date picker does not offer tomorrow, and the note is shown on its entry — 7e7e268
+- [x] 3.11 A second trainee's journal does not show the first trainee's entries — 7e7e268
 - [ ] 3.12 After merge, the Workers Build applies the migration, and adding an entry on production shows its delta
