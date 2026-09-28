@@ -272,9 +272,9 @@ The migration only adds a table, a function, and a permissive `SELECT` policy. W
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` passes
-- [ ] 1.2 `npx astro check` passes
-- [ ] 1.3 Regenerating with `npm run db:types` leaves `src/db/database.types.ts` unchanged (`git diff --exit-code src/db/database.types.ts`)
+- [x] 1.1 `npm run lint` passes
+- [x] 1.2 `npx astro check` passes
+- [x] 1.3 Regenerating with `npm run db:types` leaves `src/db/database.types.ts` unchanged (`git diff --exit-code src/db/database.types.ts`)
 
 #### Manual
 
