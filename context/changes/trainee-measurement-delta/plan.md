@@ -46,7 +46,7 @@ Verify with: `npm test` (delta and input rules), `npm run smoke` (add → delta 
 - Pagination or limits on the list.
 - Keeping typed values in the form after a server-side error redirect.
 - A JSON API or client-side list rendering.
-- A database-level future-date check (`current_date` is not usable in a CHECK constraint); that rule lives in the zod schema.
+- A database-level future-date check. A CHECK on `current_date` is evaluated only on write, and in UTC it would contradict the +1 day tolerance, so the rule lives in the zod schema.
 
 ## Implementation Approach
 
@@ -81,11 +81,11 @@ Create the private measurements table and switch the Supabase client to generate
 
 #### 2. Generated database types
 
-**File**: `src/db/database.types.ts` (generated), `package.json`
+**File**: `src/db/database.types.ts` (generated), `package.json`, `eslint.config.js`
 
 **Intent**: One source of truth for table shapes instead of hand-written shims.
 
-**Contract**: Script `"db:types": "supabase gen types typescript --local > src/db/database.types.ts && prettier --write src/db/database.types.ts"`. The generated file is committed and exports `Database`. Regenerate whenever a migration changes.
+**Contract**: Script `"db:types": "supabase gen types typescript --local > src/db/database.types.ts && prettier --write src/db/database.types.ts"`. The generated file is committed and exports `Database`. Regenerate whenever a migration changes. The generated file is not linted: add `src/db/database.types.ts` to the ignores entry in `eslint.config.js` next to `.cursor/**` and `.agents/**`, because its `type Database = {…}` and index-signature `Json` break `consistent-type-definitions` and `consistent-indexed-object-style`.
 
 #### 3. Typed client and profile helper
 
@@ -138,7 +138,7 @@ Add the input schema and delta rule as pure modules with a unit-test runner, wir
 
 **Intent**: Name the entry and delta shapes the service, list, and later slices share.
 
-**Contract**: `MeasurementField` = `"weight_kg" | "chest_cm" | "waist_cm" | "arms_cm" | "thigh_cm" | "calf_cm" | "hips_cm" | "navel_cm"`. `MeasurementEntry` = `{ id: string; measured_on: string; note: string | null; created_at: string } & Record<MeasurementField, number>`. `FieldDelta` = `{ direction: "up" | "down" | "none"; difference: number }`, where `difference` is the absolute value in kg or cm with one decimal. `MeasurementWithDeltas` = `MeasurementEntry & { deltas: Record<MeasurementField, FieldDelta> | null }`, where `null` means the oldest entry.
+**Contract**: `MeasurementField` = `"weight_kg" | "chest_cm" | "waist_cm" | "arms_cm" | "thigh_cm" | "calf_cm" | "hips_cm" | "navel_cm"`. `MeasurementEntry` = `Omit<Database["public"]["Tables"]["measurements"]["Row"], "trainee_id">`, derived from the generated types so the table has one definition. `FieldDelta` = `{ direction: "up" | "down" | "none"; difference: number }`, where `difference` is the absolute value in kg or cm with one decimal. `MeasurementWithDeltas` = `MeasurementEntry & { deltas: Record<MeasurementField, FieldDelta> | null }`, where `null` means the oldest entry.
 
 #### 2. Input schema
 
@@ -182,7 +182,7 @@ Add the input schema and delta rule as pure modules with a unit-test runner, wir
 
 #### Manual Verification:
 
-- The CI `ci` job on the branch shows the `npm test` step running and passing
+- The CI `ci` job on the pull request to `main` shows the `npm test` step running and passing
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -226,7 +226,7 @@ Wire the route, form, and list into `/dashboard`, and extend smoke to prove the 
 
 **Intent**: Show entries newest first with the delta next to each value.
 
-**Contract**: After the ensure succeeds, the page calls `listMeasurements`. On failure it shows `Could not load your measurements` (not `No measurements yet`) and still shows sign-out. On success it renders `MeasurementForm` (`client:load`, `serverError` from `?error=`), then either `No measurements yet` (zero entries) or the list. Each entry shows the date, eight values with units, `formatDelta` output per field when `deltas` is not null, and the note when present. Values and deltas carry an accessible label (e.g. `aria-label="Weight down 1.5 kg"`). The heading stays `Journal`, the container widens to fit the form and list, and the failure states from S-01 are unchanged.
+**Contract**: After the ensure succeeds, the page calls `listMeasurements`. On failure it shows `Could not load your measurements` (not `No measurements yet`) and still shows sign-out. On success it renders `MeasurementForm` (`client:load`, `serverError` from `?error=`), then either `No measurements yet` (zero entries) or the list. Each entry shows the date, eight values with units, `formatDelta` output per field when `deltas` is not null, and the note when present. Values and deltas carry an accessible label (e.g. `aria-label="Weight down 1.5 kg"`). Each `formatDelta` output is rendered as one text node (e.g. `<span aria-label=…>↓ 1.5</span>`), never split across elements, because smoke matches the literal `↓ 1.5`. The heading stays `Journal`, the container widens to fit the form and list, and the failure states from S-01 are unchanged.
 
 #### 5. Smoke
 
@@ -328,7 +328,7 @@ The migration only adds a table, so it is backward compatible: Workers Builds ap
 
 #### Manual
 
-- [ ] 2.4 The CI `ci` job on the branch shows the `npm test` step running and passing
+- [ ] 2.4 The CI `ci` job on the pull request to `main` shows the `npm test` step running and passing
 
 ### Phase 3: Add and list on the journal
 
