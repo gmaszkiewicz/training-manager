@@ -1,9 +1,9 @@
 ---
 change_id: trainee-measurement-delta
 title: Trainee logs a measurement and sees the delta versus the previous entry
-status: planned
+status: plan_reviewed
 created: 2026-09-27
-updated: 2026-09-27
+updated: 2026-09-28
 archived_at: null
 ---
 
