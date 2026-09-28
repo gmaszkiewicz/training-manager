@@ -2,7 +2,7 @@ import type { Database } from "@/db/database.types";
 
 export interface Profile {
   id: string;
-  role: "trainee";
+  role: "trainee" | "trainer";
 }
 
 export type MeasurementField =
