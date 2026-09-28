@@ -5,12 +5,21 @@ export const POST: APIRoute = async (context) => {
   const form = await context.request.formData();
   const email = form.get("email") as string;
   const password = form.get("password") as string;
+  const submittedRole = form.get("role");
+  const role = submittedRole === "trainee" || submittedRole === "trainer" ? submittedRole : null;
+  if (!role) {
+    return context.redirect(`/auth/signup?error=${encodeURIComponent("Choose Trainee or Trainer")}`);
+  }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
     return context.redirect(`/auth/signup?error=${encodeURIComponent("Supabase is not configured")}`);
   }
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { role } },
+  });
 
   if (error) {
     return context.redirect(`/auth/signup?error=${encodeURIComponent(error.message)}`);
