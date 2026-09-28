@@ -1,7 +1,7 @@
 ---
 change_id: trainer-link-preview
 title: Trainer links a trainee and previews the list
-status: new
+status: planned
 created: 2026-09-28
 updated: 2026-09-28
 archived_at: null
