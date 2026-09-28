@@ -131,14 +131,14 @@ The existing sign-up form requires an explicit role, the API stores that choice,
 
 **Intent**: Lock the trainee journal, the required role, and the trainer confirmation into the existing auth smoke run.
 
-**Contract**: The existing trainee sign-up posts `role=trainee` and still expects `/dashboard` and `No measurements yet`. After the existing sign-out, append steps that use a second email and the signed-out cookie jar. A post without `role` returns 302 to a location starting with `/auth/signup?error=`, and the following `GET /dashboard` still returns 302 to `/auth/signin`. A post with `role=trainer` returns 302 to `/dashboard`. That dashboard returns 200, contains `Trainer`, and does not contain `No measurements yet`. Extend the step expectation so a step can forbid a substring; the current check only supports inclusion. A measurement POST from that trainer session returns 302 to a location starting with `/dashboard?error=` and not exactly `/dashboard`.
+**Contract**: The existing trainee sign-up posts `role=trainee` and still expects `/dashboard` and `No measurements yet`. After the existing sign-out, append steps that use a second email and the signed-out cookie jar. A post without `role` returns 302 to a location starting with `/auth/signup?error=`, and the following `GET /dashboard` still returns 302 to `/auth/signin`. A post with `role=admin` does the same, and it runs before the trainer signup. A post with `role=trainer` returns 302 to `/dashboard`. That dashboard returns 200, contains `Trainer`, and does not contain `No measurements yet`. Extend the step expectation so a step can forbid a substring; the current check only supports inclusion. A measurement POST from that trainer session returns 302 to a location starting with `/dashboard?error=` and not exactly `/dashboard`.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - `npm run lint` passes
-- `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=`
+- `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; signup with `role=admin` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=`
 
 #### Manual Verification:
 
@@ -159,7 +159,7 @@ No unit-test runner is in this slice. Role parsing stays in the sign-up handler 
 
 ### Integration Tests:
 
-`npm run smoke` against a running server, after Phase 2, covers trainee registration, a missing role, trainer registration, and a trainer measurement POST. Phase 1 checks the check constraint and insert policy with local Supabase under `set local role authenticated`.
+`npm run smoke` against a running server, after Phase 2, covers trainee registration, a missing role, `role=admin`, trainer registration, and a trainer measurement POST. Phase 1 checks the check constraint and insert policy with local Supabase under `set local role authenticated`.
 
 ### Manual Testing Steps:
 
@@ -219,7 +219,7 @@ Hosted Supabase receives the migration on `main` through Workers Builds (`npm ru
 #### Automated
 
 - [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=`
+- [ ] 2.2 `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; signup with `role=admin` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=`
 
 #### Manual
 

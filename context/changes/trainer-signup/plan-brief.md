@@ -33,7 +33,7 @@ The sign-up form requires Trainee or Trainer, with neither pre-selected. A train
 - `ensureProfile` returns the existing row or inserts the chosen role, and inserts `trainee` only when the role key is absent
 - `/dashboard` branches: journal for `trainee`, heading `Trainer` plus email and Sign out for `trainer`
 - Required `role` on the sign-up form and in `POST /api/auth/signup`
-- Smoke for the trainee journal, a missing role, the trainer confirmation, and a rejected trainer measurement POST
+- Smoke for the trainee journal, a missing role, `role=admin`, the trainer confirmation, and a rejected trainer measurement POST
 
 **Out of scope:**
 
