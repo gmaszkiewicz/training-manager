@@ -4,7 +4,13 @@ import type { Profile } from "@/types";
 
 const UNIQUE_VIOLATION = "23505";
 
+type ProfileRole = Profile["role"];
+
 type FindProfileResult = { status: "found"; profile: Profile } | { status: "missing" } | { status: "error" };
+
+function isProfileRole(role: string): role is ProfileRole {
+  return role === "trainee" || role === "trainer";
+}
 
 async function findProfile(supabase: SupabaseClient<Database>, userId: string): Promise<FindProfileResult> {
   const { data, error } = await supabase.from("profiles").select("id, role").eq("id", userId).maybeSingle();
@@ -13,17 +19,18 @@ async function findProfile(supabase: SupabaseClient<Database>, userId: string): 
     return error ? { status: "error" } : { status: "missing" };
   }
 
-  if (data.role !== "trainee") {
+  if (!isProfileRole(data.role)) {
     return { status: "error" };
   }
 
-  return { status: "found", profile: { id: data.id, role: "trainee" } };
+  return { status: "found", profile: { id: data.id, role: data.role } };
 }
 
-export async function ensureTraineeProfile(
+export async function ensureProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
-): Promise<{ ok: true; role: "trainee" } | { ok: false }> {
+  requestedRole: ProfileRole | null,
+): Promise<{ ok: true; role: ProfileRole } | { ok: false }> {
   try {
     const existing = await findProfile(supabase, userId);
 
@@ -35,10 +42,11 @@ export async function ensureTraineeProfile(
       return { ok: true, role: existing.profile.role };
     }
 
-    const { error: insertError } = await supabase.from("profiles").insert({ id: userId, role: "trainee" });
+    const role = requestedRole ?? "trainee";
+    const { error: insertError } = await supabase.from("profiles").insert({ id: userId, role });
 
     if (!insertError) {
-      return { ok: true, role: "trainee" };
+      return { ok: true, role };
     }
 
     if (insertError.code !== UNIQUE_VIOLATION) {
