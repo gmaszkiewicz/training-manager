@@ -305,18 +305,18 @@ The migration only adds a table, so it is backward compatible: Workers Builds ap
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` passes
-- [ ] 1.2 `npx astro check` passes
-- [ ] 1.3 Regenerating with `npm run db:types` leaves `src/db/database.types.ts` unchanged (`git diff --exit-code src/db/database.types.ts`)
-- [ ] 1.4 `npm run smoke` passes against a local build (no regression in sign-up, sign-in, or the empty journal)
+- [x] 1.1 `npm run lint` passes
+- [x] 1.2 `npx astro check` passes
+- [x] 1.3 Regenerating with `npm run db:types` leaves `src/db/database.types.ts` unchanged (`git diff --exit-code src/db/database.types.ts`)
+- [x] 1.4 `npm run smoke` passes against a local build (no regression in sign-up, sign-in, or the empty journal)
 
 #### Manual
 
-- [ ] 1.5 Local Supabase applies the migration, and `public.measurements` has RLS enabled with only the select and insert policies
-- [ ] 1.6 As `authenticated` with a trainee's `sub` (`set local role authenticated` + `request.jwt.claims`), inserting a row with another user's `trainee_id` is rejected, and selecting returns only that trainee's rows
-- [ ] 1.7 An insert with `weight_kg = 800`, or with `chest_cm` missing, is rejected by the table
-- [ ] 1.8 `anon` cannot select from `public.measurements`, and `authenticated` cannot update or delete a row
-- [ ] 1.9 `ensure-trainee-profile.ts` contains no hand-written database type or cast
+- [x] 1.5 Local Supabase applies the migration, and `public.measurements` has RLS enabled with only the select and insert policies
+- [x] 1.6 As `authenticated` with a trainee's `sub` (`set local role authenticated` + `request.jwt.claims`), inserting a row with another user's `trainee_id` is rejected, and selecting returns only that trainee's rows
+- [x] 1.7 An insert with `weight_kg = 800`, or with `chest_cm` missing, is rejected by the table
+- [x] 1.8 `anon` cannot select from `public.measurements`, and `authenticated` cannot update or delete a row
+- [x] 1.9 `ensure-trainee-profile.ts` contains no hand-written database type or cast
 
 ### Phase 2: Delta rule and tests
 
