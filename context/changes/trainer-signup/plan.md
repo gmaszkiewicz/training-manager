@@ -218,12 +218,12 @@ Hosted Supabase receives the migration on `main` through Workers Builds (`npm ru
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes
-- [x] 2.2 `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; signup with `role=admin` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=`
+- [x] 2.1 `npm run lint` passes — 8ccbdf4
+- [x] 2.2 `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; signup with `role=admin` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=` — 8ccbdf4
 
 #### Manual
 
-- [x] 2.3 `/auth/signup` shows Trainee and Trainer with neither selected, and submitting without a choice stays on the form
-- [x] 2.4 Choosing Trainer with email confirmation off opens `/dashboard` with the heading `Trainer` and no journal
-- [x] 2.5 Choosing Trainee still opens the journal
-- [x] 2.6 With email confirmation required, choosing Trainer shows `/auth/confirm-email`, and the first sign-in opens the trainer confirmation
+- [x] 2.3 `/auth/signup` shows Trainee and Trainer with neither selected, and submitting without a choice stays on the form — 8ccbdf4
+- [x] 2.4 Choosing Trainer with email confirmation off opens `/dashboard` with the heading `Trainer` and no journal — 8ccbdf4
+- [x] 2.5 Choosing Trainee still opens the journal — 8ccbdf4
+- [x] 2.6 With email confirmation required, choosing Trainer shows `/auth/confirm-email`, and the first sign-in opens the trainer confirmation — 8ccbdf4
