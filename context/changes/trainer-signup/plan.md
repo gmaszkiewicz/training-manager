@@ -204,15 +204,15 @@ Hosted Supabase receives the migration on `main` through Workers Builds (`npm ru
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` passes
-- [ ] 1.2 Local Supabase applies the new migration, and `profiles_role_check` accepts `trainee` and `trainer` and rejects any other role
-- [ ] 1.3 As `authenticated`, inserting the caller's own `profiles` row with `role = 'trainer'` succeeds, and inserting another user's id or `role = 'admin'` is rejected
+- [x] 1.1 `npm run lint` passes
+- [x] 1.2 Local Supabase applies the new migration, and `profiles_role_check` accepts `trainee` and `trainer` and rejects any other role
+- [x] 1.3 As `authenticated`, inserting the caller's own `profiles` row with `role = 'trainer'` succeeds, and inserting another user's id or `role = 'admin'` is rejected
 
 #### Manual
 
-- [ ] 1.4 A signed-in user whose `profiles.role` is `trainer` sees the heading `Trainer`, their email, and Sign out, and does not see the heading `Journal`, the measurement form, or `No measurements yet`
-- [ ] 1.5 A signed-in trainee still sees the heading `Journal` and the measurement form
-- [ ] 1.6 A second open of `/dashboard` does not change an existing profile role
+- [x] 1.4 A signed-in user whose `profiles.role` is `trainer` sees the heading `Trainer`, their email, and Sign out, and does not see the heading `Journal`, the measurement form, or `No measurements yet`
+- [x] 1.5 A signed-in trainee still sees the heading `Journal` and the measurement form
+- [x] 1.6 A second open of `/dashboard` does not change an existing profile role
 
 ### Phase 2: Required role at signup
 
