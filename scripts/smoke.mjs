@@ -3,6 +3,7 @@
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = `smoke-${Date.now()}@example.com`;
+const trainerEmail = `smoke-trainer-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
 
@@ -60,7 +61,7 @@ const steps = [
   ],
   [
     "signup creates account",
-    () => request("/api/auth/signup", { method: "POST", form: { email, password } }),
+    () => request("/api/auth/signup", { method: "POST", form: { email, password, role: "trainee" } }),
     { status: 302, location: "/dashboard" },
   ],
   [
@@ -92,6 +93,37 @@ const steps = [
   ["dashboard shows the weight delta", () => request("/dashboard"), { status: 200, body: "↓ 1.5" }],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  [
+    "signup rejects a missing role",
+    () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password } }),
+    { status: 302, location: "/auth/signup?error=" },
+  ],
+  ["dashboard stays signed out without a role", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  [
+    "signup rejects an unknown role",
+    () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password, role: "admin" } }),
+    { status: 302, location: "/auth/signup?error=" },
+  ],
+  [
+    "dashboard stays signed out after an unknown role",
+    () => request("/dashboard"),
+    { status: 302, location: "/auth/signin" },
+  ],
+  [
+    "trainer signup creates account",
+    () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password, role: "trainer" } }),
+    { status: 302, location: "/dashboard" },
+  ],
+  [
+    "trainer dashboard confirms the role",
+    () => request("/dashboard"),
+    { status: 200, body: "Trainer", forbid: "No measurements yet" },
+  ],
+  [
+    "trainer measurement is rejected",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "80.0") }),
+    { status: 302, location: "/dashboard?error=" },
+  ],
 ];
 
 let failed = 0;
@@ -100,16 +132,16 @@ for (const [name, run, expected] of steps) {
   const locationOk =
     expected.location === undefined ||
     (expected.exactLocation ? actual.location === expected.location : actual.location.startsWith(expected.location));
-  const ok =
-    actual.status === expected.status &&
-    locationOk &&
-    (expected.body === undefined || actual.body.includes(expected.body));
+  const bodyOk = expected.body === undefined || actual.body.includes(expected.body);
+  const forbidOk = expected.forbid === undefined || !actual.body.includes(expected.forbid);
+  const ok = actual.status === expected.status && locationOk && bodyOk && forbidOk;
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
     const expectedBody = expected.body ? ` body contains ${JSON.stringify(expected.body)}` : "";
+    const expectedForbid = expected.forbid ? ` body excludes ${JSON.stringify(expected.forbid)}` : "";
     const expectedLocation = expected.location ? `${expected.exactLocation ? "exactly " : ""}${expected.location}` : "";
-    console.log(`      expected ${expected.status} ${expectedLocation}${expectedBody}`);
+    console.log(`      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedForbid}`);
   }
 }
 

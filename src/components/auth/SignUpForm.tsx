@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mail, Lock, UserPlus } from "lucide-react";
+import { CircleAlert, Mail, Lock, UserPlus } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
@@ -17,7 +17,13 @@ export default function SignUpForm({ serverError }: Props) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
+  const [role, setRole] = useState<"" | "trainee" | "trainer">("");
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    role?: string;
+  }>({});
 
   function validate() {
     const next: typeof errors = {};
@@ -38,6 +44,10 @@ export default function SignUpForm({ serverError }: Props) {
       next.confirmPassword = "Please confirm your password";
     } else if (password !== confirmPassword) {
       next.confirmPassword = "Passwords do not match";
+    }
+
+    if (!role) {
+      next.role = "Role is required";
     }
 
     setErrors(next);
@@ -123,6 +133,50 @@ export default function SignUpForm({ serverError }: Props) {
           />
         }
       />
+
+      <fieldset>
+        <legend className="mb-1 block text-sm text-blue-100/80">Role</legend>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 text-sm text-white">
+            <input
+              id="role-trainee"
+              type="radio"
+              name="role"
+              value="trainee"
+              required
+              checked={role === "trainee"}
+              onChange={() => {
+                setRole("trainee");
+                clearError("role");
+              }}
+              className="size-4 accent-purple-400"
+            />
+            Trainee
+          </label>
+          <label className="flex items-center gap-2 text-sm text-white">
+            <input
+              id="role-trainer"
+              type="radio"
+              name="role"
+              value="trainer"
+              required
+              checked={role === "trainer"}
+              onChange={() => {
+                setRole("trainer");
+                clearError("role");
+              }}
+              className="size-4 accent-purple-400"
+            />
+            Trainer
+          </label>
+        </div>
+        {errors.role ? (
+          <p className="mt-1 flex items-center gap-1 text-xs text-red-300">
+            <CircleAlert className="size-3" />
+            {errors.role}
+          </p>
+        ) : null}
+      </fieldset>
 
       <ServerError message={serverError} />
 

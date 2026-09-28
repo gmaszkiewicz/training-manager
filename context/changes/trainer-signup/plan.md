@@ -204,26 +204,26 @@ Hosted Supabase receives the migration on `main` through Workers Builds (`npm ru
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 Local Supabase applies the new migration, and `profiles_role_check` accepts `trainee` and `trainer` and rejects any other role
-- [x] 1.3 As `authenticated`, inserting the caller's own `profiles` row with `role = 'trainer'` succeeds, and inserting another user's id or `role = 'admin'` is rejected
+- [x] 1.1 `npm run lint` passes — 6476cb5
+- [x] 1.2 Local Supabase applies the new migration, and `profiles_role_check` accepts `trainee` and `trainer` and rejects any other role — 6476cb5
+- [x] 1.3 As `authenticated`, inserting the caller's own `profiles` row with `role = 'trainer'` succeeds, and inserting another user's id or `role = 'admin'` is rejected — 6476cb5
 
 #### Manual
 
-- [x] 1.4 A signed-in user whose `profiles.role` is `trainer` sees the heading `Trainer`, their email, and Sign out, and does not see the heading `Journal`, the measurement form, or `No measurements yet`
-- [x] 1.5 A signed-in trainee still sees the heading `Journal` and the measurement form
-- [x] 1.6 A second open of `/dashboard` does not change an existing profile role
+- [x] 1.4 A signed-in user whose `profiles.role` is `trainer` sees the heading `Trainer`, their email, and Sign out, and does not see the heading `Journal`, the measurement form, or `No measurements yet` — 6476cb5
+- [x] 1.5 A signed-in trainee still sees the heading `Journal` and the measurement form — 6476cb5
+- [x] 1.6 A second open of `/dashboard` does not change an existing profile role — 6476cb5
 
 ### Phase 2: Required role at signup
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; signup with `role=admin` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=`
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run smoke` passes: trainee signup sends `role=trainee` and the dashboard contains `No measurements yet`; signup without `role` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; signup with `role=admin` redirects to `/auth/signup?error=` and `/dashboard` still redirects to `/auth/signin`; a trainer account's dashboard contains `Trainer` and does not contain `No measurements yet`; that account's measurement POST redirects to `/dashboard?error=`
 
 #### Manual
 
-- [ ] 2.3 `/auth/signup` shows Trainee and Trainer with neither selected, and submitting without a choice stays on the form
-- [ ] 2.4 Choosing Trainer with email confirmation off opens `/dashboard` with the heading `Trainer` and no journal
-- [ ] 2.5 Choosing Trainee still opens the journal
-- [ ] 2.6 With email confirmation required, choosing Trainer shows `/auth/confirm-email`, and the first sign-in opens the trainer confirmation
+- [x] 2.3 `/auth/signup` shows Trainee and Trainer with neither selected, and submitting without a choice stays on the form
+- [x] 2.4 Choosing Trainer with email confirmation off opens `/dashboard` with the heading `Trainer` and no journal
+- [x] 2.5 Choosing Trainee still opens the journal
+- [x] 2.6 With email confirmation required, choosing Trainer shows `/auth/confirm-email`, and the first sign-in opens the trainer confirmation
