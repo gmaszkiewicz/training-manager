@@ -1,10 +1,10 @@
 ---
 change_id: trainer-signup
 title: Trainer registers
-status: impl_reviewed
+status: archived
 created: 2026-09-28
 updated: 2026-09-28
-archived_at: null
+archived_at: 2026-09-28T12:25:11Z
 ---
 
 ## Notes
