@@ -348,4 +348,4 @@ The migration only adds a table, so it is backward compatible: Workers Builds ap
 - [x] 3.9 An out-of-range value, a value with two decimals, or an empty field is blocked in the form with a field message; the same input sent past the client (e.g. devtools) returns to `/dashboard` with the server error shown — 7e7e268
 - [x] 3.10 The date picker does not offer tomorrow, and the note is shown on its entry — 7e7e268
 - [x] 3.11 A second trainee's journal does not show the first trainee's entries — 7e7e268
-- [ ] 3.12 After merge, the Workers Build applies the migration, and adding an entry on production shows its delta
+- [x] 3.12 After merge, the Workers Build applies the migration, and adding an entry on production shows its delta — c8669b7
