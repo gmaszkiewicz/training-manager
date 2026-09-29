@@ -102,12 +102,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      trainer_links: {
+        Row: {
+          email: string;
+          linked_at: string;
+          trainee_id: string;
+          trainer_id: string;
+        };
+        Insert: {
+          email: string;
+          linked_at?: string;
+          trainee_id: string;
+          trainer_id: string;
+        };
+        Update: {
+          email?: string;
+          linked_at?: string;
+          trainee_id?: string;
+          trainer_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "trainer_links_trainee_id_fkey";
+            columns: ["trainee_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "trainer_links_trainer_id_fkey";
+            columns: ["trainer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      link_trainee_by_email: { Args: { p_email: string }; Returns: string };
     };
     Enums: {
       [_ in never]: never;
