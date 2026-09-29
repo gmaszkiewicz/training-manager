@@ -254,16 +254,16 @@ No data migration. No schema change. Existing sessions keep working: sign-in sti
 
 #### Automated
 
-- [x] 1.1 Home action component imports Button from `@/components/ui/button` and does not define a second button primitive
-- [x] 1.2 No card component is added under `src/components/ui` and `package.json` dependencies are unchanged
-- [x] 1.3 `npm run lint` passes
+- [x] 1.1 Home action component imports Button from `@/components/ui/button` and does not define a second button primitive — 4fdb9e6
+- [x] 1.2 No card component is added under `src/components/ui` and `package.json` dependencies are unchanged — 4fdb9e6
+- [x] 1.3 `npm run lint` passes — 4fdb9e6
 
 ### Phase 2: Tokens
 
 #### Automated
 
-- [ ] 2.1 `context/changes/product-home/tokens.md` names the home role tokens and states they come from `src/styles/global.css` unchanged
-- [ ] 2.2 `src/styles/global.css` `@utility bg-cosmic` and the `:root` color variables are unchanged
+- [x] 2.1 `context/changes/product-home/tokens.md` names the home role tokens and states they come from `src/styles/global.css` unchanged
+- [x] 2.2 `src/styles/global.css` `@utility bg-cosmic` and the `:root` color variables are unchanged
 
 ### Phase 3: View
 
