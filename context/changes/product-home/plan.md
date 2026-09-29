@@ -285,12 +285,12 @@ No data migration. No schema change. Existing sessions keep working: sign-in sti
 
 #### Automated
 
-- [x] 4.1 `src/pages/kitchen-sink/home.astro` shows default, hover, and focus-visible, and marks disabled, error, empty, and loading as N/A with the reasons in this plan
-- [x] 4.2 `npm run check:home-tokens` exits 0 and `.github/workflows/ci.yml` runs it
-- [x] 4.3 `CLAUDE.md` states where tokens live, where components live, to check `src/components/ui` before adding a component with `npx shadcn@latest add`, not to use literal colours or arbitrary values in views, and that the kitchen sink is `/kitchen-sink/home`
-- [x] 4.4 `npm run lint` passes
+- [x] 4.1 `src/pages/kitchen-sink/home.astro` shows default, hover, and focus-visible, and marks disabled, error, empty, and loading as N/A with the reasons in this plan — 1d1e448
+- [x] 4.2 `npm run check:home-tokens` exits 0 and `.github/workflows/ci.yml` runs it — 1d1e448
+- [x] 4.3 `CLAUDE.md` states where tokens live, where components live, to check `src/components/ui` before adding a component with `npx shadcn@latest add`, not to use literal colours or arbitrary values in views, and that the kitchen sink is `/kitchen-sink/home` — 1d1e448
+- [x] 4.4 `npm run lint` passes — 1d1e448
 
 #### Manual
 
-- [x] 4.5 Kitchen sink viewed at desktop width and at one mobile width
-- [x] 4.6 Keyboard focus on Sign in, Sign up, Dashboard, and Sign out shows the Button focus ring
+- [x] 4.5 Kitchen sink viewed at desktop width and at one mobile width — 1d1e448
+- [x] 4.6 Keyboard focus on Sign in, Sign up, Dashboard, and Sign out shows the Button focus ring — 1d1e448
