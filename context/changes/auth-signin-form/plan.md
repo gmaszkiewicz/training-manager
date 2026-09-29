@@ -305,9 +305,9 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Automated
 
-- [x] 1.1 `src/components/ui/input.tsx` and `src/components/ui/label.tsx` exist
-- [x] 1.2 `src/components/ui/card.tsx` does not exist
-- [x] 1.3 `npm run lint` passes
+- [x] 1.1 `src/components/ui/input.tsx` and `src/components/ui/label.tsx` exist — be93c8e
+- [x] 1.2 `src/components/ui/card.tsx` does not exist — be93c8e
+- [x] 1.3 `npm run lint` passes — be93c8e
 
 #### Manual
 
@@ -317,8 +317,8 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Automated
 
-- [ ] 2.1 `context/changes/auth-signin-form/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted-foreground`, `primary`, `primary-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css`
-- [ ] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged
+- [x] 2.1 `context/changes/auth-signin-form/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted-foreground`, `primary`, `primary-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css`
+- [x] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged
 
 #### Manual
 
