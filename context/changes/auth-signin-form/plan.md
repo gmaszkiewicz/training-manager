@@ -127,7 +127,7 @@ Move the three auth shells and the shared controls onto the recorded roles, and 
 
 **Intent**: The person signing in, registering, or confirming email sees the home's light card instead of the glass panel.
 
-**Contract**: Apply the same shell to `src/pages/auth/signin.astro`, `src/pages/auth/signup.astro`, and `src/pages/auth/confirm-email.astro`. Keep the outer centering wrapper (`flex`, `min-h-screen`, `items-center`, `justify-center`, `p-4`) and remove `bg-cosmic`. Keep the inner element a `div`. Replace `border-white/10 bg-white/10 text-white backdrop-blur-xl` with `border-border bg-card text-card-foreground`. Keep each page's existing max width and padding. Replace the gradient heading with `text-card-foreground`. Helper copy uses `text-muted-foreground`. The sign-up link, the sign-in link, and "Back to sign in" use `text-primary` and `hover:underline`. Confirm-email body copy uses `text-muted-foreground`. The envelope character stays. Do not add Card. Do not change titles, form islands, or the `error` query prop.
+**Contract**: Apply the same shell to `src/pages/auth/signin.astro`, `src/pages/auth/signup.astro`, and `src/pages/auth/confirm-email.astro`. Keep the outer centering wrapper (`flex`, `min-h-screen`, `items-center`, `justify-center`, `p-4`) and remove `bg-cosmic`. Keep the inner element a `div`. Replace `border-white/10 bg-white/10 text-white backdrop-blur-xl` with `border-border bg-card text-card-foreground`. Keep each page's existing max width and padding. Replace the gradient heading with `text-card-foreground`. Helper copy uses `text-muted-foreground`. The sign-up link, the sign-in link, and "Back to sign in" use `text-primary`, `hover:underline`, `focus-visible:ring-2`, and `focus-visible:ring-ring`. Confirm-email body copy uses `text-muted-foreground`. The envelope character stays. Do not add Card. Do not change titles, form islands, or the `error` query prop.
 
 #### 2. Shared field
 
@@ -135,7 +135,7 @@ Move the three auth shells and the shared controls onto the recorded roles, and 
 
 **Intent**: Email, password, and journal measurements use Input and Label, so focus and errors come from roles instead of purple and red glass.
 
-**Contract**: Keep the existing props so `SignInForm`, `SignUpForm`, and `MeasurementForm` do not change their data flow. Render `Label` from `@/components/ui/label` with `text-muted-foreground`. Render `Input` from `@/components/ui/input`. Do not pass palette classes or arbitrary sizes. The icon uses `text-muted-foreground`. An error sets `aria-invalid` and a destructive border and ring from the `destructive` role, and the message stays next to the field with `CircleAlert` and `text-destructive`. Focus comes from Input's `focus-visible` ring (`--ring`), not from `focus:ring-purple-400` or `focus:outline-none`. Placeholder uses `muted-foreground`.
+**Contract**: Keep the existing props so `SignInForm`, `SignUpForm`, and `MeasurementForm` do not change their data flow. Render `Label` from `@/components/ui/label` with `text-muted-foreground`. Render `Input` from `@/components/ui/input`. Do not pass palette classes or arbitrary sizes. The icon uses `text-muted-foreground`. When `endContent` is present, the Input also uses `pr-14`, which clears a `size-9` control sitting at `right-3`. Fields with no `endContent` do not get that padding. An error sets `aria-invalid` and a destructive border and ring from the `destructive` role, and the message stays next to the field with `CircleAlert` and `text-destructive`. Focus comes from Input's `focus-visible` ring (`--ring`), not from `focus:ring-purple-400` or `focus:outline-none`. Placeholder uses `muted-foreground`.
 
 #### 3. Submit button
 
@@ -159,7 +159,7 @@ Move the three auth shells and the shared controls onto the recorded roles, and 
 
 **Intent**: Show and hide password keeps its name and gains the shared button's focus ring.
 
-**Contract**: Render `Button` from `@/components/ui/button` with `type="button"`, `variant="ghost"`, and `size="icon"`. Keep `aria-label` as "Hide password" when visible and "Show password" otherwise. Positioning classes may stay absolute. Do not pass palette color classes.
+**Contract**: Render `Button` from `@/components/ui/button` with `type="button"`, `variant="ghost"`, and `size="icon"`. Keep `aria-label` as "Hide password" when visible and "Show password" otherwise. Positioning classes may stay absolute at `right-3`. The Input's `pr-14` is what keeps the password value visible beside this `size-9` control. Do not pass palette color classes.
 
 #### 6. Sign-up extras
 
@@ -167,7 +167,7 @@ Move the three auth shells and the shared controls onto the recorded roles, and 
 
 **Intent**: The password hint, the role legend, and the role error sit on the same light card as the fields. The radios stop using a purple accent.
 
-**Contract**: Keep the POST to `/api/auth/signup`, the role values, and the validation. The password hint uses `text-muted-foreground`. The legend uses `text-muted-foreground`. The radio labels use `text-card-foreground`. Both radios use `accent-primary` and a `focus-visible` ring from `ring`. The role error uses `text-destructive` and keeps its message. Do not add a radio-group component. `SignInForm` keeps its POST to `/api/auth/signin`, its validation copy, and its field composition. Do not add palette classes there.
+**Contract**: Keep the POST to `/api/auth/signup`, the role values, and the validation. The password hint uses `text-muted-foreground`. The legend uses `text-muted-foreground`. The radio labels use `text-card-foreground`. Both radios use `accent-primary`, `focus-visible:ring-2`, and `focus-visible:ring-ring`. The role error uses `text-destructive` and keeps its message. Do not add a radio-group component. `SignInForm` keeps its POST to `/api/auth/signin`, its validation copy, and its field composition. Do not add palette classes there.
 
 #### 7. Journal form surface
 
@@ -175,7 +175,7 @@ Move the three auth shells and the shared controls onto the recorded roles, and 
 
 **Intent**: The shared light fields need a light parent. The dashboard page shell stays dark, so the form supplies that parent itself.
 
-**Contract**: Wrap the form's contents in a surface of `bg-card text-card-foreground border-border` with existing radius and padding utilities. Do not edit `src/pages/dashboard.astro` or `src/components/measurements/MeasurementList.astro`. Date and note labels use `text-muted-foreground`. The date input and the note textarea use role classes only: `bg-background`, `text-foreground`, `border-input`, `placeholder:text-muted-foreground`, and `focus-visible:ring-ring`. Drop `scheme-dark`, `bg-white/10`, `text-white`, and the purple and red focus rings. Error state uses `border-destructive` and `FieldError` uses `text-destructive`. Do not add a Textarea component. Measurement create, field names, and validation stay.
+**Contract**: Wrap the form's contents in a surface of `bg-card text-card-foreground border-border` with existing radius and padding utilities. Do not edit `src/pages/dashboard.astro` or `src/components/measurements/MeasurementList.astro`. Date and note labels use `text-muted-foreground`. The date input and the note textarea use role classes only: `bg-background`, `text-foreground`, `border-input`, `placeholder:text-muted-foreground`, `focus-visible:ring-2`, and `focus-visible:ring-ring`. Drop `scheme-dark`, `bg-white/10`, `text-white`, and the purple and red focus rings. Error state uses `border-destructive` and `FieldError` uses `text-destructive`. Do not add a Textarea component. Measurement create, field names, and validation stay.
 
 The ten files this phase leaves clean for the later check are `src/pages/auth/signin.astro`, `src/pages/auth/signup.astro`, `src/pages/auth/confirm-email.astro`, `src/components/auth/SignInForm.tsx`, `src/components/auth/SignUpForm.tsx`, `src/components/auth/FormField.tsx`, `src/components/auth/SubmitButton.tsx`, `src/components/auth/ServerError.tsx`, `src/components/auth/PasswordToggle.tsx`, and `src/components/measurements/MeasurementForm.tsx`.
 
@@ -215,12 +215,12 @@ Show the seven sign-in states on a kitchen sink, and make the existing token che
 
 **Contract**: Public route `/kitchen-sink/auth`. Do not add it to `PROTECTED_ROUTES` in `src/middleware.ts`. Do not link it from the bar or the home. Render it with `bg-background text-foreground`. Sections, in order:
 
-- **Default** — the sign-in shell and `SignInForm` with no server error, plus the confirm-email shell (envelope, heading, body, "Back to sign in").
+- **Default** — the sign-in shell and one `SignInForm` with `client:load` and no server error, plus the confirm-email shell (envelope, heading, body, "Back to sign in"). This is the only sign-in form on the page.
 - **Hover** — state that submit uses Button `hover:bg-primary/90`, and that the auth text links use `hover:underline`.
-- **Focus-visible** — the email field, password toggle, submit button, sign-up link, and confirm-email link are present to tab through. The ring is the shared `--ring`, not a purple ring.
+- **Focus-visible** — the email field, password toggle, submit button, sign-up link, and confirm-email link from that single form are present to tab through. The ring is the shared `--ring`, not a purple ring.
 - **Disabled** — `SubmitButton` with `forcePending` so the control is disabled.
-- **Error** — `FormField` with error "Email is required" and `ServerError` with a non-empty message.
-- **Empty** — the blank sign-in form. Say on the page that empty for this form is the initial blank email and password.
+- **Error** — `FormField` with `id="sink-email"`, error "Email is required", and `ServerError` with a non-empty message. Do not reuse `id="email"` or `id="password"`.
+- **Empty** — no second form. Say on the page that empty for this form is the blank email and password in the Default section.
 - **Loading** — `SubmitButton` with `forcePending` showing "Signing in..." and the spinner.
 
 On the confirm-email portion, mark these as N/A with these reasons, in the page: disabled, because the page has no control to disable; error, because the page has no error slot; empty, because the page has no data list; loading, because the page has no pending state. Hover and focus-visible for that page are the "Back to sign in" link. Do not quote palette class names or `ring-[3px]` in the page text. The sink is not one of the scanned files.

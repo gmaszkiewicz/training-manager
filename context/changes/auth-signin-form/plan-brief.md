@@ -66,7 +66,7 @@ The auth pages drop `bg-cosmic` and style the current `div` with card roles. `Fo
 
 - The light journal form inside the dark dashboard card is an interim look until a later slice restyles that shell.
 - `accent-purple-400` is outside the token-check regex, so Phase 3 has to remove it by name. The scan alone will not catch it.
-- `Button` keeps shadcn's `ring-[3px]`. That file stays off the scan, and the views must not copy that arbitrary size.
+- `Button` and `Input` keep shadcn's `ring-[3px]` off the scan. Links, radios, the date input, and the note use `focus-visible:ring-2` with `focus-visible:ring-ring` instead.
 - No view turns on `.dark`. This change does not add a theme toggle.
 
 ## Success Criteria (Summary)
