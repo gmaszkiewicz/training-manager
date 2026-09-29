@@ -1,7 +1,7 @@
 ---
 change_id: product-home
 title: Product home
-status: new
+status: planned
 created: 2026-09-29
 updated: 2026-09-29
 archived_at: null
