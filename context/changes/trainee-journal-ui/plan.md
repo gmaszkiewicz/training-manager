@@ -301,30 +301,30 @@ No schema change and no data migration. `MeasurementList` is shared, so a traine
 
 #### Automated
 
-- [x] 3.1 The hardcoded-value scan returns no matches on `src/components/journal/TraineeJournal.astro`, `src/components/measurements/MeasurementList.astro`, and `src/components/measurements/MeasurementForm.tsx`
-- [x] 3.2 `src/components/journal/TraineeJournal.astro` does not contain `bg-cosmic`, and `src/pages/dashboard.astro` still contains `bg-cosmic`
-- [x] 3.3 Trainee Sign out and the trainer Sign out both post to `/api/auth/signout`, and the measurement form still posts to `/api/measurements`
-- [x] 3.4 `npm run lint` passes
-- [x] 3.5 `npm run smoke` passes against a running server (`BASE_URL` default `http://localhost:4321`)
+- [x] 3.1 The hardcoded-value scan returns no matches on `src/components/journal/TraineeJournal.astro`, `src/components/measurements/MeasurementList.astro`, and `src/components/measurements/MeasurementForm.tsx` — 628202a
+- [x] 3.2 `src/components/journal/TraineeJournal.astro` does not contain `bg-cosmic`, and `src/pages/dashboard.astro` still contains `bg-cosmic` — 628202a
+- [x] 3.3 Trainee Sign out and the trainer Sign out both post to `/api/auth/signout`, and the measurement form still posts to `/api/measurements` — 628202a
+- [x] 3.4 `npm run lint` passes — 628202a
+- [x] 3.5 `npm run smoke` passes against a running server (`BASE_URL` default `http://localhost:4321`) — 628202a
 
 #### Manual
 
-- [x] 3.6 A signed-in trainee sees a light card on the page background, with no glass panel and no gradient heading, and Sign out is an outline button that POSTs to `/api/auth/signout` without requiring client hydration
-- [x] 3.7 An empty journal shows "No measurements yet", a failed load shows "Could not load your measurements" in ServerError (SSR, no extra island) and hides the form, and a journal with entries shows the list on role tokens
-- [x] 3.8 A signed-in trainer still sees the glass shell, the raw Sign out, and the restyled list when a trainee has entries
+- [x] 3.6 A signed-in trainee sees a light card on the page background, with no glass panel and no gradient heading, and Sign out is an outline button that POSTs to `/api/auth/signout` without requiring client hydration — 628202a
+- [x] 3.7 An empty journal shows "No measurements yet", a failed load shows "Could not load your measurements" in ServerError (SSR, no extra island) and hides the form, and a journal with entries shows the list on role tokens — 628202a
+- [x] 3.8 A signed-in trainer still sees the glass shell, the raw Sign out, and the restyled list when a trainee has entries — 628202a
 
 ### Phase 4: States
 
 #### Automated
 
-- [ ] 4.1 `src/pages/kitchen-sink/journal.astro` exists, `PROTECTED_ROUTES` in `src/middleware.ts` does not include it, and no bar or home component links to `/kitchen-sink/journal`
-- [ ] 4.2 `npm run check:home-tokens` exits 0, and `scripts/check-home-tokens.mjs` lists `src/components/journal/TraineeJournal.astro` and `src/components/measurements/MeasurementList.astro` and does not list the kitchen sink or `dashboard.astro`
-- [ ] 4.3 `.github/workflows/ci.yml` still runs `npm run check:home-tokens`
-- [ ] 4.4 `CLAUDE.md` names `/kitchen-sink/journal` beside `/kitchen-sink/home` and `/kitchen-sink/auth`
-- [ ] 4.5 `npm run lint` passes
+- [x] 4.1 `src/pages/kitchen-sink/journal.astro` exists, `PROTECTED_ROUTES` in `src/middleware.ts` does not include it, and no bar or home component links to `/kitchen-sink/journal`
+- [x] 4.2 `npm run check:home-tokens` exits 0, and `scripts/check-home-tokens.mjs` lists `src/components/journal/TraineeJournal.astro` and `src/components/measurements/MeasurementList.astro` and does not list the kitchen sink or `dashboard.astro`
+- [x] 4.3 `.github/workflows/ci.yml` still runs `npm run check:home-tokens`
+- [x] 4.4 `CLAUDE.md` names `/kitchen-sink/journal` beside `/kitchen-sink/home` and `/kitchen-sink/auth`
+- [x] 4.5 `npm run lint` passes
 
 #### Manual
 
-- [ ] 4.6 `/kitchen-sink/journal` shows default, hover, focus-visible, disabled, error, empty, and loading, and marks list-row hover and a separate measurements-loading state as N/A with the reasons in this plan
-- [ ] 4.7 The sink is readable at a desktop width and at one mobile width
-- [ ] 4.8 Tabbing the default journal shows a visible focus ring on the date field, a measurement field, the note, the submit button, and Sign out
+- [x] 4.6 `/kitchen-sink/journal` shows default, hover, focus-visible, disabled, error, empty, and loading, and marks list-row hover and a separate measurements-loading state as N/A with the reasons in this plan
+- [x] 4.7 The sink is readable at a desktop width and at one mobile width
+- [x] 4.8 Tabbing the default journal shows a visible focus ring on the date field, a measurement field, the note, the submit button, and Sign out
