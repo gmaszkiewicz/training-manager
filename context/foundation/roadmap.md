@@ -48,7 +48,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-05 | edit-measurement-entry     | user can edit a measurement entry they created, and the list shows the arrow and difference versus the previous entry using the edited values            | S-02          | US-01, FR-004             | proposed |
 | S-06 | delete-measurement-entry   | user can delete a measurement entry they created, and each remaining entry compares to the previous remaining entry                                      | S-02          | US-01, FR-005             | proposed |
 | S-07 | product-home               | user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome                    | —             | MS-01                     | done        |
-| S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | planning    |
+| S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | in-progress |
 
 ## Streams
 
@@ -173,7 +173,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The three screens still use the starter glass card, so a visitor who leaves the public home hits a different visual. Field styles are shared with the journal form; this slice must keep that form readable and must not restyle the dashboard shell. It does not change measurement data, so it can run beside the remaining journal edits.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Backlog Handoff
 

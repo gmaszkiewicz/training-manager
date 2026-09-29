@@ -305,9 +305,9 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Automated
 
-- [ ] 1.1 `src/components/ui/input.tsx` and `src/components/ui/label.tsx` exist
-- [ ] 1.2 `src/components/ui/card.tsx` does not exist
-- [ ] 1.3 `npm run lint` passes
+- [x] 1.1 `src/components/ui/input.tsx` and `src/components/ui/label.tsx` exist
+- [x] 1.2 `src/components/ui/card.tsx` does not exist
+- [x] 1.3 `npm run lint` passes
 
 #### Manual
 

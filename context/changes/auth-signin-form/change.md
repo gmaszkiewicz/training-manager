@@ -1,7 +1,7 @@
 ---
 change_id: auth-signin-form
 title: Sign-in form reads the existing design tokens
-status: planned
+status: implementing
 created: 2026-09-29
 updated: 2026-09-29
 archived_at: null
