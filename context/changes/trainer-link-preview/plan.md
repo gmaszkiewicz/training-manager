@@ -272,9 +272,9 @@ The migration only adds a table, a function, and a permissive `SELECT` policy. W
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npx astro check` passes
-- [x] 1.3 Regenerating with `npm run db:types` leaves `src/db/database.types.ts` unchanged (`git diff --exit-code src/db/database.types.ts`)
+- [x] 1.1 `npm run lint` passes — f0a9deb
+- [x] 1.2 `npx astro check` passes — f0a9deb
+- [x] 1.3 Regenerating with `npm run db:types` leaves `src/db/database.types.ts` unchanged (`git diff --exit-code src/db/database.types.ts`) — f0a9deb
 
 #### Manual
 
@@ -286,8 +286,8 @@ The migration only adds a table, a function, and a permissive `SELECT` policy. W
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run smoke` passes: a trainer POST of a trainee email redirects to `/dashboard?trainee=` with that trainee's id; repeating the POST redirects to the same id; an unknown email, the trainer's own email, and a POST from a trainee session each redirect to `/dashboard?error=` and the following dashboard contains `No trainee with that email`; a blank email redirects to `/dashboard?error=` and the dashboard contains `Enter an email address` and does not contain `No trainee with that email`; a trainer measurement POST still redirects to `/dashboard?error=`
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run smoke` passes: a trainer POST of a trainee email redirects to `/dashboard?trainee=` with that trainee's id; repeating the POST redirects to the same id; an unknown email, the trainer's own email, and a POST from a trainee session each redirect to `/dashboard?error=` and the following dashboard contains `No trainee with that email`; a blank email redirects to `/dashboard?error=` and the dashboard contains `Enter an email address` and does not contain `No trainee with that email`; a trainer measurement POST still redirects to `/dashboard?error=`
 
 #### Manual
 
