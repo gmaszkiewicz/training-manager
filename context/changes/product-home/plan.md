@@ -262,24 +262,24 @@ No data migration. No schema change. Existing sessions keep working: sign-in sti
 
 #### Automated
 
-- [x] 2.1 `context/changes/product-home/tokens.md` names the home role tokens and states they come from `src/styles/global.css` unchanged
-- [x] 2.2 `src/styles/global.css` `@utility bg-cosmic` and the `:root` color variables are unchanged
+- [x] 2.1 `context/changes/product-home/tokens.md` names the home role tokens and states they come from `src/styles/global.css` unchanged — 8735e05
+- [x] 2.2 `src/styles/global.css` `@utility bg-cosmic` and the `:root` color variables are unchanged — 8735e05
 
 ### Phase 3: View
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 Hardcoded-value scan of `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` returns 0 matches
-- [ ] 3.3 `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` do not contain `10x Astro Starter`
-- [ ] 3.4 `src/pages/index.astro` passes `title="Training Manager"` to `Layout`
+- [x] 3.1 `npm run lint` passes
+- [x] 3.2 Hardcoded-value scan of `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` returns 0 matches
+- [x] 3.3 `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` do not contain `10x Astro Starter`
+- [x] 3.4 `src/pages/index.astro` passes `title="Training Manager"` to `Layout`
 
 #### Manual
 
-- [ ] 3.5 Signed-out `/` shows the product explanation, Sign in, and Sign up, and not the starter cards
-- [ ] 3.6 Signed-in `/` shows the same explanation, no Sign in or Sign up in the hero, and the bar shows email, Dashboard, and Sign out
-- [ ] 3.7 Sign out from that bar returns to the new home
-- [ ] 3.8 Dashboard and the auth pages still use the cosmic shell
+- [x] 3.5 Signed-out `/` shows the product explanation, Sign in, and Sign up, and not the starter cards
+- [x] 3.6 Signed-in `/` shows the same explanation, no Sign in or Sign up in the hero, and the bar shows email, Dashboard, and Sign out
+- [x] 3.7 Sign out from that bar returns to the new home
+- [x] 3.8 Dashboard and the auth pages still use the cosmic shell
 
 ### Phase 4: States
 
