@@ -10,6 +10,16 @@ const FILES = [
   "src/pages/index.astro",
   "src/components/home/HomeActions.tsx",
   "src/components/TopbarActions.tsx",
+  "src/pages/auth/signin.astro",
+  "src/pages/auth/signup.astro",
+  "src/pages/auth/confirm-email.astro",
+  "src/components/auth/SignInForm.tsx",
+  "src/components/auth/SignUpForm.tsx",
+  "src/components/auth/FormField.tsx",
+  "src/components/auth/SubmitButton.tsx",
+  "src/components/auth/ServerError.tsx",
+  "src/components/auth/PasswordToggle.tsx",
+  "src/components/measurements/MeasurementForm.tsx",
 ];
 
 const PATTERN =

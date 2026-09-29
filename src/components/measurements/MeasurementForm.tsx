@@ -15,7 +15,7 @@ type ErrorField = "measured_on" | MeasurementField | "note";
 type FormErrors = Partial<Record<ErrorField, string>>;
 
 const controlClass =
-  "w-full rounded-lg bg-white/10 border px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 transition-colors scheme-dark";
+  "w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring";
 
 const emptyValues: Record<MeasurementField, string> = {
   weight_kg: "",
@@ -71,7 +71,7 @@ function FieldError({ message }: { message?: string }) {
   }
 
   return (
-    <p className="mt-1 flex items-center gap-1 text-xs text-red-300">
+    <p className="text-destructive mt-1 flex items-center gap-1 text-xs">
       <CircleAlert className="size-3" />
       {message}
     </p>
@@ -114,73 +114,69 @@ export default function MeasurementForm({ serverError }: Props) {
   }
 
   return (
-    <form method="POST" action="/api/measurements" className="space-y-4 text-left" onSubmit={handleSubmit} noValidate>
-      <div>
-        <label htmlFor="measured_on" className="mb-1 block text-sm text-blue-100/80">
-          Date
-        </label>
-        <input
-          id="measured_on"
-          name="measured_on"
-          type="date"
-          value={dateValue}
-          max={browserToday || undefined}
-          onChange={(event) => {
-            setMeasuredOn(event.target.value);
-            clearError("measured_on");
-          }}
-          className={cn(
-            controlClass,
-            errors.measured_on ? "border-red-400/60 focus:ring-red-400" : "border-white/20 focus:ring-purple-400",
-          )}
-        />
-        <FieldError message={errors.measured_on} />
+    <form method="POST" action="/api/measurements" className="text-left" onSubmit={handleSubmit} noValidate>
+      <div className="border-border bg-card text-card-foreground space-y-4 rounded-2xl border p-8">
+        <div>
+          <label htmlFor="measured_on" className="text-muted-foreground mb-1 block text-sm">
+            Date
+          </label>
+          <input
+            id="measured_on"
+            name="measured_on"
+            type="date"
+            value={dateValue}
+            max={browserToday || undefined}
+            onChange={(event) => {
+              setMeasuredOn(event.target.value);
+              clearError("measured_on");
+            }}
+            className={cn(controlClass, errors.measured_on && "border-destructive")}
+          />
+          <FieldError message={errors.measured_on} />
+        </div>
+
+        {measurementFields.map((field) => (
+          <FormField
+            key={field.field}
+            id={field.field}
+            type="number"
+            step="0.1"
+            label={`${field.label} ${field.unit}`}
+            value={values[field.field]}
+            onChange={(value) => {
+              setValues((current) => ({ ...current, [field.field]: value }));
+              clearError(field.field);
+            }}
+            error={errors[field.field]}
+            icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
+          />
+        ))}
+
+        <div>
+          <label htmlFor="note" className="text-muted-foreground mb-1 block text-sm">
+            Note
+          </label>
+          <textarea
+            id="note"
+            name="note"
+            value={note}
+            maxLength={1000}
+            rows={3}
+            onChange={(event) => {
+              setNote(event.target.value);
+              clearError("note");
+            }}
+            className={cn(controlClass, errors.note && "border-destructive")}
+          />
+          <FieldError message={errors.note} />
+        </div>
+
+        <ServerError message={serverError} />
+
+        <SubmitButton pendingText="Adding measurement..." icon={<Plus className="size-4" />}>
+          Add measurement
+        </SubmitButton>
       </div>
-
-      {measurementFields.map((field) => (
-        <FormField
-          key={field.field}
-          id={field.field}
-          type="number"
-          step="0.1"
-          label={`${field.label} ${field.unit}`}
-          value={values[field.field]}
-          onChange={(value) => {
-            setValues((current) => ({ ...current, [field.field]: value }));
-            clearError(field.field);
-          }}
-          error={errors[field.field]}
-          icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
-        />
-      ))}
-
-      <div>
-        <label htmlFor="note" className="mb-1 block text-sm text-blue-100/80">
-          Note
-        </label>
-        <textarea
-          id="note"
-          name="note"
-          value={note}
-          maxLength={1000}
-          rows={3}
-          onChange={(event) => {
-            setNote(event.target.value);
-            clearError("note");
-          }}
-          className={cn(
-            controlClass,
-            errors.note ? "border-red-400/60 focus:ring-red-400" : "border-white/20 focus:ring-purple-400",
-          )}
-        />
-        <FieldError message={errors.note} />
-      </div>
-
-      <ServerError message={serverError} />
-
-      <SubmitButton pendingText="Adding measurement..." icon={<Plus className="size-4" />}>
-        Add measurement
-      </SubmitButton>
     </form>
   );
 }
