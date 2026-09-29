@@ -277,21 +277,21 @@ No schema change and no data migration. `MeasurementList` is shared, so a traine
 
 #### Automated
 
-- [x] 1.1 `src/components/ui/textarea.tsx` exists
-- [x] 1.2 `src/components/ui/card.tsx` does not exist
-- [x] 1.3 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged
-- [x] 1.4 `npm run lint` passes
+- [x] 1.1 `src/components/ui/textarea.tsx` exists — bc6fddf
+- [x] 1.2 `src/components/ui/card.tsx` does not exist — bc6fddf
+- [x] 1.3 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged — bc6fddf
+- [x] 1.4 `npm run lint` passes — bc6fddf
 
 #### Manual
 
-- [x] 1.5 Textarea uses the existing CSS variables and does not introduce a second palette
+- [x] 1.5 Textarea uses the existing CSS variables and does not introduce a second palette — bc6fddf
 
 ### Phase 2: Tokens
 
 #### Automated
 
-- [ ] 2.1 `context/changes/trainee-journal-ui/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted`, `muted-foreground`, `primary`, `primary-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css`
-- [ ] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged
+- [x] 2.1 `context/changes/trainee-journal-ui/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted`, `muted-foreground`, `primary`, `primary-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css`
+- [x] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged
 
 #### Manual
 
