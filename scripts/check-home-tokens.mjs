@@ -4,7 +4,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const FILES = ["src/components/Welcome.astro", "src/components/Topbar.astro", "src/pages/index.astro"];
+const FILES = [
+  "src/components/Welcome.astro",
+  "src/components/Topbar.astro",
+  "src/pages/index.astro",
+  "src/components/home/HomeActions.tsx",
+  "src/components/TopbarActions.tsx",
+];
 
 const PATTERN =
   /#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(|oklch\(|-\[[0-9.]+(px|rem)\]|\b(bg|text|border|ring|outline|from|via|to|fill|stroke|shadow|divide)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)\b/g;
