@@ -311,7 +311,7 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Manual
 
-- [x] 1.4 Input and Label use the existing CSS variables and do not introduce a second palette
+- [x] 1.4 Input and Label use the existing CSS variables and do not introduce a second palette — f1ed8d6
 
 ### Phase 2: Tokens
 
@@ -322,7 +322,7 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Manual
 
-- [x] 2.3 The listed roles are the ones the auth panel, fields, errors, and submit button will use
+- [x] 2.3 The listed roles are the ones the auth panel, fields, errors, and submit button will use — f1ed8d6
 
 ### Phase 3: View
 
@@ -344,14 +344,14 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Automated
 
-- [x] 4.1 `src/pages/kitchen-sink/auth.astro` exists, `PROTECTED_ROUTES` in `src/middleware.ts` does not include it, and no bar or home component links to `/kitchen-sink/auth`
-- [x] 4.2 `npm run check:home-tokens` exits 0, and `scripts/check-home-tokens.mjs` lists the ten Phase 3 files and does not list the kitchen sink, `dashboard.astro`, or `MeasurementList.astro`
-- [x] 4.3 `.github/workflows/ci.yml` still runs `npm run check:home-tokens`
-- [x] 4.4 `CLAUDE.md` names `/kitchen-sink/auth` beside `/kitchen-sink/home`
-- [x] 4.5 `npm run lint` passes
+- [x] 4.1 `src/pages/kitchen-sink/auth.astro` exists, `PROTECTED_ROUTES` in `src/middleware.ts` does not include it, and no bar or home component links to `/kitchen-sink/auth` — f1ed8d6
+- [x] 4.2 `npm run check:home-tokens` exits 0, and `scripts/check-home-tokens.mjs` lists the ten Phase 3 files and does not list the kitchen sink, `dashboard.astro`, or `MeasurementList.astro` — f1ed8d6
+- [x] 4.3 `.github/workflows/ci.yml` still runs `npm run check:home-tokens` — f1ed8d6
+- [x] 4.4 `CLAUDE.md` names `/kitchen-sink/auth` beside `/kitchen-sink/home` — f1ed8d6
+- [x] 4.5 `npm run lint` passes — f1ed8d6
 
 #### Manual
 
-- [x] 4.6 `/kitchen-sink/auth` shows default, hover, focus-visible, disabled, error, empty, and loading for sign-in, and marks confirm-email disabled, error, empty, and loading as N/A with the reasons in this plan
-- [x] 4.7 The sink is readable at a desktop width and at one mobile width
-- [x] 4.8 Tabbing the sign-in controls shows a visible focus ring on the email field, the password toggle, the submit button, and the sign-up link
+- [x] 4.6 `/kitchen-sink/auth` shows default, hover, focus-visible, disabled, error, empty, and loading for sign-in, and marks confirm-email disabled, error, empty, and loading as N/A with the reasons in this plan — f1ed8d6
+- [x] 4.7 The sink is readable at a desktop width and at one mobile width — f1ed8d6
+- [x] 4.8 Tabbing the sign-in controls shows a visible focus ring on the email field, the password toggle, the submit button, and the sign-up link — f1ed8d6
