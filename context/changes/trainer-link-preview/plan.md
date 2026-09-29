@@ -286,8 +286,8 @@ The migration only adds a table, a function, and a permissive `SELECT` policy. W
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes
-- [x] 2.2 `npm run smoke` passes: a trainer POST of a trainee email redirects to `/dashboard?trainee=` with that trainee's id; repeating the POST redirects to the same id; an unknown email, the trainer's own email, and a POST from a trainee session each redirect to `/dashboard?error=` and the following dashboard contains `No trainee with that email`; a blank email redirects to `/dashboard?error=` and the dashboard contains `Enter an email address` and does not contain `No trainee with that email`; a trainer measurement POST still redirects to `/dashboard?error=`
+- [x] 2.1 `npm run lint` passes — 12ca5ac
+- [x] 2.2 `npm run smoke` passes: a trainer POST of a trainee email redirects to `/dashboard?trainee=` with that trainee's id; repeating the POST redirects to the same id; an unknown email, the trainer's own email, and a POST from a trainee session each redirect to `/dashboard?error=` and the following dashboard contains `No trainee with that email`; a blank email redirects to `/dashboard?error=` and the dashboard contains `Enter an email address` and does not contain `No trainee with that email`; a trainer measurement POST still redirects to `/dashboard?error=` — 12ca5ac
 
 #### Manual
 
