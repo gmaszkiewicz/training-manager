@@ -20,6 +20,7 @@ Utworzone z `context/foundation/roadmap.md` (milestone M-1: Trainee delta and tr
 | S-04 | `trainer-link-preview` | [#4](https://github.com/gmaszkiewicz/training-manager/issues/4) | S-04: Trainer links and previews trainee | `slice` |
 | S-05 | `edit-measurement-entry` | [#5](https://github.com/gmaszkiewicz/training-manager/issues/5) | S-05: Trainee edits a measurement | `slice` |
 | S-06 | `delete-measurement-entry` | [#6](https://github.com/gmaszkiewicz/training-manager/issues/6) | S-06: Trainee deletes a measurement | `slice` |
+| S-07 | `product-home` | [#23](https://github.com/gmaszkiewicz/training-manager/issues/23) | S-07: Public home replaces the starter welcome | `slice` |
 
 ## Format issue
 
