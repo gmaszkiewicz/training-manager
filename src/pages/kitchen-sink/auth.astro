@@ -1,0 +1,145 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SignInForm from "@/components/auth/SignInForm";
+import { Button } from "@/components/ui/button";
+import AuthSinkStates from "@/components/kitchen-sink/AuthSinkStates";
+---
+
+<Layout title="Kitchen sink — auth">
+  <div class="bg-background text-foreground min-h-screen w-full">
+    <div class="mx-auto flex max-w-4xl flex-col gap-12 px-4 py-10 sm:px-8">
+      <header class="flex flex-col gap-2">
+        <h1 class="text-2xl font-bold">Kitchen sink — auth</h1>
+        <p class="text-muted-foreground text-sm">
+          States for <code class="text-foreground">/auth/signin</code> and{" "}
+          <code class="text-foreground">/auth/confirm-email</code>. Public review surface (not linked from the product).
+        </p>
+      </header>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-default">
+        <h2 id="state-default" class="border-border border-b pb-2 text-lg font-semibold">
+          Default
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Sign-in shell with one SignInForm (no server error) and the confirm-email shell.
+        </p>
+        <div class="flex min-h-[28rem] items-center justify-center p-4">
+          <div class="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-card-foreground">
+            <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Sign in</h1>
+            <SignInForm client:load />
+            <p class="mt-4 text-center text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <a href="/auth/signup" class="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring">
+                Sign up
+              </a>
+            </p>
+          </div>
+        </div>
+        <div class="flex min-h-[28rem] items-center justify-center p-4">
+          <div class="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-center text-card-foreground">
+            <div class="mb-4 text-5xl">📧</div>
+            <h1 class="mb-3 text-2xl font-bold text-card-foreground">Check your email</h1>
+            <p class="mb-6 text-muted-foreground">
+              We've sent a confirmation link to your email address. Click it to activate your account.
+            </p>
+            <a
+              href="/auth/signin"
+              class="text-sm text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Back to sign in
+            </a>
+          </div>
+        </div>
+        <p class="text-muted-foreground text-sm">
+          Confirm-email hover and focus-visible are the "Back to sign in" link above.
+        </p>
+        <ul class="text-muted-foreground list-disc space-y-2 pl-5 text-sm">
+          <li>
+            <span class="text-foreground font-medium">disabled</span> — N/A, because the page has no control to disable
+          </li>
+          <li>
+            <span class="text-foreground font-medium">error</span> — N/A, because the page has no error slot
+          </li>
+          <li>
+            <span class="text-foreground font-medium">empty</span> — N/A, because the page has no data list
+          </li>
+          <li>
+            <span class="text-foreground font-medium">loading</span> — N/A, because the page has no pending state
+          </li>
+        </ul>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-hover">
+        <h2 id="state-hover" class="border-border border-b pb-2 text-lg font-semibold">
+          Hover
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. Auth text links use{" "}
+          <code class="text-foreground">hover:underline</code>.
+        </p>
+        <div class="flex flex-col items-start gap-4">
+          <Button client:load variant="default">
+            Sign in
+          </Button>
+          <a
+            href="/auth/signup"
+            class="text-sm text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Sign up
+          </a>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-focus-visible">
+        <h2 id="state-focus-visible" class="border-border border-b pb-2 text-lg font-semibold">
+          Focus-visible
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Tab through the email field, password toggle, submit button, and sign-up link in the Default sign-in form, and
+          the confirm-email "Back to sign in" link. The ring is the shared <code class="text-foreground">--ring</code>,
+          not a purple ring.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-disabled">
+        <h2 id="state-disabled" class="border-border border-b pb-2 text-lg font-semibold">
+          Disabled
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          SubmitButton with <code class="text-foreground">forcePending</code> so the control is disabled.
+        </p>
+        <AuthSinkStates client:load variant="disabled" />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-error">
+        <h2 id="state-error" class="border-border border-b pb-2 text-lg font-semibold">
+          Error
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          FormField with a field error and ServerError with a non-empty message. Ids are sink-scoped so they do not
+          collide with the Default form.
+        </p>
+        <AuthSinkStates client:load variant="error" />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty">
+        <h2 id="state-empty" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          No second form. Empty for this form is the blank email and password in the Default section.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-loading">
+        <h2 id="state-loading" class="border-border border-b pb-2 text-lg font-semibold">
+          Loading
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          SubmitButton with <code class="text-foreground">forcePending</code> showing "Signing in..." and the spinner.
+        </p>
+        <AuthSinkStates client:load variant="loading" />
+      </section>
+    </div>
+  </div>
+</Layout>
