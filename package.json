@@ -11,6 +11,7 @@
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "check:home-tokens": "node scripts/check-home-tokens.mjs",
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
     "test": "vitest run",

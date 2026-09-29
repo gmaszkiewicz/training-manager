@@ -42,6 +42,13 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - **Services/helpers** go in `src/lib/` (or `src/lib/services/` for extracted business logic).
 - **Shared types** (entities, DTOs) go in `src/types.ts`.
 
+### UI
+
+- Design tokens live in `src/styles/global.css`.
+- Shared UI components live in `src/components/ui`. Check that directory before creating a component; add a missing one with `npx shadcn@latest add [name]`.
+- Do not use literal colours or arbitrary values in views — use role tokens and shared components.
+- Home kitchen sink: `/kitchen-sink/home`.
+
 ### Environment
 
 - Node.js v22.14.0 (see `.nvmrc`)

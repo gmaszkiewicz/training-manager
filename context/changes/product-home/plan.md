@@ -269,28 +269,28 @@ No data migration. No schema change. Existing sessions keep working: sign-in sti
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 Hardcoded-value scan of `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` returns 0 matches
-- [x] 3.3 `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` do not contain `10x Astro Starter`
-- [x] 3.4 `src/pages/index.astro` passes `title="Training Manager"` to `Layout`
+- [x] 3.1 `npm run lint` passes — 5fb1527
+- [x] 3.2 Hardcoded-value scan of `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` returns 0 matches — 5fb1527
+- [x] 3.3 `src/components/Welcome.astro`, `src/components/Topbar.astro`, and `src/pages/index.astro` do not contain `10x Astro Starter` — 5fb1527
+- [x] 3.4 `src/pages/index.astro` passes `title="Training Manager"` to `Layout` — 5fb1527
 
 #### Manual
 
-- [x] 3.5 Signed-out `/` shows the product explanation, Sign in, and Sign up, and not the starter cards
-- [x] 3.6 Signed-in `/` shows the same explanation, no Sign in or Sign up in the hero, and the bar shows email, Dashboard, and Sign out
-- [x] 3.7 Sign out from that bar returns to the new home
-- [x] 3.8 Dashboard and the auth pages still use the cosmic shell
+- [x] 3.5 Signed-out `/` shows the product explanation, Sign in, and Sign up, and not the starter cards — 5fb1527
+- [x] 3.6 Signed-in `/` shows the same explanation, no Sign in or Sign up in the hero, and the bar shows email, Dashboard, and Sign out — 5fb1527
+- [x] 3.7 Sign out from that bar returns to the new home — 5fb1527
+- [x] 3.8 Dashboard and the auth pages still use the cosmic shell — 5fb1527
 
 ### Phase 4: States
 
 #### Automated
 
-- [ ] 4.1 `src/pages/kitchen-sink/home.astro` shows default, hover, and focus-visible, and marks disabled, error, empty, and loading as N/A with the reasons in this plan
-- [ ] 4.2 `npm run check:home-tokens` exits 0 and `.github/workflows/ci.yml` runs it
-- [ ] 4.3 `CLAUDE.md` states where tokens live, where components live, to check `src/components/ui` before adding a component with `npx shadcn@latest add`, not to use literal colours or arbitrary values in views, and that the kitchen sink is `/kitchen-sink/home`
-- [ ] 4.4 `npm run lint` passes
+- [x] 4.1 `src/pages/kitchen-sink/home.astro` shows default, hover, and focus-visible, and marks disabled, error, empty, and loading as N/A with the reasons in this plan
+- [x] 4.2 `npm run check:home-tokens` exits 0 and `.github/workflows/ci.yml` runs it
+- [x] 4.3 `CLAUDE.md` states where tokens live, where components live, to check `src/components/ui` before adding a component with `npx shadcn@latest add`, not to use literal colours or arbitrary values in views, and that the kitchen sink is `/kitchen-sink/home`
+- [x] 4.4 `npm run lint` passes
 
 #### Manual
 
-- [ ] 4.5 Kitchen sink viewed at desktop width and at one mobile width
-- [ ] 4.6 Keyboard focus on Sign in, Sign up, Dashboard, and Sign out shows the Button focus ring
+- [x] 4.5 Kitchen sink viewed at desktop width and at one mobile width
+- [x] 4.6 Keyboard focus on Sign in, Sign up, Dashboard, and Sign out shows the Button focus ring
