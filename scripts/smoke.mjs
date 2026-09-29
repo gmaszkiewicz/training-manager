@@ -4,8 +4,10 @@
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = `smoke-${Date.now()}@example.com`;
 const trainerEmail = `smoke-trainer-${Date.now()}@example.com`;
+const unknownEmail = `smoke-missing-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
+let traineeId = "";
 
 function cookieHeader() {
   return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
@@ -33,6 +35,91 @@ function measurementForm(measuredOn, weightKg) {
     hips_cm: "50.0",
     navel_cm: "50.0",
   };
+}
+
+function decodeBase64Url(value) {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+  const pad = (4 - (base64.length % 4)) % 4;
+  return globalThis.Buffer.from(`${base64}${"=".repeat(pad)}`, "base64").toString("utf8");
+}
+
+function userIdFromSession(session) {
+  if (!session || typeof session !== "object") return "";
+  const user = session.user;
+  if (user && typeof user.id === "string" && user.id !== "") return user.id;
+  if (typeof session.access_token !== "string") return "";
+  const payload = session.access_token.split(".")[1];
+  if (!payload) return "";
+  try {
+    const claims = JSON.parse(decodeBase64Url(payload));
+    return typeof claims.sub === "string" ? claims.sub : "";
+  } catch {
+    return "";
+  }
+}
+
+function cookieText(raw) {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function sessionUserId() {
+  const bases = new Set();
+  for (const name of jar.keys()) {
+    const match = /^(sb-.+-auth-token)(?:\.\d+)?$/.exec(name);
+    if (match) bases.add(match[1]);
+  }
+  for (const base of bases) {
+    let encoded = cookieText(jar.get(base) ?? "");
+    if (!encoded) {
+      const parts = [];
+      for (let index = 0; ; index += 1) {
+        const chunk = jar.get(`${base}.${index}`);
+        if (!chunk) break;
+        parts.push(cookieText(chunk));
+      }
+      encoded = parts.join("");
+    }
+    const jsonText = encoded.startsWith("base64-") ? decodeBase64Url(encoded.slice("base64-".length)) : encoded;
+    try {
+      const id = userIdFromSession(JSON.parse(jsonText));
+      if (id) return id;
+    } catch {
+      // A torn cookie is ignored; another auth cookie may still hold the session.
+    }
+  }
+  return "";
+}
+
+function rememberTrainee(run) {
+  return async () => {
+    const actual = await run();
+    const id = sessionUserId();
+    if (id) traineeId = id;
+    return actual;
+  };
+}
+
+let redirectPath = "";
+
+function rememberRedirect(run) {
+  return async () => {
+    const actual = await run();
+    if (actual.location.startsWith("/")) {
+      redirectPath = actual.location;
+      return actual;
+    }
+    const match = /^https?:\/\/[^/]+(\/.*)$/.exec(actual.location);
+    redirectPath = match ? match[1] : "";
+    return actual;
+  };
+}
+
+function followRedirect() {
+  return request(redirectPath);
 }
 
 async function request(path, { method = "GET", form } = {}) {
@@ -90,7 +177,7 @@ const steps = [
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-02", "78.5") }),
     { status: 302, location: "/dashboard", exactLocation: true },
   ],
-  ["dashboard shows the weight delta", () => request("/dashboard"), { status: 200, body: "↓ 1.5" }],
+  ["dashboard shows the weight delta", rememberTrainee(() => request("/dashboard")), { status: 200, body: "↓ 1.5" }],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   [
@@ -124,14 +211,63 @@ const steps = [
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "80.0") }),
     { status: 302, location: "/dashboard?error=" },
   ],
+  [
+    "trainer link opens the trainee",
+    () => request("/api/trainer-links", { method: "POST", form: { email } }),
+    { status: 302, location: () => `/dashboard?trainee=${traineeId}`, exactLocation: true },
+  ],
+  [
+    "trainer link repeats the same trainee",
+    () => request("/api/trainer-links", { method: "POST", form: { email } }),
+    { status: 302, location: () => `/dashboard?trainee=${traineeId}`, exactLocation: true },
+  ],
+  [
+    "unknown email link is rejected",
+    rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email: unknownEmail } })),
+    { status: 302, location: "/dashboard?error=" },
+  ],
+  ["unknown email shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
+  [
+    "trainer email link is rejected",
+    rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email: trainerEmail } })),
+    { status: 302, location: "/dashboard?error=" },
+  ],
+  ["trainer email shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
+  [
+    "blank email link is rejected",
+    rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email: "" } })),
+    { status: 302, location: "/dashboard?error=" },
+  ],
+  [
+    "blank email shows the blank sentence",
+    followRedirect,
+    { status: 200, body: "Enter an email address", forbid: "No trainee with that email" },
+  ],
+  [
+    "signout before a trainee link",
+    () => request("/api/auth/signout", { method: "POST" }),
+    { status: 302, location: "/" },
+  ],
+  [
+    "trainee signs in to attempt a link",
+    () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
+    { status: 302, location: "/dashboard" },
+  ],
+  [
+    "trainee link is rejected",
+    rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email } })),
+    { status: 302, location: "/dashboard?error=" },
+  ],
+  ["trainee link shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
 ];
 
 let failed = 0;
 for (const [name, run, expected] of steps) {
   const actual = await run();
+  const location = typeof expected.location === "function" ? expected.location() : expected.location;
   const locationOk =
-    expected.location === undefined ||
-    (expected.exactLocation ? actual.location === expected.location : actual.location.startsWith(expected.location));
+    location === undefined ||
+    (expected.exactLocation ? actual.location === location : actual.location.startsWith(location));
   const bodyOk = expected.body === undefined || actual.body.includes(expected.body);
   const forbidOk = expected.forbid === undefined || !actual.body.includes(expected.forbid);
   const ok = actual.status === expected.status && locationOk && bodyOk && forbidOk;
@@ -140,7 +276,7 @@ for (const [name, run, expected] of steps) {
     failed++;
     const expectedBody = expected.body ? ` body contains ${JSON.stringify(expected.body)}` : "";
     const expectedForbid = expected.forbid ? ` body excludes ${JSON.stringify(expected.forbid)}` : "";
-    const expectedLocation = expected.location ? `${expected.exactLocation ? "exactly " : ""}${expected.location}` : "";
+    const expectedLocation = location ? `${expected.exactLocation ? "exactly " : ""}${location}` : "";
     console.log(`      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedForbid}`);
   }
 }

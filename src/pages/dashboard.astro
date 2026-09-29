@@ -74,9 +74,12 @@ if (supabase && user) {
           )}
         </>
       ) : role === "trainer" ? (
-        <p class="text-blue-100/80">
-          Welcome, <span class="font-semibold text-white">{user?.email}</span>
-        </p>
+        <>
+          <p class="text-blue-100/80">
+            Welcome, <span class="font-semibold text-white">{user?.email}</span>
+          </p>
+          {serverError ? <p class="mt-2 text-sm text-blue-100/80">{serverError}</p> : null}
+        </>
       ) : (
         <p class="text-blue-100/80">Could not open your journal</p>
       )}
