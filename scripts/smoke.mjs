@@ -3,11 +3,15 @@
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = `smoke-${Date.now()}@example.com`;
+const secondEmail = `smoke-second-${Date.now()}@example.com`;
 const trainerEmail = `smoke-trainer-${Date.now()}@example.com`;
 const unknownEmail = `smoke-missing-${Date.now()}@example.com`;
+const earlierNote = "smoke-earlier-trainee-note";
+const laterNote = "smoke-later-trainee-note";
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
 let traineeId = "";
+let secondTraineeId = "";
 
 function cookieHeader() {
   return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
@@ -23,7 +27,7 @@ function storeCookies(response) {
   }
 }
 
-function measurementForm(measuredOn, weightKg) {
+function measurementForm(measuredOn, weightKg, note = "") {
   return {
     measured_on: measuredOn,
     weight_kg: weightKg,
@@ -34,6 +38,7 @@ function measurementForm(measuredOn, weightKg) {
     calf_cm: "50.0",
     hips_cm: "50.0",
     navel_cm: "50.0",
+    note,
   };
 }
 
@@ -99,6 +104,15 @@ function rememberTrainee(run) {
     const actual = await run();
     const id = sessionUserId();
     if (id) traineeId = id;
+    return actual;
+  };
+}
+
+function rememberSecondTrainee(run) {
+  return async () => {
+    const actual = await run();
+    const id = sessionUserId();
+    if (id) secondTraineeId = id;
     return actual;
   };
 }
@@ -173,8 +187,8 @@ const steps = [
     { status: 302, location: "/dashboard", exactLocation: true },
   ],
   [
-    "measurement saves the second entry",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-02", "78.5") }),
+    "measurement saves the second entry with a note",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-02", "78.5", earlierNote) }),
     { status: 302, location: "/dashboard", exactLocation: true },
   ],
   ["dashboard shows the weight delta", rememberTrainee(() => request("/dashboard")), { status: 200, body: "↓ 1.5" }],
@@ -259,6 +273,73 @@ const steps = [
     { status: 302, location: "/dashboard?error=" },
   ],
   ["trainee link shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
+  [
+    "signout before the second trainee",
+    () => request("/api/auth/signout", { method: "POST" }),
+    { status: 302, location: "/" },
+  ],
+  [
+    "second trainee signup creates account",
+    () => request("/api/auth/signup", { method: "POST", form: { email: secondEmail, password, role: "trainee" } }),
+    { status: 302, location: "/dashboard" },
+  ],
+  [
+    "second trainee opens the journal",
+    rememberSecondTrainee(() => request("/dashboard")),
+    { status: 200, body: "No measurements yet" },
+  ],
+  [
+    "second trainee saves the first entry",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-01", "90.0") }),
+    { status: 302, location: "/dashboard", exactLocation: true },
+  ],
+  [
+    "second trainee saves the second entry with a note",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-02", "88.0", laterNote) }),
+    { status: 302, location: "/dashboard", exactLocation: true },
+  ],
+  [
+    "signout after the second trainee",
+    () => request("/api/auth/signout", { method: "POST" }),
+    { status: 302, location: "/" },
+  ],
+  [
+    "trainer signs in for preview",
+    () => request("/api/auth/signin", { method: "POST", form: { email: trainerEmail, password } }),
+    { status: 302, location: "/dashboard" },
+  ],
+  [
+    "trainer links the second trainee",
+    () => request("/api/trainer-links", { method: "POST", form: { email: secondEmail } }),
+    { status: 302, location: () => `/dashboard?trainee=${secondTraineeId}`, exactLocation: true },
+  ],
+  [
+    "trainer default shows the later email",
+    () => request("/dashboard"),
+    { status: 200, body: secondEmail, forbid: ["Add measurement", earlierNote] },
+  ],
+  [
+    "trainer default shows the later note and delta",
+    () => request("/dashboard"),
+    { status: 200, body: laterNote, forbid: earlierNote },
+  ],
+  ["trainer default shows a delta marker", () => request("/dashboard"), { status: 200, body: "↓" }],
+  [
+    "trainer earlier trainee query shows the earlier note",
+    () => request(`/dashboard?trainee=${traineeId}`),
+    { status: 200, body: earlierNote, forbid: laterNote },
+  ],
+  [
+    "signout before checking the trainee journal",
+    () => request("/api/auth/signout", { method: "POST" }),
+    { status: 302, location: "/" },
+  ],
+  [
+    "trainee signs in for the journal check",
+    () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
+    { status: 302, location: "/dashboard" },
+  ],
+  ["trainee journal still has Add measurement", () => request("/dashboard"), { status: 200, body: "Add measurement" }],
 ];
 
 let failed = 0;
@@ -269,13 +350,16 @@ for (const [name, run, expected] of steps) {
     location === undefined ||
     (expected.exactLocation ? actual.location === location : actual.location.startsWith(location));
   const bodyOk = expected.body === undefined || actual.body.includes(expected.body);
-  const forbidOk = expected.forbid === undefined || !actual.body.includes(expected.forbid);
+  const forbids =
+    expected.forbid === undefined ? [] : Array.isArray(expected.forbid) ? expected.forbid : [expected.forbid];
+  const forbidOk = forbids.every((text) => !actual.body.includes(text));
   const ok = actual.status === expected.status && locationOk && bodyOk && forbidOk;
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
     const expectedBody = expected.body ? ` body contains ${JSON.stringify(expected.body)}` : "";
-    const expectedForbid = expected.forbid ? ` body excludes ${JSON.stringify(expected.forbid)}` : "";
+    const expectedForbid =
+      forbids.length > 0 ? ` body excludes ${JSON.stringify(forbids.length === 1 ? forbids[0] : forbids)}` : "";
     const expectedLocation = location ? `${expected.exactLocation ? "exactly " : ""}${location}` : "";
     console.log(`      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedForbid}`);
   }

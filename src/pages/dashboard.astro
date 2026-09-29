@@ -4,12 +4,15 @@ import MeasurementList from "@/components/measurements/MeasurementList.astro";
 import Layout from "@/layouts/Layout.astro";
 import { ensureProfile } from "@/lib/services/ensure-profile";
 import { listMeasurements } from "@/lib/services/measurements";
+import { listTrainerLinks } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
+import { selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementWithDeltas, Profile } from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 const serverError = Astro.url.searchParams.get("error");
+const traineeParam = Astro.url.searchParams.get("trainee");
 
 type ProfileRole = Profile["role"];
 
@@ -28,6 +31,9 @@ function requestedRoleFromMetadata(metadata: { role?: unknown } | null | undefin
 let role: ProfileRole | null = null;
 let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
+let trainerLinks: TrainerLink[] = [];
+let selectedLink: TrainerLink | null = null;
+let trainerMeasurementsLoaded = false;
 
 if (supabase && user) {
   const requestedRole = requestedRoleFromMetadata(user.user_metadata);
@@ -40,6 +46,20 @@ if (supabase && user) {
         measurementsLoaded = listed.ok;
         if (listed.ok) {
           entries = listed.entries;
+        }
+      } else {
+        const listedLinks = await listTrainerLinks(supabase);
+        if (listedLinks.ok) {
+          const preview = selectTrainerPreview(listedLinks.links, traineeParam);
+          trainerLinks = preview.links;
+          selectedLink = preview.selected;
+          if (selectedLink) {
+            const listed = await listMeasurements(supabase, selectedLink.traineeId);
+            trainerMeasurementsLoaded = listed.ok;
+            if (listed.ok) {
+              entries = listed.entries;
+            }
+          }
         }
       }
     }
@@ -79,6 +99,56 @@ if (supabase && user) {
             Welcome, <span class="font-semibold text-white">{user?.email}</span>
           </p>
           {serverError ? <p class="mt-2 text-sm text-blue-100/80">{serverError}</p> : null}
+          <form method="POST" action="/api/trainer-links" class="mt-6 space-y-3 text-left">
+            {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
+            <label for="email" class="mb-1 block text-sm text-blue-100/80">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+            <button
+              type="submit"
+              class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+            >
+              Link trainee
+            </button>
+          </form>
+          {trainerLinks.length > 0 ? (
+            <>
+              <ul class="mt-6 space-y-2 text-left text-sm">
+                {trainerLinks.map((link) => (
+                  <li>
+                    <a
+                      href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
+                      aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
+                      class:list={[
+                        "text-blue-100/80 hover:underline",
+                        selectedLink?.traineeId === link.traineeId && "font-semibold text-white",
+                      ]}
+                    >
+                      {link.email}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              {selectedLink ? (
+                trainerMeasurementsLoaded ? (
+                  entries.length === 0 ? (
+                    <p class="mt-6 text-sm text-blue-100/50">No measurements yet</p>
+                  ) : (
+                    <MeasurementList entries={entries} />
+                  )
+                ) : (
+                  <p class="mt-6 text-sm text-blue-100/80">Could not load measurements</p>
+                )
+              ) : null}
+            </>
+          ) : null}
         </>
       ) : (
         <p class="text-blue-100/80">Could not open your journal</p>

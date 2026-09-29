@@ -278,9 +278,9 @@ The migration only adds a table, a function, and a permissive `SELECT` policy. W
 
 #### Manual
 
-- [ ] 1.4 Local Supabase applies the new migration; `trainer_links` has RLS enabled; `authenticated` can select and cannot insert, update, or delete; `anon` has no privileges
-- [ ] 1.5 As a trainer, `link_trainee_by_email` returns the trainee id when that email has a `profiles` row with role `trainee`; returns null for an unknown email, a trainer email, the caller's own email, and an auth user who signed up as trainee but has no profile row; a second call inserts no row and does not change `linked_at`
-- [ ] 1.6 A trainer select on `measurements` returns rows only for linked trainees; a trainee select still returns only that trainee's rows; a trainer insert into `measurements` is rejected; a direct insert into `trainer_links` as `authenticated` is rejected
+- [x] 1.4 Local Supabase applies the new migration; `trainer_links` has RLS enabled; `authenticated` can select and cannot insert, update, or delete; `anon` has no privileges
+- [x] 1.5 As a trainer, `link_trainee_by_email` returns the trainee id when that email has a `profiles` row with role `trainee`; returns null for an unknown email, a trainer email, the caller's own email, and an auth user who signed up as trainee but has no profile row; a second call inserts no row and does not change `linked_at`
+- [x] 1.6 A trainer select on `measurements` returns rows only for linked trainees; a trainee select still returns only that trainee's rows; a trainer insert into `measurements` is rejected; a direct insert into `trainer_links` as `authenticated` is rejected
 
 ### Phase 2: Link request
 
@@ -291,21 +291,21 @@ The migration only adds a table, a function, and a permissive `SELECT` policy. W
 
 #### Manual
 
-- [ ] 2.3 While a protégé id is posted as `trainee`, a failed link redirects with both `error` and that `trainee` id, and the trainer dashboard shows `No trainee with that email`
+- [x] 2.3 While a protégé id is posted as `trainee`, a failed link redirects with both `error` and that `trainee` id, and the trainer dashboard shows `No trainee with that email`
 
 ### Phase 3: Trainer preview
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 `npx astro check` passes
-- [ ] 3.3 `npm test` passes, including preview selection: a matching `trainee` param wins; a missing or unknown param selects the greatest `linked_at` and, on a tie, the lower `trainee_id`; an empty link list selects nothing
-- [ ] 3.4 `npm run smoke` passes: with two protégés, `/dashboard` with no query contains the later-linked email, that trainee's note, and a delta marker, and does not contain `Add measurement` or the earlier trainee's note; opening the earlier protégé's `?trainee=` contains that trainee's note and not the later trainee's note; a trainee dashboard still contains `Add measurement`
+- [x] 3.1 `npm run lint` passes
+- [x] 3.2 `npx astro check` passes
+- [x] 3.3 `npm test` passes, including preview selection: a matching `trainee` param wins; a missing or unknown param selects the greatest `linked_at` and, on a tie, the lower `trainee_id`; an empty link list selects nothing
+- [x] 3.4 `npm run smoke` passes: with two protégés, `/dashboard` with no query contains the later-linked email, that trainee's note, and a delta marker, and does not contain `Add measurement` or the earlier trainee's note; opening the earlier protégé's `?trainee=` contains that trainee's note and not the later trainee's note; a trainee dashboard still contains `Add measurement`
 
 #### Manual
 
-- [ ] 3.5 Linked emails are listed A–Z
-- [ ] 3.6 Sign out and sign in shows the most recently linked protégé, not a protégé only chosen earlier in the previous visit
-- [ ] 3.7 A linked trainee with no entries shows `No measurements yet` and no measurement form
-- [ ] 3.8 A trainer with no links sees the email form and does not see `No measurements yet`
-- [ ] 3.9 `?trainee=` for an id this trainer has not linked does not show `No measurements yet` for that id; it shows the latest linked protégé, or the form alone when the trainer has no links
+- [x] 3.5 Linked emails are listed A–Z
+- [x] 3.6 Sign out and sign in shows the most recently linked protégé, not a protégé only chosen earlier in the previous visit
+- [x] 3.7 A linked trainee with no entries shows `No measurements yet` and no measurement form
+- [x] 3.8 A trainer with no links sees the email form and does not see `No measurements yet`
+- [x] 3.9 `?trainee=` for an id this trainer has not linked does not show `No measurements yet` for that id; it shows the latest linked protégé, or the form alone when the trainer has no links
