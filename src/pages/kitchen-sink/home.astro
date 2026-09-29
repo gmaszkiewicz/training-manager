@@ -1,0 +1,97 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import HomeActions from "@/components/home/HomeActions";
+import { Button } from "@/components/ui/button";
+---
+
+<Layout title="Kitchen sink — home">
+  <div class="bg-background text-foreground min-h-screen w-full">
+    <div class="mx-auto flex max-w-4xl flex-col gap-12 px-4 py-10 sm:px-8">
+      <header class="flex flex-col gap-2">
+        <h1 class="text-2xl font-bold">Kitchen sink — product home</h1>
+        <p class="text-muted-foreground text-sm">
+          States for <code class="text-foreground">/</code>. Signed-out composition only (does not read session).
+        </p>
+      </header>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-default">
+        <h2 id="state-default" class="border-border border-b pb-2 text-lg font-semibold">
+          Default
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Signed-out home: heading, paragraph, and HomeActions with signedIn false.
+        </p>
+        <div class="mx-auto flex w-full max-w-4xl flex-col items-center justify-center px-4 py-16 text-center">
+          <h1 class="mb-6 text-5xl leading-tight font-bold sm:text-6xl lg:text-7xl">Training Manager</h1>
+          <p class="text-muted-foreground mb-10 max-w-2xl text-lg sm:text-xl">
+            A trainee records body measurements and sees the up/down difference versus the previous entry. A trainer who
+            linked that trainee can preview that list.
+          </p>
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <HomeActions client:load signedIn={false} />
+          </div>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-hover">
+        <h2 id="state-hover" class="border-border border-b pb-2 text-lg font-semibold">
+          Hover
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Hover comes from Button: default uses <code class="text-foreground">hover:bg-primary/90</code>; outline uses
+          <code class="text-foreground">hover:bg-accent hover:text-accent-foreground</code>.
+        </p>
+        <div class="flex flex-col gap-4 sm:flex-row">
+          <Button client:load variant="default">
+            Sign in
+          </Button>
+          <Button client:load variant="outline">
+            Sign up
+          </Button>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-focus-visible">
+        <h2 id="state-focus-visible" class="border-border border-b pb-2 text-lg font-semibold">
+          Focus-visible
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          The ring comes from Button's focus-visible treatment:
+          <code class="text-foreground">
+            focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]
+          </code>
+          . Tab to the control below to see it.
+        </p>
+        <div>
+          <Button client:load variant="default">
+            Sign in
+          </Button>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-na">
+        <h2 id="state-na" class="border-border border-b pb-2 text-lg font-semibold">
+          N/A
+        </h2>
+        <ul class="text-muted-foreground list-disc space-y-2 pl-5 text-sm">
+          <li>
+            <span class="text-foreground font-medium">disabled</span> — no control on{" "}
+            <code class="text-foreground">/</code> is disabled
+          </li>
+          <li>
+            <span class="text-foreground font-medium">error</span> — <code class="text-foreground">/</code> has no field
+            and no failing action; the layout config banner is unchanged and out of scope
+          </li>
+          <li>
+            <span class="text-foreground font-medium">empty</span> — <code class="text-foreground">/</code> has no list;
+            the explanation is always present
+          </li>
+          <li>
+            <span class="text-foreground font-medium">loading</span> — the session is resolved before HTML; this view
+            does not fetch
+          </li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</Layout>
