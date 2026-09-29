@@ -317,8 +317,8 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Automated
 
-- [x] 2.1 `context/changes/auth-signin-form/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted-foreground`, `primary`, `primary-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css`
-- [x] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged
+- [x] 2.1 `context/changes/auth-signin-form/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted-foreground`, `primary`, `primary-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css` — d67949e
+- [x] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged — d67949e
 
 #### Manual
 
@@ -328,17 +328,17 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Automated
 
-- [ ] 3.1 The hardcoded-value scan returns no matches on the ten files named in this phase
-- [ ] 3.2 `src/pages/auth/signin.astro`, `src/pages/auth/signup.astro`, and `src/pages/auth/confirm-email.astro` do not contain `bg-cosmic`, and `accent-purple-400` does not appear under `src/components/auth` or `src/pages/auth`
-- [ ] 3.3 `src/pages/dashboard.astro` still contains `bg-cosmic`, and `src/components/measurements/MeasurementList.astro` is unchanged
-- [ ] 3.4 Sign-in still posts to `/api/auth/signin` and sign-up still posts to `/api/auth/signup`
-- [ ] 3.5 `npm run lint` passes
+- [x] 3.1 The hardcoded-value scan returns no matches on the ten files named in this phase
+- [x] 3.2 `src/pages/auth/signin.astro`, `src/pages/auth/signup.astro`, and `src/pages/auth/confirm-email.astro` do not contain `bg-cosmic`, and `accent-purple-400` does not appear under `src/components/auth` or `src/pages/auth`
+- [x] 3.3 `src/pages/dashboard.astro` still contains `bg-cosmic`, and `src/components/measurements/MeasurementList.astro` is unchanged
+- [x] 3.4 Sign-in still posts to `/api/auth/signin` and sign-up still posts to `/api/auth/signup`
+- [x] 3.5 `npm run lint` passes
 
 #### Manual
 
-- [ ] 3.6 `/auth/signin`, `/auth/signup`, and `/auth/confirm-email` show a light card on the page background, with no glass panel and no gradient heading
-- [ ] 3.7 Submitting an empty email on `/auth/signin` shows "Email is required" in the destructive role, and the password control still exposes Show password / Hide password
-- [ ] 3.8 On `/dashboard`, the journal form is readable on its light surface, and the heading plus measurement list stay on the dark shell
+- [x] 3.6 `/auth/signin`, `/auth/signup`, and `/auth/confirm-email` show a light card on the page background, with no glass panel and no gradient heading
+- [x] 3.7 Submitting an empty email on `/auth/signin` shows "Email is required" in the destructive role, and the password control still exposes Show password / Hide password
+- [x] 3.8 On `/dashboard`, the journal form is readable on its light surface, and the heading plus measurement list stay on the dark shell
 
 ### Phase 4: States
 
