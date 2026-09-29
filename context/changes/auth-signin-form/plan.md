@@ -311,7 +311,7 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Manual
 
-- [ ] 1.4 Input and Label use the existing CSS variables and do not introduce a second palette
+- [x] 1.4 Input and Label use the existing CSS variables and do not introduce a second palette
 
 ### Phase 2: Tokens
 
@@ -322,36 +322,36 @@ No schema change and no stored data change. The previous dashboard shell keeps w
 
 #### Manual
 
-- [ ] 2.3 The listed roles are the ones the auth panel, fields, errors, and submit button will use
+- [x] 2.3 The listed roles are the ones the auth panel, fields, errors, and submit button will use
 
 ### Phase 3: View
 
 #### Automated
 
-- [x] 3.1 The hardcoded-value scan returns no matches on the ten files named in this phase
-- [x] 3.2 `src/pages/auth/signin.astro`, `src/pages/auth/signup.astro`, and `src/pages/auth/confirm-email.astro` do not contain `bg-cosmic`, and `accent-purple-400` does not appear under `src/components/auth` or `src/pages/auth`
-- [x] 3.3 `src/pages/dashboard.astro` still contains `bg-cosmic`, and `src/components/measurements/MeasurementList.astro` is unchanged
-- [x] 3.4 Sign-in still posts to `/api/auth/signin` and sign-up still posts to `/api/auth/signup`
-- [x] 3.5 `npm run lint` passes
+- [x] 3.1 The hardcoded-value scan returns no matches on the ten files named in this phase — 6f8eaf0
+- [x] 3.2 `src/pages/auth/signin.astro`, `src/pages/auth/signup.astro`, and `src/pages/auth/confirm-email.astro` do not contain `bg-cosmic`, and `accent-purple-400` does not appear under `src/components/auth` or `src/pages/auth` — 6f8eaf0
+- [x] 3.3 `src/pages/dashboard.astro` still contains `bg-cosmic`, and `src/components/measurements/MeasurementList.astro` is unchanged — 6f8eaf0
+- [x] 3.4 Sign-in still posts to `/api/auth/signin` and sign-up still posts to `/api/auth/signup` — 6f8eaf0
+- [x] 3.5 `npm run lint` passes — 6f8eaf0
 
 #### Manual
 
-- [x] 3.6 `/auth/signin`, `/auth/signup`, and `/auth/confirm-email` show a light card on the page background, with no glass panel and no gradient heading
-- [x] 3.7 Submitting an empty email on `/auth/signin` shows "Email is required" in the destructive role, and the password control still exposes Show password / Hide password
-- [x] 3.8 On `/dashboard`, the journal form is readable on its light surface, and the heading plus measurement list stay on the dark shell
+- [x] 3.6 `/auth/signin`, `/auth/signup`, and `/auth/confirm-email` show a light card on the page background, with no glass panel and no gradient heading — 6f8eaf0
+- [x] 3.7 Submitting an empty email on `/auth/signin` shows "Email is required" in the destructive role, and the password control still exposes Show password / Hide password — 6f8eaf0
+- [x] 3.8 On `/dashboard`, the journal form is readable on its light surface, and the heading plus measurement list stay on the dark shell — 6f8eaf0
 
 ### Phase 4: States
 
 #### Automated
 
-- [ ] 4.1 `src/pages/kitchen-sink/auth.astro` exists, `PROTECTED_ROUTES` in `src/middleware.ts` does not include it, and no bar or home component links to `/kitchen-sink/auth`
-- [ ] 4.2 `npm run check:home-tokens` exits 0, and `scripts/check-home-tokens.mjs` lists the ten Phase 3 files and does not list the kitchen sink, `dashboard.astro`, or `MeasurementList.astro`
-- [ ] 4.3 `.github/workflows/ci.yml` still runs `npm run check:home-tokens`
-- [ ] 4.4 `CLAUDE.md` names `/kitchen-sink/auth` beside `/kitchen-sink/home`
-- [ ] 4.5 `npm run lint` passes
+- [x] 4.1 `src/pages/kitchen-sink/auth.astro` exists, `PROTECTED_ROUTES` in `src/middleware.ts` does not include it, and no bar or home component links to `/kitchen-sink/auth`
+- [x] 4.2 `npm run check:home-tokens` exits 0, and `scripts/check-home-tokens.mjs` lists the ten Phase 3 files and does not list the kitchen sink, `dashboard.astro`, or `MeasurementList.astro`
+- [x] 4.3 `.github/workflows/ci.yml` still runs `npm run check:home-tokens`
+- [x] 4.4 `CLAUDE.md` names `/kitchen-sink/auth` beside `/kitchen-sink/home`
+- [x] 4.5 `npm run lint` passes
 
 #### Manual
 
-- [ ] 4.6 `/kitchen-sink/auth` shows default, hover, focus-visible, disabled, error, empty, and loading for sign-in, and marks confirm-email disabled, error, empty, and loading as N/A with the reasons in this plan
-- [ ] 4.7 The sink is readable at a desktop width and at one mobile width
-- [ ] 4.8 Tabbing the sign-in controls shows a visible focus ring on the email field, the password toggle, the submit button, and the sign-up link
+- [x] 4.6 `/kitchen-sink/auth` shows default, hover, focus-visible, disabled, error, empty, and loading for sign-in, and marks confirm-email disabled, error, empty, and loading as N/A with the reasons in this plan
+- [x] 4.7 The sink is readable at a desktop width and at one mobile width
+- [x] 4.8 Tabbing the sign-in controls shows a visible focus ring on the email field, the password toggle, the submit button, and the sign-up link

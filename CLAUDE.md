@@ -48,6 +48,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Shared UI components live in `src/components/ui`. Check that directory before creating a component; add a missing one with `npx shadcn@latest add [name]`.
 - Do not use literal colours or arbitrary values in views — use role tokens and shared components.
 - Home kitchen sink: `/kitchen-sink/home`.
+- Auth kitchen sink: `/kitchen-sink/auth`.
 
 ### Environment
 
