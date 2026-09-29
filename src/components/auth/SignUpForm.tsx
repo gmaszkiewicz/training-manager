@@ -66,7 +66,7 @@ export default function SignUpForm({ serverError }: Props) {
 
   const passwordHint =
     !errors.password && password.length > 0 && password.length < MIN_PASSWORD_LENGTH ? (
-      <p className="mt-1 text-xs text-blue-100/50">
+      <p className="text-muted-foreground mt-1 text-xs">
         {MIN_PASSWORD_LENGTH - password.length} more character
         {MIN_PASSWORD_LENGTH - password.length !== 1 ? "s" : ""} needed
       </p>
@@ -135,9 +135,9 @@ export default function SignUpForm({ serverError }: Props) {
       />
 
       <fieldset>
-        <legend className="mb-1 block text-sm text-blue-100/80">Role</legend>
+        <legend className="text-muted-foreground mb-1 block text-sm">Role</legend>
         <div className="flex gap-4">
-          <label className="flex items-center gap-2 text-sm text-white">
+          <label className="text-card-foreground flex items-center gap-2 text-sm">
             <input
               id="role-trainee"
               type="radio"
@@ -149,11 +149,11 @@ export default function SignUpForm({ serverError }: Props) {
                 setRole("trainee");
                 clearError("role");
               }}
-              className="size-4 accent-purple-400"
+              className="accent-primary focus-visible:ring-ring size-4 focus-visible:ring-2"
             />
             Trainee
           </label>
-          <label className="flex items-center gap-2 text-sm text-white">
+          <label className="text-card-foreground flex items-center gap-2 text-sm">
             <input
               id="role-trainer"
               type="radio"
@@ -165,13 +165,13 @@ export default function SignUpForm({ serverError }: Props) {
                 setRole("trainer");
                 clearError("role");
               }}
-              className="size-4 accent-purple-400"
+              className="accent-primary focus-visible:ring-ring size-4 focus-visible:ring-2"
             />
             Trainer
           </label>
         </div>
         {errors.role ? (
-          <p className="mt-1 flex items-center gap-1 text-xs text-red-300">
+          <p className="text-destructive mt-1 flex items-center gap-1 text-xs">
             <CircleAlert className="size-3" />
             {errors.role}
           </p>
