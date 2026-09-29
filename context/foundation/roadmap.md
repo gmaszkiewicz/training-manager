@@ -22,11 +22,12 @@ milestone_status: open
 
 **M-1: Trainee delta and trainer preview** — Status: open
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up.
-- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01)
+- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card.
+- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02)
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01
+- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page.
+  - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
 
 ## Vision recap
 
@@ -47,6 +48,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-05 | edit-measurement-entry     | user can edit a measurement entry they created, and the list shows the arrow and difference versus the previous entry using the edited values            | S-02          | US-01, FR-004             | proposed |
 | S-06 | delete-measurement-entry   | user can delete a measurement entry they created, and each remaining entry compares to the previous remaining entry                                      | S-02          | US-01, FR-005             | proposed |
 | S-07 | product-home               | user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome                    | —             | MS-01                     | done        |
+| S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | ready       |
 
 ## Streams
 
@@ -57,6 +59,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A      | Measurement journal  | `S-01` → `S-02` → `S-05` → `S-06`          | Speed puts the comparison (S-02) immediately after the trainee account. S-05 and S-06 can run side by side once S-02 is done. |
 | B      | Trainer preview      | `S-03` → `S-04`                            | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed.                 |
 | C      | Public home          | `S-07`                                     | Stands alone: the public page does not read or change measurement data, so it can run beside the remaining journal edits. |
+| D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
 
 ## Baseline
 
@@ -130,7 +133,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Change ID:** edit-measurement-entry
 - **PRD refs:** US-01, FR-004
 - **Prerequisites:** S-02
-- **Parallel with:** S-03, S-04, S-06, S-07
+- **Parallel with:** S-03, S-04, S-06, S-07, S-08
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Editing changes the values the comparison uses, so this follows the list in S-02. The action stays on the trainee who created the entry.
@@ -142,7 +145,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Change ID:** delete-measurement-entry
 - **PRD refs:** US-01, FR-005
 - **Prerequisites:** S-02
-- **Parallel with:** S-03, S-04, S-05, S-07
+- **Parallel with:** S-03, S-04, S-05, S-07, S-08
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** After a delete, the comparison uses the previous entry that is still there, so this follows the list in S-02. The action stays on the trainee who created the entry.
@@ -154,11 +157,23 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Change ID:** product-home
 - **PRD refs:** MS-01
 - **Prerequisites:** —
-- **Parallel with:** S-05, S-06
+- **Parallel with:** S-05, S-06, S-08
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The public home still describes the starter, so a visitor cannot tell this is Training Manager until they sign in. It does not change measurement data, so it can run beside the remaining journal edits.
 - **Status:** done
+
+### S-08: Auth entry screens leave the starter glass card
+
+- **Outcome:** user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card
+- **Change ID:** auth-signin-form
+- **PRD refs:** MS-02
+- **Prerequisites:** —
+- **Parallel with:** S-05, S-06
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** The three screens still use the starter glass card, so a visitor who leaves the public home hits a different visual. Field styles are shared with the journal form; this slice must keep that form readable and must not restyle the dashboard shell. It does not change measurement data, so it can run beside the remaining journal edits.
+- **Status:** ready
 
 ## Backlog Handoff
 
@@ -171,6 +186,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-05       | edit-measurement-entry    | Trainee can edit a measurement entry                                           | no                    | Prerequisites not done. Can run beside S-06 |
 | S-06       | delete-measurement-entry  | Trainee can delete a measurement entry                                         | no                    | Prerequisites not done. Can run beside S-05 |
 | S-07       | product-home              | Visitor sees Training Manager on the public home instead of the starter welcome | yes                   | Run `/10x-plan product-home`. Can run beside S-05 and S-06 |
+| S-08       | auth-signin-form          | Sign-in, registration, and email confirmation leave the starter glass card      | yes                   | Run `/10x-plan auth-signin-form`. Can run beside S-05 and S-06 |
 
 ## Open Roadmap Questions
 
