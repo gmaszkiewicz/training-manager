@@ -20,6 +20,8 @@ const FILES = [
   "src/components/auth/ServerError.tsx",
   "src/components/auth/PasswordToggle.tsx",
   "src/components/measurements/MeasurementForm.tsx",
+  "src/components/journal/TraineeJournal.astro",
+  "src/components/measurements/MeasurementList.astro",
 ];
 
 const PATTERN =
