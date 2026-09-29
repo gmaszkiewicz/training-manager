@@ -1,0 +1,43 @@
+---
+import { ServerError } from "@/components/auth/ServerError";
+import MeasurementForm from "@/components/measurements/MeasurementForm";
+import MeasurementList from "@/components/measurements/MeasurementList.astro";
+import { Button } from "@/components/ui/button";
+import type { MeasurementWithDeltas } from "@/types";
+
+interface Props {
+  email: string | undefined;
+  measurementsLoaded: boolean;
+  entries: MeasurementWithDeltas[];
+  serverError: string | null;
+  idPrefix?: string;
+}
+
+const { email, measurementsLoaded, entries, serverError, idPrefix = "" } = Astro.props;
+---
+
+<div class="flex min-h-screen items-center justify-center p-4">
+  <div class="w-full max-w-2xl rounded-2xl border border-border bg-card p-8 text-card-foreground">
+    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Journal</h1>
+    <p class="text-muted-foreground">
+      Welcome, <span class="font-semibold text-card-foreground">{email}</span>
+    </p>
+    {measurementsLoaded ? (
+      <>
+        <MeasurementForm serverError={serverError} idPrefix={idPrefix} client:load />
+        {entries.length === 0 ? (
+          <p class="mt-6 text-sm text-muted-foreground">No measurements yet</p>
+        ) : (
+          <MeasurementList entries={entries} />
+        )}
+      </>
+    ) : (
+      <ServerError message="Could not load your measurements" />
+    )}
+    <form method="POST" action="/api/auth/signout" class="mt-6">
+      <Button type="submit" variant="outline">
+        Sign out
+      </Button>
+    </form>
+  </div>
+</div>

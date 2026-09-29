@@ -25,8 +25,8 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
 
 <ul class="mt-6 space-y-4 text-left">
   {entries.map((entry) => (
-    <li class="rounded-lg border border-white/10 bg-white/5 p-4 text-sm">
-      <time datetime={entry.measured_on} class="font-semibold text-white">
+    <li class="rounded-lg border border-border bg-muted p-4 text-sm text-card-foreground">
+      <time datetime={entry.measured_on} class="font-semibold text-card-foreground">
         {entry.measured_on}
       </time>
       <ul class="mt-3 space-y-1">
@@ -45,7 +45,7 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
           </li>
         ))}
       </ul>
-      {entry.note ? <p class="mt-3 wrap-break-word whitespace-pre-wrap text-blue-100/80">{entry.note}</p> : null}
+      {entry.note ? <p class="mt-3 wrap-break-word whitespace-pre-wrap text-muted-foreground">{entry.note}</p> : null}
     </li>
   ))}
 </ul>

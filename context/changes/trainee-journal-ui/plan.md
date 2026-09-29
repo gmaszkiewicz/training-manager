@@ -290,28 +290,28 @@ No schema change and no data migration. `MeasurementList` is shared, so a traine
 
 #### Automated
 
-- [x] 2.1 `context/changes/trainee-journal-ui/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted`, `muted-foreground`, `primary`, `primary-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css`
-- [x] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged
+- [x] 2.1 `context/changes/trainee-journal-ui/tokens.md` lists `background`, `foreground`, `card`, `card-foreground`, `muted`, `muted-foreground`, `primary`, `primary-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, and `ring`, and states those values stay in `src/styles/global.css` — 55ab6e1
+- [x] 2.2 `:root`, `.dark`, and `@utility bg-cosmic` in `src/styles/global.css` are unchanged — 55ab6e1
 
 #### Manual
 
-- [ ] 2.3 The listed roles are the ones the journal shell, list rows, fields, errors, submit button, and Sign out will use
+- [x] 2.3 The listed roles are the ones the journal shell, list rows, fields, errors, submit button, and Sign out will use — 55ab6e1
 
 ### Phase 3: View
 
 #### Automated
 
-- [ ] 3.1 The hardcoded-value scan returns no matches on `src/components/journal/TraineeJournal.astro`, `src/components/measurements/MeasurementList.astro`, and `src/components/measurements/MeasurementForm.tsx`
-- [ ] 3.2 `src/components/journal/TraineeJournal.astro` does not contain `bg-cosmic`, and `src/pages/dashboard.astro` still contains `bg-cosmic`
-- [ ] 3.3 Trainee Sign out and the trainer Sign out both post to `/api/auth/signout`, and the measurement form still posts to `/api/measurements`
-- [ ] 3.4 `npm run lint` passes
-- [ ] 3.5 `npm run smoke` passes against a running server (`BASE_URL` default `http://localhost:4321`)
+- [x] 3.1 The hardcoded-value scan returns no matches on `src/components/journal/TraineeJournal.astro`, `src/components/measurements/MeasurementList.astro`, and `src/components/measurements/MeasurementForm.tsx`
+- [x] 3.2 `src/components/journal/TraineeJournal.astro` does not contain `bg-cosmic`, and `src/pages/dashboard.astro` still contains `bg-cosmic`
+- [x] 3.3 Trainee Sign out and the trainer Sign out both post to `/api/auth/signout`, and the measurement form still posts to `/api/measurements`
+- [x] 3.4 `npm run lint` passes
+- [x] 3.5 `npm run smoke` passes against a running server (`BASE_URL` default `http://localhost:4321`)
 
 #### Manual
 
-- [ ] 3.6 A signed-in trainee sees a light card on the page background, with no glass panel and no gradient heading, and Sign out is an outline button that POSTs to `/api/auth/signout` without requiring client hydration
-- [ ] 3.7 An empty journal shows "No measurements yet", a failed load shows "Could not load your measurements" in ServerError (SSR, no extra island) and hides the form, and a journal with entries shows the list on role tokens
-- [ ] 3.8 A signed-in trainer still sees the glass shell, the raw Sign out, and the restyled list when a trainee has entries
+- [x] 3.6 A signed-in trainee sees a light card on the page background, with no glass panel and no gradient heading, and Sign out is an outline button that POSTs to `/api/auth/signout` without requiring client hydration
+- [x] 3.7 An empty journal shows "No measurements yet", a failed load shows "Could not load your measurements" in ServerError (SSR, no extra island) and hides the form, and a journal with entries shows the list on role tokens
+- [x] 3.8 A signed-in trainer still sees the glass shell, the raw Sign out, and the restyled list when a trainee has entries
 
 ### Phase 4: States
 
