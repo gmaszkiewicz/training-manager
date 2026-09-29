@@ -254,9 +254,9 @@ No data migration. No schema change. Existing sessions keep working: sign-in sti
 
 #### Automated
 
-- [ ] 1.1 Home action component imports Button from `@/components/ui/button` and does not define a second button primitive
-- [ ] 1.2 No card component is added under `src/components/ui` and `package.json` dependencies are unchanged
-- [ ] 1.3 `npm run lint` passes
+- [x] 1.1 Home action component imports Button from `@/components/ui/button` and does not define a second button primitive
+- [x] 1.2 No card component is added under `src/components/ui` and `package.json` dependencies are unchanged
+- [x] 1.3 `npm run lint` passes
 
 ### Phase 2: Tokens
 
