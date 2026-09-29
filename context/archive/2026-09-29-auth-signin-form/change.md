@@ -1,10 +1,10 @@
 ---
 change_id: auth-signin-form
 title: Sign-in form reads the existing design tokens
-status: impl_reviewed
+status: archived
 created: 2026-09-29
 updated: 2026-09-29
-archived_at: null
+archived_at: 2026-09-29T19:14:17Z
 ---
 
 ## Notes
