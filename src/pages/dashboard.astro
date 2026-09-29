@@ -33,6 +33,7 @@ let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
 let trainerLinks: TrainerLink[] = [];
 let selectedLink: TrainerLink | null = null;
+let trainerLinksLoaded = false;
 let trainerMeasurementsLoaded = false;
 
 if (supabase && user) {
@@ -49,6 +50,7 @@ if (supabase && user) {
         }
       } else {
         const listedLinks = await listTrainerLinks(supabase);
+        trainerLinksLoaded = listedLinks.ok;
         if (listedLinks.ok) {
           const preview = selectTrainerPreview(listedLinks.links, traineeParam);
           trainerLinks = preview.links;
@@ -99,56 +101,62 @@ if (supabase && user) {
             Welcome, <span class="font-semibold text-white">{user?.email}</span>
           </p>
           {serverError ? <p class="mt-2 text-sm text-blue-100/80">{serverError}</p> : null}
-          <form method="POST" action="/api/trainer-links" class="mt-6 space-y-3 text-left">
-            {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
-            <label for="email" class="mb-1 block text-sm text-blue-100/80">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400"
-            />
-            <button
-              type="submit"
-              class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
-            >
-              Link trainee
-            </button>
-          </form>
-          {trainerLinks.length > 0 ? (
+          {trainerLinksLoaded ? (
             <>
-              <ul class="mt-6 space-y-2 text-left text-sm">
-                {trainerLinks.map((link) => (
-                  <li>
-                    <a
-                      href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
-                      aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
-                      class:list={[
-                        "text-blue-100/80 hover:underline",
-                        selectedLink?.traineeId === link.traineeId && "font-semibold text-white",
-                      ]}
-                    >
-                      {link.email}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              {selectedLink ? (
-                trainerMeasurementsLoaded ? (
-                  entries.length === 0 ? (
-                    <p class="mt-6 text-sm text-blue-100/50">No measurements yet</p>
-                  ) : (
-                    <MeasurementList entries={entries} />
-                  )
-                ) : (
-                  <p class="mt-6 text-sm text-blue-100/80">Could not load measurements</p>
-                )
+              <form method="POST" action="/api/trainer-links" class="mt-6 space-y-3 text-left">
+                {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
+                <label for="email" class="mb-1 block text-sm text-blue-100/80">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                />
+                <button
+                  type="submit"
+                  class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+                >
+                  Link trainee
+                </button>
+              </form>
+              {trainerLinks.length > 0 ? (
+                <>
+                  <ul class="mt-6 space-y-2 text-left text-sm">
+                    {trainerLinks.map((link) => (
+                      <li>
+                        <a
+                          href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
+                          aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
+                          class:list={[
+                            "text-blue-100/80 hover:underline",
+                            selectedLink?.traineeId === link.traineeId && "font-semibold text-white",
+                          ]}
+                        >
+                          {link.email}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  {selectedLink ? (
+                    trainerMeasurementsLoaded ? (
+                      entries.length === 0 ? (
+                        <p class="mt-6 text-sm text-blue-100/50">No measurements yet</p>
+                      ) : (
+                        <MeasurementList entries={entries} />
+                      )
+                    ) : (
+                      <p class="mt-6 text-sm text-blue-100/80">Could not load measurements</p>
+                    )
+                  ) : null}
+                </>
               ) : null}
             </>
-          ) : null}
+          ) : (
+            <p class="mt-2 text-sm text-blue-100/80">Could not load trainees</p>
+          )}
         </>
       ) : (
         <p class="text-blue-100/80">Could not open your journal</p>
