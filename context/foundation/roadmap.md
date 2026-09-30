@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-09-29
+updated: 2026-09-30
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -50,7 +50,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-06 | delete-measurement-entry   | user can delete a measurement entry they created, and each remaining entry compares to the previous remaining entry                                      | S-02          | US-01, FR-005             | proposed |
 | S-07 | product-home               | user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome                    | —             | MS-01                     | done        |
 | S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | done |
-| S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | in-progress |
+| S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | done |
 
 ## Streams
 
@@ -188,7 +188,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** `/dashboard` still wraps the trainee journal in `bg-cosmic` and glass utilities, so a trainee who signs in hits a different visual than on `/` or `/auth/signin`. The measurement form already reads role tokens; the shell, list rows, empty and error copy, and Sign out still use starter literals. The trainer branch in the same file stays on the old shell until its own UI slice. It does not change measurement data, so it can run beside S-05 and S-06.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -231,3 +231,4 @@ None yet.
 - **S-04: user can link an existing trainee by email and preview that trainee's measurement list, including the arrow and difference versus the previous entry** — Archived 2026-09-29 → `context/archive/2026-09-28-trainer-link-preview/`. Lesson: —.
 - **S-07: user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome** — Archived 2026-09-29 → `context/archive/2026-09-29-product-home/`. Lesson: —.
 - **S-08: user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card** — Archived 2026-09-29 → `context/archive/2026-09-29-auth-signin-form/`. Lesson: —.
+- **S-09: user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard`** — Archived 2026-09-30 → `context/archive/2026-09-29-trainee-journal-ui/`. Lesson: —.

@@ -1,10 +1,10 @@
 ---
 change_id: trainee-journal-ui
 title: Trainee journal visual contract
-status: impl_reviewed
+status: archived
 created: 2026-09-29
-updated: 2026-09-29
-archived_at: null
+updated: 2026-09-30
+archived_at: 2026-09-30T03:40:26Z
 ---
 
 ## Notes
