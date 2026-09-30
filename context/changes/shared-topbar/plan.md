@@ -309,10 +309,10 @@ No migration. `profiles_select_own` already allows the signed-in user to read th
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 `npm run check:home-tokens` passes
+- [x] 3.1 `npm run lint` passes — e83f1c3
+- [x] 3.2 `npm run check:home-tokens` passes — e83f1c3
 
 #### Manual
 
-- [x] 3.3 `/kitchen-sink/home` shows the five preview bars: guest on `/` with nothing marked, guest on `/auth/signin` with Sign in marked, trainee `ada@example.com` on `/` with Home marked, trainer `ada@example.com` with Measurements href `/dashboard` marked, and email-only `ada@example.com` with no Hello line
-- [x] 3.4 The journal and trainer sinks no longer show Sign out on the card, and their hover and focus notes no longer tell you to tab to a card Sign out
+- [x] 3.3 `/kitchen-sink/home` shows the five preview bars: guest on `/` with nothing marked, guest on `/auth/signin` with Sign in marked, trainee `ada@example.com` on `/` with Home marked, trainer `ada@example.com` with Measurements href `/dashboard` marked, and email-only `ada@example.com` with no Hello line — e83f1c3
+- [x] 3.4 The journal and trainer sinks no longer show Sign out on the card, and their hover and focus notes no longer tell you to tab to a card Sign out — e83f1c3
