@@ -2,21 +2,19 @@
 
 ## Overview
 
-The trainee enters the date and the eight body measurements in one horizontal row, and both the trainee and a linked trainer read each entry's date and measurements in one horizontal row. On the trainer panel, linked trainees sit beside each other in one horizontal row. Each row scrolls sideways inside the existing card. Stored values, deltas, and who is linked stay as they are.
+The trainee enters the date and the eight body measurements in one horizontal row, and both the trainee and a linked trainer read each entry in a row that looks like that form. On the read-only row the label sits above the value and the delta sits beside the value. That row has no horizontal scrollbar; columns are narrower, and the measurement card widens past `max-w-2xl` only when that is what makes the row fit. Linked trainees sit beside each other and wrap to the next line instead of scrolling. Stored values, deltas, and who is linked stay as they are.
 
 ## Current State Analysis
 
-On the trainee journal, `MeasurementForm` stacks Date, then Weight, Chest, Waist, Arm, Thigh, Calf, Hips, and Navel, then Note, then Add measurement (`space-y-4`). `MeasurementList` puts the date above those eight fields and stacks each field on its own line. A linked trainer reads that same list from `TrainerPanel` and has no entry form. Above that list, the trainer's linked trainees are a vertical list (`ul` with `space-y-2` in `src/components/trainer/TrainerPanel.astro`): each email is under the previous one. The link form (email, then Link trainee) sits above that list.
-
-Both cards are `max-w-2xl`. A date input plus eight icon fields do not fit that width, or a phone-width card, on one line at the current control size. The list cell text is already `Weight 82.4 kg` plus `↑ 1.2` when a delta exists. The earliest entry has no delta. An empty note is omitted.
+Phases 1–3 already turned the form, the shared list, and the linked-trainee list into non-wrapping rows with `overflow-x-auto`. Each measurement column is `w-48`. A list cell is one phrase, `Hips 50.0 cm`, with `↑ 0.5` beside that phrase. Both cards are still `max-w-2xl min-w-0`. The link form (email, then Link trainee) sits above the trainee row. The earliest entry has no delta. An empty note is omitted.
 
 ## Desired End State
 
-A trainee on `/dashboard` sees Date and the eight measurements in one non-wrapping row. The row scrolls horizontally inside the `max-w-2xl` card at every viewport width. Note, the server error, and Add measurement sit full width under that row and do not scroll with it.
+A trainee on `/dashboard` sees Date and the eight measurements in one row. Note, the server error, and Add measurement sit full width under that row. The row has no horizontal scrollbar. Columns are narrower than `w-48`. The journal card and the trainer card grow past `max-w-2xl` only far enough for that row to fit.
 
-Each saved entry, for the trainee and for a linked trainer, shows the date and the eight fields in that same kind of row. A cell with a delta reads `Weight 82.4 kg ↑ 1.2`. The earliest entry omits the delta. The note stays full width under the row. Saving, validation, and the arrow-and-difference calculation are unchanged.
+Each saved entry, for the trainee and for a linked trainer, uses the same column order. The label (`Hips`, `Navel`, and the rest, plus `Date`) sits above the value. The value sits in a box that matches the form field's border, radius, and height, and the delta sits beside that box (`50.0 cm` with `↑ 0.5` next to it). The box is not an input, is not in tab order, and has no focus ring. The earliest entry omits the delta. The note stays full width under the row. Saving, validation, and the arrow-and-difference calculation are unchanged.
 
-On the trainer panel, two or more linked trainees appear in one non-wrapping row that scrolls horizontally inside the same card. A selected trainee stays marked and still opens that trainee's measurements. The email field and Link trainee stay stacked above the row. An empty link list still shows no names.
+On the trainer panel, linked trainees sit beside each other. When the emails do not fit on one line, they wrap to the next line. That list has no horizontal scrollbar. A selected trainee stays marked and still opens that trainee's measurements. The email field and Link trainee stay stacked above the emails. An empty link list still shows no names.
 
 ### Key Discoveries:
 
@@ -29,30 +27,30 @@ On the trainer panel, two or more linked trainees appear in one non-wrapping row
 
 ## What We're NOT Doing
 
-- A sticky date column. The date scrolls away with the row.
-- Wrapping the fields, or the linked trainees, onto extra lines, or stacking them on a narrow screen.
-- Putting the email field or Link trainee inside the trainee row.
-- Widening the journal or trainer card past `max-w-2xl`.
-- Putting the note or Add measurement inside the scrolling row.
+- A sticky date column. The measurement row fits, so the date stays on screen without being pinned.
+- Wrapping measurement fields onto a second line, or bringing back a horizontal scrollbar on that row or on the trainee list.
+- Putting the email field or Link trainee inside the trainee list.
+- Widening the measurement card further than the date and eight columns need.
+- Putting the note or Add measurement inside the measurement row.
 - Changing stored values, validation rules, delta math, or who can create an entry. The trainer still cannot add measurements.
 - Edit and delete (S-05, S-06), a date filter, or a second color palette.
 - Restyling `FormField` for the auth screens.
 
 ## Implementation Approach
 
-Change the orientation of the existing form and the shared list, and add `min-w-0` to both cards. Keep field order, copy, validation, the POST to `/api/measurements`, and `max-w-2xl`. Use the existing role tokens. Do not add a shared row component: the form is React and the list is Astro, and they do not share markup today.
+Phases 1–3 shipped the scrolling rows. Phase 4 changes the read-only measurement row and the trainee list. Keep field order, copy, validation, the POST to `/api/measurements`, and the existing role tokens. Do not add a shared row component: the form is React and the list is Astro.
 
-The scrollport on the form is Date plus the eight measurements. The scrollport on each list entry is the date plus the eight `label value unit` phrases, with the delta in the same phrase when one exists. The scrollport on the trainer panel is the linked-trainee emails, in the existing `trainerLinks` order. Everything else stays in the vertical stack under that port. The link form stays above the trainee row.
+The measurement row is Date plus the eight measurements, in `measurementFields` order, narrow enough to fit without `overflow-x-auto`. On a listed entry the label is above the value and `formatDelta` is beside the value. The trainee emails keep `trainerLinks` order and wrap. The link form stays above them.
 
 ## Critical Implementation Details
 
 ### User experience spec
 
-The date is the first item in the scrolling row and scrolls off with it. Do not pin it.
+The date is the first column and stays visible. Do not pin it.
 
-The journal and trainer cards are flex children of a centering wrapper (`w-full max-w-2xl`, no `min-w-0`). Add `min-w-0` to both cards and keep `max-w-2xl`. The row itself is the scrolling element. Give the date cell and each measurement field a stable width so a long validation message wraps inside that cell instead of stretching the row.
+Phases 1–2 added `min-w-0` and kept `max-w-2xl`, and the rows scroll. Phase 4 removes `overflow-x-auto` from the measurement row and from the trainee list. Narrow each measurement column below `w-48`. Raise the card max-width on `TraineeJournal.astro` and `TrainerPanel.astro` only if the row still cannot fit. A long validation message still wraps inside its own form cell.
 
-Tab order stays date, then the eight measurements in `measurementFields` order, then note, then Add measurement. Moving focus to a control inside the row should bring that control into view. Do not add a separate scroll button.
+Tab order stays date, then the eight measurements in `measurementFields` order, then note, then Add measurement. The read-only value boxes are not in that tab order. Do not add a separate scroll button.
 
 ## Phase 1: Form row
 
@@ -154,7 +152,7 @@ Each measurement entry shows its date and eight fields in one horizontal scrolli
 
 ### Overview
 
-Trainees a trainer has linked sit beside each other in one horizontal row. The row scrolls inside the trainer card. The link form stays above it.
+Trainees a trainer has linked sit beside each other in one horizontal row. The link form stays above it. Scroll and no-wrap checks are not part of this phase; phase 4 covers wrapping without a scrollbar.
 
 ### Changes Required:
 
@@ -184,13 +182,80 @@ Trainees a trainer has linked sit beside each other in one horizontal row. The r
 
 #### Manual Verification:
 
-- With two linked trainees, their emails sit on one row inside the trainer card and the second is not under the first
-- Sideways scroll reaches a later trainee when the row is wider than the card
-- At a narrow viewport the emails do not wrap onto a second line
 - The selected trainee stays marked and still shows that trainee's measurements
 - The email field and Link trainee stay stacked above the row
 - No linked trainees still shows no name list
 - Kitchen sink trainer Default shows two emails beside each other, with the first selected
+
+**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase. Phase blocks use plain bullets — the corresponding `- [ ]` checkboxes for these items live in the `## Progress` section at the bottom of the plan.
+
+---
+
+## Phase 4: Fitted read-only row
+
+### Overview
+
+The shared measurement list stops reading as one scrolling phrase per field. Each label sits above its value, the delta sits beside the value, and the value looks like the form field without being editable. Columns get narrower so the row has no horizontal scrollbar; the measurement card widens only if it must. Linked trainee emails wrap instead of scrolling.
+
+### Changes Required:
+
+#### 1. Read-only measurement row
+
+**File**: `src/components/measurements/MeasurementList.astro`
+
+**Intent**: Make each saved entry read like the entry form, with the label above the value and the delta beside the value, and remove the horizontal scrollbar.
+
+**Contract**: Keep entries as a vertical list and keep `measurementFields` order. Date is the first column: the label `Date` above the existing `time`. Each measurement column has its label (`Hips`, `Navel`, and the rest) above the value. The value, including its unit, sits in a non-interactive box that uses the same border, radius, and height as `Input` (`border-input`, `rounded-md`, `h-9`). That box is not an `input`, is not focusable, and has no focus ring. When `entry.deltas` is present, `formatDelta` sits on the same line as the box, beside it, for example `50.0 cm` with `↑ 0.5` next to the box. When `entry.deltas` is absent, there is no delta. Keep the current accessible names. Remove `overflow-x-auto` from this row. Each column is narrower than the current `w-48`. The note stays outside the row. Do not change `formatDelta`.
+
+#### 2. Form columns match the row
+
+**File**: `src/components/measurements/MeasurementForm.tsx`
+
+**Intent**: Keep the entry row lined up with the read-only row and remove its horizontal scrollbar once the columns are narrower and the card is wide enough.
+
+**Contract**: Date and the eight measurements stay one row, in the same order, with the same column width as the list. Remove `overflow-x-auto`. Note, `ServerError`, and Add measurement stay full width below the row. A field error still wraps inside its own cell. Do not change `FormField` or the POST contract.
+
+#### 3. Measurement card width
+
+**File**: `src/components/journal/TraineeJournal.astro`
+
+**Intent**: Let the card grow only when `max-w-2xl` is what forces a horizontal scrollbar.
+
+**Contract**: Keep `min-w-0`. Replace `max-w-2xl` with a wider max only if the date and eight narrower columns still do not fit. Do not widen past that fit.
+
+**File**: `src/components/trainer/TrainerPanel.astro`
+
+**Intent**: Give the trainer preview the same card width as the journal.
+
+**Contract**: Use the same max width and `min-w-0` as the journal card. The trainer still has no measurement form.
+
+#### 4. Wrapping trainee emails
+
+**File**: `src/components/trainer/TrainerPanel.astro`
+
+**Intent**: Let linked trainees wrap onto the next line instead of scrolling sideways.
+
+**Contract**: Remove `overflow-x-auto` and `flex-nowrap` from the `trainerLinks` list. Emails sit beside each other and wrap when they do not fit the card. Keep a horizontal gap, the current array order, each href, `aria-current`, and the selected versus unselected classes. The link form stays above the list. An empty list still renders nothing.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `npm run lint` passes
+- `npm run test` passes
+- `src/components/measurements/MeasurementList.astro` does not use `overflow-x-auto`
+- `src/components/trainer/TrainerPanel.astro` does not use `overflow-x-auto` on the trainee list
+
+#### Manual Verification:
+
+- A listed field shows its label above the value, and the delta beside the value, such as `Hips` above `50.0 cm` with `↑ 0.5` beside that value
+- The value box matches the form field's border, radius, and height, is not editable, and has no focus ring
+- The measurement row has no horizontal scrollbar, and its columns are narrower than `w-48`
+- The journal and trainer cards are wider than `max-w-2xl` only when that width is required for the row to fit
+- The earliest entry uses the same layout and shows no delta
+- The form row uses those same column widths and has no horizontal scrollbar
+- Linked trainee emails wrap to the next line when they do not fit, and that list has no horizontal scrollbar
+- The selected trainee stays marked, and the email field and Link trainee stay above the emails
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase. Phase blocks use plain bullets — the corresponding `- [ ]` checkboxes for these items live in the `## Progress` section at the bottom of the plan.
 
@@ -209,17 +274,17 @@ Trainees a trainer has linked sit beside each other in one horizontal row. The r
 ### Manual Testing Steps:
 
 1. Sign in as a trainee with at least two entries, one of them with a note, and open `/dashboard`.
-2. Confirm the form row scrolls sideways to Navel, and that Note and Add measurement stay put underneath.
+2. Confirm the form row shows Date and the eight measurements without a horizontal scrollbar, and that Note and Add measurement stay underneath.
 3. Trigger a field error and confirm it stays under that field inside the row.
 4. Confirm the latest entry shows deltas in the row and the earliest entry does not.
-5. Narrow the window and confirm the row scrolls instead of wrapping.
-6. Sign in as a trainer linked to that trainee and confirm the preview row matches.
-7. Open `/kitchen-sink/journal` and `/kitchen-sink/trainer` and confirm the sample entry uses the same row.
-8. On the trainer panel, link a second trainee and confirm the two emails sit on one scrolling row, with the link form still above them. On `/kitchen-sink/trainer` Default, confirm the same with the two sample emails.
+5. Confirm the measurement row has no horizontal scrollbar, labels sit above values, and a delta sits beside the value.
+6. Sign in as a trainer linked to that trainee and confirm the preview row matches, including the read-only field boxes.
+7. Open `/kitchen-sink/journal` and `/kitchen-sink/trainer` and confirm the sample entry uses that layout.
+8. On the trainer panel, link enough trainees that the emails do not fit one line. Confirm they wrap, with no horizontal scrollbar, and the link form stays above them.
 
 ## Performance Considerations
 
-The measurement row is nine controls or nine text cells. The trainee row is one link per linked trainee. Scrolling either row does not add requests, change the measurement query, or need virtualization.
+The measurement row is nine columns. The trainee list is one link per linked trainee. Fitting or wrapping those rows does not add requests, change the measurement query, or need virtualization.
 
 ## Migration Notes
 
@@ -283,10 +348,27 @@ No schema, data, or API migration. Entries already stored keep their values and 
 
 #### Manual
 
-- [ ] 3.4 With two linked trainees, their emails sit on one row inside the trainer card and the second is not under the first
-- [ ] 3.5 Sideways scroll reaches a later trainee when the row is wider than the card
-- [ ] 3.6 At a narrow viewport the emails do not wrap onto a second line
 - [ ] 3.7 The selected trainee stays marked and still shows that trainee's measurements
 - [ ] 3.8 The email field and Link trainee stay stacked above the row
 - [ ] 3.9 No linked trainees still shows no name list
 - [ ] 3.10 Kitchen sink trainer Default shows two emails beside each other, with the first selected
+
+### Phase 4: Fitted read-only row
+
+#### Automated
+
+- [x] 4.1 `npm run lint` passes
+- [x] 4.2 `npm run test` passes
+- [x] 4.3 `src/components/measurements/MeasurementList.astro` does not use `overflow-x-auto`
+- [x] 4.4 `src/components/trainer/TrainerPanel.astro` does not use `overflow-x-auto` on the trainee list
+
+#### Manual
+
+- [ ] 4.5 A listed field shows its label above the value, and the delta beside the value, such as `Hips` above `50.0 cm` with `↑ 0.5` beside that value
+- [ ] 4.6 The value box matches the form field's border, radius, and height, is not editable, and has no focus ring
+- [ ] 4.7 The measurement row has no horizontal scrollbar, and its columns are narrower than `w-48`
+- [ ] 4.8 The journal and trainer cards are wider than `max-w-2xl` only when that width is required for the row to fit
+- [ ] 4.9 The earliest entry uses the same layout and shows no delta
+- [ ] 4.10 The form row uses those same column widths and has no horizontal scrollbar
+- [ ] 4.11 Linked trainee emails wrap to the next line when they do not fit, and that list has no horizontal scrollbar
+- [ ] 4.12 The selected trainee stays marked, and the email field and Link trainee stay above the emails

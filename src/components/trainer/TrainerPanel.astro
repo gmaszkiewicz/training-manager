@@ -31,7 +31,7 @@ const {
 ---
 
 <div class="flex min-h-screen items-center justify-center p-4">
-  <div class="w-full max-w-2xl min-w-0 rounded-2xl border border-border bg-card p-8 text-card-foreground">
+  <div class="w-full max-w-[104rem] min-w-0 rounded-2xl border border-border bg-card p-8 text-card-foreground">
     <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
       {mode === "trainer" ? "Body measurements" : "Dashboard"}
     </h1>
@@ -48,10 +48,10 @@ const {
             </form>
             {trainerLinks.length > 0 ? (
               <>
-                <div class="mt-6 min-w-0 overflow-x-auto text-sm">
-                  <ul class="flex w-max flex-nowrap items-start gap-4">
+                <div class="mt-6 min-w-0 text-sm">
+                  <ul class="flex flex-wrap items-start gap-4">
                     {trainerLinks.map((link) => (
-                      <li class="shrink-0">
+                      <li>
                         <a
                           href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
                           aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
