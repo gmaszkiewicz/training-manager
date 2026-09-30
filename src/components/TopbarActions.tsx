@@ -1,40 +1,36 @@
 import { Button } from "@/components/ui/button";
+import type { TopbarModel } from "@/lib/topbar";
+import { cn } from "@/lib/utils";
 
-interface Props {
-  signedIn: boolean;
-  email: string;
-}
+type Props = TopbarModel;
 
-export default function TopbarActions({ signedIn, email }: Props) {
-  if (!signedIn) {
-    return (
-      <>
-        <span className="text-muted-foreground">Not signed in</span>
-        <div className="flex gap-3">
-          <Button variant="ghost" asChild>
-            <a href="/auth/signin">Sign in</a>
-          </Button>
-          <Button variant="ghost" asChild>
-            <a href="/auth/signup">Sign up</a>
-          </Button>
-        </div>
-      </>
-    );
-  }
-
+export default function TopbarActions({ greeting, email, links, showSignOut }: Props) {
   return (
-    <>
-      <span className="text-muted-foreground">{email}</span>
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" asChild>
-          <a href="/dashboard">Dashboard</a>
-        </Button>
-        <form method="POST" action="/api/auth/signout">
-          <Button type="submit" variant="ghost">
-            Sign out
-          </Button>
-        </form>
+    <div className="flex w-full flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        {greeting != null ? <span>{greeting}</span> : null}
+        {email != null ? <span>{email}</span> : null}
       </div>
-    </>
+      <div className="flex flex-wrap items-center gap-3">
+        {links.map((link) => (
+          <Button key={link.id} variant="ghost" asChild>
+            <a
+              href={link.href}
+              aria-current={link.current ? "page" : undefined}
+              className={cn(link.current && "text-card-foreground font-semibold")}
+            >
+              {link.label}
+            </a>
+          </Button>
+        ))}
+        {showSignOut ? (
+          <form method="POST" action="/api/auth/signout">
+            <Button type="submit" variant="ghost">
+              Sign out
+            </Button>
+          </form>
+        ) : null}
+      </div>
+    </div>
   );
 }
