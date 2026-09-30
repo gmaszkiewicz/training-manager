@@ -1,0 +1,12 @@
+---
+change_id: trainer-panel-ui
+title: Trainer panel ui
+status: planned
+created: 2026-09-30
+updated: 2026-09-30
+archived_at: null
+---
+
+## Notes
+
+<!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->

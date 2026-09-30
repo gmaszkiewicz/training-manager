@@ -22,13 +22,14 @@ milestone_status: open
 
 **M-1: Trainee delta and trainer preview** — Status: open
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too.
-- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03)
+- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card.
+- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04)
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03
+- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page.
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
+  - MS-04: The trainer panel on `/dashboard` uses the same visual contract as the trainee journal, instead of the starter glass card.
 
 ## Vision recap
 
@@ -51,6 +52,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-07 | product-home               | user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome                    | —             | MS-01                     | done        |
 | S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | done |
 | S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | done |
+| S-10 | trainer-panel-ui           | user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`                       | S-04, S-09    | MS-04                     | planning |
 
 ## Streams
 
@@ -62,7 +64,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | B      | Trainer preview      | `S-03` → `S-04`                            | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed.                 |
 | C      | Public home          | `S-07`                                     | Stands alone: the public page does not read or change measurement data, so it can run beside the remaining journal edits. |
 | D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
-| E      | Trainee journal UI   | `S-09`                                     | Stands alone: restyles the trainee branch on `/dashboard` and shared list markup; does not change measurement data. Can run beside S-05 and S-06. The trainer panel on the same route is a separate slice. |
+| E      | Dashboard visual contract | `S-09` → `S-10`                         | Restyles `/dashboard` without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. Can run beside S-05 and S-06. |
 
 ## Baseline
 
@@ -187,8 +189,20 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Parallel with:** S-05, S-06
 - **Blockers:** —
 - **Unknowns:** —
-- **Risk:** `/dashboard` still wraps the trainee journal in `bg-cosmic` and glass utilities, so a trainee who signs in hits a different visual than on `/` or `/auth/signin`. The measurement form already reads role tokens; the shell, list rows, empty and error copy, and Sign out still use starter literals. The trainer branch in the same file stays on the old shell until its own UI slice. It does not change measurement data, so it can run beside S-05 and S-06.
+- **Risk:** `/dashboard` still wraps the trainee journal in `bg-cosmic` and glass utilities, so a trainee who signs in hits a different visual than on `/` or `/auth/signin`. The measurement form already reads role tokens; the shell, list rows, empty and error copy, and Sign out still use starter literals. The trainer branch on the same route stays on the old shell until S-10. It does not change measurement data, so it can run beside S-05 and S-06.
 - **Status:** done
+
+### S-10: Trainer panel leaves the starter glass card
+
+- **Outcome:** user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`
+- **Change ID:** trainer-panel-ui
+- **PRD refs:** MS-04
+- **Prerequisites:** S-04, S-09
+- **Parallel with:** S-05, S-06
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** A trainer who signs in still sees the starter glass card on `/dashboard`, while the trainee on the same route already uses the shared visual contract. Preview stays read-only and does not change measurement data, so this can run beside S-05 and S-06.
+- **Status:** planning
 
 ## Backlog Handoff
 
@@ -203,6 +217,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-07       | product-home              | Visitor sees Training Manager on the public home instead of the starter welcome | yes                   | Run `/10x-plan product-home`. Can run beside S-05 and S-06 |
 | S-08       | auth-signin-form          | Sign-in, registration, and email confirmation leave the starter glass card      | yes                   | Run `/10x-plan auth-signin-form`. Can run beside S-05 and S-06 |
 | S-09       | trainee-journal-ui        | Trainee journal on `/dashboard` leaves the starter glass card                     | yes                   | Research in `context/changes/trainee-journal-ui/`. Run `/10x-plan trainee-journal-ui`. Can run beside S-05 and S-06 |
+| S-10       | trainer-panel-ui          | Trainer panel on `/dashboard` leaves the starter glass card                       | yes                   | Run `/10x-plan trainer-panel-ui`. Can run beside S-05 and S-06 |
 
 ## Open Roadmap Questions
 
