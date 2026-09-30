@@ -277,16 +277,16 @@ No migration. `profiles_select_own` already allows the signed-in user to read th
 
 #### Automated
 
-- [ ] 1.1 `npm test` passes, including guest on `/` marking nothing, Sign in marked on `/auth/signin`, Sign up marked on `/auth/signup`, Home marked on `/` when signed in, Measurements marked on `/dashboard` with href `/dashboard`, a signed-in user on `/auth/signin` marking nothing, "Hello trainee" and "Hello trainer" with the email, and email-only with greeting null when role is null
-- [ ] 1.2 `npm run lint` passes
-- [ ] 1.3 `npm run check:home-tokens` passes
+- [x] 1.1 `npm test` passes, including guest on `/` marking nothing, Sign in marked on `/auth/signin`, Sign up marked on `/auth/signup`, Home marked on `/` when signed in, Measurements marked on `/dashboard` with href `/dashboard`, a signed-in user on `/auth/signin` marking nothing, "Hello trainee" and "Hello trainer" with the email, and email-only with greeting null when role is null
+- [x] 1.2 `npm run lint` passes
+- [x] 1.3 `npm run check:home-tokens` passes
 
 #### Manual
 
-- [ ] 1.4 On `/`, a guest reads "Hello guest" with Sign in and Sign up, neither link is marked, and the hero under Training Manager still shows Sign in and Sign up
-- [ ] 1.5 On `/`, a signed-in trainee reads "Hello trainee", their email, Home marked, Measurements linking to `/dashboard`, and Sign out
-- [ ] 1.6 On `/`, a signed-in trainer reads "Hello trainer", their email, Home marked, Measurements, and Sign out
-- [ ] 1.7 On `/`, a signed-in user with no profile row reads only their email, with Home, Measurements, and Sign out, and does not read "Hello guest", "Hello trainee", or "Hello trainer"
+- [x] 1.4 On `/`, a guest reads "Hello guest" with Sign in and Sign up, neither link is marked, and the hero under Training Manager still shows Sign in and Sign up
+- [x] 1.5 On `/`, a signed-in trainee reads "Hello trainee", their email, Home marked, Measurements linking to `/dashboard`, and Sign out
+- [x] 1.6 On `/`, a signed-in trainer reads "Hello trainer", their email, Home marked, Measurements, and Sign out
+- [x] 1.7 On `/`, a signed-in user with no profile row reads only their email, with Home, Measurements, and Sign out, and does not read "Hello guest", "Hello trainee", or "Hello trainer"
 
 ### Phase 2: Auth and both dashboards
 
