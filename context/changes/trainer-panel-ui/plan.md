@@ -224,32 +224,32 @@ No schema change and no stored data change. `@utility bg-cosmic` is removed in P
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run check:home-tokens` passes
-- [x] 1.3 `src/pages/dashboard.astro` and `src/components/trainer/TrainerPanel.astro` do not contain `bg-cosmic`, `backdrop-blur`, or Tailwind palette colour utilities
-- [x] 1.4 `src/styles/global.css` no longer defines `@utility bg-cosmic`, and the `:root` and `.dark` colour variables are unchanged
+- [x] 1.1 `npm run lint` passes — e92c423
+- [x] 1.2 `npm run check:home-tokens` passes — e92c423
+- [x] 1.3 `src/pages/dashboard.astro` and `src/components/trainer/TrainerPanel.astro` do not contain `bg-cosmic`, `backdrop-blur`, or Tailwind palette colour utilities — e92c423
+- [x] 1.4 `src/styles/global.css` no longer defines `@utility bg-cosmic`, and the `:root` and `.dark` colour variables are unchanged — e92c423
 
 #### Manual
 
-- [x] 1.5 A signed-in trainer with a linked trainee sees the light card: welcome, Email field, Link trainee, the trainee link, the measurement list or "No measurements yet", and outline Sign out
-- [x] 1.6 A trainer with zero linked trainees sees the link form and no empty-list sentence
-- [x] 1.7 Submitting an unknown email while a trainee is selected shows ServerError "No trainee with that email", keeps the form, and stays on that trainee
-- [x] 1.11 The trainee journal on `/dashboard` is unchanged
+- [x] 1.5 A signed-in trainer with a linked trainee sees the light card: welcome, Email field, Link trainee, the trainee link, the measurement list or "No measurements yet", and outline Sign out — e92c423
+- [x] 1.6 A trainer with zero linked trainees sees the link form and no empty-list sentence — e92c423
+- [x] 1.7 Submitting an unknown email while a trainee is selected shows ServerError "No trainee with that email", keeps the form, and stays on that trainee — e92c423
+- [x] 1.11 The trainee journal on `/dashboard` is unchanged — e92c423
 
 ### Phase 2: States and guard
 
 #### Automated
 
-- [ ] 2.1 `src/pages/kitchen-sink/trainer.astro` renders TrainerPanel for the default panel, zero links, a selected trainee with no measurements, the query error, trainees load failure, measurements load failure, and the unavailable role
-- [ ] 2.2 `scripts/check-home-tokens.mjs` lists `src/components/trainer/TrainerPanel.astro`, `src/pages/kitchen-sink/trainer.astro`, and `src/pages/dashboard.astro`, and `npm run check:home-tokens` passes
-- [ ] 2.3 `CLAUDE.md` names `/kitchen-sink/trainer`
-- [ ] 2.4 `npm run lint` passes
+- [x] 2.1 `src/pages/kitchen-sink/trainer.astro` renders TrainerPanel for the default panel, zero links, a selected trainee with no measurements, the query error, trainees load failure, measurements load failure, and the unavailable role
+- [x] 2.2 `scripts/check-home-tokens.mjs` lists `src/components/trainer/TrainerPanel.astro`, `src/pages/kitchen-sink/trainer.astro`, and `src/pages/dashboard.astro`, and `npm run check:home-tokens` passes
+- [x] 2.3 `CLAUDE.md` names `/kitchen-sink/trainer`
+- [x] 2.4 `npm run lint` passes
 
 #### Manual
 
-- [ ] 2.5 The sink marks Hover and Focus-visible as prose on the Default panel, and marks Disabled and Loading N/A because the link form is a full-page POST with no pending control and the panel renders only after the server calls return
-- [ ] 2.6 At a desktop width and one mobile width, the Default card shows the email field, Link trainee, a trainee link, a measurement row, and Sign out without the form overflowing horizontally
-- [ ] 2.7 Tabbing the Default panel moves through the email field, Link trainee, the trainee link, and Sign out, and each focus ring uses the shared ring token
-- [ ] 2.8 On `/kitchen-sink/trainer`, trainees load failure shows "Could not load trainees" and hides the form
-- [ ] 2.9 On `/kitchen-sink/trainer`, a selected trainee whose measurements fail to load shows "Could not load measurements" under the trainee links
-- [ ] 2.10 On `/kitchen-sink/trainer`, the unavailable panel shows heading "Dashboard", the sentence "Could not open your journal", and Sign out on the light card
+- [x] 2.5 The sink marks Hover and Focus-visible as prose on the Default panel, and marks Disabled and Loading N/A because the link form is a full-page POST with no pending control and the panel renders only after the server calls return
+- [x] 2.6 At a desktop width and one mobile width, the Default card shows the email field, Link trainee, a trainee link, a measurement row, and Sign out without the form overflowing horizontally
+- [x] 2.7 Tabbing the Default panel moves through the email field, Link trainee, the trainee link, and Sign out, and each focus ring uses the shared ring token
+- [x] 2.8 On `/kitchen-sink/trainer`, trainees load failure shows "Could not load trainees" and hides the form
+- [x] 2.9 On `/kitchen-sink/trainer`, a selected trainee whose measurements fail to load shows "Could not load measurements" under the trainee links
+- [x] 2.10 On `/kitchen-sink/trainer`, the unavailable panel shows heading "Dashboard", the sentence "Could not open your journal", and Sign out on the light card
