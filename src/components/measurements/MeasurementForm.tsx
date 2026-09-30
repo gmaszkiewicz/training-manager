@@ -71,8 +71,8 @@ function FieldError({ message }: { message?: string }) {
   }
 
   return (
-    <p className="text-destructive mt-1 flex items-center gap-1 text-xs">
-      <CircleAlert className="size-3" />
+    <p className="text-destructive mt-1 flex flex-wrap items-start gap-1 text-xs break-words">
+      <CircleAlert className="mt-0.5 size-3 shrink-0" />
       {message}
     </p>
   );
@@ -116,44 +116,47 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
   return (
     <form method="POST" action="/api/measurements" className="text-left" onSubmit={handleSubmit} noValidate>
       <div className="space-y-4">
-        <div>
-          <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
-            Date
-          </Label>
-          <Input
-            id={`${idPrefix}measured_on`}
-            name="measured_on"
-            type="date"
-            value={dateValue}
-            max={browserToday || undefined}
-            onChange={(event) => {
-              setMeasuredOn(event.target.value);
-              clearError("measured_on");
-            }}
-            aria-invalid={errors.measured_on ? true : undefined}
-          />
-          <FieldError message={errors.measured_on} />
+        <div className="flex flex-nowrap items-start gap-2">
+          <div className="w-28 max-w-28 min-w-28 shrink-0">
+            <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
+              Date
+            </Label>
+            <Input
+              id={`${idPrefix}measured_on`}
+              name="measured_on"
+              type="date"
+              value={dateValue}
+              max={browserToday || undefined}
+              onChange={(event) => {
+                setMeasuredOn(event.target.value);
+                clearError("measured_on");
+              }}
+              aria-invalid={errors.measured_on ? true : undefined}
+            />
+            <FieldError message={errors.measured_on} />
+          </div>
+
+          {measurementFields.map((field) => (
+            <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0 [&_p]:block [&_p]:break-words">
+              <FormField
+                id={`${idPrefix}${field.field}`}
+                name={field.field}
+                type="number"
+                step="0.1"
+                label={`${field.label} ${field.unit}`}
+                value={values[field.field]}
+                onChange={(value) => {
+                  setValues((current) => ({ ...current, [field.field]: value }));
+                  clearError(field.field);
+                }}
+                error={errors[field.field]}
+                icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
+              />
+            </div>
+          ))}
         </div>
 
-        {measurementFields.map((field) => (
-          <FormField
-            key={field.field}
-            id={`${idPrefix}${field.field}`}
-            name={field.field}
-            type="number"
-            step="0.1"
-            label={`${field.label} ${field.unit}`}
-            value={values[field.field]}
-            onChange={(value) => {
-              setValues((current) => ({ ...current, [field.field]: value }));
-              clearError(field.field);
-            }}
-            error={errors[field.field]}
-            icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
-          />
-        ))}
-
-        <div>
+        <div className="w-0 min-w-full">
           <Label htmlFor={`${idPrefix}note`} className="text-muted-foreground mb-1">
             Note
           </Label>
@@ -163,6 +166,7 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
             value={note}
             maxLength={1000}
             rows={3}
+            className="field-sizing-fixed"
             onChange={(event) => {
               setNote(event.target.value);
               clearError("note");

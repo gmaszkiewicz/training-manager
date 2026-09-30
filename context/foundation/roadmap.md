@@ -22,15 +22,16 @@ milestone_status: open
 
 **M-1: Trainee delta and trainer preview** — Status: open
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email.
-- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05)
+- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel.
+- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06)
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05
+- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page.
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
   - MS-04: The trainer panel on `/dashboard` uses the same visual contract as the trainee journal, instead of the starter glass card.
   - MS-05: One top bar, the same as on the public home, on `/`, both dashboards, sign-in, and sign-up. A guest reads "Hello guest" with Home, Sign in, and Sign up. A signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out lives only in that bar. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email.
+  - MS-06: The trainee enters measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel.
 
 ## Vision recap
 
@@ -55,6 +56,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | done |
 | S-10 | trainer-panel-ui           | user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`                       | S-04, S-09    | MS-04                     | done |
 | S-11 | shared-topbar              | user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email | S-07, S-08, S-09, S-10 | MS-05          | done |
+| S-12 | horizontal-measurements    | user can enter the measurement fields in a horizontal row on the trainee journal, and both the trainee and a linked trainer can read each entry's fields in a horizontal row; linked trainees sit beside each other on the trainer panel | S-09, S-10    | MS-06                     | in-progress |
 
 ## Streams
 
@@ -66,7 +68,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | B      | Trainer preview      | `S-03` → `S-04`                            | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed.                 |
 | C      | Public home          | `S-07`                                     | Stands alone: the public page does not read or change measurement data, so it can run beside the remaining journal edits. |
 | D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
-| E      | Dashboard visual contract | `S-09` → `S-10`                         | Restyles `/dashboard` without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. Can run beside S-05 and S-06. |
+| E      | Dashboard visual contract | `S-09` → `S-10` → `S-12`                | Restyles `/dashboard` without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. S-12 turns the measurement fields on that journal and on the trainer list from a column into a horizontal row. Can run beside S-05 and S-06. |
 | F      | Shared top bar            | `S-11`                                  | Joins streams C, D, and E: one bar on the public home, auth entry, and both dashboards. Does not change measurement data, so it can run beside S-05 and S-06. |
 
 ## Baseline
@@ -219,6 +221,18 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Risk:** The home bar exists only on `/`. Sign-in, sign-up, and both dashboards omit it, and Sign out still sits under the measurement card on the journal and the trainer panel. The bar does not change measurement data, so this can run beside S-05 and S-06.
 - **Status:** done
 
+### S-12: Measurements enter and display in a row
+
+- **Outcome:** user can enter the measurement fields in a horizontal row on the trainee journal, and both the trainee and a linked trainer can read each entry's fields in a horizontal row; linked trainees sit beside each other on the trainer panel
+- **Change ID:** horizontal-measurements
+- **PRD refs:** MS-06
+- **Prerequisites:** S-09, S-10
+- **Parallel with:** S-05, S-06
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** The trainee form and the shared measurement list stack each field in a column, and the trainer's linked-trainee list stacks each email under the previous one, so both stay vertical until this slice. A horizontal row must stay readable on a narrow screen and must not change stored values, the delta, or who is linked. It can run beside S-05 and S-06.
+- **Status:** in-progress
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                 | Suggested issue title                                                          | Ready for `/10x-plan` | Notes                                      |
@@ -234,6 +248,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-09       | trainee-journal-ui        | Trainee journal on `/dashboard` leaves the starter glass card                     | yes                   | Research in `context/changes/trainee-journal-ui/`. Run `/10x-plan trainee-journal-ui`. Can run beside S-05 and S-06 |
 | S-10       | trainer-panel-ui          | Trainer panel on `/dashboard` leaves the starter glass card                       | yes                   | Run `/10x-plan trainer-panel-ui`. Can run beside S-05 and S-06 |
 | S-11       | shared-topbar             | Shared top bar on the public home, sign-in, sign-up, and both dashboards         | yes                   | Run `/10x-new shared-topbar`. Can run beside S-05 and S-06 |
+| S-12       | horizontal-measurements   | Trainee enters measurements in a row; trainee and trainer read each entry in a row; linked trainees sit in a row | yes                 | Change folder exists. Plan in `context/changes/horizontal-measurements/`. Can run beside S-05 and S-06 |
 
 ## Open Roadmap Questions
 

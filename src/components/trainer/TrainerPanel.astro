@@ -30,8 +30,14 @@ const {
 } = Astro.props;
 ---
 
-<div class="flex min-h-screen items-center justify-center p-4">
-  <div class="w-full max-w-2xl rounded-2xl border border-border bg-card p-8 text-card-foreground">
+<div class="flex justify-center px-4 pb-8">
+  <!-- Same floor as TraineeJournal, so "No measurements yet" matches a measurement entry -->
+  <div
+    class:list={[
+      "rounded-2xl border border-border bg-card p-8 text-card-foreground",
+      selectedLink && trainerMeasurementsLoaded ? "w-max min-w-[calc(73rem+4px)]" : "w-max",
+    ]}
+  >
     <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
       {mode === "trainer" ? "Body measurements" : "Dashboard"}
     </h1>
@@ -48,24 +54,26 @@ const {
             </form>
             {trainerLinks.length > 0 ? (
               <>
-                <ul class="mt-6 space-y-2 text-sm">
-                  {trainerLinks.map((link) => (
-                    <li>
-                      <a
-                        href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
-                        aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
-                        class:list={[
-                          "hover:underline focus-visible:ring-2 focus-visible:ring-ring",
-                          selectedLink?.traineeId === link.traineeId
-                            ? "font-semibold text-card-foreground"
-                            : "text-muted-foreground",
-                        ]}
-                      >
-                        {link.email}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <div class="mt-6 min-w-0 text-sm">
+                  <ul class="flex flex-wrap items-start gap-4">
+                    {trainerLinks.map((link) => (
+                      <li>
+                        <a
+                          href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
+                          aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
+                          class:list={[
+                            "whitespace-nowrap hover:underline focus-visible:ring-2 focus-visible:ring-ring",
+                            selectedLink?.traineeId === link.traineeId
+                              ? "font-semibold text-card-foreground"
+                              : "text-muted-foreground",
+                          ]}
+                        >
+                          {link.email}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 {selectedLink ? (
                   trainerMeasurementsLoaded ? (
                     entries.length === 0 ? (
