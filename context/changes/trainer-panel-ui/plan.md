@@ -224,17 +224,17 @@ No schema change and no stored data change. `@utility bg-cosmic` is removed in P
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` passes
-- [ ] 1.2 `npm run check:home-tokens` passes
-- [ ] 1.3 `src/pages/dashboard.astro` and `src/components/trainer/TrainerPanel.astro` do not contain `bg-cosmic`, `backdrop-blur`, or Tailwind palette colour utilities
-- [ ] 1.4 `src/styles/global.css` no longer defines `@utility bg-cosmic`, and the `:root` and `.dark` colour variables are unchanged
+- [x] 1.1 `npm run lint` passes
+- [x] 1.2 `npm run check:home-tokens` passes
+- [x] 1.3 `src/pages/dashboard.astro` and `src/components/trainer/TrainerPanel.astro` do not contain `bg-cosmic`, `backdrop-blur`, or Tailwind palette colour utilities
+- [x] 1.4 `src/styles/global.css` no longer defines `@utility bg-cosmic`, and the `:root` and `.dark` colour variables are unchanged
 
 #### Manual
 
-- [ ] 1.5 A signed-in trainer with a linked trainee sees the light card: welcome, Email field, Link trainee, the trainee link, the measurement list or "No measurements yet", and outline Sign out
-- [ ] 1.6 A trainer with zero linked trainees sees the link form and no empty-list sentence
-- [ ] 1.7 Submitting an unknown email while a trainee is selected shows ServerError "No trainee with that email", keeps the form, and stays on that trainee
-- [ ] 1.11 The trainee journal on `/dashboard` is unchanged
+- [x] 1.5 A signed-in trainer with a linked trainee sees the light card: welcome, Email field, Link trainee, the trainee link, the measurement list or "No measurements yet", and outline Sign out
+- [x] 1.6 A trainer with zero linked trainees sees the link form and no empty-list sentence
+- [x] 1.7 Submitting an unknown email while a trainee is selected shows ServerError "No trainee with that email", keeps the form, and stays on that trainee
+- [x] 1.11 The trainee journal on `/dashboard` is unchanged
 
 ### Phase 2: States and guard
 
