@@ -1,7 +1,7 @@
 ---
 change_id: horizontal-measurements
-title: Measurements enter and display in a row
-status: new
+title: Measurements and linked trainees display in a row
+status: planned
 created: 2026-09-30
 updated: 2026-09-30
 archived_at: null
@@ -17,3 +17,5 @@ Widok: dziennik trenującego na `/dashboard` (`src/components/journal/TraineeJou
 
 główna zmiana to zmiana orientacji wpisywania oraz wyświetlania pomiarów u trenujacego oraz trenera.
 Pomiary wprowadzane oraz wyświetlane są w kolumnie, chce aby to było w poziomie.
+
+Podlinkowani trenujący na panelu trenera (`src/components/trainer/TrainerPanel.astro`, lista `trainerLinks`) są dziś jeden pod drugim. Mają być obok siebie, w jednym poziomym rzędzie przewijanym w bok, wewnątrz tej samej karty. Formularz linkowania (email i Link trainee) zostaje nad tym rzędem. Kolejność, wybór i adresy się nie zmieniają.
