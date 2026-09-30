@@ -1,9 +1,42 @@
 ---
 import TopbarActions from "@/components/TopbarActions";
+import { readProfileRole } from "@/lib/services/ensure-profile";
+import { createClient } from "@/lib/supabase";
+import { topbarModel, type TopbarModelInput } from "@/lib/topbar";
 
-const { user } = Astro.locals;
+interface Props {
+  preview?: TopbarModelInput;
+}
+
+const { preview } = Astro.props;
+
+let model;
+if (preview) {
+  model = topbarModel(preview);
+} else {
+  const user = Astro.locals.user;
+  const signedIn = Boolean(user);
+  const email = user?.email ?? "";
+  const pathname = Astro.url.pathname;
+  let role: TopbarModelInput["role"] = null;
+
+  if (user) {
+    const supabase = createClient(Astro.request.headers, Astro.cookies);
+    if (supabase) {
+      role = await readProfileRole(supabase, user.id);
+    }
+  }
+
+  model = topbarModel({ signedIn, email, role, pathname });
+}
 ---
 
 <div class="border-border bg-card text-muted-foreground mb-4 flex items-center justify-between rounded-xl border px-4 py-2 text-sm">
-  <TopbarActions client:load signedIn={Boolean(user)} email={user?.email ?? ""} />
+  <TopbarActions
+    client:load
+    greeting={model.greeting}
+    email={model.email}
+    links={model.links}
+    showSignOut={model.showSignOut}
+  />
 </div>

@@ -1,6 +1,7 @@
 ---
 import TraineeJournal from "@/components/journal/TraineeJournal.astro";
 import TrainerPanel from "@/components/trainer/TrainerPanel.astro";
+import Topbar from "@/components/Topbar.astro";
 import Layout from "@/layouts/Layout.astro";
 import { ensureProfile } from "@/lib/services/ensure-profile";
 import { listMeasurements } from "@/lib/services/measurements";
@@ -70,17 +71,14 @@ if (supabase && user) {
 ---
 
 <Layout title="Dashboard">
+  <div class="p-4 sm:p-8">
+    <Topbar />
+  </div>
   {role === "trainee" ? (
-    <TraineeJournal
-      email={user?.email}
-      measurementsLoaded={measurementsLoaded}
-      entries={entries}
-      serverError={serverError}
-    />
+    <TraineeJournal measurementsLoaded={measurementsLoaded} entries={entries} serverError={serverError} />
   ) : (
     <TrainerPanel
       mode={role === "trainer" ? "trainer" : "unavailable"}
-      email={user?.email}
       serverError={serverError}
       trainerLinksLoaded={trainerLinksLoaded}
       trainerLinks={trainerLinks}

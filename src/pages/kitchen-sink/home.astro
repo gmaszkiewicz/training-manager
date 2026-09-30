@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import HomeActions from "@/components/home/HomeActions";
+import Topbar from "@/components/Topbar.astro";
 import { Button } from "@/components/ui/button";
 ---
 
@@ -13,6 +14,56 @@ import { Button } from "@/components/ui/button";
           States for <code class="text-foreground">/</code>. Signed-out composition only (does not read session).
         </p>
       </header>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-topbar">
+        <h2 id="state-topbar" class="border-border border-b pb-2 text-lg font-semibold">
+          Topbar
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Preview bars for the five product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
+          <code class="text-foreground">preview</code> so this sink stays session-free.
+        </p>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Guest on <code class="text-foreground">/</code>: "Hello guest", Home marked.
+          </p>
+          <Topbar preview={{ signedIn: false, email: "", role: null, pathname: "/" }} />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Guest on <code class="text-foreground">/auth/signin</code>: Sign in marked.
+          </p>
+          <Topbar preview={{ signedIn: false, email: "", role: null, pathname: "/auth/signin" }} />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainee <code class="text-foreground">ada@example.com</code> on <code class="text-foreground">/</code>:
+            "Hello trainee", Home marked.
+          </p>
+          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: "trainee", pathname: "/" }} />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainer <code class="text-foreground">ada@example.com</code> on{" "}
+            <code class="text-foreground">/dashboard</code>: "Hello trainer", Measurements marked, href{" "}
+            <code class="text-foreground">/dashboard</code>. This is the bar for{" "}
+            <code class="text-foreground">/dashboard?trainee=abc</code>.
+          </p>
+          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: "trainer", pathname: "/dashboard" }} />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Signed in, role null, email <code class="text-foreground">ada@example.com</code>, pathname{" "}
+            <code class="text-foreground">/dashboard</code>: the email only, Measurements marked, no Hello line.
+          </p>
+          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: null, pathname: "/dashboard" }} />
+        </div>
+      </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-default">
         <h2 id="state-default" class="border-border border-b pb-2 text-lg font-semibold">
@@ -56,11 +107,8 @@ import { Button } from "@/components/ui/button";
           Focus-visible
         </h2>
         <p class="text-muted-foreground text-sm">
-          The ring comes from Button's focus-visible treatment:
-          <code class="text-foreground">
-            focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]
-          </code>
-          . Tab to the control below to see it.
+          The ring comes from Button's focus-visible treatment: border-ring, ring-ring/50, and a three-pixel ring. Tab
+          to the control below to see it.
         </p>
         <div>
           <Button client:load variant="default">
