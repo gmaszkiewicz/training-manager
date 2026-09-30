@@ -48,24 +48,26 @@ const {
             </form>
             {trainerLinks.length > 0 ? (
               <>
-                <ul class="mt-6 space-y-2 text-sm">
-                  {trainerLinks.map((link) => (
-                    <li>
-                      <a
-                        href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
-                        aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
-                        class:list={[
-                          "hover:underline focus-visible:ring-2 focus-visible:ring-ring",
-                          selectedLink?.traineeId === link.traineeId
-                            ? "font-semibold text-card-foreground"
-                            : "text-muted-foreground",
-                        ]}
-                      >
-                        {link.email}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <div class="mt-6 min-w-0 overflow-x-auto text-sm">
+                  <ul class="flex w-max flex-nowrap items-start gap-4">
+                    {trainerLinks.map((link) => (
+                      <li class="shrink-0">
+                        <a
+                          href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
+                          aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
+                          class:list={[
+                            "whitespace-nowrap hover:underline focus-visible:ring-2 focus-visible:ring-ring",
+                            selectedLink?.traineeId === link.traineeId
+                              ? "font-semibold text-card-foreground"
+                              : "text-muted-foreground",
+                          ]}
+                        >
+                          {link.email}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 {selectedLink ? (
                   trainerMeasurementsLoaded ? (
                     entries.length === 0 ? (
