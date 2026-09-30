@@ -2,7 +2,6 @@
 import { ServerError } from "@/components/auth/ServerError";
 import MeasurementForm from "@/components/measurements/MeasurementForm";
 import MeasurementList from "@/components/measurements/MeasurementList.astro";
-import { Button } from "@/components/ui/button";
 import type { MeasurementWithDeltas } from "@/types";
 
 interface Props {
@@ -34,10 +33,5 @@ const { email, measurementsLoaded, entries, serverError, idPrefix = "" } = Astro
     ) : (
       <ServerError message="Could not load your measurements" />
     )}
-    <form method="POST" action="/api/auth/signout" class="mt-6">
-      <Button type="submit" variant="outline">
-        Sign out
-      </Button>
-    </form>
   </div>
 </div>
