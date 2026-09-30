@@ -5,22 +5,18 @@ import MeasurementList from "@/components/measurements/MeasurementList.astro";
 import type { MeasurementWithDeltas } from "@/types";
 
 interface Props {
-  email: string | undefined;
   measurementsLoaded: boolean;
   entries: MeasurementWithDeltas[];
   serverError: string | null;
   idPrefix?: string;
 }
 
-const { email, measurementsLoaded, entries, serverError, idPrefix = "" } = Astro.props;
+const { measurementsLoaded, entries, serverError, idPrefix = "" } = Astro.props;
 ---
 
 <div class="flex min-h-screen items-center justify-center p-4">
   <div class="w-full max-w-2xl rounded-2xl border border-border bg-card p-8 text-card-foreground">
-    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Journal</h1>
-    <p class="text-muted-foreground">
-      Welcome, <span class="font-semibold text-card-foreground">{email}</span>
-    </p>
+    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Body measurements</h1>
     {measurementsLoaded ? (
       <>
         <MeasurementForm serverError={serverError} idPrefix={idPrefix} client:load />

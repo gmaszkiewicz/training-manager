@@ -75,16 +75,10 @@ if (supabase && user) {
     <Topbar />
   </div>
   {role === "trainee" ? (
-    <TraineeJournal
-      email={user?.email}
-      measurementsLoaded={measurementsLoaded}
-      entries={entries}
-      serverError={serverError}
-    />
+    <TraineeJournal measurementsLoaded={measurementsLoaded} entries={entries} serverError={serverError} />
   ) : (
     <TrainerPanel
       mode={role === "trainer" ? "trainer" : "unavailable"}
-      email={user?.email}
       serverError={serverError}
       trainerLinksLoaded={trainerLinksLoaded}
       trainerLinks={trainerLinks}

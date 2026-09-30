@@ -9,7 +9,6 @@ import type { MeasurementWithDeltas } from "@/types";
 
 interface Props {
   mode: "trainer" | "unavailable";
-  email: string | undefined;
   serverError: string | null;
   trainerLinksLoaded: boolean;
   trainerLinks: TrainerLink[];
@@ -21,7 +20,6 @@ interface Props {
 
 const {
   mode,
-  email,
   serverError,
   trainerLinksLoaded,
   trainerLinks,
@@ -35,17 +33,14 @@ const {
 <div class="flex min-h-screen items-center justify-center p-4">
   <div class="w-full max-w-2xl rounded-2xl border border-border bg-card p-8 text-card-foreground">
     <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
-      {mode === "trainer" ? "Trainer" : "Dashboard"}
+      {mode === "trainer" ? "Body measurements" : "Dashboard"}
     </h1>
     {mode === "trainer" ? (
       <>
-        <p class="text-muted-foreground">
-          Welcome, <span class="font-semibold text-card-foreground">{email}</span>
-        </p>
         {serverError ? <ServerError message={serverError} /> : null}
         {trainerLinksLoaded ? (
           <>
-            <form method="POST" action="/api/trainer-links" class="mt-6 space-y-3">
+            <form method="POST" action="/api/trainer-links" class="space-y-3">
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
               <Label htmlFor={`${idPrefix}email`}>Email</Label>
               <Input id={`${idPrefix}email`} name="email" type="email" required />

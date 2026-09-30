@@ -31,6 +31,7 @@ export function topbarModel({ signedIn, email, role, pathname }: TopbarModelInpu
       showSignOut: false,
       links: withCurrent(
         [
+          { id: "home", label: "Home", href: "/" },
           { id: "signin", label: "Sign in", href: "/auth/signin" },
           { id: "signup", label: "Sign up", href: "/auth/signup" },
         ],

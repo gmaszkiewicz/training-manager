@@ -51,12 +51,7 @@ const sampleEntry: MeasurementWithDeltas = {
           TraineeJournal with measurements loaded, one sample entry (every field, note, and deltas), and no server
           error. Form ids are unprefixed.
         </p>
-        <TraineeJournal
-          email="trainee@example.com"
-          measurementsLoaded={true}
-          entries={[sampleEntry]}
-          serverError={null}
-        />
+        <TraineeJournal measurementsLoaded={true} entries={[sampleEntry]} serverError={null} />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-hover">
@@ -98,7 +93,7 @@ const sampleEntry: MeasurementWithDeltas = {
           TraineeJournal with measurements not loaded (ServerError, form absent). FormField with a field error; id is
           sink-scoped so it does not collide with the Default form.
         </p>
-        <TraineeJournal email="trainee@example.com" measurementsLoaded={false} entries={[]} serverError={null} />
+        <TraineeJournal measurementsLoaded={false} entries={[]} serverError={null} />
         <JournalSinkStates client:load variant="error" />
       </section>
 
@@ -111,13 +106,7 @@ const sampleEntry: MeasurementWithDeltas = {
           <code class="text-foreground">idPrefix="empty-"</code> so "No measurements yet" shows under a second form
           whose ids do not collide with Default.
         </p>
-        <TraineeJournal
-          email="trainee@example.com"
-          measurementsLoaded={true}
-          entries={[]}
-          serverError={null}
-          idPrefix="empty-"
-        />
+        <TraineeJournal measurementsLoaded={true} entries={[]} serverError={null} idPrefix="empty-" />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-loading">

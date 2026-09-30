@@ -27,8 +27,12 @@ async function findProfile(supabase: SupabaseClient<Database>, userId: string): 
 }
 
 export async function readProfileRole(supabase: SupabaseClient<Database>, userId: string): Promise<ProfileRole | null> {
-  const existing = await findProfile(supabase, userId);
-  return existing.status === "found" ? existing.profile.role : null;
+  try {
+    const existing = await findProfile(supabase, userId);
+    return existing.status === "found" ? existing.profile.role : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function ensureProfile(

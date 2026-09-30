@@ -7,9 +7,14 @@ type Props = TopbarModel;
 export default function TopbarActions({ greeting, email, links, showSignOut }: Props) {
   return (
     <div className="flex w-full flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        {greeting != null ? <span>{greeting}</span> : null}
-        {email != null ? <span>{email}</span> : null}
+      <div className="flex flex-wrap items-center">
+        {greeting != null || email != null ? (
+          <span>
+            {greeting}
+            {greeting != null && email != null ? " " : null}
+            {email}
+          </span>
+        ) : null}
       </div>
       <div className="flex flex-wrap items-center gap-3">
         {links.map((link) => (
