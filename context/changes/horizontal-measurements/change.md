@@ -1,6 +1,6 @@
 ---
 change_id: horizontal-measurements
-title: Horizontal measurement entry and display
+title: Measurements enter and display in a row
 status: new
 created: 2026-09-30
 updated: 2026-09-30
@@ -8,6 +8,8 @@ archived_at: null
 ---
 
 ## Notes
+
+S-12. user can enter the measurement fields in a horizontal row on the trainee journal, and both the trainee and a linked trainer can read each entry's fields in a horizontal row. PRD refs: MS-06.
 
 Widok: dziennik trenującego na `/dashboard` (`src/components/journal/TraineeJournal.astro`). Formularz to `src/components/measurements/MeasurementForm.tsx`, lista to `src/components/measurements/MeasurementList.astro`. Lista jest współdzielona z panelem trenera (`src/components/trainer/TrainerPanel.astro`); orientacja wyświetlania zmienia się w tym jednym komponencie, więc obejmuje oba miejsca. Wpis pomiaru jest tylko u trenującego.
 
