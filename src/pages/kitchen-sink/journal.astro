@@ -51,12 +51,7 @@ const sampleEntry: MeasurementWithDeltas = {
           TraineeJournal with measurements loaded, one sample entry (every field, note, and deltas), and no server
           error. Form ids are unprefixed.
         </p>
-        <TraineeJournal
-          email="trainee@example.com"
-          measurementsLoaded={true}
-          entries={[sampleEntry]}
-          serverError={null}
-        />
+        <TraineeJournal measurementsLoaded={true} entries={[sampleEntry]} serverError={null} />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-hover">
@@ -64,8 +59,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Hover
         </h2>
         <p class="text-muted-foreground text-sm">
-          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. Sign out uses the outline hover (
-          <code class="text-foreground">hover:bg-accent</code>). List rows are not controls, so row hover is N/A.
+          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. List rows are not controls, so
+          row hover is N/A.
         </p>
       </section>
 
@@ -74,8 +69,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Focus-visible
         </h2>
         <p class="text-muted-foreground text-sm">
-          Tab through the date field, one measurement field, the note, the submit button, and Sign out in the Default
-          journal above. The ring is the shared <code class="text-foreground">--ring</code>.
+          Tab through the date field, one measurement field, the note, and the submit button in the Default journal
+          above. The ring is the shared <code class="text-foreground">--ring</code>.
         </p>
       </section>
 
@@ -98,7 +93,7 @@ const sampleEntry: MeasurementWithDeltas = {
           TraineeJournal with measurements not loaded (ServerError, form absent). FormField with a field error; id is
           sink-scoped so it does not collide with the Default form.
         </p>
-        <TraineeJournal email="trainee@example.com" measurementsLoaded={false} entries={[]} serverError={null} />
+        <TraineeJournal measurementsLoaded={false} entries={[]} serverError={null} />
         <JournalSinkStates client:load variant="error" />
       </section>
 
@@ -111,13 +106,7 @@ const sampleEntry: MeasurementWithDeltas = {
           <code class="text-foreground">idPrefix="empty-"</code> so "No measurements yet" shows under a second form
           whose ids do not collide with Default.
         </p>
-        <TraineeJournal
-          email="trainee@example.com"
-          measurementsLoaded={true}
-          entries={[]}
-          serverError={null}
-          idPrefix="empty-"
-        />
+        <TraineeJournal measurementsLoaded={true} entries={[]} serverError={null} idPrefix="empty-" />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-loading">

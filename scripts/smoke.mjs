@@ -218,7 +218,7 @@ const steps = [
   [
     "trainer dashboard confirms the role",
     () => request("/dashboard"),
-    { status: 200, body: "Trainer", forbid: "No measurements yet" },
+    { status: 200, body: "Body measurements", forbid: "No measurements yet" },
   ],
   [
     "trainer measurement is rejected",
