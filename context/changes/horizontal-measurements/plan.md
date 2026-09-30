@@ -243,35 +243,35 @@ No schema, data, or API migration. Entries already stored keep their values and 
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run test` passes
-- [x] 1.3 `src/components/journal/TraineeJournal.astro` keeps `max-w-2xl` and includes `min-w-0` on the card
+- [x] 1.1 `npm run lint` passes — 4d3c60b
+- [x] 1.2 `npm run test` passes — 4d3c60b
+- [x] 1.3 `src/components/journal/TraineeJournal.astro` keeps `max-w-2xl` and includes `min-w-0` on the card — 4d3c60b
 
 #### Manual
 
-- [x] 1.4 On `/dashboard` as a trainee, Date and the eight measurements are one row that scrolls horizontally inside the card
-- [x] 1.5 Note, a server error, and Add measurement sit full width under the row and do not scroll with it
-- [x] 1.6 A validation error stays under its own field inside the row
-- [x] 1.7 At a narrow viewport the fields do not wrap; sideways scroll reaches Navel
-- [x] 1.8 A valid submit still saves the same values as before this layout
+- [x] 1.4 On `/dashboard` as a trainee, Date and the eight measurements are one row that scrolls horizontally inside the card — 4d3c60b
+- [x] 1.5 Note, a server error, and Add measurement sit full width under the row and do not scroll with it — 4d3c60b
+- [x] 1.6 A validation error stays under its own field inside the row — 4d3c60b
+- [x] 1.7 At a narrow viewport the fields do not wrap; sideways scroll reaches Navel — 4d3c60b
+- [x] 1.8 A valid submit still saves the same values as before this layout — 4d3c60b
 
 ### Phase 2: Shared list row
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run test` passes
-- [ ] 2.3 `npm run build` passes
-- [ ] 2.4 `src/components/journal/TraineeJournal.astro` and `src/components/trainer/TrainerPanel.astro` keep `max-w-2xl` and include `min-w-0` on their cards
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run test` passes
+- [x] 2.3 `npm run build` passes
+- [x] 2.4 `src/components/journal/TraineeJournal.astro` and `src/components/trainer/TrainerPanel.astro` keep `max-w-2xl` and include `min-w-0` on their cards
 
 #### Manual
 
-- [ ] 2.5 On the trainee journal, an entry with a previous entry shows the date and eight phrases in one scrolling row, including a cell that reads like `Weight 82.4 kg ↑ 1.2`
-- [ ] 2.6 The earliest entry shows the same row with no delta text
-- [ ] 2.7 A note sits full width under the row and is absent when the entry has none
-- [ ] 2.8 A linked trainer sees that same row inside the `max-w-2xl` trainer card
-- [ ] 2.9 An empty list still reads `No measurements yet`
-- [ ] 2.10 Kitchen sink journal Default and the trainer sample entry show the scrolling row
+- [x] 2.5 On the trainee journal, an entry with a previous entry shows the date and eight phrases in one scrolling row, including a cell that reads like `Weight 82.4 kg ↑ 1.2`
+- [x] 2.6 The earliest entry shows the same row with no delta text
+- [x] 2.7 A note sits full width under the row and is absent when the entry has none
+- [x] 2.8 A linked trainer sees that same row inside the `max-w-2xl` trainer card
+- [x] 2.9 An empty list still reads `No measurements yet`
+- [x] 2.10 Kitchen sink journal Default and the trainer sample entry show the scrolling row
 
 ### Phase 3: Linked trainee row
 

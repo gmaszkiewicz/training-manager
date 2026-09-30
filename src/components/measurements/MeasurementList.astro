@@ -26,25 +26,27 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
 <ul class="mt-6 space-y-4 text-left">
   {entries.map((entry) => (
     <li class="rounded-lg border border-border bg-muted p-4 text-sm text-card-foreground">
-      <time datetime={entry.measured_on} class="font-semibold text-card-foreground">
-        {entry.measured_on}
-      </time>
-      <ul class="mt-3 space-y-1">
-        {measurementFields.map((field) => (
-          <li class="flex flex-wrap items-baseline gap-x-2">
-            <span
-              aria-label={accessibleValue(field.label, entry[field.field], field.unit)}
-              set:text={`${field.label} ${formatMeasurement(entry[field.field])} ${field.unit}`}
-            />
-            {entry.deltas ? (
+      <div class="min-w-0 overflow-x-auto">
+        <div class="flex w-max flex-nowrap items-start gap-4">
+          <time datetime={entry.measured_on} class="w-48 max-w-48 min-w-48 shrink-0 font-semibold text-card-foreground">
+            {entry.measured_on}
+          </time>
+          {measurementFields.map((field) => (
+            <div class="flex w-48 max-w-48 min-w-48 shrink-0 flex-wrap items-baseline gap-x-2">
               <span
-                aria-label={accessibleDelta(field.label, field.unit, entry.deltas[field.field])}
-                set:text={formatDelta(entry.deltas[field.field])}
+                aria-label={accessibleValue(field.label, entry[field.field], field.unit)}
+                set:text={`${field.label} ${formatMeasurement(entry[field.field])} ${field.unit}`}
               />
-            ) : null}
-          </li>
-        ))}
-      </ul>
+              {entry.deltas ? (
+                <span
+                  aria-label={accessibleDelta(field.label, field.unit, entry.deltas[field.field])}
+                  set:text={formatDelta(entry.deltas[field.field])}
+                />
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </div>
       {entry.note ? <p class="mt-3 wrap-break-word whitespace-pre-wrap text-muted-foreground">{entry.note}</p> : null}
     </li>
   ))}
