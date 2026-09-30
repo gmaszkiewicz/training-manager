@@ -52,7 +52,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-07 | product-home               | user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome                    | —             | MS-01                     | done        |
 | S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | done |
 | S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | done |
-| S-10 | trainer-panel-ui           | user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`                       | S-04, S-09    | MS-04                     | in-progress |
+| S-10 | trainer-panel-ui           | user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`                       | S-04, S-09    | MS-04                     | done |
 
 ## Streams
 
@@ -202,7 +202,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** A trainer who signs in still sees the starter glass card on `/dashboard`, while the trainee on the same route already uses the shared visual contract. Preview stays read-only and does not change measurement data, so this can run beside S-05 and S-06.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -247,3 +247,4 @@ None yet.
 - **S-07: user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome** — Archived 2026-09-29 → `context/archive/2026-09-29-product-home/`. Lesson: —.
 - **S-08: user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card** — Archived 2026-09-29 → `context/archive/2026-09-29-auth-signin-form/`. Lesson: —.
 - **S-09: user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard`** — Archived 2026-09-30 → `context/archive/2026-09-29-trainee-journal-ui/`. Lesson: —.
+- **S-10: user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`** — Archived 2026-09-30 → `context/archive/2026-09-30-trainer-panel-ui/`. Lesson: —.
