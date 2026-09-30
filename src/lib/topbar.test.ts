@@ -3,12 +3,13 @@ import { describe, expect, it } from "vitest";
 import { topbarModel } from "@/lib/topbar";
 
 describe("topbarModel", () => {
-  it("returns the guest bar and marks nothing on /", () => {
+  it("returns the guest bar and marks Home on /", () => {
     expect(topbarModel({ signedIn: false, email: "ada@example.com", role: "trainee", pathname: "/" })).toEqual({
       greeting: "Hello guest",
       email: null,
       showSignOut: false,
       links: [
+        { id: "home", label: "Home", href: "/", current: true },
         { id: "signin", label: "Sign in", href: "/auth/signin", current: false },
         { id: "signup", label: "Sign up", href: "/auth/signup", current: false },
       ],
@@ -24,6 +25,7 @@ describe("topbarModel", () => {
     });
 
     expect(result.links).toEqual([
+      { id: "home", label: "Home", href: "/", current: false },
       { id: "signin", label: "Sign in", href: "/auth/signin", current: true },
       { id: "signup", label: "Sign up", href: "/auth/signup", current: false },
     ]);
@@ -38,6 +40,7 @@ describe("topbarModel", () => {
     });
 
     expect(result.links).toEqual([
+      { id: "home", label: "Home", href: "/", current: false },
       { id: "signin", label: "Sign in", href: "/auth/signin", current: false },
       { id: "signup", label: "Sign up", href: "/auth/signup", current: true },
     ]);
