@@ -1,0 +1,99 @@
+---
+import { ServerError } from "@/components/auth/ServerError";
+import MeasurementList from "@/components/measurements/MeasurementList.astro";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { TrainerLink } from "@/lib/trainer-preview";
+import type { MeasurementWithDeltas } from "@/types";
+
+interface Props {
+  mode: "trainer" | "unavailable";
+  email: string | undefined;
+  serverError: string | null;
+  trainerLinksLoaded: boolean;
+  trainerLinks: TrainerLink[];
+  selectedLink: TrainerLink | null;
+  trainerMeasurementsLoaded: boolean;
+  entries: MeasurementWithDeltas[];
+  idPrefix?: string;
+}
+
+const {
+  mode,
+  email,
+  serverError,
+  trainerLinksLoaded,
+  trainerLinks,
+  selectedLink,
+  trainerMeasurementsLoaded,
+  entries,
+  idPrefix = "",
+} = Astro.props;
+---
+
+<div class="flex min-h-screen items-center justify-center p-4">
+  <div class="w-full max-w-2xl rounded-2xl border border-border bg-card p-8 text-card-foreground">
+    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
+      {mode === "trainer" ? "Trainer" : "Dashboard"}
+    </h1>
+    {mode === "trainer" ? (
+      <>
+        <p class="text-muted-foreground">
+          Welcome, <span class="font-semibold text-card-foreground">{email}</span>
+        </p>
+        {serverError ? <ServerError message={serverError} /> : null}
+        {trainerLinksLoaded ? (
+          <>
+            <form method="POST" action="/api/trainer-links" class="mt-6 space-y-3">
+              {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
+              <Label htmlFor={`${idPrefix}email`}>Email</Label>
+              <Input id={`${idPrefix}email`} name="email" type="email" required />
+              <Button type="submit">Link trainee</Button>
+            </form>
+            {trainerLinks.length > 0 ? (
+              <>
+                <ul class="mt-6 space-y-2 text-sm">
+                  {trainerLinks.map((link) => (
+                    <li>
+                      <a
+                        href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
+                        aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
+                        class:list={[
+                          "text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring",
+                          selectedLink?.traineeId === link.traineeId && "font-semibold text-card-foreground",
+                        ]}
+                      >
+                        {link.email}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                {selectedLink ? (
+                  trainerMeasurementsLoaded ? (
+                    entries.length === 0 ? (
+                      <p class="mt-6 text-sm text-muted-foreground">No measurements yet</p>
+                    ) : (
+                      <MeasurementList entries={entries} />
+                    )
+                  ) : (
+                    <ServerError message="Could not load measurements" />
+                  )
+                ) : null}
+              </>
+            ) : null}
+          </>
+        ) : (
+          <ServerError message="Could not load trainees" />
+        )}
+      </>
+    ) : (
+      <p class="text-muted-foreground">Could not open your journal</p>
+    )}
+    <form method="POST" action="/api/auth/signout" class="mt-6">
+      <Button type="submit" variant="outline">
+        Sign out
+      </Button>
+    </form>
+  </div>
+</div>
