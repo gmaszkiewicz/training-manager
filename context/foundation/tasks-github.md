@@ -21,6 +21,9 @@ Utworzone z `context/foundation/roadmap.md` (milestone M-1: Trainee delta and tr
 | S-05 | `edit-measurement-entry` | [#5](https://github.com/gmaszkiewicz/training-manager/issues/5) | S-05: Trainee edits a measurement | `slice` |
 | S-06 | `delete-measurement-entry` | [#6](https://github.com/gmaszkiewicz/training-manager/issues/6) | S-06: Trainee deletes a measurement | `slice` |
 | S-07 | `product-home` | [#23](https://github.com/gmaszkiewicz/training-manager/issues/23) | S-07: Public home replaces the starter welcome | `slice` |
+| S-08 | `auth-signin-form` | [#27](https://github.com/gmaszkiewicz/training-manager/issues/27) | S-08: Auth entry screens leave the starter glass card | `slice` |
+| S-09 | `trainee-journal-ui` | [#29](https://github.com/gmaszkiewicz/training-manager/issues/29) | S-09: Trainee journal leaves the starter glass card | `slice` |
+| S-10 | `trainer-panel-ui` | [#32](https://github.com/gmaszkiewicz/training-manager/issues/32) | S-10: Trainer panel leaves the starter glass card | `slice` |
 
 ## Format issue
 
