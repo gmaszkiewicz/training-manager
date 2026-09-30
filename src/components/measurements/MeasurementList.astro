@@ -26,17 +26,17 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
 <ul class="mt-6 space-y-4 text-left">
   {entries.map((entry) => (
     <li class="rounded-lg border border-border bg-muted p-4 text-sm text-card-foreground">
-      <div class="flex flex-nowrap items-start gap-4">
-        <div class="w-40 max-w-40 min-w-40 shrink-0">
+      <div class="flex flex-nowrap items-start gap-2">
+        <div class="w-28 max-w-28 min-w-28 shrink-0">
           <div class="mb-1 text-muted-foreground">Date</div>
           <time datetime={entry.measured_on} class="font-semibold text-card-foreground">
             {entry.measured_on}
           </time>
         </div>
         {measurementFields.map((field) => (
-          <div class="w-40 max-w-40 min-w-40 shrink-0">
+          <div class="w-28 max-w-28 min-w-28 shrink-0">
             <div class="mb-1 text-muted-foreground">{field.label}</div>
-            <div class="flex items-center gap-x-2">
+            <div class="flex items-center gap-x-1">
               <div
                 class="border-input flex h-9 min-w-0 flex-1 items-center rounded-md border px-3 whitespace-nowrap"
                 aria-label={accessibleValue(field.label, entry[field.field], field.unit)}
@@ -53,7 +53,9 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
           </div>
         ))}
       </div>
-      {entry.note ? <p class="mt-3 wrap-break-word whitespace-pre-wrap text-muted-foreground">{entry.note}</p> : null}
+      {entry.note ? (
+        <p class="mt-3 w-0 min-w-full wrap-break-word whitespace-pre-wrap text-muted-foreground">{entry.note}</p>
+      ) : null}
     </li>
   ))}
 </ul>

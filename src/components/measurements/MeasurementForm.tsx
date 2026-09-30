@@ -78,10 +78,6 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-function scrollFieldIntoView(event: React.FocusEvent<HTMLDivElement>) {
-  event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
-}
-
 export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
   // SSR runs in UTC. The input's default and max must be the browser's local calendar date.
   const browserToday = useSyncExternalStore(subscribeToNothing, localTodaySnapshot, emptyTodaySnapshot);
@@ -120,8 +116,8 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
   return (
     <form method="POST" action="/api/measurements" className="text-left" onSubmit={handleSubmit} noValidate>
       <div className="space-y-4">
-        <div className="flex flex-nowrap items-start gap-4">
-          <div className="w-40 max-w-40 min-w-40 shrink-0" onFocus={scrollFieldIntoView}>
+        <div className="flex flex-nowrap items-start gap-2">
+          <div className="w-28 max-w-28 min-w-28 shrink-0">
             <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
               Date
             </Label>
@@ -141,11 +137,7 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
           </div>
 
           {measurementFields.map((field) => (
-            <div
-              key={field.field}
-              className="w-40 max-w-40 min-w-40 shrink-0 [&_p]:block [&_p]:break-words"
-              onFocus={scrollFieldIntoView}
-            >
+            <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0 [&_p]:block [&_p]:break-words">
               <FormField
                 id={`${idPrefix}${field.field}`}
                 name={field.field}
@@ -164,7 +156,7 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
           ))}
         </div>
 
-        <div>
+        <div className="w-0 min-w-full">
           <Label htmlFor={`${idPrefix}note`} className="text-muted-foreground mb-1">
             Note
           </Label>
@@ -174,6 +166,7 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
             value={note}
             maxLength={1000}
             rows={3}
+            className="field-sizing-fixed"
             onChange={(event) => {
               setNote(event.target.value);
               clearError("note");
