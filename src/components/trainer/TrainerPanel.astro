@@ -30,8 +30,14 @@ const {
 } = Astro.props;
 ---
 
-<div class="flex min-h-screen items-center justify-center p-4">
-  <div class="w-max max-w-full rounded-2xl border border-border bg-card p-8 text-card-foreground">
+<div class="flex justify-center px-4 pb-8">
+  <!-- Same floor as TraineeJournal, so "No measurements yet" matches a measurement entry -->
+  <div
+    class:list={[
+      "rounded-2xl border border-border bg-card p-8 text-card-foreground",
+      selectedLink && trainerMeasurementsLoaded ? "w-max min-w-[calc(73rem+4px)]" : "w-max",
+    ]}
+  >
     <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
       {mode === "trainer" ? "Body measurements" : "Dashboard"}
     </h1>

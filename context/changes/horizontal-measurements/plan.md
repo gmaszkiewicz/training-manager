@@ -348,10 +348,10 @@ No schema, data, or API migration. Entries already stored keep their values and 
 
 #### Manual
 
-- [ ] 3.7 The selected trainee stays marked and still shows that trainee's measurements
-- [ ] 3.8 The email field and Link trainee stay stacked above the row
-- [ ] 3.9 No linked trainees still shows no name list
-- [ ] 3.10 Kitchen sink trainer Default shows two emails beside each other, with the first selected
+- [x] 3.7 The selected trainee stays marked and still shows that trainee's measurements
+- [x] 3.8 The email field and Link trainee stay stacked above the row
+- [x] 3.9 No linked trainees still shows no name list
+- [x] 3.10 Kitchen sink trainer Default shows two emails beside each other, with the first selected
 
 ### Phase 4: Fitted read-only row
 
@@ -364,11 +364,11 @@ No schema, data, or API migration. Entries already stored keep their values and 
 
 #### Manual
 
-- [ ] 4.5 A listed field shows its label above the value, and the delta beside the value, such as `Hips` above `50.0 cm` with `↑ 0.5` beside that value
-- [ ] 4.6 The value box matches the form field's border, radius, and height, is not editable, and has no focus ring
-- [ ] 4.7 The measurement row has no horizontal scrollbar, and its columns are narrower than `w-48`
-- [ ] 4.8 The journal and trainer cards are wider than `max-w-2xl` only when that width is required for the row to fit
-- [ ] 4.9 The earliest entry uses the same layout and shows no delta
-- [ ] 4.10 The form row uses those same column widths and has no horizontal scrollbar
-- [ ] 4.11 Linked trainee emails wrap to the next line when they do not fit, and that list has no horizontal scrollbar
-- [ ] 4.12 The selected trainee stays marked, and the email field and Link trainee stay above the emails
+- [x] 4.5 A listed field shows its label above the value, and the delta beside the value, such as `Hips` above `50.0 cm` with `↑ 0.5` beside that value
+- [x] 4.6 The value box matches the form field's border, radius, and height, is not editable, and has no focus ring
+- [x] 4.7 The measurement row has no horizontal scrollbar, and its columns are narrower than `w-48`
+- [x] 4.8 The journal and trainer cards are wider than `max-w-2xl` only when that width is required for the row to fit
+- [x] 4.9 The earliest entry uses the same layout and shows no delta
+- [x] 4.10 The form row uses those same column widths and has no horizontal scrollbar
+- [x] 4.11 Linked trainee emails wrap to the next line when they do not fit, and that list has no horizontal scrollbar
+- [x] 4.12 The selected trainee stays marked, and the email field and Link trainee stay above the emails

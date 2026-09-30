@@ -14,8 +14,14 @@ interface Props {
 const { measurementsLoaded, entries, serverError, idPrefix = "" } = Astro.props;
 ---
 
-<div class="flex min-h-screen items-center justify-center p-4">
-  <div class="w-max max-w-full rounded-2xl border border-border bg-card p-8 text-card-foreground">
+<div class="flex justify-center px-4 pb-8">
+  <!-- 9×w-28 + gaps + list padding + both borders, so an empty journal matches one entry -->
+  <div
+    class:list={[
+      "rounded-2xl border border-border bg-card p-8 text-card-foreground",
+      measurementsLoaded ? "w-max min-w-[calc(73rem+4px)]" : "w-max",
+    ]}
+  >
     <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Body measurements</h1>
     {measurementsLoaded ? (
       <>

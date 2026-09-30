@@ -1,7 +1,7 @@
 ---
 change_id: horizontal-measurements
 title: Measurements and linked trainees display in a row
-status: implementing
+status: impl_reviewed
 created: 2026-09-30
 updated: 2026-09-30
 archived_at: null
