@@ -18,4 +18,6 @@ Widok: dziennik trenującego na `/dashboard` (`src/components/journal/TraineeJou
 główna zmiana to zmiana orientacji wpisywania oraz wyświetlania pomiarów u trenujacego oraz trenera.
 Pomiary wprowadzane oraz wyświetlane są w kolumnie, chce aby to było w poziomie.
 
-Podlinkowani trenujący na panelu trenera (`src/components/trainer/TrainerPanel.astro`, lista `trainerLinks`) są dziś jeden pod drugim. Mają być obok siebie, w jednym poziomym rzędzie przewijanym w bok, wewnątrz tej samej karty. Formularz linkowania (email i Link trainee) zostaje nad tym rzędem. Kolejność, wybór i adresy się nie zmieniają.
+Podlinkowani trenujący na panelu trenera (`src/components/trainer/TrainerPanel.astro`, lista `trainerLinks`) są dziś jeden pod drugim. Mają być obok siebie. Formularz linkowania (email i Link trainee) zostaje nad tym rzędem. Kolejność, wybór i adresy się nie zmieniają. Jeśli maile nie mieszczą się w jednej linii, przechodzą do następnej linii. Nie ma poziomego paska przewijania.
+
+Wyświetlanie wpisu: nagłówek (Hips, Navel i pozostałe) jest nad wartością, a różnica jest obok wartości. Wygląd jest zbliżony do pól formularza, z małą różnicą, że to nie są pola edytowalne. Kolumny są węższe, żeby nie było poziomego paska przewijania. Jeśli bez tego pasek wraca, poszerzyć div, w którym osadzone są pomiary.
