@@ -3,19 +3,19 @@ import { CircleAlert, Plus, Ruler, Scale } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { ServerError } from "@/components/auth/ServerError";
 import { SubmitButton } from "@/components/auth/SubmitButton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { createMeasurementInputSchema, measurementFields } from "@/lib/measurement-input";
-import { cn } from "@/lib/utils";
 import type { MeasurementField } from "@/types";
 
 interface Props {
   serverError?: string | null;
+  idPrefix?: string;
 }
 
 type ErrorField = "measured_on" | MeasurementField | "note";
 type FormErrors = Partial<Record<ErrorField, string>>;
-
-const controlClass =
-  "w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring";
 
 const emptyValues: Record<MeasurementField, string> = {
   weight_kg: "",
@@ -78,7 +78,7 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-export default function MeasurementForm({ serverError }: Props) {
+export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
   // SSR runs in UTC. The input's default and max must be the browser's local calendar date.
   const browserToday = useSyncExternalStore(subscribeToNothing, localTodaySnapshot, emptyTodaySnapshot);
   const [measuredOn, setMeasuredOn] = useState<string | null>(null);
@@ -115,13 +115,13 @@ export default function MeasurementForm({ serverError }: Props) {
 
   return (
     <form method="POST" action="/api/measurements" className="text-left" onSubmit={handleSubmit} noValidate>
-      <div className="border-border bg-card text-card-foreground space-y-4 rounded-2xl border p-8">
+      <div className="space-y-4">
         <div>
-          <label htmlFor="measured_on" className="text-muted-foreground mb-1 block text-sm">
+          <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
             Date
-          </label>
-          <input
-            id="measured_on"
+          </Label>
+          <Input
+            id={`${idPrefix}measured_on`}
             name="measured_on"
             type="date"
             value={dateValue}
@@ -130,7 +130,7 @@ export default function MeasurementForm({ serverError }: Props) {
               setMeasuredOn(event.target.value);
               clearError("measured_on");
             }}
-            className={cn(controlClass, errors.measured_on && "border-destructive")}
+            aria-invalid={errors.measured_on ? true : undefined}
           />
           <FieldError message={errors.measured_on} />
         </div>
@@ -138,7 +138,8 @@ export default function MeasurementForm({ serverError }: Props) {
         {measurementFields.map((field) => (
           <FormField
             key={field.field}
-            id={field.field}
+            id={`${idPrefix}${field.field}`}
+            name={field.field}
             type="number"
             step="0.1"
             label={`${field.label} ${field.unit}`}
@@ -153,11 +154,11 @@ export default function MeasurementForm({ serverError }: Props) {
         ))}
 
         <div>
-          <label htmlFor="note" className="text-muted-foreground mb-1 block text-sm">
+          <Label htmlFor={`${idPrefix}note`} className="text-muted-foreground mb-1">
             Note
-          </label>
-          <textarea
-            id="note"
+          </Label>
+          <Textarea
+            id={`${idPrefix}note`}
             name="note"
             value={note}
             maxLength={1000}
@@ -166,7 +167,7 @@ export default function MeasurementForm({ serverError }: Props) {
               setNote(event.target.value);
               clearError("note");
             }}
-            className={cn(controlClass, errors.note && "border-destructive")}
+            aria-invalid={errors.note ? true : undefined}
           />
           <FieldError message={errors.note} />
         </div>

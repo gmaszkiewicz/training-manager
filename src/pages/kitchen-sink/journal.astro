@@ -1,0 +1,136 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import TraineeJournal from "@/components/journal/TraineeJournal.astro";
+import JournalSinkStates from "@/components/kitchen-sink/JournalSinkStates";
+import { measurementFields } from "@/lib/measurement-input";
+import type { FieldDelta, MeasurementField, MeasurementWithDeltas } from "@/types";
+
+const fieldValues = Object.fromEntries(
+  measurementFields.map((definition, index) => [definition.field, 50 + index * 5 + 0.5]),
+) as Record<MeasurementField, number>;
+
+const deltas = Object.fromEntries(
+  measurementFields.map((definition, index) => {
+    const direction: FieldDelta["direction"] = index % 3 === 0 ? "up" : index % 3 === 1 ? "down" : "none";
+    return [
+      definition.field,
+      {
+        direction,
+        difference: direction === "none" ? 0 : 0.5 + index * 0.1,
+      } satisfies FieldDelta,
+    ];
+  }),
+) as Record<MeasurementField, FieldDelta>;
+
+const sampleEntry: MeasurementWithDeltas = {
+  id: "sink-measurement-1",
+  measured_on: "2026-09-15",
+  created_at: "2026-09-15T12:00:00.000Z",
+  note: "Felt strong after the session.",
+  ...fieldValues,
+  deltas,
+};
+---
+
+<Layout title="Kitchen sink — journal">
+  <div class="bg-background text-foreground min-h-screen w-full">
+    <div class="mx-auto flex max-w-4xl flex-col gap-12 px-4 py-10 sm:px-8">
+      <header class="flex flex-col gap-2">
+        <h1 class="text-2xl font-bold">Kitchen sink — journal</h1>
+        <p class="text-muted-foreground text-sm">
+          States for <code class="text-foreground">/dashboard</code> trainee journal. Public review surface (not linked
+          from the product).
+        </p>
+      </header>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-default">
+        <h2 id="state-default" class="border-border border-b pb-2 text-lg font-semibold">
+          Default
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TraineeJournal with measurements loaded, one sample entry (every field, note, and deltas), and no server
+          error. Form ids are unprefixed.
+        </p>
+        <TraineeJournal
+          email="trainee@example.com"
+          measurementsLoaded={true}
+          entries={[sampleEntry]}
+          serverError={null}
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-hover">
+        <h2 id="state-hover" class="border-border border-b pb-2 text-lg font-semibold">
+          Hover
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. Sign out uses the outline hover (
+          <code class="text-foreground">hover:bg-accent</code>). List rows are not controls, so row hover is N/A.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-focus-visible">
+        <h2 id="state-focus-visible" class="border-border border-b pb-2 text-lg font-semibold">
+          Focus-visible
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Tab through the date field, one measurement field, the note, the submit button, and Sign out in the Default
+          journal above. The ring is the shared <code class="text-foreground">--ring</code>.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-disabled">
+        <h2 id="state-disabled" class="border-border border-b pb-2 text-lg font-semibold">
+          Disabled
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          SubmitButton with <code class="text-foreground">forcePending</code> so the control is disabled, showing
+          "Adding measurement...". MeasurementForm does not pass <code class="text-foreground">forcePending</code>.
+        </p>
+        <JournalSinkStates client:load variant="disabled" />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-error">
+        <h2 id="state-error" class="border-border border-b pb-2 text-lg font-semibold">
+          Error
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TraineeJournal with measurements not loaded (ServerError, form absent). FormField with a field error; id is
+          sink-scoped so it does not collide with the Default form.
+        </p>
+        <TraineeJournal email="trainee@example.com" measurementsLoaded={false} entries={[]} serverError={null} />
+        <JournalSinkStates client:load variant="error" />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty">
+        <h2 id="state-empty" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TraineeJournal with measurements loaded, empty entries, and{" "}
+          <code class="text-foreground">idPrefix="empty-"</code> so "No measurements yet" shows under a second form
+          whose ids do not collide with Default.
+        </p>
+        <TraineeJournal
+          email="trainee@example.com"
+          measurementsLoaded={true}
+          entries={[]}
+          serverError={null}
+          idPrefix="empty-"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-loading">
+        <h2 id="state-loading" class="border-border border-b pb-2 text-lg font-semibold">
+          Loading
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          SubmitButton with <code class="text-foreground">forcePending</code> showing "Adding measurement..." and the
+          spinner. A separate measurements-loading state is N/A because the journal renders only after the server call
+          returns.
+        </p>
+        <JournalSinkStates client:load variant="loading" />
+      </section>
+    </div>
+  </div>
+</Layout>

@@ -49,6 +49,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Do not use literal colours or arbitrary values in views — use role tokens and shared components.
 - Home kitchen sink: `/kitchen-sink/home`.
 - Auth kitchen sink: `/kitchen-sink/auth`.
+- Journal kitchen sink: `/kitchen-sink/journal`.
 
 ### Environment
 
