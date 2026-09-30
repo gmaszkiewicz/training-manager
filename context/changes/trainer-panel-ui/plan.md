@@ -240,16 +240,16 @@ No schema change and no stored data change. `@utility bg-cosmic` is removed in P
 
 #### Automated
 
-- [x] 2.1 `src/pages/kitchen-sink/trainer.astro` renders TrainerPanel for the default panel, zero links, a selected trainee with no measurements, the query error, trainees load failure, measurements load failure, and the unavailable role
-- [x] 2.2 `scripts/check-home-tokens.mjs` lists `src/components/trainer/TrainerPanel.astro`, `src/pages/kitchen-sink/trainer.astro`, and `src/pages/dashboard.astro`, and `npm run check:home-tokens` passes
-- [x] 2.3 `CLAUDE.md` names `/kitchen-sink/trainer`
-- [x] 2.4 `npm run lint` passes
+- [x] 2.1 `src/pages/kitchen-sink/trainer.astro` renders TrainerPanel for the default panel, zero links, a selected trainee with no measurements, the query error, trainees load failure, measurements load failure, and the unavailable role — b8dc941
+- [x] 2.2 `scripts/check-home-tokens.mjs` lists `src/components/trainer/TrainerPanel.astro`, `src/pages/kitchen-sink/trainer.astro`, and `src/pages/dashboard.astro`, and `npm run check:home-tokens` passes — b8dc941
+- [x] 2.3 `CLAUDE.md` names `/kitchen-sink/trainer` — b8dc941
+- [x] 2.4 `npm run lint` passes — b8dc941
 
 #### Manual
 
-- [x] 2.5 The sink marks Hover and Focus-visible as prose on the Default panel, and marks Disabled and Loading N/A because the link form is a full-page POST with no pending control and the panel renders only after the server calls return
-- [x] 2.6 At a desktop width and one mobile width, the Default card shows the email field, Link trainee, a trainee link, a measurement row, and Sign out without the form overflowing horizontally
-- [x] 2.7 Tabbing the Default panel moves through the email field, Link trainee, the trainee link, and Sign out, and each focus ring uses the shared ring token
-- [x] 2.8 On `/kitchen-sink/trainer`, trainees load failure shows "Could not load trainees" and hides the form
-- [x] 2.9 On `/kitchen-sink/trainer`, a selected trainee whose measurements fail to load shows "Could not load measurements" under the trainee links
-- [x] 2.10 On `/kitchen-sink/trainer`, the unavailable panel shows heading "Dashboard", the sentence "Could not open your journal", and Sign out on the light card
+- [x] 2.5 The sink marks Hover and Focus-visible as prose on the Default panel, and marks Disabled and Loading N/A because the link form is a full-page POST with no pending control and the panel renders only after the server calls return — b8dc941
+- [x] 2.6 At a desktop width and one mobile width, the Default card shows the email field, Link trainee, a trainee link, a measurement row, and Sign out without the form overflowing horizontally — b8dc941
+- [x] 2.7 Tabbing the Default panel moves through the email field, Link trainee, the trainee link, and Sign out, and each focus ring uses the shared ring token — b8dc941
+- [x] 2.8 On `/kitchen-sink/trainer`, trainees load failure shows "Could not load trainees" and hides the form — b8dc941
+- [x] 2.9 On `/kitchen-sink/trainer`, a selected trainee whose measurements fail to load shows "Could not load measurements" under the trainee links — b8dc941
+- [x] 2.10 On `/kitchen-sink/trainer`, the unavailable panel shows heading "Dashboard", the sentence "Could not open your journal", and Sign out on the light card — b8dc941
