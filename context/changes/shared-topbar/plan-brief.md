@@ -12,19 +12,20 @@ A guest and a signed-in trainee or trainer should see the same top bar on the pu
 
 ## Desired End State
 
-A guest on `/` reads "Hello guest", with Sign in and Sign up unmarked, and the hero buttons stay. Sign in is marked on `/auth/signin`; Sign up is marked on `/auth/signup`.
+A guest on `/` reads "Hello guest", with Home marked, Sign in, and Sign up, and the hero buttons stay. On `/auth/signin`, Sign in is marked. On `/auth/signup`, Sign up is marked. Home is on both auth bars and is not marked there.
 
-A trainee `ada@example.com` reads "Hello trainee" and `ada@example.com`, with Home (`/`), Measurements (`/dashboard`), and Sign out. Home is marked on `/`. Measurements is marked on `/dashboard`, including `/dashboard?trainee=abc`, and that link always goes to `/dashboard` with no query. Opening that URL keeps the existing preview: the most recently linked trainee, or nobody when the list is empty. A trainer reads "Hello trainer" instead. A signed-in user with no usable stored role reads `ada@example.com` only, with the same signed-in links. A signed-in person on the sign-in page sees that signed-in bar and nothing marked. Sign out is gone from both cards. Email confirmation has no bar.
+A trainee `ada@example.com` reads "Hello trainee ada@example.com" as one phrase with a single space, with Home (`/`), Measurements (`/dashboard`), and Sign out. Home is marked on `/`. Measurements is marked on `/dashboard`, including `/dashboard?trainee=abc`, and that link always goes to `/dashboard` with no query. Opening that URL keeps the existing preview: the most recently linked trainee, or nobody when the list is empty. A trainer reads "Hello trainer" instead, still one space before the email. A signed-in user with no usable stored role reads `ada@example.com` only, with the same signed-in links. A signed-in person on the sign-in page sees that signed-in bar and nothing marked. Sign out, Welcome, and the email are gone from both cards. Those cards are titled Body measurements. The unavailable panel heading stays Dashboard. Email confirmation has no bar.
 
 ## Key Decisions Made
 
 | Decision | Choice | Why (1 sentence) | Source |
 | --- | --- | --- | --- |
 | Where the bar appears | `/`, sign-in, sign-up, and both dashboards | S-11 names those screens and does not name email confirmation | Roadmap |
-| Guest copy | "Hello guest", Sign in, Sign up | Replaces "Not signed in" on the existing home bar | Roadmap |
-| Signed-in copy | "Hello trainee" or "Hello trainer", the email, Home, Measurements, Sign out | Replaces the email plus Dashboard link | Roadmap |
+| Guest copy | "Hello guest", Home, Sign in, Sign up | Home was added after the first bar shipped so a guest can leave sign-in and sign-up | Follow-up |
+| Signed-in copy | "Hello trainee" or "Hello trainer" and the email as one phrase, Home, Measurements, Sign out | One space between the greeting and the email; replaces the email plus Dashboard link | Follow-up |
+| Card copy | Title Body measurements; no Welcome and no email on the card | The bar already carries the greeting and the email | Follow-up |
 | Sign out placement | Only in the bar | The journal and trainer cards drop their own Sign out form | Roadmap |
-| Current page | Mark the link whose href equals the pathname | A guest on `/` has no matching link, so nothing is marked; Sign out is never marked | Plan |
+| Current page | Mark the link whose href equals the pathname | A guest on `/` marks Home; Sign out is never marked | Follow-up |
 | Signed-in user on auth | The signed-in bar, nothing marked | The bar follows the session, and Home and Measurements are not those paths | Plan |
 | Unusable role | Email only, signed-in links, no Hello line | A failed read or a role other than trainee or trainer must not say guest or trainee | Plan |
 | Measurements href | Always `/dashboard`, still marked when `?trainee=` is present | Clicking it follows the existing preview rule: the most recently linked trainee, not an empty selection | Plan |
@@ -43,7 +44,8 @@ A trainee `ada@example.com` reads "Hello trainee" and `ada@example.com`, with Ho
 **Out of scope:**
 
 - `/auth/confirm-email`, and any redirect off the auth pages
-- A Home link for guests, and removing the hero Sign in and Sign up
+- Removing the hero Sign in and Sign up
+- Changing the unavailable-panel heading away from Dashboard
 - Measurement data, trainer linking, and the unavailable-panel copy
 - A migration or a mobile menu
 
@@ -70,6 +72,6 @@ A trainee `ada@example.com` reads "Hello trainee" and `ada@example.com`, with Ho
 
 ## Success Criteria (Summary)
 
-- A guest can move among `/`, sign-in, and sign-up and see "Hello guest", with Sign in or Sign up marked only on its own page.
-- A trainee or trainer sees "Hello trainee" or "Hello trainer", their email, Home, Measurements, and Sign out, with the current path marked, and no second Sign out under the measurements.
+- A guest can move among `/`, sign-in, and sign-up and see "Hello guest", with Home, and with Sign in or Sign up marked only on its own page. Home is marked on `/`.
+- A trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, plus Home, Measurements, and Sign out, with the current path marked. The measurement card is titled Body measurements and has no Sign out, Welcome, or email.
 - A signed-in user with no usable stored role sees the email and the signed-in links, and is not called a guest or a trainee.
