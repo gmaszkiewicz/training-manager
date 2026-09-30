@@ -243,17 +243,17 @@ No schema, data, or API migration. Entries already stored keep their values and 
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` passes
-- [ ] 1.2 `npm run test` passes
-- [ ] 1.3 `src/components/journal/TraineeJournal.astro` keeps `max-w-2xl` and includes `min-w-0` on the card
+- [x] 1.1 `npm run lint` passes
+- [x] 1.2 `npm run test` passes
+- [x] 1.3 `src/components/journal/TraineeJournal.astro` keeps `max-w-2xl` and includes `min-w-0` on the card
 
 #### Manual
 
-- [ ] 1.4 On `/dashboard` as a trainee, Date and the eight measurements are one row that scrolls horizontally inside the card
-- [ ] 1.5 Note, a server error, and Add measurement sit full width under the row and do not scroll with it
-- [ ] 1.6 A validation error stays under its own field inside the row
-- [ ] 1.7 At a narrow viewport the fields do not wrap; sideways scroll reaches Navel
-- [ ] 1.8 A valid submit still saves the same values as before this layout
+- [x] 1.4 On `/dashboard` as a trainee, Date and the eight measurements are one row that scrolls horizontally inside the card
+- [x] 1.5 Note, a server error, and Add measurement sit full width under the row and do not scroll with it
+- [x] 1.6 A validation error stays under its own field inside the row
+- [x] 1.7 At a narrow viewport the fields do not wrap; sideways scroll reaches Navel
+- [x] 1.8 A valid submit still saves the same values as before this layout
 
 ### Phase 2: Shared list row
 
