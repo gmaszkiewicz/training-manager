@@ -1,0 +1,236 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import TrainerPanel from "@/components/trainer/TrainerPanel.astro";
+import { measurementFields } from "@/lib/measurement-input";
+import type { TrainerLink } from "@/lib/trainer-preview";
+import type { FieldDelta, MeasurementField, MeasurementWithDeltas } from "@/types";
+
+const sampleLink: TrainerLink = {
+  traineeId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  email: "trainee@example.com",
+  linkedAt: "2026-09-15T12:00:00.000Z",
+};
+
+const fieldValues = Object.fromEntries(
+  measurementFields.map((definition, index) => [definition.field, 50 + index * 5 + 0.5]),
+) as Record<MeasurementField, number>;
+
+const deltas = Object.fromEntries(
+  measurementFields.map((definition, index) => {
+    const direction: FieldDelta["direction"] = index % 3 === 0 ? "up" : index % 3 === 1 ? "down" : "none";
+    return [
+      definition.field,
+      {
+        direction,
+        difference: direction === "none" ? 0 : 0.5 + index * 0.1,
+      } satisfies FieldDelta,
+    ];
+  }),
+) as Record<MeasurementField, FieldDelta>;
+
+const sampleEntry: MeasurementWithDeltas = {
+  id: "sink-measurement-1",
+  measured_on: "2026-09-15",
+  created_at: "2026-09-15T12:00:00.000Z",
+  note: "Felt strong after the session.",
+  ...fieldValues,
+  deltas,
+};
+---
+
+<Layout title="Kitchen sink — trainer">
+  <div class="bg-background text-foreground min-h-screen w-full">
+    <div class="mx-auto flex max-w-4xl flex-col gap-12 px-4 py-10 sm:px-8">
+      <header class="flex flex-col gap-2">
+        <h1 class="text-2xl font-bold">Kitchen sink — trainer</h1>
+        <p class="text-muted-foreground text-sm">
+          States for <code class="text-foreground">/dashboard</code> trainer panel. Public review surface (not linked
+          from the product).
+        </p>
+      </header>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-default">
+        <h2 id="state-default" class="border-border border-b pb-2 text-lg font-semibold">
+          Default
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TrainerPanel in trainer mode with links loaded, one selected trainee, one sample measurement entry, and no
+          server error. Form ids are unprefixed.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          email="trainer@example.com"
+          serverError={null}
+          trainerLinksLoaded={true}
+          trainerLinks={[sampleLink]}
+          selectedLink={sampleLink}
+          trainerMeasurementsLoaded={true}
+          entries={[sampleEntry]}
+          idPrefix=""
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-hover">
+        <h2 id="state-hover" class="border-border border-b pb-2 text-lg font-semibold">
+          Hover
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          In the Default panel above, Link trainee uses Button <code class="text-foreground">hover:bg-primary/90</code>.
+          Sign out uses the outline hover (<code class="text-foreground">hover:bg-accent</code>). Trainee links use{" "}
+          <code class="text-foreground">hover:underline</code>. List rows are not controls, so row hover is N/A.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-focus-visible">
+        <h2 id="state-focus-visible" class="border-border border-b pb-2 text-lg font-semibold">
+          Focus-visible
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Tab the email field, Link trainee, the trainee link, and Sign out in the Default panel above. The ring is the
+          shared <code class="text-foreground">--ring</code>.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-disabled">
+        <h2 id="state-disabled" class="border-border border-b pb-2 text-lg font-semibold">
+          Disabled
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          N/A because Link trainee is a full-page POST and this change adds no pending or disabled control.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty-links">
+        <h2 id="state-empty-links" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty, zero links
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Links loaded with an empty trainee list and no selected link. No empty-list sentence. Form ids use{" "}
+          <code class="text-foreground">idPrefix="links-"</code>.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          email="trainer@example.com"
+          serverError={null}
+          trainerLinksLoaded={true}
+          trainerLinks={[]}
+          selectedLink={null}
+          trainerMeasurementsLoaded={true}
+          entries={[]}
+          idPrefix="links-"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty-measurements">
+        <h2 id="state-empty-measurements" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty, no measurements
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          One selected trainee with measurements loaded and empty entries, showing "No measurements yet". Form ids use{" "}
+          <code class="text-foreground">idPrefix="empty-"</code>.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          email="trainer@example.com"
+          serverError={null}
+          trainerLinksLoaded={true}
+          trainerLinks={[sampleLink]}
+          selectedLink={sampleLink}
+          trainerMeasurementsLoaded={true}
+          entries={[]}
+          idPrefix="empty-"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-error-query">
+        <h2 id="state-error-query" class="border-border border-b pb-2 text-lg font-semibold">
+          Error, query
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Same as Default with <code class="text-foreground">serverError="No trainee with that email"</code> and{" "}
+          <code class="text-foreground">idPrefix="error-query-"</code>.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          email="trainer@example.com"
+          serverError="No trainee with that email"
+          trainerLinksLoaded={true}
+          trainerLinks={[sampleLink]}
+          selectedLink={sampleLink}
+          trainerMeasurementsLoaded={true}
+          entries={[sampleEntry]}
+          idPrefix="error-query-"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-error-trainees">
+        <h2 id="state-error-trainees" class="border-border border-b pb-2 text-lg font-semibold">
+          Error, trainees
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          <code class="text-foreground">{"trainerLinksLoaded={false}"}</code> so the form is absent and ServerError
+          shows "Could not load trainees".
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          email="trainer@example.com"
+          serverError={null}
+          trainerLinksLoaded={false}
+          trainerLinks={[]}
+          selectedLink={null}
+          trainerMeasurementsLoaded={true}
+          entries={[]}
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-error-measurements">
+        <h2 id="state-error-measurements" class="border-border border-b pb-2 text-lg font-semibold">
+          Error, measurements
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          One selected trainee with <code class="text-foreground">{"trainerMeasurementsLoaded={false}"}</code>, showing
+          "Could not load measurements". Form ids use{" "}
+          <code class="text-foreground">idPrefix="error-measurements-"</code>.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          email="trainer@example.com"
+          serverError={null}
+          trainerLinksLoaded={true}
+          trainerLinks={[sampleLink]}
+          selectedLink={sampleLink}
+          trainerMeasurementsLoaded={false}
+          entries={[]}
+          idPrefix="error-measurements-"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-unavailable">
+        <h2 id="state-unavailable" class="border-border border-b pb-2 text-lg font-semibold">
+          Unavailable
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          <code class="text-foreground">mode="unavailable"</code>: heading "Dashboard", sentence "Could not open your
+          journal", and Sign out.
+        </p>
+        <TrainerPanel
+          mode="unavailable"
+          email={undefined}
+          serverError={null}
+          trainerLinksLoaded={false}
+          trainerLinks={[]}
+          selectedLink={null}
+          trainerMeasurementsLoaded={false}
+          entries={[]}
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-loading">
+        <h2 id="state-loading" class="border-border border-b pb-2 text-lg font-semibold">
+          Loading
+        </h2>
+        <p class="text-muted-foreground text-sm">N/A because the panel renders only after the server calls return.</p>
+      </section>
+    </div>
+  </div>
+</Layout>

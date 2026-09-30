@@ -50,6 +50,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Home kitchen sink: `/kitchen-sink/home`.
 - Auth kitchen sink: `/kitchen-sink/auth`.
 - Journal kitchen sink: `/kitchen-sink/journal`.
+- Trainer kitchen sink: `/kitchen-sink/trainer`.
 
 ### Environment
 

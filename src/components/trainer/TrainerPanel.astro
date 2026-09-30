@@ -60,8 +60,10 @@ const {
                         href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
                         aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
                         class:list={[
-                          "text-muted-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring",
-                          selectedLink?.traineeId === link.traineeId && "font-semibold text-card-foreground",
+                          "hover:underline focus-visible:ring-2 focus-visible:ring-ring",
+                          selectedLink?.traineeId === link.traineeId
+                            ? "font-semibold text-card-foreground"
+                            : "text-muted-foreground",
                         ]}
                       >
                         {link.email}
