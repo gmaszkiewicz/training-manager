@@ -23,6 +23,8 @@ const FILES = [
   "src/components/journal/TraineeJournal.astro",
   "src/components/measurements/MeasurementList.astro",
   "src/components/trainer/TrainerPanel.astro",
+  "src/pages/kitchen-sink/home.astro",
+  "src/pages/kitchen-sink/journal.astro",
   "src/pages/kitchen-sink/trainer.astro",
   "src/pages/dashboard.astro",
 ];

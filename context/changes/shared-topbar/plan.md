@@ -292,27 +292,27 @@ No migration. `profiles_select_own` already allows the signed-in user to read th
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes
-- [x] 2.2 `npm run check:home-tokens` passes
-- [x] 2.3 `npm run build` passes
+- [x] 2.1 `npm run lint` passes — 2c2a3df
+- [x] 2.2 `npm run check:home-tokens` passes — 2c2a3df
+- [x] 2.3 `npm run build` passes — 2c2a3df
 
 #### Manual
 
-- [x] 2.4 A guest on `/auth/signin` sees the bar above the card, with Sign in marked and Sign up not marked
-- [x] 2.5 A guest on `/auth/signup` sees the bar above the card, with Sign up marked and Sign in not marked
-- [x] 2.6 A signed-in trainee on `/auth/signin` reads "Hello trainee", their email, Home, Measurements, and Sign out, and nothing is marked
-- [x] 2.7 A trainee on `/dashboard` sees Measurements marked, and the journal card has no Sign out
-- [x] 2.8 A trainer on `/dashboard?trainee=abc` sees Measurements marked with href `/dashboard`; clicking it opens `/dashboard` with no query, the most recently linked trainee is selected, and the panel has no Sign out
-- [x] 2.9 `/auth/confirm-email` has no top bar
+- [x] 2.4 A guest on `/auth/signin` sees the bar above the card, with Sign in marked and Sign up not marked — 2c2a3df
+- [x] 2.5 A guest on `/auth/signup` sees the bar above the card, with Sign up marked and Sign in not marked — 2c2a3df
+- [x] 2.6 A signed-in trainee on `/auth/signin` reads "Hello trainee", their email, Home, Measurements, and Sign out, and nothing is marked — 2c2a3df
+- [x] 2.7 A trainee on `/dashboard` sees Measurements marked, and the journal card has no Sign out — 2c2a3df
+- [x] 2.8 A trainer on `/dashboard?trainee=abc` sees Measurements marked with href `/dashboard`; clicking it opens `/dashboard` with no query, the most recently linked trainee is selected, and the panel has no Sign out — 2c2a3df
+- [x] 2.9 `/auth/confirm-email` has no top bar — 2c2a3df
 
 ### Phase 3: Kitchen sinks
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 `npm run check:home-tokens` passes
+- [x] 3.1 `npm run lint` passes
+- [x] 3.2 `npm run check:home-tokens` passes
 
 #### Manual
 
-- [ ] 3.3 `/kitchen-sink/home` shows the five preview bars: guest on `/` with nothing marked, guest on `/auth/signin` with Sign in marked, trainee `ada@example.com` on `/` with Home marked, trainer `ada@example.com` with Measurements href `/dashboard` marked, and email-only `ada@example.com` with no Hello line
-- [ ] 3.4 The journal and trainer sinks no longer show Sign out on the card, and their hover and focus notes no longer tell you to tab to a card Sign out
+- [x] 3.3 `/kitchen-sink/home` shows the five preview bars: guest on `/` with nothing marked, guest on `/auth/signin` with Sign in marked, trainee `ada@example.com` on `/` with Home marked, trainer `ada@example.com` with Measurements href `/dashboard` marked, and email-only `ada@example.com` with no Hello line
+- [x] 3.4 The journal and trainer sinks no longer show Sign out on the card, and their hover and focus notes no longer tell you to tab to a card Sign out
