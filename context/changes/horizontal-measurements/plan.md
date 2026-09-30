@@ -259,27 +259,27 @@ No schema, data, or API migration. Entries already stored keep their values and 
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes
-- [x] 2.2 `npm run test` passes
-- [x] 2.3 `npm run build` passes
-- [x] 2.4 `src/components/journal/TraineeJournal.astro` and `src/components/trainer/TrainerPanel.astro` keep `max-w-2xl` and include `min-w-0` on their cards
+- [x] 2.1 `npm run lint` passes — 1c035fe
+- [x] 2.2 `npm run test` passes — 1c035fe
+- [x] 2.3 `npm run build` passes — 1c035fe
+- [x] 2.4 `src/components/journal/TraineeJournal.astro` and `src/components/trainer/TrainerPanel.astro` keep `max-w-2xl` and include `min-w-0` on their cards — 1c035fe
 
 #### Manual
 
-- [x] 2.5 On the trainee journal, an entry with a previous entry shows the date and eight phrases in one scrolling row, including a cell that reads like `Weight 82.4 kg ↑ 1.2`
-- [x] 2.6 The earliest entry shows the same row with no delta text
-- [x] 2.7 A note sits full width under the row and is absent when the entry has none
-- [x] 2.8 A linked trainer sees that same row inside the `max-w-2xl` trainer card
-- [x] 2.9 An empty list still reads `No measurements yet`
-- [x] 2.10 Kitchen sink journal Default and the trainer sample entry show the scrolling row
+- [x] 2.5 On the trainee journal, an entry with a previous entry shows the date and eight phrases in one scrolling row, including a cell that reads like `Weight 82.4 kg ↑ 1.2` — 1c035fe
+- [x] 2.6 The earliest entry shows the same row with no delta text — 1c035fe
+- [x] 2.7 A note sits full width under the row and is absent when the entry has none — 1c035fe
+- [x] 2.8 A linked trainer sees that same row inside the `max-w-2xl` trainer card — 1c035fe
+- [x] 2.9 An empty list still reads `No measurements yet` — 1c035fe
+- [x] 2.10 Kitchen sink journal Default and the trainer sample entry show the scrolling row — 1c035fe
 
 ### Phase 3: Linked trainee row
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 `npm run test` passes
-- [ ] 3.3 `src/components/trainer/TrainerPanel.astro` still has `max-w-2xl` and `min-w-0` on the card
+- [x] 3.1 `npm run lint` passes
+- [x] 3.2 `npm run test` passes
+- [x] 3.3 `src/components/trainer/TrainerPanel.astro` still has `max-w-2xl` and `min-w-0` on the card
 
 #### Manual
 
