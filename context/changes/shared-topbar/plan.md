@@ -277,33 +277,33 @@ No migration. `profiles_select_own` already allows the signed-in user to read th
 
 #### Automated
 
-- [x] 1.1 `npm test` passes, including guest on `/` marking nothing, Sign in marked on `/auth/signin`, Sign up marked on `/auth/signup`, Home marked on `/` when signed in, Measurements marked on `/dashboard` with href `/dashboard`, a signed-in user on `/auth/signin` marking nothing, "Hello trainee" and "Hello trainer" with the email, and email-only with greeting null when role is null
-- [x] 1.2 `npm run lint` passes
-- [x] 1.3 `npm run check:home-tokens` passes
+- [x] 1.1 `npm test` passes, including guest on `/` marking nothing, Sign in marked on `/auth/signin`, Sign up marked on `/auth/signup`, Home marked on `/` when signed in, Measurements marked on `/dashboard` with href `/dashboard`, a signed-in user on `/auth/signin` marking nothing, "Hello trainee" and "Hello trainer" with the email, and email-only with greeting null when role is null — 8dacfb9
+- [x] 1.2 `npm run lint` passes — 8dacfb9
+- [x] 1.3 `npm run check:home-tokens` passes — 8dacfb9
 
 #### Manual
 
-- [x] 1.4 On `/`, a guest reads "Hello guest" with Sign in and Sign up, neither link is marked, and the hero under Training Manager still shows Sign in and Sign up
-- [x] 1.5 On `/`, a signed-in trainee reads "Hello trainee", their email, Home marked, Measurements linking to `/dashboard`, and Sign out
-- [x] 1.6 On `/`, a signed-in trainer reads "Hello trainer", their email, Home marked, Measurements, and Sign out
-- [x] 1.7 On `/`, a signed-in user with no profile row reads only their email, with Home, Measurements, and Sign out, and does not read "Hello guest", "Hello trainee", or "Hello trainer"
+- [x] 1.4 On `/`, a guest reads "Hello guest" with Sign in and Sign up, neither link is marked, and the hero under Training Manager still shows Sign in and Sign up — 8dacfb9
+- [x] 1.5 On `/`, a signed-in trainee reads "Hello trainee", their email, Home marked, Measurements linking to `/dashboard`, and Sign out — 8dacfb9
+- [x] 1.6 On `/`, a signed-in trainer reads "Hello trainer", their email, Home marked, Measurements, and Sign out — 8dacfb9
+- [x] 1.7 On `/`, a signed-in user with no profile row reads only their email, with Home, Measurements, and Sign out, and does not read "Hello guest", "Hello trainee", or "Hello trainer" — 8dacfb9
 
 ### Phase 2: Auth and both dashboards
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run check:home-tokens` passes
-- [ ] 2.3 `npm run build` passes
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run check:home-tokens` passes
+- [x] 2.3 `npm run build` passes
 
 #### Manual
 
-- [ ] 2.4 A guest on `/auth/signin` sees the bar above the card, with Sign in marked and Sign up not marked
-- [ ] 2.5 A guest on `/auth/signup` sees the bar above the card, with Sign up marked and Sign in not marked
-- [ ] 2.6 A signed-in trainee on `/auth/signin` reads "Hello trainee", their email, Home, Measurements, and Sign out, and nothing is marked
-- [ ] 2.7 A trainee on `/dashboard` sees Measurements marked, and the journal card has no Sign out
-- [ ] 2.8 A trainer on `/dashboard?trainee=abc` sees Measurements marked with href `/dashboard`; clicking it opens `/dashboard` with no query, the most recently linked trainee is selected, and the panel has no Sign out
-- [ ] 2.9 `/auth/confirm-email` has no top bar
+- [x] 2.4 A guest on `/auth/signin` sees the bar above the card, with Sign in marked and Sign up not marked
+- [x] 2.5 A guest on `/auth/signup` sees the bar above the card, with Sign up marked and Sign in not marked
+- [x] 2.6 A signed-in trainee on `/auth/signin` reads "Hello trainee", their email, Home, Measurements, and Sign out, and nothing is marked
+- [x] 2.7 A trainee on `/dashboard` sees Measurements marked, and the journal card has no Sign out
+- [x] 2.8 A trainer on `/dashboard?trainee=abc` sees Measurements marked with href `/dashboard`; clicking it opens `/dashboard` with no query, the most recently linked trainee is selected, and the panel has no Sign out
+- [x] 2.9 `/auth/confirm-email` has no top bar
 
 ### Phase 3: Kitchen sinks
 
