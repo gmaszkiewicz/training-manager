@@ -22,6 +22,9 @@ const FILES = [
   "src/components/measurements/MeasurementForm.tsx",
   "src/components/journal/TraineeJournal.astro",
   "src/components/measurements/MeasurementList.astro",
+  "src/components/trainer/TrainerPanel.astro",
+  "src/pages/kitchen-sink/trainer.astro",
+  "src/pages/dashboard.astro",
 ];
 
 const PATTERN =
