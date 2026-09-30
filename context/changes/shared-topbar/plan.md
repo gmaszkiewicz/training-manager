@@ -2,7 +2,7 @@
 
 ## Overview
 
-Put one top bar on the public home, sign-in, sign-up, and both dashboards. A guest reads "Hello guest" with Sign in and Sign up. A signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" plus their email, with Home, Measurements, and Sign out. The link that opens the current path is marked. Sign out lives only in that bar.
+Put one top bar on the public home, sign-in, sign-up, and both dashboards. A guest reads "Hello guest" with Home, Sign in, and Sign up. A signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out. The link that opens the current path is marked. Sign out lives only in that bar. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email.
 
 ## Current State Analysis
 
@@ -14,11 +14,11 @@ Sign-in (`src/pages/auth/signin.astro`), sign-up (`src/pages/auth/signup.astro`)
 
 ## Desired End State
 
-A guest on `/` sees "Hello guest", Sign in, and Sign up, with neither link marked, and still sees the hero Sign in and Sign up under Training Manager. A guest on `/auth/signin` sees Sign in marked. A guest on `/auth/signup` sees Sign up marked.
+A guest on `/` sees "Hello guest", Home (marked), Sign in, and Sign up, and still sees the hero Sign in and Sign up under Training Manager. A guest on `/auth/signin` sees Home and Sign in, with Sign in marked. A guest on `/auth/signup` sees Home and Sign up, with Sign up marked.
 
-A signed-in trainee `ada@example.com` on `/` sees "Hello trainee" and `ada@example.com`, then Home (marked, href `/`), Measurements (href `/dashboard`), and Sign out. The same person on `/dashboard` sees Measurements marked. A trainer sees "Hello trainer" instead. On `/dashboard?trainee=abc`, Measurements stays marked and its href is still `/dashboard`. Clicking it opens `/dashboard` with no query, and the existing preview rule selects the most recently linked trainee. An empty link list still selects nobody.
+A signed-in trainee `ada@example.com` on `/` sees "Hello trainee ada@example.com" as one phrase with a single space, then Home (marked, href `/`), Measurements (href `/dashboard`), and Sign out. The same person on `/dashboard` sees Measurements marked. A trainer sees "Hello trainer" instead, still one space before the email. On `/dashboard?trainee=abc`, Measurements stays marked and its href is still `/dashboard`. Clicking it opens `/dashboard` with no query, and the existing preview rule selects the most recently linked trainee. An empty link list still selects nobody.
 
-A signed-in user whose profile row is missing, whose read fails, or whose stored role is neither trainee nor trainer sees `ada@example.com` alone — no "Hello guest", "Hello trainee", or "Hello trainer" — with Home, Measurements, and Sign out. A signed-in trainee who opens `/auth/signin` sees that signed-in bar with nothing marked. The journal card and the trainer panel no longer contain Sign out. `/auth/confirm-email` has no bar.
+A signed-in user whose profile row is missing, whose read fails, or whose stored role is neither trainee nor trainer sees `ada@example.com` alone — no "Hello guest", "Hello trainee", or "Hello trainer" — with Home, Measurements, and Sign out. A signed-in trainee who opens `/auth/signin` sees that signed-in bar with nothing marked. The journal card and the trainer panel are titled Body measurements. They no longer contain Sign out, Welcome, or the email. The unavailable panel heading stays Dashboard, and its sentence stays "Could not open your journal". `/auth/confirm-email` has no bar.
 
 ### Key Discoveries:
 
@@ -31,8 +31,8 @@ A signed-in user whose profile row is missing, whose read fails, or whose stored
 ## What We're NOT Doing
 
 - Adding the bar to `/auth/confirm-email`, or redirecting a signed-in user away from sign-in or sign-up.
-- Adding a Home link for guests. A guest on `/` has nothing marked.
 - Removing the hero Sign in and Sign up on the public home (`HomeActions`).
+- Changing the unavailable-panel heading. It stays Dashboard.
 - Changing measurement data, the journal form, trainer linking, or the unavailable-panel sentence "Could not open your journal".
 - A database migration, a new route, or a collapsed mobile menu.
 - Linking any kitchen sink from the product bar.
@@ -41,6 +41,15 @@ A signed-in user whose profile row is missing, whose read fails, or whose stored
 ## Implementation Approach
 
 One pure function, `topbarModel`, decides the greeting, the links, and which link is current. `Topbar.astro` builds that model on the server. On a real page it reads `profiles.role` through a new read-only helper and does not insert. A kitchen-sink preview passes the inputs in and skips the database. The same component is rendered at the top of `/`, sign-in, sign-up, and `/dashboard`, outside the centered card. Sign out is removed from the journal and the trainer panel. The home, journal, and trainer kitchen sinks are updated so they show this bar and no longer document a card Sign out.
+
+## Follow-up
+
+Recorded 2026-09-30, after the three phases, from review of the shipped bar. These supersede the earlier guest menu and the journal and trainer card copy.
+
+- A guest also gets Home (`/`). It is marked on `/`. Sign in stays marked on `/auth/signin`. Sign up stays marked on `/auth/signup`.
+- The trainee journal and the trainer panel drop the Welcome line and the email. Both stay in the bar.
+- The journal heading and the trainer heading are Body measurements. The unavailable panel heading stays Dashboard.
+- The greeting and the email are one phrase with a single space, for example `Hello trainee ada@example.com`.
 
 ## Critical Implementation Details
 

@@ -22,7 +22,7 @@ milestone_status: open
 
 **M-1: Trainee delta and trainer preview** — Status: open
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Sign in and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" plus their email, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements.
+- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email.
 - **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05)
 - **Done when:** every S-NN below is `done`.
 - **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05
@@ -30,7 +30,7 @@ milestone_status: open
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
   - MS-04: The trainer panel on `/dashboard` uses the same visual contract as the trainee journal, instead of the starter glass card.
-  - MS-05: One top bar, the same as on the public home, on `/`, both dashboards, sign-in, and sign-up. A guest reads "Hello guest" with Sign in and Sign up. A signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" plus their email, with Home, Measurements, and Sign out, and the current page is marked. Sign out lives only in that bar.
+  - MS-05: One top bar, the same as on the public home, on `/`, both dashboards, sign-in, and sign-up. A guest reads "Hello guest" with Home, Sign in, and Sign up. A signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out lives only in that bar. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email.
 
 ## Vision recap
 
@@ -54,7 +54,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | done |
 | S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | done |
 | S-10 | trainer-panel-ui           | user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`                       | S-04, S-09    | MS-04                     | done |
-| S-11 | shared-topbar              | user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Sign in and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" plus their email, with Home, Measurements, and Sign out, and the current page is marked | S-07, S-08, S-09, S-10 | MS-05          | in-progress |
+| S-11 | shared-topbar              | user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email | S-07, S-08, S-09, S-10 | MS-05          | in-progress |
 
 ## Streams
 
@@ -209,7 +209,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 
 ### S-11: Shared top bar on home, auth, and both dashboards
 
-- **Outcome:** user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Sign in and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" plus their email, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements
+- **Outcome:** user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email
 - **Change ID:** shared-topbar
 - **PRD refs:** MS-05
 - **Prerequisites:** S-07, S-08, S-09, S-10
