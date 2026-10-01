@@ -200,27 +200,27 @@ No database migration. Deleting `src/pages/dashboard.astro` leaves `/dashboard` 
 
 #### Automated
 
-- [x] 1.1 `npm test` passes, with guest greeting `Hello, guest`, signed-in greeting `Hello,`, and the Measurements link href `/measurements` in `src/lib/topbar.test.ts`
-- [x] 1.2 `npm run lint` passes
-- [x] 1.3 `npm run check:home-tokens` passes, and `scripts/check-home-tokens.mjs` lists `src/pages/measurements.astro` and does not list `src/pages/dashboard.astro`
-- [x] 1.4 `src/`, `scripts/`, and `CLAUDE.md` contain no `/dashboard` path
-- [x] 1.5 `npm run smoke` against a running server treats `/measurements` as the protected screen and does not request `/dashboard`
+- [x] 1.1 `npm test` passes, with guest greeting `Hello, guest`, signed-in greeting `Hello,`, and the Measurements link href `/measurements` in `src/lib/topbar.test.ts` — ce7123f
+- [x] 1.2 `npm run lint` passes — ce7123f
+- [x] 1.3 `npm run check:home-tokens` passes, and `scripts/check-home-tokens.mjs` lists `src/pages/measurements.astro` and does not list `src/pages/dashboard.astro` — ce7123f
+- [x] 1.4 `src/`, `scripts/`, and `CLAUDE.md` contain no `/dashboard` path — ce7123f
+- [x] 1.5 `npm run smoke` against a running server treats `/measurements` as the protected screen and does not request `/dashboard` — ce7123f
 
 #### Manual
 
-- [x] 1.6 A guest on `/` reads `Hello, guest`; a signed-in trainee or trainer reads `Hello,` and their email, with no role word; Measurements goes to `/measurements`
-- [x] 1.7 A signed-out visit to `/measurements` redirects to sign-in; after sign-in the screen is `/measurements`; `/dashboard` responds 404
+- [x] 1.6 A guest on `/` reads `Hello, guest`; a signed-in trainee or trainer reads `Hello,` and their email, with no role word; Measurements goes to `/measurements` — ce7123f
+- [x] 1.7 A signed-out visit to `/measurements` redirects to sign-in; after sign-in the screen is `/measurements`; `/dashboard` responds 404 — ce7123f
 
 ### Phase 2: Screen copy and field layout
 
 #### Automated
 
-- [ ] 2.1 `npm test` passes
-- [ ] 2.2 `npm run lint` passes
-- [ ] 2.3 `npm run smoke` against a running server: a trainer with no links sees `Find trainee by email`, and two trainee weight entries still show `↓ 1.5`
+- [x] 2.1 `npm test` passes
+- [x] 2.2 `npm run lint` passes
+- [x] 2.3 `npm run smoke` against a running server: a trainer with no links sees `Find trainee by email`, and two trainee weight entries still show `↓ 1.5`
 
 #### Manual
 
-- [ ] 2.4 Trainer card heading is `Find trainee by email`, the email field has no visible Email label, Link trainee is full width of that field, and `Body measurements` appears above linked emails only when a link exists
-- [ ] 2.5 Trainee heading is `Add your next measurement`; labels read `Weight kg` and the other fields the same way; the value has no unit; the delta sits under the value and is semibold; the date column is wider than a measurement column and the calendar icon does not cover the day
-- [ ] 2.6 `/kitchen-sink/journal` and `/kitchen-sink/trainer` show those same headings and the same field layout
+- [x] 2.4 Trainer card heading is `Find trainee by email`, the email field has no visible Email label, Link trainee is full width of that field, and `Body measurements` appears above linked emails only when a link exists
+- [x] 2.5 Trainee heading is `Add your next measurement`; labels read `Weight kg` and the other fields the same way; the value has no unit; the delta sits under the value and is semibold; the date column is wider than a measurement column and the calendar icon does not cover the day
+- [x] 2.6 `/kitchen-sink/journal` and `/kitchen-sink/trainer` show those same headings and the same field layout
