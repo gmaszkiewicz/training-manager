@@ -1,7 +1,7 @@
 ---
 change_id: measurement-copy-polish
 title: Polish measurement screen copy and layout
-status: implementing
+status: implemented
 created: 2026-09-30
 updated: 2026-10-01
 archived_at: null

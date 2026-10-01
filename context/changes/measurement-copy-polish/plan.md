@@ -215,12 +215,12 @@ No database migration. Deleting `src/pages/dashboard.astro` leaves `/dashboard` 
 
 #### Automated
 
-- [x] 2.1 `npm test` passes
-- [x] 2.2 `npm run lint` passes
-- [x] 2.3 `npm run smoke` against a running server: a trainer with no links sees `Find trainee by email`, and two trainee weight entries still show `↓ 1.5`
+- [x] 2.1 `npm test` passes — c43c87a
+- [x] 2.2 `npm run lint` passes — c43c87a
+- [x] 2.3 `npm run smoke` against a running server: a trainer with no links sees `Find trainee by email`, and two trainee weight entries still show `↓ 1.5` — c43c87a
 
 #### Manual
 
-- [x] 2.4 Trainer card heading is `Find trainee by email`, the email field has no visible Email label, Link trainee is full width of that field, and `Body measurements` appears above linked emails only when a link exists
-- [x] 2.5 Trainee heading is `Add your next measurement`; labels read `Weight kg` and the other fields the same way; the value has no unit; the delta sits under the value and is semibold; the date column is wider than a measurement column and the calendar icon does not cover the day
-- [x] 2.6 `/kitchen-sink/journal` and `/kitchen-sink/trainer` show those same headings and the same field layout
+- [x] 2.4 Trainer card heading is `Find trainee by email`, the email field has no visible Email label, Link trainee is full width of that field, and `Body measurements` appears above linked emails only when a link exists — c43c87a
+- [x] 2.5 Trainee heading is `Add your next measurement`; labels read `Weight kg` and the other fields the same way; the value has no unit; the delta sits under the value and is semibold; the date column is wider than a measurement column and the calendar icon does not cover the day — c43c87a
+- [x] 2.6 `/kitchen-sink/journal` and `/kitchen-sink/trainer` show those same headings and the same field layout — c43c87a
