@@ -175,7 +175,11 @@ const steps = [
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
     { status: 302, location: "/measurements" },
   ],
-  ["measurements renders for signed-in user", () => request("/measurements"), { status: 200, body: "No measurements yet" }],
+  [
+    "measurements renders for signed-in user",
+    () => request("/measurements"),
+    { status: 200, body: "No measurements yet" },
+  ],
   [
     "measurement rejects out-of-range weight",
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "800") }),
@@ -191,7 +195,11 @@ const steps = [
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-02", "78.5", earlierNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
-  ["measurements shows the weight delta", rememberTrainee(() => request("/measurements")), { status: 200, body: "↓ 1.5" }],
+  [
+    "measurements shows the weight delta",
+    rememberTrainee(() => request("/measurements")),
+    { status: 200, body: "↓ 1.5" },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["measurements redirects after signout", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
   [
@@ -199,7 +207,11 @@ const steps = [
     () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password } }),
     { status: 302, location: "/auth/signup?error=" },
   ],
-  ["measurements stays signed out without a role", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
+  [
+    "measurements stays signed out without a role",
+    () => request("/measurements"),
+    { status: 302, location: "/auth/signin" },
+  ],
   [
     "signup rejects an unknown role",
     () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password, role: "admin" } }),
@@ -339,7 +351,11 @@ const steps = [
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
     { status: 302, location: "/measurements" },
   ],
-  ["trainee journal still has Add measurement", () => request("/measurements"), { status: 200, body: "Add measurement" }],
+  [
+    "trainee journal still has Add measurement",
+    () => request("/measurements"),
+    { status: 200, body: "Add measurement" },
+  ],
 ];
 
 let failed = 0;
