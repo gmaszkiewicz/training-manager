@@ -117,7 +117,7 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
     <form method="POST" action="/api/measurements" className="text-left" onSubmit={handleSubmit} noValidate>
       <div className="space-y-4">
         <div className="flex flex-nowrap items-start gap-2">
-          <div className="w-28 max-w-28 min-w-28 shrink-0">
+          <div className="w-36 max-w-36 min-w-36 shrink-0">
             <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
               Date
             </Label>
@@ -132,6 +132,7 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
                 clearError("measured_on");
               }}
               aria-invalid={errors.measured_on ? true : undefined}
+              className="relative px-2 pr-7 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-1 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             />
             <FieldError message={errors.measured_on} />
           </div>

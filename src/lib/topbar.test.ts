@@ -5,7 +5,7 @@ import { topbarModel } from "@/lib/topbar";
 describe("topbarModel", () => {
   it("returns the guest bar and marks Home on /", () => {
     expect(topbarModel({ signedIn: false, email: "ada@example.com", role: "trainee", pathname: "/" })).toEqual({
-      greeting: "Hello guest",
+      greeting: "Hello, guest",
       email: null,
       showSignOut: false,
       links: [
@@ -46,7 +46,7 @@ describe("topbarModel", () => {
     ]);
   });
 
-  it("returns Hello trainee with email and marks Home on /", () => {
+  it("returns Hello with email and marks Home on /", () => {
     expect(
       topbarModel({
         signedIn: true,
@@ -55,17 +55,17 @@ describe("topbarModel", () => {
         pathname: "/",
       }),
     ).toEqual({
-      greeting: "Hello trainee",
+      greeting: "Hello,",
       email: "ada@example.com",
       showSignOut: true,
       links: [
         { id: "home", label: "Home", href: "/", current: true },
-        { id: "measurements", label: "Measurements", href: "/dashboard", current: false },
+        { id: "measurements", label: "Measurements", href: "/measurements", current: false },
       ],
     });
   });
 
-  it("returns Hello trainer with email", () => {
+  it("returns Hello with email for a trainer", () => {
     const result = topbarModel({
       signedIn: true,
       email: "ada@example.com",
@@ -73,22 +73,22 @@ describe("topbarModel", () => {
       pathname: "/",
     });
 
-    expect(result.greeting).toBe("Hello trainer");
+    expect(result.greeting).toBe("Hello,");
     expect(result.email).toBe("ada@example.com");
     expect(result.showSignOut).toBe(true);
   });
 
-  it("marks Measurements on /dashboard with href /dashboard and no query", () => {
+  it("marks Measurements on /measurements with href /measurements and no query", () => {
     const result = topbarModel({
       signedIn: true,
       email: "ada@example.com",
       role: "trainee",
-      pathname: "/dashboard",
+      pathname: "/measurements",
     });
 
     expect(result.links).toEqual([
       { id: "home", label: "Home", href: "/", current: false },
-      { id: "measurements", label: "Measurements", href: "/dashboard", current: true },
+      { id: "measurements", label: "Measurements", href: "/measurements", current: true },
     ]);
   });
 
@@ -117,7 +117,7 @@ describe("topbarModel", () => {
       showSignOut: true,
       links: [
         { id: "home", label: "Home", href: "/", current: true },
-        { id: "measurements", label: "Measurements", href: "/dashboard", current: false },
+        { id: "measurements", label: "Measurements", href: "/measurements", current: false },
       ],
     });
   });
