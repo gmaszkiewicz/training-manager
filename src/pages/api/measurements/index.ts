@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase";
 
 export const prerender = false;
 
-function dashboardError(context: Parameters<APIRoute>[0], message: string) {
-  return context.redirect(`/dashboard?error=${encodeURIComponent(message)}`);
+function measurementsError(context: Parameters<APIRoute>[0], message: string) {
+  return context.redirect(`/measurements?error=${encodeURIComponent(message)}`);
 }
 
 export const POST: APIRoute = async (context) => {
@@ -18,7 +18,7 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return dashboardError(context, "Supabase is not configured");
+    return measurementsError(context, "Supabase is not configured");
   }
 
   const form = await context.request.formData();
@@ -37,13 +37,13 @@ export const POST: APIRoute = async (context) => {
 
   if (!parsed.success) {
     const message = parsed.error.issues[0]?.message ?? "Could not save the measurement";
-    return dashboardError(context, message);
+    return measurementsError(context, message);
   }
 
   const saved = await addMeasurement(supabase, user.id, parsed.data);
   if (!saved.ok) {
-    return dashboardError(context, "Could not save the measurement");
+    return measurementsError(context, "Could not save the measurement");
   }
 
-  return context.redirect("/dashboard");
+  return context.redirect("/measurements");
 };

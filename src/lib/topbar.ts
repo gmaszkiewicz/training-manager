@@ -13,7 +13,7 @@ export interface TopbarLink {
 }
 
 export interface TopbarModel {
-  greeting: "Hello guest" | "Hello trainee" | "Hello trainer" | null;
+  greeting: "Hello, guest" | "Hello," | null;
   email: string | null;
   links: TopbarLink[];
   showSignOut: boolean;
@@ -26,7 +26,7 @@ function withCurrent(links: Omit<TopbarLink, "current">[], pathname: string): To
 export function topbarModel({ signedIn, email, role, pathname }: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
-      greeting: "Hello guest",
+      greeting: "Hello, guest",
       email: null,
       showSignOut: false,
       links: withCurrent(
@@ -40,7 +40,7 @@ export function topbarModel({ signedIn, email, role, pathname }: TopbarModelInpu
     };
   }
 
-  const greeting = role === "trainee" ? "Hello trainee" : role === "trainer" ? "Hello trainer" : null;
+  const greeting = role === "trainee" || role === "trainer" ? "Hello," : null;
 
   return {
     greeting,
@@ -49,7 +49,7 @@ export function topbarModel({ signedIn, email, role, pathname }: TopbarModelInpu
     links: withCurrent(
       [
         { id: "home", label: "Home", href: "/" },
-        { id: "measurements", label: "Measurements", href: "/dashboard" },
+        { id: "measurements", label: "Measurements", href: "/measurements" },
       ],
       pathname,
     ),

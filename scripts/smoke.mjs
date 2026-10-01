@@ -154,7 +154,7 @@ async function request(path, { method = "GET", form } = {}) {
 
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
-  ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  ["measurements redirects anonymous user", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
   [
     "measurements redirect anonymous user",
     () => request("/api/measurements", { method: "POST" }),
@@ -163,7 +163,7 @@ const steps = [
   [
     "signup creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email, password, role: "trainee" } }),
-    { status: 302, location: "/dashboard" },
+    { status: 302, location: "/measurements" },
   ],
   [
     "signin rejects wrong password",
@@ -173,84 +173,96 @@ const steps = [
   [
     "signin accepts correct password",
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
-    { status: 302, location: "/dashboard" },
+    { status: 302, location: "/measurements" },
   ],
-  ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200, body: "No measurements yet" }],
+  [
+    "measurements renders for signed-in user",
+    () => request("/measurements"),
+    { status: 200, body: "No measurements yet" },
+  ],
   [
     "measurement rejects out-of-range weight",
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "800") }),
-    { status: 302, location: "/dashboard?error=" },
+    { status: 302, location: "/measurements?error=" },
   ],
   [
     "measurement saves the first entry",
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "80.0") }),
-    { status: 302, location: "/dashboard", exactLocation: true },
+    { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
     "measurement saves the second entry with a note",
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-02", "78.5", earlierNote) }),
-    { status: 302, location: "/dashboard", exactLocation: true },
+    { status: 302, location: "/measurements", exactLocation: true },
   ],
-  ["dashboard shows the weight delta", rememberTrainee(() => request("/dashboard")), { status: 200, body: "↓ 1.5" }],
+  [
+    "measurements shows the weight delta",
+    rememberTrainee(() => request("/measurements")),
+    { status: 200, body: "↓ 1.5" },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
-  ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  ["measurements redirects after signout", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
   [
     "signup rejects a missing role",
     () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password } }),
     { status: 302, location: "/auth/signup?error=" },
   ],
-  ["dashboard stays signed out without a role", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  [
+    "measurements stays signed out without a role",
+    () => request("/measurements"),
+    { status: 302, location: "/auth/signin" },
+  ],
   [
     "signup rejects an unknown role",
     () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password, role: "admin" } }),
     { status: 302, location: "/auth/signup?error=" },
   ],
   [
-    "dashboard stays signed out after an unknown role",
-    () => request("/dashboard"),
+    "measurements stays signed out after an unknown role",
+    () => request("/measurements"),
     { status: 302, location: "/auth/signin" },
   ],
   [
     "trainer signup creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email: trainerEmail, password, role: "trainer" } }),
-    { status: 302, location: "/dashboard" },
+    { status: 302, location: "/measurements" },
   ],
   [
-    "trainer dashboard confirms the role",
-    () => request("/dashboard"),
-    { status: 200, body: "Body measurements", forbid: "No measurements yet" },
+    "trainer measurements confirms the role",
+    () => request("/measurements"),
+    { status: 200, body: "Find trainee by email", forbid: "No measurements yet" },
   ],
   [
     "trainer measurement is rejected",
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "80.0") }),
-    { status: 302, location: "/dashboard?error=" },
+    { status: 302, location: "/measurements?error=" },
   ],
   [
     "trainer link opens the trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email } }),
-    { status: 302, location: () => `/dashboard?trainee=${traineeId}`, exactLocation: true },
+    { status: 302, location: () => `/measurements?trainee=${traineeId}`, exactLocation: true },
   ],
   [
     "trainer link repeats the same trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email } }),
-    { status: 302, location: () => `/dashboard?trainee=${traineeId}`, exactLocation: true },
+    { status: 302, location: () => `/measurements?trainee=${traineeId}`, exactLocation: true },
   ],
   [
     "unknown email link is rejected",
     rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email: unknownEmail } })),
-    { status: 302, location: "/dashboard?error=" },
+    { status: 302, location: "/measurements?error=" },
   ],
   ["unknown email shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
   [
     "trainer email link is rejected",
     rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email: trainerEmail } })),
-    { status: 302, location: "/dashboard?error=" },
+    { status: 302, location: "/measurements?error=" },
   ],
   ["trainer email shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
   [
     "blank email link is rejected",
     rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email: "" } })),
-    { status: 302, location: "/dashboard?error=" },
+    { status: 302, location: "/measurements?error=" },
   ],
   [
     "blank email shows the blank sentence",
@@ -265,12 +277,12 @@ const steps = [
   [
     "trainee signs in to attempt a link",
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
-    { status: 302, location: "/dashboard" },
+    { status: 302, location: "/measurements" },
   ],
   [
     "trainee link is rejected",
     rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email } })),
-    { status: 302, location: "/dashboard?error=" },
+    { status: 302, location: "/measurements?error=" },
   ],
   ["trainee link shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
   [
@@ -281,22 +293,22 @@ const steps = [
   [
     "second trainee signup creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email: secondEmail, password, role: "trainee" } }),
-    { status: 302, location: "/dashboard" },
+    { status: 302, location: "/measurements" },
   ],
   [
     "second trainee opens the journal",
-    rememberSecondTrainee(() => request("/dashboard")),
+    rememberSecondTrainee(() => request("/measurements")),
     { status: 200, body: "No measurements yet" },
   ],
   [
     "second trainee saves the first entry",
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-01", "90.0") }),
-    { status: 302, location: "/dashboard", exactLocation: true },
+    { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
     "second trainee saves the second entry with a note",
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-02", "88.0", laterNote) }),
-    { status: 302, location: "/dashboard", exactLocation: true },
+    { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
     "signout after the second trainee",
@@ -306,27 +318,27 @@ const steps = [
   [
     "trainer signs in for preview",
     () => request("/api/auth/signin", { method: "POST", form: { email: trainerEmail, password } }),
-    { status: 302, location: "/dashboard" },
+    { status: 302, location: "/measurements" },
   ],
   [
     "trainer links the second trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email: secondEmail } }),
-    { status: 302, location: () => `/dashboard?trainee=${secondTraineeId}`, exactLocation: true },
+    { status: 302, location: () => `/measurements?trainee=${secondTraineeId}`, exactLocation: true },
   ],
   [
     "trainer default shows the later email",
-    () => request("/dashboard"),
+    () => request("/measurements"),
     { status: 200, body: secondEmail, forbid: ["Add measurement", earlierNote] },
   ],
   [
     "trainer default shows the later note and delta",
-    () => request("/dashboard"),
+    () => request("/measurements"),
     { status: 200, body: laterNote, forbid: earlierNote },
   ],
-  ["trainer default shows a delta marker", () => request("/dashboard"), { status: 200, body: "↓" }],
+  ["trainer default shows a delta marker", () => request("/measurements"), { status: 200, body: "↓" }],
   [
     "trainer earlier trainee query shows the earlier note",
-    () => request(`/dashboard?trainee=${traineeId}`),
+    () => request(`/measurements?trainee=${traineeId}`),
     { status: 200, body: earlierNote, forbid: laterNote },
   ],
   [
@@ -337,9 +349,13 @@ const steps = [
   [
     "trainee signs in for the journal check",
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
-    { status: 302, location: "/dashboard" },
+    { status: 302, location: "/measurements" },
   ],
-  ["trainee journal still has Add measurement", () => request("/dashboard"), { status: 200, body: "Add measurement" }],
+  [
+    "trainee journal still has Add measurement",
+    () => request("/measurements"),
+    { status: 200, body: "Add measurement" },
+  ],
 ];
 
 let failed = 0;

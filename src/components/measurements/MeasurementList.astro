@@ -27,7 +27,7 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
   {entries.map((entry) => (
     <li class="rounded-lg border border-border bg-muted p-4 text-sm text-card-foreground">
       <div class="flex flex-nowrap items-start gap-2">
-        <div class="w-28 max-w-28 min-w-28 shrink-0">
+        <div class="w-36 max-w-36 min-w-36 shrink-0">
           <div class="mb-1 text-muted-foreground">Date</div>
           <time datetime={entry.measured_on} class="font-semibold text-card-foreground">
             {entry.measured_on}
@@ -35,21 +35,21 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
         </div>
         {measurementFields.map((field) => (
           <div class="w-28 max-w-28 min-w-28 shrink-0">
-            <div class="mb-1 text-muted-foreground">{field.label}</div>
-            <div class="flex items-center gap-x-1">
-              <div
-                class="border-input flex h-9 min-w-0 flex-1 items-center rounded-md border px-3 whitespace-nowrap"
-                aria-label={accessibleValue(field.label, entry[field.field], field.unit)}
-                set:text={`${formatMeasurement(entry[field.field])} ${field.unit}`}
-              />
-              {entry.deltas ? (
-                <span
-                  class="shrink-0"
-                  aria-label={accessibleDelta(field.label, field.unit, entry.deltas[field.field])}
-                  set:text={formatDelta(entry.deltas[field.field])}
-                />
-              ) : null}
+            <div class="mb-1 text-muted-foreground">
+              {field.label} {field.unit}
             </div>
+            <div
+              class="border-input flex h-9 items-center rounded-md border px-3 whitespace-nowrap"
+              aria-label={accessibleValue(field.label, entry[field.field], field.unit)}
+              set:text={formatMeasurement(entry[field.field])}
+            />
+            {entry.deltas ? (
+              <p
+                class="mt-1 text-base font-semibold text-card-foreground"
+                aria-label={accessibleDelta(field.label, field.unit, entry.deltas[field.field])}
+                set:text={formatDelta(entry.deltas[field.field])}
+              />
+            ) : null}
           </div>
         ))}
       </div>

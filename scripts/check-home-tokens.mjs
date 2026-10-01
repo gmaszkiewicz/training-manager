@@ -26,7 +26,7 @@ const FILES = [
   "src/pages/kitchen-sink/home.astro",
   "src/pages/kitchen-sink/journal.astro",
   "src/pages/kitchen-sink/trainer.astro",
-  "src/pages/dashboard.astro",
+  "src/pages/measurements.astro",
 ];
 
 const PATTERN =
