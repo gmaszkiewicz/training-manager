@@ -3,7 +3,6 @@ import { ServerError } from "@/components/auth/ServerError";
 import MeasurementList from "@/components/measurements/MeasurementList.astro";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementWithDeltas } from "@/types";
 
@@ -31,15 +30,15 @@ const {
 ---
 
 <div class="flex justify-center px-4 pb-8">
-  <!-- Same floor as TraineeJournal, so "No measurements yet" matches a measurement entry -->
+  <!-- Same floor as TraineeJournal, so the empty-state line matches a measurement entry -->
   <div
     class:list={[
       "rounded-2xl border border-border bg-card p-8 text-card-foreground",
-      selectedLink && trainerMeasurementsLoaded ? "w-max min-w-[calc(73rem+4px)]" : "w-max",
+      selectedLink && trainerMeasurementsLoaded ? "w-max min-w-[calc(75rem+4px)]" : "w-max",
     ]}
   >
     <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
-      {mode === "trainer" ? "Body measurements" : "Dashboard"}
+      {mode === "trainer" ? "Find trainee by email" : "Measurements"}
     </h1>
     {mode === "trainer" ? (
       <>
@@ -48,18 +47,20 @@ const {
           <>
             <form method="POST" action="/api/trainer-links" class="space-y-3">
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
-              <Label htmlFor={`${idPrefix}email`}>Email</Label>
-              <Input id={`${idPrefix}email`} name="email" type="email" required />
-              <Button type="submit">Link trainee</Button>
+              <Input id={`${idPrefix}email`} name="email" type="email" required aria-label="Email" />
+              <Button type="submit" className="w-full">
+                Link trainee
+              </Button>
             </form>
             {trainerLinks.length > 0 ? (
               <>
-                <div class="mt-6 min-w-0 text-sm">
+                <h2 class="mt-6 mb-4 text-center text-2xl font-bold text-card-foreground">Body measurements</h2>
+                <div class="min-w-0 text-sm">
                   <ul class="flex flex-wrap items-start gap-4">
                     {trainerLinks.map((link) => (
                       <li>
                         <a
-                          href={`/dashboard?trainee=${encodeURIComponent(link.traineeId)}`}
+                          href={`/measurements?trainee=${encodeURIComponent(link.traineeId)}`}
                           aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
                           class:list={[
                             "whitespace-nowrap hover:underline focus-visible:ring-2 focus-visible:ring-ring",

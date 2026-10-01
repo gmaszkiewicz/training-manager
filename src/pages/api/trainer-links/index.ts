@@ -7,10 +7,10 @@ export const prerender = false;
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function dashboardError(context: Parameters<APIRoute>[0], message: string, trainee?: string) {
+function measurementsError(context: Parameters<APIRoute>[0], message: string, trainee?: string) {
   const error = encodeURIComponent(message);
   const query = trainee ? `error=${error}&trainee=${encodeURIComponent(trainee)}` : `error=${error}`;
-  return context.redirect(`/dashboard?${query}`);
+  return context.redirect(`/measurements?${query}`);
 }
 
 function preservedTrainee(value: FormDataEntryValue | null): string | undefined {
@@ -29,20 +29,20 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return dashboardError(context, "Supabase is not configured");
+    return measurementsError(context, "Supabase is not configured");
   }
 
   const form = await context.request.formData();
   const submitted = form.get("email");
   const email = typeof submitted === "string" ? submitted : "";
   if (email.trim().toLowerCase() === "") {
-    return dashboardError(context, "Enter an email address");
+    return measurementsError(context, "Enter an email address");
   }
 
   const linked = await linkTraineeByEmail(supabase, email);
   if (!linked.ok) {
-    return dashboardError(context, "No trainee with that email", preservedTrainee(form.get("trainee")));
+    return measurementsError(context, "No trainee with that email", preservedTrainee(form.get("trainee")));
   }
 
-  return context.redirect(`/dashboard?trainee=${encodeURIComponent(linked.traineeId)}`);
+  return context.redirect(`/measurements?trainee=${encodeURIComponent(linked.traineeId)}`);
 };

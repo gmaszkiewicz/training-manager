@@ -28,7 +28,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - `src/middleware.ts` — runs on every request, resolves the current user, attaches to `context.locals.user`. Redirects unauthenticated users away from routes listed in `PROTECTED_ROUTES`.
 - API endpoints: `src/pages/api/auth/{signin,signup,signout}.ts`
 - Auth pages: `src/pages/auth/{signin,signup,confirm-email}.astro`
-- Protected page example: `src/pages/dashboard.astro`
+- Protected page example: `src/pages/measurements.astro`
 
 ### Key conventions
 
@@ -47,6 +47,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Design tokens live in `src/styles/global.css`.
 - Shared UI components live in `src/components/ui`. Check that directory before creating a component; add a missing one with `npx shadcn@latest add [name]`.
 - Do not use literal colours or arbitrary values in views — use role tokens and shared components.
+- Greeting copy lives in `src/lib/topbar.ts`: a guest reads "Hello, guest"; a signed-in trainee or trainer reads "Hello," and their email, with no role word. The measurements screen and its redirects live at `/measurements`.
 - Home kitchen sink: `/kitchen-sink/home`.
 - Auth kitchen sink: `/kitchen-sink/auth`.
 - Journal kitchen sink: `/kitchen-sink/journal`.
