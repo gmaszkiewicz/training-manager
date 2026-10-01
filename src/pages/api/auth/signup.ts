@@ -26,7 +26,7 @@ export const POST: APIRoute = async (context) => {
   }
 
   if (data.session) {
-    return context.redirect("/dashboard");
+    return context.redirect("/measurements");
   }
 
   return context.redirect("/auth/confirm-email");

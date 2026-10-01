@@ -25,6 +25,7 @@ Utworzone z `context/foundation/roadmap.md` (milestone M-1: Trainee delta and tr
 | S-09 | `trainee-journal-ui` | [#29](https://github.com/gmaszkiewicz/training-manager/issues/29) | S-09: Trainee journal leaves the starter glass card | `slice` |
 | S-10 | `trainer-panel-ui` | [#32](https://github.com/gmaszkiewicz/training-manager/issues/32) | S-10: Trainer panel leaves the starter glass card | `slice` |
 | S-11 | `shared-topbar` | [#35](https://github.com/gmaszkiewicz/training-manager/issues/35) | S-11: Shared top bar on home, auth, and both dashboards | `slice` |
+| S-13 | `measurement-copy-polish` | [#41](https://github.com/gmaszkiewicz/training-manager/issues/41) | S-13: Measurement copy and the measurements route | `slice` |
 
 ## Format issue
 
