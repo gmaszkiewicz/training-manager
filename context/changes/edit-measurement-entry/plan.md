@@ -216,8 +216,8 @@ The new migration only grants `update` and adds a policy. It is backward compati
 
 #### Automated
 
-- [ ] 1.1 `npm run test` passes
-- [ ] 1.2 `npm run lint` passes
+- [x] 1.1 `npm run test` passes
+- [x] 1.2 `npm run lint` passes
 
 #### Manual
 
