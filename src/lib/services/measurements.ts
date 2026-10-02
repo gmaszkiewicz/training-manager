@@ -87,6 +87,7 @@ export async function updateMeasurement(
         hips_cm: input.hips_cm,
         navel_cm: input.navel_cm,
         note: input.note,
+        created_at: new Date().toISOString(),
       })
       .eq("id", measurementId)
       .eq("trainee_id", traineeId)

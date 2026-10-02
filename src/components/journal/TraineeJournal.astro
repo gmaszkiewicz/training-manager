@@ -8,10 +8,15 @@ interface Props {
   measurementsLoaded: boolean;
   entries: MeasurementWithDeltas[];
   serverError: string | null;
+  editingEntry?: MeasurementWithDeltas | null;
   idPrefix?: string;
 }
 
-const { measurementsLoaded, entries, serverError, idPrefix = "" } = Astro.props;
+const { measurementsLoaded, entries, serverError, editingEntry = null, idPrefix = "" } = Astro.props;
+
+function editHref(entry: MeasurementWithDeltas): string {
+  return `/measurements?edit=${encodeURIComponent(entry.id)}`;
+}
 ---
 
 <div class="flex justify-center px-4 pb-8">
@@ -22,14 +27,16 @@ const { measurementsLoaded, entries, serverError, idPrefix = "" } = Astro.props;
       measurementsLoaded ? "w-max min-w-[calc(75rem+4px)]" : "w-max",
     ]}
   >
-    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Add your next measurement</h1>
+    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
+      {editingEntry ? "Edit measurement" : "Add your next measurement"}
+    </h1>
     {measurementsLoaded ? (
       <>
-        <MeasurementForm serverError={serverError} idPrefix={idPrefix} client:load />
+        <MeasurementForm serverError={serverError} idPrefix={idPrefix} entry={editingEntry} client:load />
         {entries.length === 0 ? (
           <p class="mt-6 text-sm text-muted-foreground">No measurements yet</p>
         ) : (
-          <MeasurementList entries={entries} />
+          <MeasurementList entries={entries} editHref={editHref} />
         )}
       </>
     ) : (

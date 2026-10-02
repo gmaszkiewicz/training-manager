@@ -5,9 +5,10 @@ import type { FieldDelta, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   entries: MeasurementWithDeltas[];
+  editHref?: (entry: MeasurementWithDeltas) => string;
 }
 
-const { entries } = Astro.props;
+const { entries, editHref } = Astro.props;
 
 function formatMeasurement(value: number): string {
   return value.toFixed(1);
@@ -32,6 +33,15 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
           <time datetime={entry.measured_on} class="font-semibold text-card-foreground">
             {entry.measured_on}
           </time>
+          {editHref ? (
+            <a
+              href={editHref(entry)}
+              aria-label={`Edit measurement from ${entry.measured_on}`}
+              class="mt-1 block w-fit whitespace-nowrap text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Edit
+            </a>
+          ) : null}
         </div>
         {measurementFields.map((field) => (
           <div class="w-28 max-w-28 min-w-28 shrink-0">
