@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createMeasurementInputSchema, measurementFields } from "@/lib/measurement-input";
-import type { MeasurementField } from "@/types";
+import type { MeasurementEntry, MeasurementField } from "@/types";
 
 interface Props {
   serverError?: string | null;
   idPrefix?: string;
+  entry?: MeasurementEntry | null;
 }
 
 type ErrorField = "measured_on" | MeasurementField | "note";
@@ -27,6 +28,19 @@ const emptyValues: Record<MeasurementField, string> = {
   hips_cm: "",
   navel_cm: "",
 };
+
+function fieldValues(entry: MeasurementEntry): Record<MeasurementField, string> {
+  return {
+    weight_kg: entry.weight_kg.toFixed(1),
+    chest_cm: entry.chest_cm.toFixed(1),
+    waist_cm: entry.waist_cm.toFixed(1),
+    arms_cm: entry.arms_cm.toFixed(1),
+    thigh_cm: entry.thigh_cm.toFixed(1),
+    calf_cm: entry.calf_cm.toFixed(1),
+    hips_cm: entry.hips_cm.toFixed(1),
+    navel_cm: entry.navel_cm.toFixed(1),
+  };
+}
 
 function subscribeToNothing(): () => void {
   return () => undefined;
@@ -45,6 +59,16 @@ function localTodaySnapshot(): string {
 
 function emptyTodaySnapshot(): string {
   return "";
+}
+
+function laterDate(left: string, right: string): string {
+  if (left === "") {
+    return right;
+  }
+  if (right === "") {
+    return left;
+  }
+  return left > right ? left : right;
 }
 
 function isErrorField(value: PropertyKey): value is ErrorField {
@@ -78,14 +102,15 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
+export default function MeasurementForm({ serverError, idPrefix = "", entry = null }: Props) {
   // SSR runs in UTC. The input's default and max must be the browser's local calendar date.
   const browserToday = useSyncExternalStore(subscribeToNothing, localTodaySnapshot, emptyTodaySnapshot);
-  const [measuredOn, setMeasuredOn] = useState<string | null>(null);
-  const [values, setValues] = useState(emptyValues);
-  const [note, setNote] = useState("");
+  const [measuredOn, setMeasuredOn] = useState<string | null>(entry?.measured_on ?? null);
+  const [values, setValues] = useState(entry ? fieldValues(entry) : emptyValues);
+  const [note, setNote] = useState(entry?.note ?? "");
   const [errors, setErrors] = useState<FormErrors>({});
   const dateValue = measuredOn ?? browserToday;
+  const dateMax = entry ? laterDate(browserToday, entry.measured_on) : browserToday;
 
   function clearError(field: ErrorField) {
     if (errors[field]) {
@@ -114,7 +139,13 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
   }
 
   return (
-    <form method="POST" action="/api/measurements" className="text-left" onSubmit={handleSubmit} noValidate>
+    <form
+      method="POST"
+      action={entry ? `/api/measurements/${entry.id}` : "/api/measurements"}
+      className="text-left"
+      onSubmit={handleSubmit}
+      noValidate
+    >
       <div className="space-y-4">
         <div className="flex flex-nowrap items-start gap-2">
           <div className="w-36 max-w-36 min-w-36 shrink-0">
@@ -126,7 +157,7 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
               name="measured_on"
               type="date"
               value={dateValue}
-              max={browserToday || undefined}
+              max={dateMax || undefined}
               onChange={(event) => {
                 setMeasuredOn(event.target.value);
                 clearError("measured_on");
@@ -179,9 +210,17 @@ export default function MeasurementForm({ serverError, idPrefix = "" }: Props) {
 
         <ServerError message={serverError} />
 
-        <SubmitButton pendingText="Adding measurement..." icon={<Plus className="size-4" />}>
-          Add measurement
+        <SubmitButton
+          pendingText={entry ? "Saving measurement..." : "Adding measurement..."}
+          icon={<Plus className="size-4" />}
+        >
+          {entry ? "Save measurement" : "Add measurement"}
         </SubmitButton>
+        {entry ? (
+          <a href="/measurements" className="text-primary focus-visible:ring-ring hover:underline focus-visible:ring-2">
+            Cancel
+          </a>
+        ) : null}
       </div>
     </form>
   );
