@@ -49,7 +49,7 @@ const sampleEntry: MeasurementWithDeltas = {
         </h2>
         <p class="text-muted-foreground text-sm">
           TraineeJournal with measurements loaded, one sample entry (every field, note, and deltas), and no server
-          error. The sample row shows Edit. Form ids are unprefixed.
+          error. The sample row shows Edit and Delete. Form ids are unprefixed.
         </p>
         <TraineeJournal measurementsLoaded={true} entries={[sampleEntry]} serverError={null} />
       </section>
@@ -59,8 +59,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Hover
         </h2>
         <p class="text-muted-foreground text-sm">
-          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. The Edit link in the Default
-          journal underlines on hover. List row chrome has no hover.
+          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. The Edit and Delete links in the
+          Default journal underline on hover. List row chrome has no hover.
         </p>
       </section>
 
@@ -69,8 +69,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Focus-visible
         </h2>
         <p class="text-muted-foreground text-sm">
-          Tab through the date field, one measurement field, the note, the submit button, and the Edit link in the
-          Default journal above. The ring is the shared <code class="text-foreground">--ring</code>.
+          Tab through the date field, one measurement field, the note, the submit button, and the Edit and Delete links
+          in the Default journal above. The ring is the shared <code class="text-foreground">--ring</code>.
         </p>
       </section>
 

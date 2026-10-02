@@ -33,6 +33,7 @@ let role: ProfileRole | null = null;
 let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
 let editingEntry: MeasurementWithDeltas | null = null;
+let confirmingEntry: MeasurementWithDeltas | null = null;
 let traineeServerError = serverError;
 let trainerLinks: TrainerLink[] = [];
 let selectedLink: TrainerLink | null = null;
@@ -56,6 +57,13 @@ if (supabase && user) {
           editingEntry = entries.find((entry) => entry.id === editId) ?? null;
           if (editingEntry === null) {
             traineeServerError = serverError ?? "Could not open that measurement";
+          }
+        }
+        const deleteId = Astro.url.searchParams.get("delete");
+        if (deleteId !== null) {
+          confirmingEntry = entries.find((entry) => entry.id === deleteId) ?? null;
+          if (confirmingEntry === null) {
+            traineeServerError = serverError ?? "Could not delete the measurement";
           }
         }
       } else {
@@ -89,6 +97,7 @@ if (supabase && user) {
       entries={entries}
       serverError={traineeServerError}
       editingEntry={editingEntry}
+      confirmingEntry={confirmingEntry}
     />
   ) : (
     <TrainerPanel
