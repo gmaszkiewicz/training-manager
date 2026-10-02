@@ -66,3 +66,38 @@ export async function addMeasurement(
     return { ok: false };
   }
 }
+
+export async function updateMeasurement(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  measurementId: string,
+  input: MeasurementInput,
+): Promise<{ ok: true } | { ok: false }> {
+  try {
+    const { data, error } = await supabase
+      .from("measurements")
+      .update({
+        measured_on: input.measured_on,
+        weight_kg: input.weight_kg,
+        chest_cm: input.chest_cm,
+        waist_cm: input.waist_cm,
+        arms_cm: input.arms_cm,
+        thigh_cm: input.thigh_cm,
+        calf_cm: input.calf_cm,
+        hips_cm: input.hips_cm,
+        navel_cm: input.navel_cm,
+        note: input.note,
+      })
+      .eq("id", measurementId)
+      .eq("trainee_id", traineeId)
+      .select("id");
+
+    if (error || data.length === 0) {
+      return { ok: false };
+    }
+
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
