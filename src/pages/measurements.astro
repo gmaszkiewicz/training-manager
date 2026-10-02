@@ -32,6 +32,8 @@ function requestedRoleFromMetadata(metadata: { role?: unknown } | null | undefin
 let role: ProfileRole | null = null;
 let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
+let editingEntry: MeasurementWithDeltas | null = null;
+let traineeServerError = serverError;
 let trainerLinks: TrainerLink[] = [];
 let selectedLink: TrainerLink | null = null;
 let trainerLinksLoaded = false;
@@ -48,6 +50,13 @@ if (supabase && user) {
         measurementsLoaded = listed.ok;
         if (listed.ok) {
           entries = listed.entries;
+        }
+        const editId = Astro.url.searchParams.get("edit");
+        if (editId !== null) {
+          editingEntry = entries.find((entry) => entry.id === editId) ?? null;
+          if (editingEntry === null) {
+            traineeServerError = serverError ?? "Could not open that measurement";
+          }
         }
       } else {
         const listedLinks = await listTrainerLinks(supabase);
@@ -75,7 +84,12 @@ if (supabase && user) {
     <Topbar />
   </div>
   {role === "trainee" ? (
-    <TraineeJournal measurementsLoaded={measurementsLoaded} entries={entries} serverError={serverError} />
+    <TraineeJournal
+      measurementsLoaded={measurementsLoaded}
+      entries={entries}
+      serverError={traineeServerError}
+      editingEntry={editingEntry}
+    />
   ) : (
     <TrainerPanel
       mode={role === "trainer" ? "trainer" : "unavailable"}

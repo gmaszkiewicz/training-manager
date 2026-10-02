@@ -16,7 +16,7 @@ S-02 stored entries so this comparison could exist. S-04 kept the trainer previe
 
 A signed-in trainee on `/measurements` sees **Edit** on each of their rows. Choosing it opens `/measurements?edit=<id>` and fills the existing form with that entry's date, eight numbers, and note. **Save measurement** updates that row. **Cancel** returns to the add form and writes nothing.
 
-After a successful save the list reloads. `withDeltas` runs again, so the edited row and every row whose previous entry changed show the new arrow and difference. The list prints that with `formatDelta`: `↑ 2.0`, `↓ 2.0`, or `0.0`. Example: entry A is 2026-01-01 at 80.0 kg and entry B is 2026-01-08 at 82.0 kg, so B shows `↑ 2.0` versus A. Saving A as 81.0 kg makes B show `↑ 1.0`. Saving B's date as 2025-12-28 makes B the oldest row, with no delta, rendered below A. A is the top row and its weight shows `↓ 2.0` versus B.
+After a successful save the list reloads. `withDeltas` runs again, so the edited row and every row whose previous entry changed show the new arrow and difference. The list prints that with `formatDelta`: `↑ 2.0`, `↓ 2.0`, or `0.0`. Example: entry A is 2026-01-01 at 80.0 kg and entry B is 2026-01-08 at 82.0 kg, so B shows `↑ 2.0` versus A. Saving A as 81.0 kg makes B show `↑ 1.0`. Saving B's date as 2025-12-28 makes B the oldest row, with no delta, rendered below A. A is the top row and its weight shows `↓ 2.0` versus B. Saving a row, even when no other field changes, sets `created_at` to the time of that save. Among rows that share `measured_on`, that row is then the newest: it sits above the others for that date, and they compare against it. A later `measured_on` still stays above it.
 
 A trainer linked to that trainee sees the same updated rows and arrows, and no Edit control. Another trainee's id in `edit` does not open their data.
 
@@ -32,7 +32,7 @@ A trainer linked to that trainee sees the same updated rows and arrows, and no E
 
 - Deleting an entry (S-06 / FR-005).
 - Letting a trainer create, edit, or delete measurements.
-- Adding `updated_at`, or writing `created_at`, `id`, or `trainee_id` on update.
+- Adding `updated_at`, or writing `id` or `trainee_id` on update.
 - Changing `withDeltas`, arrow formatting, units, or good/bad coloring.
 - A date filter (FR-009).
 - A partial payload that omits a number. The form is prefilled and still submits all eight numbers. Clearing the note stores null, which create already does.
@@ -42,7 +42,7 @@ A trainer linked to that trainee sees the same updated rows and arrows, and no E
 
 ## Implementation Approach
 
-Follow the create path. A new migration grants `update` and adds one RLS policy for the owning trainee, mirroring the insert policy's role check, with `using` and `with check` both requiring `auth.uid() = trainee_id`. The service updates one owned row and leaves `created_at` untouched, so two entries on the same date keep their order when only numbers or the note change. A date change reorders only because `withDeltas` sorts on `measured_on`.
+Follow the create path. A new migration grants `update` and adds one RLS policy for the owning trainee, mirroring the insert policy's role check, with `using` and `with check` both requiring `auth.uid() = trainee_id`. The service updates one owned row and sets `created_at` to the time of the save, so that row becomes the newest among rows that share `measured_on`. A different date still reorders only because `withDeltas` sorts on `measured_on` first.
 
 `POST /api/measurements/[id]` reuses `createMeasurementInputSchema` and the form-POST-then-redirect pattern. Success redirects to `/measurements`. Failure redirects to `/measurements?edit=<id>&error=...` so the journal stays on that entry.
 
@@ -52,7 +52,7 @@ The trainee page resolves `edit` against the trainee's own list. A match prefill
 
 - **Date input max while editing.** The create form caps the date picker at the browser's local today, while the server accepts a date through UTC now plus one day. When the form is editing, `max` is the later of local today and that entry's stored `measured_on`, so an already saved date can be submitted unchanged. The server schema is still the create schema. A newly chosen date cannot pass the server window.
 - **A failed save must keep the edit id.** Validation and write failures redirect to `/measurements?edit=<id>&error=...`. Dropping `edit` would show the add form and discard which row failed. Client-side validation still prevents a normal invalid submit, as it does for create; the redirect is the server fallback. The reloaded form shows the stored row plus the error, not the rejected typed values.
-- **Do not write `created_at`.** The update payload is `measured_on`, the eight numbers, and `note`. Writing `created_at` would reshuffle same-day rows. The comparison target is the previous remaining row after that save, which the existing list reload already computes.
+- **A save is the newest report of that date.** The update payload is `measured_on`, the eight numbers, `note`, and `created_at` set to the time of the save. `withDeltas` is unchanged and already orders by `measured_on`, then `created_at`, then `id`, newest first on the page. Among rows that share `measured_on`, the saved row is the newest, including when the trainee changes nothing else and saves. `id` and `trainee_id` are not written.
 
 ## Phase 1: Persist an edit
 
@@ -76,7 +76,7 @@ The owning trainee can update one measurement row. Create, list, and the journal
 
 **Intent**: Update one row owned by the trainee and report failure when the write does not change a row.
 
-**Contract**: `updateMeasurement(supabase, traineeId, measurementId, input)` returns `{ ok: true } | { ok: false }`, same input type as `addMeasurement`. The update sets only `measured_on`, `weight_kg`, `chest_cm`, `waist_cm`, `arms_cm`, `thigh_cm`, `calf_cm`, `hips_cm`, `navel_cm`, and `note`. It filters `id` and `trainee_id`. It selects the updated `id`. Zero rows or a client error is `{ ok: false }`. It does not insert, delete, or change `listMeasurements`.
+**Contract**: `updateMeasurement(supabase, traineeId, measurementId, input)` returns `{ ok: true } | { ok: false }`, same input type as `addMeasurement`. The update sets `measured_on`, `weight_kg`, `chest_cm`, `waist_cm`, `arms_cm`, `thigh_cm`, `calf_cm`, `hips_cm`, `navel_cm`, `note`, and `created_at` to the time of the save. It filters `id` and `trainee_id`. It selects the updated `id`. Zero rows or a client error is `{ ok: false }`. It does not insert, delete, or change `listMeasurements`. It does not write `id` or `trainee_id`.
 
 #### 3. Update route
 
@@ -160,7 +160,7 @@ The trainee opens an entry in the existing form, saves or cancels, and the reloa
 
 - Changing entry A from 80.0 kg to 81.0 kg makes entry B show `↑ 1.0` versus A
 - Changing entry B's date from 2026-01-08 to 2025-12-28 makes B the oldest row, with no delta, below A. A is the top row and its weight shows `↓ 2.0` versus B
-- Leaving the date unchanged keeps same-day order
+- Saving an entry without changing its date makes that entry the newest among rows that share that date
 - Cancel returns to the add form and does not save
 - A linked trainer sees the edited values and arrows and has no Edit control
 - An edit id that is not in this trainee's list shows the add form and "Could not open that measurement"
@@ -185,7 +185,7 @@ The trainee opens an entry in the existing form, saves or cancels, and the reloa
 1. As a trainee, add entry A on 2026-01-01 at 80.0 kg and entry B on 2026-01-08 at 82.0 kg. Confirm B shows `↑ 2.0`.
 2. Edit A to 81.0 kg and save. Confirm B shows `↑ 1.0` and A's date is unchanged.
 3. Edit B's date to 2025-12-28 and save. Confirm A is the top row and its weight shows `↓ 2.0` versus B, and B is below A with no delta.
-4. Add two entries on the same date, edit only the weight of the later one, and confirm they do not swap.
+4. Add two entries on the same date. Edit the earlier one without changing its date and save. Confirm it moves above the other row for that date, and that other row compares against it.
 5. Open Edit and choose Cancel. Confirm the add form is empty of that entry's values and the row is unchanged.
 6. As a linked trainer, open that trainee. Confirm the edited rows and arrows appear and no Edit control does.
 7. Open `/measurements?edit=` with an id that is not in the trainee's list. Confirm the add form and the text `Could not open that measurement`.
@@ -216,25 +216,25 @@ The new migration only grants `update` and adds a policy. It is backward compati
 
 #### Automated
 
-- [x] 1.1 `npm run test` passes
-- [x] 1.2 `npm run lint` passes
+- [x] 1.1 `npm run test` passes — c191a61
+- [x] 1.2 `npm run lint` passes — c191a61
 
 #### Manual
 
-- [ ] 1.3 The new migration grants update to authenticated and adds one update policy for the owning trainee; it does not grant delete, drop select or insert, or change columns, and it is applied to the local database with `npx supabase migration up`, or by stopping and starting Supabase, before the journal test
+- [x] 1.3 The new migration grants update to authenticated and adds one update policy for the owning trainee; it does not grant delete, drop select or insert, or change columns, and it is applied to the local database with `npx supabase migration up`, or by stopping and starting Supabase, before the journal test — c191a61
 
 ### Phase 2: Edit from the journal
 
 #### Automated
 
-- [ ] 2.1 `npm run test` passes
-- [ ] 2.2 `npm run lint` passes
+- [x] 2.1 `npm run test` passes
+- [x] 2.2 `npm run lint` passes
 
 #### Manual
 
-- [ ] 2.3 Changing entry A from 80.0 kg to 81.0 kg makes entry B show `↑ 1.0` versus A
-- [ ] 2.4 Changing entry B's date from 2026-01-08 to 2025-12-28 makes B the oldest row, with no delta, below A. A is the top row and its weight shows `↓ 2.0` versus B
-- [ ] 2.5 Leaving the date unchanged keeps same-day order
-- [ ] 2.6 Cancel returns to the add form and does not save
-- [ ] 2.7 A linked trainer sees the edited values and arrows and has no Edit control
-- [ ] 2.8 An edit id that is not in this trainee's list shows the add form and "Could not open that measurement"
+- [x] 2.3 Changing entry A from 80.0 kg to 81.0 kg makes entry B show `↑ 1.0` versus A
+- [x] 2.4 Changing entry B's date from 2026-01-08 to 2025-12-28 makes B the oldest row, with no delta, below A. A is the top row and its weight shows `↓ 2.0` versus B
+- [x] 2.5 Saving an entry without changing its date makes that entry the newest among rows that share that date
+- [x] 2.6 Cancel returns to the add form and does not save
+- [x] 2.7 A linked trainer sees the edited values and arrows and has no Edit control
+- [x] 2.8 An edit id that is not in this trainee's list shows the add form and "Could not open that measurement"
