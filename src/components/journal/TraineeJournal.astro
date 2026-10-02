@@ -9,13 +9,28 @@ interface Props {
   entries: MeasurementWithDeltas[];
   serverError: string | null;
   editingEntry?: MeasurementWithDeltas | null;
+  confirmingEntry?: MeasurementWithDeltas | null;
   idPrefix?: string;
 }
 
-const { measurementsLoaded, entries, serverError, editingEntry = null, idPrefix = "" } = Astro.props;
+const {
+  measurementsLoaded,
+  entries,
+  serverError,
+  editingEntry = null,
+  confirmingEntry = null,
+  idPrefix = "",
+} = Astro.props;
 
 function editHref(entry: MeasurementWithDeltas): string {
   return `/measurements?edit=${encodeURIComponent(entry.id)}`;
+}
+
+function deleteHref(entry: MeasurementWithDeltas): string {
+  if (editingEntry) {
+    return `/measurements?delete=${encodeURIComponent(entry.id)}&edit=${encodeURIComponent(editingEntry.id)}`;
+  }
+  return `/measurements?delete=${encodeURIComponent(entry.id)}`;
 }
 ---
 
@@ -36,7 +51,13 @@ function editHref(entry: MeasurementWithDeltas): string {
         {entries.length === 0 ? (
           <p class="mt-6 text-sm text-muted-foreground">No measurements yet</p>
         ) : (
-          <MeasurementList entries={entries} editHref={editHref} />
+          <MeasurementList
+            entries={entries}
+            editHref={editHref}
+            deleteHref={deleteHref}
+            confirmingId={confirmingEntry?.id}
+            preserveEditId={editingEntry?.id}
+          />
         )}
       </>
     ) : (
