@@ -227,14 +227,14 @@ The new migration only grants `update` and adds a policy. It is backward compati
 
 #### Automated
 
-- [x] 2.1 `npm run test` passes
-- [x] 2.2 `npm run lint` passes
+- [x] 2.1 `npm run test` passes — 9873c5a
+- [x] 2.2 `npm run lint` passes — 9873c5a
 
 #### Manual
 
-- [x] 2.3 Changing entry A from 80.0 kg to 81.0 kg makes entry B show `↑ 1.0` versus A
-- [x] 2.4 Changing entry B's date from 2026-01-08 to 2025-12-28 makes B the oldest row, with no delta, below A. A is the top row and its weight shows `↓ 2.0` versus B
-- [x] 2.5 Saving an entry without changing its date makes that entry the newest among rows that share that date
-- [x] 2.6 Cancel returns to the add form and does not save
-- [x] 2.7 A linked trainer sees the edited values and arrows and has no Edit control
-- [x] 2.8 An edit id that is not in this trainee's list shows the add form and "Could not open that measurement"
+- [x] 2.3 Changing entry A from 80.0 kg to 81.0 kg makes entry B show `↑ 1.0` versus A — 9873c5a
+- [x] 2.4 Changing entry B's date from 2026-01-08 to 2025-12-28 makes B the oldest row, with no delta, below A. A is the top row and its weight shows `↓ 2.0` versus B — 9873c5a
+- [x] 2.5 Saving an entry without changing its date makes that entry the newest among rows that share that date — 9873c5a
+- [x] 2.6 Cancel returns to the add form and does not save — 9873c5a
+- [x] 2.7 A linked trainer sees the edited values and arrows and has no Edit control — 9873c5a
+- [x] 2.8 An edit id that is not in this trainee's list shows the add form and "Could not open that measurement" — 9873c5a

@@ -1,7 +1,7 @@
 ---
 change_id: edit-measurement-entry
 title: Trainee edits an entry
-status: implementing
+status: implemented
 created: 2026-10-02
 updated: 2026-10-02
 archived_at: null
