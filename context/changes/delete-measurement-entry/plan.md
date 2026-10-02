@@ -216,12 +216,12 @@ The new migration only grants `delete` and adds a policy. It is backward compati
 
 #### Automated
 
-- [ ] 1.1 `npm run test` passes
-- [ ] 1.2 `npm run lint` passes
+- [x] 1.1 `npm run test` passes
+- [x] 1.2 `npm run lint` passes
 
 #### Manual
 
-- [ ] 1.3 The new migration grants delete to authenticated and adds one delete policy for the owning trainee; it does not grant further privileges, drop select, insert, or update, or change columns, and it is applied to the local database with `npx supabase migration up`, or by stopping and starting Supabase, before the journal test
+- [x] 1.3 The new migration grants delete to authenticated and adds one delete policy for the owning trainee; it does not grant further privileges, drop select, insert, or update, or change columns, and it is applied to the local database with `npx supabase migration up`, or by stopping and starting Supabase, before the journal test
 
 ### Phase 2: Confirm and delete from the journal
 

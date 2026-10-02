@@ -102,3 +102,26 @@ export async function updateMeasurement(
     return { ok: false };
   }
 }
+
+export async function deleteMeasurement(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  measurementId: string,
+): Promise<{ ok: true } | { ok: false }> {
+  try {
+    const { data, error } = await supabase
+      .from("measurements")
+      .delete()
+      .eq("id", measurementId)
+      .eq("trainee_id", traineeId)
+      .select("id");
+
+    if (error || data.length === 0) {
+      return { ok: false };
+    }
+
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}

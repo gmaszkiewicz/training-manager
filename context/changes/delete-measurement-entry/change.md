@@ -1,7 +1,7 @@
 ---
 change_id: delete-measurement-entry
 title: Trainee deletes an entry
-status: planned
+status: implementing
 created: 2026-10-02
 updated: 2026-10-02
 archived_at: null
