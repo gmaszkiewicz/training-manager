@@ -227,17 +227,17 @@ The new migration only grants `delete` and adds a policy. It is backward compati
 
 #### Automated
 
-- [x] 2.1 `npm run test` passes
-- [x] 2.2 `npm run lint` passes
-- [x] 2.11 `npm run check:home-tokens` passes
+- [x] 2.1 `npm run test` passes — 7edd187
+- [x] 2.2 `npm run lint` passes — 7edd187
+- [x] 2.11 `npm run check:home-tokens` passes — 7edd187
 
 #### Manual
 
-- [x] 2.3 Deleting B from A 2026-01-01 at 80.0 kg, B 2026-01-08 at 82.0 kg, and C 2026-01-15 at 81.0 kg removes B, leaves A with no comparison, and makes C show `↑ 1.0` versus A
-- [x] 2.4 Deleting C from that same trio leaves B showing `↑ 2.0` versus A
-- [x] 2.5 Deleting A from that same trio leaves B with no comparison and C showing `↓ 1.0` versus B
-- [x] 2.6 Deleting the only remaining entry shows `No measurements yet`
-- [x] 2.7 Cancel on the confirm step leaves the entry and its arrows unchanged
-- [x] 2.8 A linked trainer sees the remaining entries and arrows and has no Delete control
-- [x] 2.9 A delete id that is not in this trainee's list shows no confirm form and `Could not delete the measurement`
-- [x] 2.10 Deleting a different entry while editing A returns to the edit form for A, and deleting the entry that is open for editing returns to the add form
+- [x] 2.3 Deleting B from A 2026-01-01 at 80.0 kg, B 2026-01-08 at 82.0 kg, and C 2026-01-15 at 81.0 kg removes B, leaves A with no comparison, and makes C show `↑ 1.0` versus A — 7edd187
+- [x] 2.4 Deleting C from that same trio leaves B showing `↑ 2.0` versus A — 7edd187
+- [x] 2.5 Deleting A from that same trio leaves B with no comparison and C showing `↓ 1.0` versus B — 7edd187
+- [x] 2.6 Deleting the only remaining entry shows `No measurements yet` — 7edd187
+- [x] 2.7 Cancel on the confirm step leaves the entry and its arrows unchanged — 7edd187
+- [x] 2.8 A linked trainer sees the remaining entries and arrows and has no Delete control — 7edd187
+- [x] 2.9 A delete id that is not in this trainee's list shows no confirm form and `Could not delete the measurement` — 7edd187
+- [x] 2.10 Deleting a different entry while editing A returns to the edit form for A, and deleting the entry that is open for editing returns to the add form — 7edd187
