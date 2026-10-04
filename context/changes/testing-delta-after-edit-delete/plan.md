@@ -269,9 +269,9 @@ No schema, migration, or data backfill. The production comparison function stays
 
 #### Automated
 
-- [x] 4.1 `npm test` exits 0
+- [x] 4.1 `npm test` exits 0 — f3ddb63
 
 #### Manual
 
-- [x] 4.2 §6.1 names the unit pattern, the signed-plan arrows, the same-date timestamp case, and that the trainer preview uses those assertions
-- [x] 4.3 §6.5 records that this rollout phase shipped those cases and that no AI-native check was added, checked 2026-10-04
+- [x] 4.2 §6.1 names the unit pattern, the signed-plan arrows, the same-date timestamp case, and that the trainer preview uses those assertions — f3ddb63
+- [x] 4.3 §6.5 records that this rollout phase shipped those cases and that no AI-native check was added, checked 2026-10-04 — f3ddb63
