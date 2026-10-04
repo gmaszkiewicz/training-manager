@@ -1,7 +1,7 @@
 ---
 change_id: testing-measurement-access-boundaries
 title: Testing measurement access boundaries
-status: implementing
+status: implemented
 created: 2026-10-04
 updated: 2026-10-04
 archived_at: null

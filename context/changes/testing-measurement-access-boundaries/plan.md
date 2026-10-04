@@ -248,10 +248,10 @@ No schema, migration, or data backfill. Production access rules stay as they are
 
 #### Automated
 
-- [x] 4.1 `npm test` exits 0
-- [x] 4.2 The anonymous measurement step still posts to `/api/measurements` and expects `/auth/signin`
+- [x] 4.1 `npm test` exits 0 — 69eac97
+- [x] 4.2 The anonymous measurement step still posts to `/api/measurements` and expects `/auth/signin` — 69eac97
 
 #### Manual
 
-- [ ] 4.3 §6.2 names the smoke pattern, including either linked note and the forbid on `smoke-unlinked-trainee-note`
-- [ ] 4.4 §6.5 records the shipped smoke steps, no Vitest auth mock, and no AI-native check, checked 2026-10-04
+- [x] 4.3 §6.2 names the smoke pattern, including either linked note and the forbid on `smoke-unlinked-trainee-note` — 69eac97
+- [x] 4.4 §6.5 records the shipped smoke steps, no Vitest auth mock, and no AI-native check, checked 2026-10-04 — 69eac97
