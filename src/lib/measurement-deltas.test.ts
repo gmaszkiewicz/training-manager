@@ -267,4 +267,115 @@ describe("withDeltas", () => {
     }
     expect(result[1]?.deltas).toBeNull();
   });
+
+  it("shows C down 1 kg and B up 2 kg before a delete", () => {
+    const a = entry({
+      id: "a",
+      measured_on: "2026-01-01",
+      created_at: "2026-01-01T08:00:00.000Z",
+      weight_kg: 80,
+    });
+    const b = entry({
+      id: "b",
+      measured_on: "2026-01-08",
+      created_at: "2026-01-08T08:00:00.000Z",
+      weight_kg: 82,
+    });
+    const c = entry({
+      id: "c",
+      measured_on: "2026-01-15",
+      created_at: "2026-01-15T08:00:00.000Z",
+      weight_kg: 81,
+    });
+
+    const result = withDeltas([a, c, b]);
+
+    expect(result.map((item) => item.id)).toEqual(["c", "b", "a"]);
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "down", difference: 1 });
+    expect(result[1]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 2 });
+    const cDeltas = result[0]?.deltas;
+    if (cDeltas) {
+      expect(formatDelta(cDeltas.weight_kg)).toBe("↓ 1.0");
+    }
+    const bDeltas = result[1]?.deltas;
+    if (bDeltas) {
+      expect(formatDelta(bDeltas.weight_kg)).toBe("↑ 2.0");
+    }
+    expect(result[2]?.deltas).toBeNull();
+  });
+
+  it("shows an increase of 1 kg on C after the middle row is removed", () => {
+    const a = entry({
+      id: "a",
+      measured_on: "2026-01-01",
+      created_at: "2026-01-01T08:00:00.000Z",
+      weight_kg: 80,
+    });
+    const c = entry({
+      id: "c",
+      measured_on: "2026-01-15",
+      created_at: "2026-01-15T08:00:00.000Z",
+      weight_kg: 81,
+    });
+
+    const result = withDeltas([a, c]);
+
+    expect(result.map((item) => item.id)).toEqual(["c", "a"]);
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
+    const latestDeltas = result[0]?.deltas;
+    if (latestDeltas) {
+      expect(formatDelta(latestDeltas.weight_kg)).toBe("↑ 1.0");
+    }
+    expect(result[1]?.deltas).toBeNull();
+  });
+
+  it("shows an increase of 2 kg on B after the latest row is removed", () => {
+    const a = entry({
+      id: "a",
+      measured_on: "2026-01-01",
+      created_at: "2026-01-01T08:00:00.000Z",
+      weight_kg: 80,
+    });
+    const b = entry({
+      id: "b",
+      measured_on: "2026-01-08",
+      created_at: "2026-01-08T08:00:00.000Z",
+      weight_kg: 82,
+    });
+
+    const result = withDeltas([a, b]);
+
+    expect(result.map((item) => item.id)).toEqual(["b", "a"]);
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 2 });
+    const latestDeltas = result[0]?.deltas;
+    if (latestDeltas) {
+      expect(formatDelta(latestDeltas.weight_kg)).toBe("↑ 2.0");
+    }
+    expect(result[1]?.deltas).toBeNull();
+  });
+
+  it("shows a decrease of 1 kg on C after the oldest row is removed", () => {
+    const b = entry({
+      id: "b",
+      measured_on: "2026-01-08",
+      created_at: "2026-01-08T08:00:00.000Z",
+      weight_kg: 82,
+    });
+    const c = entry({
+      id: "c",
+      measured_on: "2026-01-15",
+      created_at: "2026-01-15T08:00:00.000Z",
+      weight_kg: 81,
+    });
+
+    const result = withDeltas([b, c]);
+
+    expect(result.map((item) => item.id)).toEqual(["c", "b"]);
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "down", difference: 1 });
+    const latestDeltas = result[0]?.deltas;
+    if (latestDeltas) {
+      expect(formatDelta(latestDeltas.weight_kg)).toBe("↓ 1.0");
+    }
+    expect(result[1]?.deltas).toBeNull();
+  });
 });
