@@ -84,7 +84,7 @@ Test base: **sparse**. Vitest is configured (`src/**/*.test.ts`). Four product t
 
 | Layer | Tool | Version | Notes |
 |-------|------|---------|-------|
-| unit + integration | Vitest | ^5.0.2 | `npm test` runs `vitest run`. Phase 1 adds the delta cases here. Phase 2's request boundary is `scripts/smoke.mjs`. Phase 3 adds its rejection request to this runner. |
+| unit + integration | Vitest | ^5.0.2 | `npm test` runs `vitest run`. Phase 1 adds the delta cases here. Phase 2's request boundary is `scripts/smoke.mjs`. Phase 3 keeps the existing rejection-rule unit here and adds the storage proof to `scripts/smoke.mjs`. |
 | API mocking | none yet | — | Phase 2 decides the cheapest stand-in at the auth and database boundary. Do not add a mock library before that research. |
 | e2e | none | — | No Playwright in the manifest. Do not add one for these risks. |
 | accessibility | none | — | Out of this rollout. |
@@ -107,8 +107,8 @@ phase lands; before that, the gate is `planned`.
 |------|-------|-----------|---------|
 | lint + `astro check` | local + CI | required | syntax and type drift |
 | home token check | CI | required | home color-token drift |
-| Vitest (`npm test`) | local + CI | command already required; delta, access, and rejection cases required as Phases 1–3 land | wrong comparison chain, ownership gaps, stored illegal entries |
-| smoke | CI | required; Phase 2 confirms the current journal route | anonymous measurement write on the live route |
+| Vitest (`npm test`) | local + CI | command already required; delta, access, and rejection cases required as Phases 1–3 land | wrong comparison chain, ownership gaps |
+| smoke | CI | required; Phase 2 confirms the current journal route | anonymous measurement write on the live route; a future-date create in `scripts/smoke.mjs` that must stay off the empty journal |
 
 ## 6. Cookbook Patterns
 
@@ -134,7 +134,8 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 - **Test type**: unit on the rejection rule, plus one request that proves nothing was stored.
 - **Behavior**: an impossible value, a clearly future date, or a missing required field is refused on the form and the server.
-- **Pattern**: TBD — see §3 Phase 3.
+- **Run locally**: `npm run smoke`
+- **Pattern**: Extend `scripts/smoke.mjs`. After the empty-journal render and before the out-of-range weight post, create with UTC today plus two calendar days and weight `80.0`. That post expects a 302 whose location starts with `/measurements?error=`. The following `GET /measurements` expects `No measurements yet` and forbids that date. The existing rejection-rule unit stays. A new unit, weight `800` as this proof, the field message as the expectation, a mocked insert, and an edit-path request are not part of this pattern.
 
 ### 6.4 Choosing a layer for a new measurement behavior
 
@@ -148,6 +149,8 @@ the relevant rollout phase ships; before that, the sub-section reads
 Rollout phase 1 shipped these cases in `src/lib/measurement-deltas.test.ts`. The existing `0.0`, backfilled-date, and id-tie cases were left in place. No AI-native check was added. Checked 2026-10-04.
 
 Rollout phase 2 shipped those steps in `scripts/smoke.mjs`: the second-trainee query and legal writes, the trainer edit and delete, and the never-linked query that accepts either linked note and forbids `smoke-unlinked-trainee-note`. No Vitest auth or database mock was added. No AI-native check was added. Checked 2026-10-04.
+
+Rollout phase 3 shipped those two steps in `scripts/smoke.mjs`: a create of UTC today plus two calendar days with weight `80.0`, and the following `GET /measurements` that expects `No measurements yet` and forbids that date. The existing rejection-rule unit was left in place. No new Vitest request was added. No AI-native check was added. Checked 2026-10-04.
 
 ## 7. What We Deliberately Don't Test
 
