@@ -388,6 +388,24 @@ const steps = [
     { status: 200, body: earlierNote, forbid: laterNote },
   ],
   [
+    "trainer update is rejected",
+    () =>
+      request(`/api/measurements/${measurementId}`, {
+        method: "POST",
+        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+      }),
+    { status: 302, locationIncludes: "error=" },
+  ],
+  [
+    "trainer delete is rejected",
+    () =>
+      request(`/api/measurements/${measurementId}/delete`, {
+        method: "POST",
+        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+      }),
+    { status: 302, locationIncludes: "error=" },
+  ],
+  [
     "signout before checking the trainee journal",
     () => request("/api/auth/signout", { method: "POST" }),
     { status: 302, location: "/" },
