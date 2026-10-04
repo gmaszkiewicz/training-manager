@@ -67,7 +67,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|------------------------------|----------------------------------------------------------------------------------|---------------|---------------------------------------------|-------------|---------------|
-| 1 | Delta after edit and delete | Prove the remaining chain, the oldest entry, and the trainer's copy of that chain | #1, #4 | unit; thin integration if save or preview can diverge | implementing | context/changes/testing-delta-after-edit-delete/ |
+| 1 | Delta after edit and delete | Prove the remaining chain, the oldest entry, and the trainer's copy of that chain | #1, #4 | unit; thin integration if save or preview can diverge | complete | context/changes/testing-delta-after-edit-delete/ |
 | 2 | Measurement access boundaries | Prove ownership on read and write, and that an email link cannot open the wrong journal; confirm anonymous smoke still hits the current journal route | #2, #3 | integration at the request boundary | not started | — |
 | 3 | Reject illegal measurements | Prove an illegal entry is refused and not stored, on both entry paths | #5 | unit + one request | not started | — |
 
