@@ -189,4 +189,82 @@ describe("withDeltas", () => {
     expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 2 });
     expect(result[1]?.deltas).toBeNull();
   });
+
+  it("shows an increase of 2 kg on the starting pair", () => {
+    const a = entry({
+      id: "a",
+      measured_on: "2026-01-01",
+      created_at: "2026-01-01T08:00:00.000Z",
+      weight_kg: 80,
+    });
+    const b = entry({
+      id: "b",
+      measured_on: "2026-01-08",
+      created_at: "2026-01-08T08:00:00.000Z",
+      weight_kg: 82,
+    });
+
+    const result = withDeltas([b, a]);
+
+    expect(result.map((item) => item.id)).toEqual(["b", "a"]);
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 2 });
+    const latestDeltas = result[0]?.deltas;
+    if (latestDeltas) {
+      expect(formatDelta(latestDeltas.weight_kg)).toBe("↑ 2.0");
+    }
+    expect(result[1]?.deltas).toBeNull();
+  });
+
+  it("shows an increase of 1 kg after the earlier weight is saved as 81", () => {
+    const a = entry({
+      id: "a",
+      measured_on: "2026-01-01",
+      created_at: "2026-01-01T08:00:00.000Z",
+      weight_kg: 81,
+    });
+    const b = entry({
+      id: "b",
+      measured_on: "2026-01-08",
+      created_at: "2026-01-08T08:00:00.000Z",
+      weight_kg: 82,
+    });
+
+    const result = withDeltas([b, a]);
+
+    expect(result.map((item) => item.id)).toEqual(["b", "a"]);
+    expect(result[0]?.measured_on).toBe("2026-01-08");
+    expect(result[1]?.measured_on).toBe("2026-01-01");
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
+    const latestDeltas = result[0]?.deltas;
+    if (latestDeltas) {
+      expect(formatDelta(latestDeltas.weight_kg)).toBe("↑ 1.0");
+    }
+    expect(result[1]?.deltas).toBeNull();
+  });
+
+  it("shows a decrease of 2 kg after the later date moves to 2025-12-28", () => {
+    const a = entry({
+      id: "a",
+      measured_on: "2026-01-01",
+      created_at: "2026-01-01T08:00:00.000Z",
+      weight_kg: 80,
+    });
+    const b = entry({
+      id: "b",
+      measured_on: "2025-12-28",
+      created_at: "2026-01-08T08:00:00.000Z",
+      weight_kg: 82,
+    });
+
+    const result = withDeltas([b, a]);
+
+    expect(result.map((item) => item.id)).toEqual(["a", "b"]);
+    expect(result[1]?.measured_on).toBe("2025-12-28");
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "down", difference: 2 });
+    const latestDeltas = result[0]?.deltas;
+    if (latestDeltas) {
+      expect(formatDelta(latestDeltas.weight_kg)).toBe("↓ 2.0");
+    }
+    expect(result[1]?.deltas).toBeNull();
+  });
 });
