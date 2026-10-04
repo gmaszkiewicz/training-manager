@@ -241,18 +241,18 @@ No schema, migration, or data backfill. The production comparison function stays
 
 #### Manual
 
-- [x] 1.3 Those expected arrows match the signed edit plan, and they were not taken from a trial run of `withDeltas`
+- [x] 1.3 Those expected arrows match the signed edit plan, and they were not taken from a trial run of `withDeltas` — f3068f6
 
 ### Phase 2: Signed delete chain
 
 #### Automated
 
-- [ ] 2.1 `npm test` exits 0
-- [ ] 2.2 The delete cases expect the before-delete arrows, `↑ 1.0` on C with A null after the middle row is removed, `↑ 2.0` on B with A null after the latest row is removed, and `↓ 1.0` on C with B null after the oldest row is removed
+- [x] 2.1 `npm test` exits 0
+- [x] 2.2 The delete cases expect the before-delete arrows, `↑ 1.0` on C with A null after the middle row is removed, `↑ 2.0` on B with A null after the latest row is removed, and `↓ 1.0` on C with B null after the oldest row is removed
 
 #### Manual
 
-- [ ] 2.3 Those expected arrows match the signed delete plan, and they were not taken from a trial run of `withDeltas`
+- [x] 2.3 Those expected arrows match the signed delete plan, and they were not taken from a trial run of `withDeltas`
 
 ### Phase 3: Note-only same-date reorder
 
