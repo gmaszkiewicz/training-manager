@@ -213,25 +213,25 @@ No schema, migration, or data backfill. Production access rules stay as they are
 
 #### Automated
 
-- [x] 1.1 `npm run smoke` exits 0
-- [x] 1.2 The second-trainee query expects `smoke-later-trainee-note` and forbids `smoke-earlier-trainee-note`
-- [x] 1.3 The second trainee's legal update and delete expect 302 and a location containing `error=`
+- [x] 1.1 `npm run smoke` exits 0 — cb84a9e
+- [x] 1.2 The second-trainee query expects `smoke-later-trainee-note` and forbids `smoke-earlier-trainee-note` — cb84a9e
+- [x] 1.3 The second trainee's legal update and delete expect 302 and a location containing `error=` — cb84a9e
 
 #### Manual
 
-- [x] 1.4 The captured id is the edit= UUID on the entry that shows `smoke-earlier-trainee-note`, and the posted form is a legal measurement whose note is `smoke-foreign-write-note`
-- [x] 1.5 The final owner journal expects `smoke-earlier-trainee-note` and forbids `smoke-foreign-write-note`, and those strings come from the script constants
+- [x] 1.4 The captured id is the edit= UUID on the entry that shows `smoke-earlier-trainee-note`, and the posted form is a legal measurement whose note is `smoke-foreign-write-note` — cb84a9e
+- [x] 1.5 The final owner journal expects `smoke-earlier-trainee-note` and forbids `smoke-foreign-write-note`, and those strings come from the script constants — cb84a9e
 
 ### Phase 2: Trainer write refusal
 
 #### Automated
 
-- [ ] 2.1 `npm run smoke` exits 0
-- [ ] 2.2 The trainer update and delete of the captured id expect 302 and a location containing `error=`
+- [x] 2.1 `npm run smoke` exits 0
+- [x] 2.2 The trainer update and delete of the captured id expect 302 and a location containing `error=`
 
 #### Manual
 
-- [ ] 2.3 Those posts use the legal measurement form and `smoke-foreign-write-note`, and the final owner step still forbids that note
+- [x] 2.3 Those posts use the legal measurement form and `smoke-foreign-write-note`, and the final owner step still forbids that note
 
 ### Phase 3: Never-linked preview
 
