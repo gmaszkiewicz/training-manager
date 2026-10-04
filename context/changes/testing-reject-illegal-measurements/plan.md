@@ -188,11 +188,11 @@ No schema, migration, or data backfill. The date cap stays in the schema. The ta
 
 #### Automated
 
-- [x] 2.1 `npm test` exits 0
-- [x] 2.2 `scripts/smoke.mjs` still places the future-date POST before the out-of-range weight step, and the following GET expects `No measurements yet`
+- [x] 2.1 `npm test` exits 0 — 95f2c8d
+- [x] 2.2 `scripts/smoke.mjs` still places the future-date POST before the out-of-range weight step, and the following GET expects `No measurements yet` — 95f2c8d
 
 #### Manual
 
-- [ ] 2.3 §6.3 names the smoke pattern: UTC today plus two days, weight `80.0`, the error redirect, then an empty journal that forbids that date
-- [ ] 2.4 §6.5 records the shipped steps, the existing unit left in place, no new Vitest request, and no AI-native check
-- [ ] 2.5 §4 and §5 place the storage proof on `scripts/smoke.mjs`
+- [x] 2.3 §6.3 names the smoke pattern: UTC today plus two days, weight `80.0`, the error redirect, then an empty journal that forbids that date
+- [x] 2.4 §6.5 records the shipped steps, the existing unit left in place, no new Vitest request, and no AI-native check
+- [x] 2.5 §4 and §5 place the storage proof on `scripts/smoke.mjs`
