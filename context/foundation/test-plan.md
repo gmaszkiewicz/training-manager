@@ -126,7 +126,7 @@ the relevant rollout phase ships; before that, the sub-section reads
 ### 6.2 Measurement access
 
 - **Test type**: integration at the request boundary with two users.
-- **Behavior**: another trainee's journal stays hidden; an unlinked trainer sees nothing; a trainer cannot create, edit, or delete; an email link cannot open the wrong person.
+- **Behavior**: another trainee's journal stays hidden; a trainer query for someone never linked shows a linked note and hides that trainee's note; a trainer cannot create, edit, or delete; an email link cannot open the wrong person.
 - **Run locally**: `npm run smoke`
 - **Pattern**: Extend `scripts/smoke.mjs`. The second-trainee query expects `smoke-later-trainee-note` and forbids `smoke-earlier-trainee-note`, and the second trainee's legal writes on the first measurement are refused. The trainer edit and delete of that measurement are refused the same way. The never-linked query accepts either linked note and forbids `smoke-unlinked-trainee-note`. The anonymous step stays `POST /api/measurements` expecting `/auth/signin`. A second anonymous POST and a Vitest auth or database mock are not part of this pattern.
 
