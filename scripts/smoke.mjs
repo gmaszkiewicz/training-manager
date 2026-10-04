@@ -8,10 +8,12 @@ const trainerEmail = `smoke-trainer-${Date.now()}@example.com`;
 const unknownEmail = `smoke-missing-${Date.now()}@example.com`;
 const earlierNote = "smoke-earlier-trainee-note";
 const laterNote = "smoke-later-trainee-note";
+const foreignWriteNote = "smoke-foreign-write-note";
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
 let traineeId = "";
 let secondTraineeId = "";
+let measurementId = "";
 
 function cookieHeader() {
   return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
@@ -117,6 +119,27 @@ function rememberSecondTrainee(run) {
   };
 }
 
+function editIdForNote(html, note) {
+  const editId = /[?&]edit=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  for (const item of html.split(/<li[\s>]/).slice(1)) {
+    const row = item.split("</li>")[0];
+    if (!row.includes(note)) continue;
+    const match = editId.exec(row);
+    return match ? match[1] : "";
+  }
+  return "";
+}
+
+function rememberMeasurement(run) {
+  return async () => {
+    const actual = await run();
+    const id = editIdForNote(actual.body, earlierNote);
+    if (!id) return { ...actual, measurementMissing: true };
+    measurementId = id;
+    return actual;
+  };
+}
+
 let redirectPath = "";
 
 function rememberRedirect(run) {
@@ -197,7 +220,7 @@ const steps = [
   ],
   [
     "measurements shows the weight delta",
-    rememberTrainee(() => request("/measurements")),
+    rememberTrainee(rememberMeasurement(() => request("/measurements"))),
     { status: 200, body: "↓ 1.5" },
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
@@ -311,6 +334,29 @@ const steps = [
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
+    "second trainee query shows the later note",
+    () => request(`/measurements?trainee=${traineeId}`),
+    { status: 200, body: laterNote, forbid: earlierNote },
+  ],
+  [
+    "second trainee update is rejected",
+    () =>
+      request(`/api/measurements/${measurementId}`, {
+        method: "POST",
+        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+      }),
+    { status: 302, locationIncludes: "error=" },
+  ],
+  [
+    "second trainee delete is rejected",
+    () =>
+      request(`/api/measurements/${measurementId}/delete`, {
+        method: "POST",
+        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+      }),
+    { status: 302, locationIncludes: "error=" },
+  ],
+  [
     "signout after the second trainee",
     () => request("/api/auth/signout", { method: "POST" }),
     { status: 302, location: "/" },
@@ -354,7 +400,7 @@ const steps = [
   [
     "trainee journal still has Add measurement",
     () => request("/measurements"),
-    { status: 200, body: "Add measurement" },
+    { status: 200, body: ["Add measurement", earlierNote], forbid: foreignWriteNote },
   ],
 ];
 
@@ -362,22 +408,35 @@ let failed = 0;
 for (const [name, run, expected] of steps) {
   const actual = await run();
   const location = typeof expected.location === "function" ? expected.location() : expected.location;
+  const locationIncludes = expected.locationIncludes;
   const locationOk =
-    location === undefined ||
-    (expected.exactLocation ? actual.location === location : actual.location.startsWith(location));
-  const bodyOk = expected.body === undefined || actual.body.includes(expected.body);
+    (location === undefined ||
+      (expected.exactLocation ? actual.location === location : actual.location.startsWith(location))) &&
+    (locationIncludes === undefined || actual.location.includes(locationIncludes));
+  const bodies = expected.body === undefined ? [] : Array.isArray(expected.body) ? expected.body : [expected.body];
+  const bodyOk = bodies.every((text) => actual.body.includes(text));
   const forbids =
     expected.forbid === undefined ? [] : Array.isArray(expected.forbid) ? expected.forbid : [expected.forbid];
   const forbidOk = forbids.every((text) => !actual.body.includes(text));
-  const ok = actual.status === expected.status && locationOk && bodyOk && forbidOk;
+  const measurementOk = actual.measurementMissing !== true;
+  const ok = actual.status === expected.status && locationOk && bodyOk && forbidOk && measurementOk;
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
-    const expectedBody = expected.body ? ` body contains ${JSON.stringify(expected.body)}` : "";
+    const expectedBody =
+      bodies.length > 0 ? ` body contains ${JSON.stringify(bodies.length === 1 ? bodies[0] : bodies)}` : "";
     const expectedForbid =
       forbids.length > 0 ? ` body excludes ${JSON.stringify(forbids.length === 1 ? forbids[0] : forbids)}` : "";
-    const expectedLocation = location ? `${expected.exactLocation ? "exactly " : ""}${location}` : "";
-    console.log(`      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedForbid}`);
+    const expectedLocation = [
+      location ? `${expected.exactLocation ? "exactly " : ""}${location}` : "",
+      locationIncludes ? `location contains ${JSON.stringify(locationIncludes)}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const expectedMeasurement = actual.measurementMissing ? ` edit= id for ${JSON.stringify(earlierNote)}` : "";
+    console.log(
+      `      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedForbid}${expectedMeasurement}`,
+    );
   }
 }
 
