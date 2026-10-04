@@ -47,6 +47,16 @@ function measurementForm(measuredOn, weightKg, note = "") {
   };
 }
 
+function utcDatePlusDays(days) {
+  const now = new Date();
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + days));
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${date.getUTCFullYear()}-${month}-${day}`;
+}
+
+const futureMeasuredOn = utcDatePlusDays(2);
+
 function decodeBase64Url(value) {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   const pad = (4 - (base64.length % 4)) % 4;
@@ -214,6 +224,16 @@ const steps = [
     "measurements renders for signed-in user",
     () => request("/measurements"),
     { status: 200, body: "No measurements yet" },
+  ],
+  [
+    "measurement rejects a future date",
+    () => request("/api/measurements", { method: "POST", form: measurementForm(futureMeasuredOn, "80.0") }),
+    { status: 302, location: "/measurements?error=" },
+  ],
+  [
+    "future date leaves the journal empty",
+    () => request("/measurements"),
+    { status: 200, body: "No measurements yet", forbid: futureMeasuredOn },
   ],
   [
     "measurement rejects out-of-range weight",
