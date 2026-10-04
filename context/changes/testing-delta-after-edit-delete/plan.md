@@ -247,23 +247,23 @@ No schema, migration, or data backfill. The production comparison function stays
 
 #### Automated
 
-- [x] 2.1 `npm test` exits 0
-- [x] 2.2 The delete cases expect the before-delete arrows, `↑ 1.0` on C with A null after the middle row is removed, `↑ 2.0` on B with A null after the latest row is removed, and `↓ 1.0` on C with B null after the oldest row is removed
+- [x] 2.1 `npm test` exits 0 — 36bc86c
+- [x] 2.2 The delete cases expect the before-delete arrows, `↑ 1.0` on C with A null after the middle row is removed, `↑ 2.0` on B with A null after the latest row is removed, and `↓ 1.0` on C with B null after the oldest row is removed — 36bc86c
 
 #### Manual
 
-- [x] 2.3 Those expected arrows match the signed delete plan, and they were not taken from a trial run of `withDeltas`
+- [x] 2.3 Those expected arrows match the signed delete plan, and they were not taken from a trial run of `withDeltas` — 36bc86c
 
 ### Phase 3: Note-only same-date reorder
 
 #### Automated
 
-- [ ] 3.1 `npm test` exits 0
-- [ ] 3.2 The note-only case expects Q `↑ 2.0` versus P, P `↓ 1.0` versus R, null deltas on R, Q still first, and the weights 82, 80, and 81 unchanged after the later timestamp
+- [x] 3.1 `npm test` exits 0
+- [x] 3.2 The note-only case expects Q `↑ 2.0` versus P, P `↓ 1.0` versus R, null deltas on R, Q still first, and the weights 82, 80, and 81 unchanged after the later timestamp
 
 #### Manual
 
-- [ ] 3.3 The before-and-after arrows follow the signed timestamp rule and the tenths gaps of 80, 81, and 82, and the note text is not the source of the arrow
+- [x] 3.3 The before-and-after arrows follow the signed timestamp rule and the tenths gaps of 80, 81, and 82, and the note text is not the source of the arrow
 
 ### Phase 4: Cookbook
 
