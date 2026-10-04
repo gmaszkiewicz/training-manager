@@ -118,10 +118,10 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Delta after edit or delete
 
-- **Test type**: unit, plus a thin integration only if research shows a saved edit, delete, or trainer preview can diverge from the comparison rule.
-- **Behavior**: wrong previous remaining entry, pre-edit values, a comparison on the oldest entry, and a trainer preview that disagrees with the trainee list.
+- **Test type**: unit case on `withDeltas` with post-edit and post-delete rows.
+- **Behavior**: the wrong previous remaining row, a pre-edit value, a comparison on the oldest remaining row, a same-date note-only save that changes which row is previous, and a trainer preview that would disagree with that result.
 - **Run locally**: `npm test`
-- **Pattern**: TBD — see §3 Phase 1.
+- **Pattern**: Build the rows from the signed edit or delete plan, pass them in an order that is not newest first, and expect that plan's `formatDelta` strings and null deltas on the oldest remaining row. A note-only shared date is a later `created_at` with the same numbers, and a later `measured_on` stays above that pair. The trainer preview is those assertions. A second subtraction, a screenshot, a request test that only repeats this rule, and a thin integration are not part of this pattern.
 
 ### 6.2 Measurement access
 
@@ -144,7 +144,7 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.5 Per-rollout-phase notes
 
-(Empty until a phase lands.)
+Rollout phase 1 shipped these cases in `src/lib/measurement-deltas.test.ts`. The existing `0.0`, backfilled-date, and id-tie cases were left in place. No AI-native check was added. Checked 2026-10-04.
 
 ## 7. What We Deliberately Don't Test
 

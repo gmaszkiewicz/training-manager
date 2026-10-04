@@ -258,20 +258,20 @@ No schema, migration, or data backfill. The production comparison function stays
 
 #### Automated
 
-- [x] 3.1 `npm test` exits 0
-- [x] 3.2 The note-only case expects Q `↑ 2.0` versus P, P `↓ 1.0` versus R, null deltas on R, Q still first, and the weights 82, 80, and 81 unchanged after the later timestamp
+- [x] 3.1 `npm test` exits 0 — e726129
+- [x] 3.2 The note-only case expects Q `↑ 2.0` versus P, P `↓ 1.0` versus R, null deltas on R, Q still first, and the weights 82, 80, and 81 unchanged after the later timestamp — e726129
 
 #### Manual
 
-- [x] 3.3 The before-and-after arrows follow the signed timestamp rule and the tenths gaps of 80, 81, and 82, and the note text is not the source of the arrow
+- [x] 3.3 The before-and-after arrows follow the signed timestamp rule and the tenths gaps of 80, 81, and 82, and the note text is not the source of the arrow — e726129
 
 ### Phase 4: Cookbook
 
 #### Automated
 
-- [ ] 4.1 `npm test` exits 0
+- [x] 4.1 `npm test` exits 0
 
 #### Manual
 
-- [ ] 4.2 §6.1 names the unit pattern, the signed-plan arrows, the same-date timestamp case, and that the trainer preview uses those assertions
-- [ ] 4.3 §6.5 records that this rollout phase shipped those cases and that no AI-native check was added, checked 2026-10-04
+- [x] 4.2 §6.1 names the unit pattern, the signed-plan arrows, the same-date timestamp case, and that the trainer preview uses those assertions
+- [x] 4.3 §6.5 records that this rollout phase shipped those cases and that no AI-native check was added, checked 2026-10-04
