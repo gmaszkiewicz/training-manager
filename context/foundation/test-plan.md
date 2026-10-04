@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-10-03
+> Last updated: 2026-10-04
 
 ## 1. Strategy
 
@@ -41,7 +41,7 @@ research's job, see §1 principle #3).
 
 | # | Risk (failure scenario) | Impact | Likelihood | Source (evidence — not anchor) |
 |---|-------------------------|--------|------------|--------------------------------|
-| 1 | After an edit or a delete, an entry's arrow and difference use the wrong previous remaining entry, a value from before the edit, or a comparison on the oldest remaining entry | High | High | Interview Q1, Q3, Q4; PRD Business Logic, US-01, FR-004, FR-005; roadmap S-05, S-06; hot-spot `src/lib` (14 commits/30d), `src/components/measurements` (10 commits/30d) |
+| 1 | After an edit or a delete, an entry's arrow and difference use the wrong previous remaining entry, a value from before the edit, or a comparison on the oldest remaining entry. Among entries that share a date, a note-only save can change which row is previous | High | High | Interview Q1, Q3, Q4; PRD Business Logic, US-01, FR-004, FR-005; roadmap S-05, S-06; hot-spot `src/lib` (14 commits/30d), `src/components/measurements` (10 commits/30d) |
 | 2 | A signed-in user reads or changes body measurements they do not own: another trainee's journal, an unlinked trainee's preview, or a trainer create, edit, or delete | High | Medium | PRD Access Control, NFR, guardrail; roadmap S-04; hot-spot `src/components/trainer` (11 commits/30d), `src/lib/services` (11 commits/30d) |
 | 3 | Linking by email attaches no trainee, the wrong person, or a non-trainee, and a preview opens anyway | High | Medium | PRD FR-007, Access Control pairing; roadmap S-04; hot-spot `src/components/trainer` (11 commits/30d) |
 | 4 | A linked trainer's preview shows a different arrow or difference than the trainee's list for the same stored entries | High | Medium | PRD FR-008, Business Logic; roadmap S-04; hot-spot `src/components/trainer` (11 commits/30d) |
@@ -53,10 +53,10 @@ Anonymous access to the journal is high impact and low likelihood. The measureme
 
 | Risk | What would prove protection | Must challenge | Context `/10x-research` must ground | Likely cheapest layer | Anti-pattern to avoid |
 |------|-----------------------------|----------------|--------------------------------------|-----------------------|-----------------------|
-| #1 | After edit or delete, each remaining entry compares to the immediately previous remaining entry, using saved values; the oldest remaining entry has no comparison; a note-only change does not move the numbers | A two-entry add proves edit, delete-the-middle, delete-the-latest, and a date change | What "previous" is keyed on, how edit and delete change that chain, what a zero difference shows | Unit on the comparison rule; a thin integration only if a saved edit or delete can diverge from that rule | Asserting the current function's output; an add-only happy path; a browser tour of two new rows |
+| #1 | After an edit or a delete, each remaining entry compares with the immediately previous remaining entry by date, then saved timestamp, then id, using the saved numbers. The oldest remaining entry has no comparison. A difference that rounds to zero tenths shows as unchanged. A note-only save leaves the stored numbers as they are; among entries that share a date, it can change which row is previous | A two-entry add proves edit, delete-the-middle, delete-the-latest, and a date change. A note-only save leaves same-date order unchanged | Previous is the prior row after ordering by date, then timestamp, then id. Edit and delete change the rows passed into that rule; they do not store a separate chain. Zero tenths means unchanged. The save rewrites the timestamp even when the numbers stay put | Unit on the comparison rule with the post-edit and post-delete rows. A thin integration is not required, because the next list applies that same rule to the saved rows | Asserting the current function's output as the oracle; an add-only happy path; a browser tour of two new rows; a request test that only repeats the same pure rule |
 | #2 | Another trainee's entries stay hidden. An unlinked trainer sees nothing. A trainer cannot create, edit, or delete a measurement | A signed-in session is enough to authorize the row | Ownership versus authentication, and that a preview grant is not a write grant | Integration at the request boundary with two users | Mocking the auth check so it always passes; only asserting an anonymous 401 |
 | #3 | Link succeeds only for an existing trainee email, and the preview is that trainee's entries alone | A successful link response means the preview is the person who was typed | Email lookup, a trainer email, an unknown email, and a second trainee who was not linked | Integration on link, then preview | Seeding one trainee and linking only that happy path |
-| #4 | The linked trainer sees the same arrows and differences as the trainee for the same stored entries, including after an edit or delete | A correct trainee list implies a correct trainer list | Whether the preview reuses the trainee comparison result | One assertion on the shared result, beside #1 | A screenshot of the trainer panel; subtracting again inside the test |
+| #4 | For the same stored entries, including after an edit or a delete, the linked trainer sees the same arrows and differences as the trainee | A correct trainee list implies a correct trainer list because the two screens share one computed result | Each screen runs the same comparison on the rows loaded for that request. They do not share one computed result. When the rows match, the arrows match | One unit assertion on that comparison, beside #1, using the post-edit and post-delete rows. That assertion does not catch a later preview that formats arrows on its own | A screenshot of the trainer panel; subtracting again inside the test; asserting a shared result object |
 | #5 | A clearly illegal entry is refused by the form and the server, and it does not appear on the list | Client rejection means the server also refused to store it | The documented limits, both entry paths, and where a rejected body would have been stored | Unit on the rejection rule, plus one request that proves nothing was stored | Copying the implementation's limits into the expected value; asserting error text only |
 
 ## 3. Phased Rollout
@@ -67,7 +67,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|------------------------------|----------------------------------------------------------------------------------|---------------|---------------------------------------------|-------------|---------------|
-| 1 | Delta after edit and delete | Prove the remaining chain, the oldest entry, and the trainer's copy of that chain | #1, #4 | unit; thin integration if save or preview can diverge | change opened | context/changes/testing-delta-after-edit-delete/ |
+| 1 | Delta after edit and delete | Prove the remaining chain, the oldest entry, and the trainer's copy of that chain | #1, #4 | unit; thin integration if save or preview can diverge | researched | context/changes/testing-delta-after-edit-delete/ |
 | 2 | Measurement access boundaries | Prove ownership on read and write, and that an email link cannot open the wrong journal; confirm anonymous smoke still hits the current journal route | #2, #3 | integration at the request boundary | not started | — |
 | 3 | Reject illegal measurements | Prove an illegal entry is refused and not stored, on both entry paths | #5 | unit + one request | not started | — |
 
@@ -156,7 +156,7 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-10-03
+- Strategy (§1–§5) last reviewed: 2026-10-04
 - Stack versions last verified: 2026-10-03
 - AI-native tool references last verified: 2026-10-03
 
