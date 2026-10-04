@@ -226,23 +226,23 @@ No schema, migration, or data backfill. Production access rules stay as they are
 
 #### Automated
 
-- [x] 2.1 `npm run smoke` exits 0
-- [x] 2.2 The trainer update and delete of the captured id expect 302 and a location containing `error=`
+- [x] 2.1 `npm run smoke` exits 0 — 41c8921
+- [x] 2.2 The trainer update and delete of the captured id expect 302 and a location containing `error=` — 41c8921
 
 #### Manual
 
-- [x] 2.3 Those posts use the legal measurement form and `smoke-foreign-write-note`, and the final owner step still forbids that note
+- [x] 2.3 Those posts use the legal measurement form and `smoke-foreign-write-note`, and the final owner step still forbids that note — 41c8921
 
 ### Phase 3: Never-linked preview
 
 #### Automated
 
-- [ ] 3.1 `npm run smoke` exits 0
-- [ ] 3.2 The never-linked query accepts either linked note and forbids `smoke-unlinked-trainee-note`
+- [x] 3.1 `npm run smoke` exits 0
+- [x] 3.2 The never-linked query accepts either linked note and forbids `smoke-unlinked-trainee-note`
 
 #### Manual
 
-- [ ] 3.3 The third trainee is signed out after their id is remembered and before the trainer preview sign-in, is never linked, and the step does not require a 403, an empty journal, or one specific linked trainee
+- [x] 3.3 The third trainee is signed out after their id is remembered and before the trainer preview sign-in, is never linked, and the step does not require a 403, an empty journal, or one specific linked trainee
 
 ### Phase 4: Cookbook
 

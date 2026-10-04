@@ -4,15 +4,18 @@
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = `smoke-${Date.now()}@example.com`;
 const secondEmail = `smoke-second-${Date.now()}@example.com`;
+const unlinkedEmail = `smoke-unlinked-${Date.now()}@example.com`;
 const trainerEmail = `smoke-trainer-${Date.now()}@example.com`;
 const unknownEmail = `smoke-missing-${Date.now()}@example.com`;
 const earlierNote = "smoke-earlier-trainee-note";
 const laterNote = "smoke-later-trainee-note";
+const unlinkedNote = "smoke-unlinked-trainee-note";
 const foreignWriteNote = "smoke-foreign-write-note";
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
 let traineeId = "";
 let secondTraineeId = "";
+let unlinkedTraineeId = "";
 let measurementId = "";
 
 function cookieHeader() {
@@ -115,6 +118,15 @@ function rememberSecondTrainee(run) {
     const actual = await run();
     const id = sessionUserId();
     if (id) secondTraineeId = id;
+    return actual;
+  };
+}
+
+function rememberUnlinkedTrainee(run) {
+  return async () => {
+    const actual = await run();
+    const id = sessionUserId();
+    if (id) unlinkedTraineeId = id;
     return actual;
   };
 }
@@ -362,6 +374,26 @@ const steps = [
     { status: 302, location: "/" },
   ],
   [
+    "unlinked trainee signup creates account",
+    () => request("/api/auth/signup", { method: "POST", form: { email: unlinkedEmail, password, role: "trainee" } }),
+    { status: 302, location: "/measurements" },
+  ],
+  [
+    "unlinked trainee opens the journal",
+    rememberUnlinkedTrainee(() => request("/measurements")),
+    { status: 200, body: "No measurements yet" },
+  ],
+  [
+    "unlinked trainee saves an entry with a note",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-03-01", "70.0", unlinkedNote) }),
+    { status: 302, location: "/measurements", exactLocation: true },
+  ],
+  [
+    "signout after the unlinked trainee",
+    () => request("/api/auth/signout", { method: "POST" }),
+    { status: 302, location: "/" },
+  ],
+  [
     "trainer signs in for preview",
     () => request("/api/auth/signin", { method: "POST", form: { email: trainerEmail, password } }),
     { status: 302, location: "/measurements" },
@@ -406,6 +438,11 @@ const steps = [
     { status: 302, locationIncludes: "error=" },
   ],
   [
+    "trainer never-linked query shows a linked note",
+    () => request(`/measurements?trainee=${unlinkedTraineeId}`),
+    { status: 200, bodyAny: [earlierNote, laterNote], forbid: unlinkedNote },
+  ],
+  [
     "signout before checking the trainee journal",
     () => request("/api/auth/signout", { method: "POST" }),
     { status: 302, location: "/" },
@@ -433,16 +470,20 @@ for (const [name, run, expected] of steps) {
     (locationIncludes === undefined || actual.location.includes(locationIncludes));
   const bodies = expected.body === undefined ? [] : Array.isArray(expected.body) ? expected.body : [expected.body];
   const bodyOk = bodies.every((text) => actual.body.includes(text));
+  const bodyAny =
+    expected.bodyAny === undefined ? [] : Array.isArray(expected.bodyAny) ? expected.bodyAny : [expected.bodyAny];
+  const bodyAnyOk = bodyAny.length === 0 || bodyAny.some((text) => actual.body.includes(text));
   const forbids =
     expected.forbid === undefined ? [] : Array.isArray(expected.forbid) ? expected.forbid : [expected.forbid];
   const forbidOk = forbids.every((text) => !actual.body.includes(text));
   const measurementOk = actual.measurementMissing !== true;
-  const ok = actual.status === expected.status && locationOk && bodyOk && forbidOk && measurementOk;
+  const ok = actual.status === expected.status && locationOk && bodyOk && bodyAnyOk && forbidOk && measurementOk;
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
     const expectedBody =
       bodies.length > 0 ? ` body contains ${JSON.stringify(bodies.length === 1 ? bodies[0] : bodies)}` : "";
+    const expectedBodyAny = bodyAny.length > 0 ? ` body contains any of ${JSON.stringify(bodyAny)}` : "";
     const expectedForbid =
       forbids.length > 0 ? ` body excludes ${JSON.stringify(forbids.length === 1 ? forbids[0] : forbids)}` : "";
     const expectedLocation = [
@@ -453,7 +494,7 @@ for (const [name, run, expected] of steps) {
       .join(" ");
     const expectedMeasurement = actual.measurementMissing ? ` edit= id for ${JSON.stringify(earlierNote)}` : "";
     console.log(
-      `      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedForbid}${expectedMeasurement}`,
+      `      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedBodyAny}${expectedForbid}${expectedMeasurement}`,
     );
   }
 }
