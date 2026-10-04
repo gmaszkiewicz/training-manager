@@ -241,7 +241,7 @@ No schema, migration, or data backfill. The production comparison function stays
 
 #### Manual
 
-- [ ] 1.3 Those expected arrows match the signed edit plan, and they were not taken from a trial run of `withDeltas`
+- [x] 1.3 Those expected arrows match the signed edit plan, and they were not taken from a trial run of `withDeltas`
 
 ### Phase 2: Signed delete chain
 
