@@ -237,19 +237,19 @@ No schema, migration, or data backfill. Production access rules stay as they are
 
 #### Automated
 
-- [x] 3.1 `npm run smoke` exits 0
-- [x] 3.2 The never-linked query accepts either linked note and forbids `smoke-unlinked-trainee-note`
+- [x] 3.1 `npm run smoke` exits 0 — e9a17a3
+- [x] 3.2 The never-linked query accepts either linked note and forbids `smoke-unlinked-trainee-note` — e9a17a3
 
 #### Manual
 
-- [x] 3.3 The third trainee is signed out after their id is remembered and before the trainer preview sign-in, is never linked, and the step does not require a 403, an empty journal, or one specific linked trainee
+- [x] 3.3 The third trainee is signed out after their id is remembered and before the trainer preview sign-in, is never linked, and the step does not require a 403, an empty journal, or one specific linked trainee — e9a17a3
 
 ### Phase 4: Cookbook
 
 #### Automated
 
-- [ ] 4.1 `npm test` exits 0
-- [ ] 4.2 The anonymous measurement step still posts to `/api/measurements` and expects `/auth/signin`
+- [x] 4.1 `npm test` exits 0
+- [x] 4.2 The anonymous measurement step still posts to `/api/measurements` and expects `/auth/signin`
 
 #### Manual
 
