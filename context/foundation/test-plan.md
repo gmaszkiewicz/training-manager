@@ -84,7 +84,7 @@ Test base: **sparse**. Vitest is configured (`src/**/*.test.ts`). Four product t
 
 | Layer | Tool | Version | Notes |
 |-------|------|---------|-------|
-| unit + integration | Vitest | ^5.0.2 | `npm test` runs `vitest run`. Phase 1 adds the delta cases here. Phase 2 and Phase 3 add request-boundary cases to the same runner. |
+| unit + integration | Vitest | ^5.0.2 | `npm test` runs `vitest run`. Phase 1 adds the delta cases here. Phase 2's request boundary is `scripts/smoke.mjs`. Phase 3 adds its rejection request to this runner. |
 | API mocking | none yet | — | Phase 2 decides the cheapest stand-in at the auth and database boundary. Do not add a mock library before that research. |
 | e2e | none | — | No Playwright in the manifest. Do not add one for these risks. |
 | accessibility | none | — | Out of this rollout. |
@@ -127,7 +127,8 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 - **Test type**: integration at the request boundary with two users.
 - **Behavior**: another trainee's journal stays hidden; an unlinked trainer sees nothing; a trainer cannot create, edit, or delete; an email link cannot open the wrong person.
-- **Pattern**: TBD — see §3 Phase 2.
+- **Run locally**: `npm run smoke`
+- **Pattern**: Extend `scripts/smoke.mjs`. The second-trainee query expects `smoke-later-trainee-note` and forbids `smoke-earlier-trainee-note`, and the second trainee's legal writes on the first measurement are refused. The trainer edit and delete of that measurement are refused the same way. The never-linked query accepts either linked note and forbids `smoke-unlinked-trainee-note`. The anonymous step stays `POST /api/measurements` expecting `/auth/signin`. A second anonymous POST and a Vitest auth or database mock are not part of this pattern.
 
 ### 6.3 Illegal measurement entry
 
@@ -145,6 +146,8 @@ the relevant rollout phase ships; before that, the sub-section reads
 ### 6.5 Per-rollout-phase notes
 
 Rollout phase 1 shipped these cases in `src/lib/measurement-deltas.test.ts`. The existing `0.0`, backfilled-date, and id-tie cases were left in place. No AI-native check was added. Checked 2026-10-04.
+
+Rollout phase 2 shipped those steps in `scripts/smoke.mjs`: the second-trainee query and legal writes, the trainer edit and delete, and the never-linked query that accepts either linked note and forbids `smoke-unlinked-trainee-note`. No Vitest auth or database mock was added. No AI-native check was added. Checked 2026-10-04.
 
 ## 7. What We Deliberately Don't Test
 
