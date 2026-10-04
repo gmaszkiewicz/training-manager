@@ -236,8 +236,8 @@ No schema, migration, or data backfill. The production comparison function stays
 
 #### Automated
 
-- [x] 1.1 `npm test` exits 0
-- [x] 1.2 The edit cases expect `↑ 2.0` on the starting pair, `↑ 1.0` after A is 81, and `↓ 2.0` on A with null deltas on the 2025-12-28 row
+- [x] 1.1 `npm test` exits 0 — 250b05e
+- [x] 1.2 The edit cases expect `↑ 2.0` on the starting pair, `↑ 1.0` after A is 81, and `↓ 2.0` on A with null deltas on the 2025-12-28 row — 250b05e
 
 #### Manual
 
