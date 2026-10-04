@@ -1,7 +1,7 @@
 ---
 change_id: testing-reject-illegal-measurements
 title: Reject illegal measurements before they appear on the list
-status: preparing
+status: planned
 created: 2026-10-04
 updated: 2026-10-04
 archived_at: null
