@@ -174,22 +174,22 @@ No schema, migration, or data backfill. The date cap stays in the schema. The ta
 
 #### Automated
 
-- [x] 1.1 `npm run smoke` exits 0
-- [x] 1.2 The future-date POST uses weight `80.0` and expects 302 with location prefix `/measurements?error=`
-- [x] 1.3 The following GET expects 200, body `No measurements yet`, and forbids the posted date
+- [x] 1.1 `npm run smoke` exits 0 — 6f1ced9
+- [x] 1.2 The future-date POST uses weight `80.0` and expects 302 with location prefix `/measurements?error=` — 6f1ced9
+- [x] 1.3 The following GET expects 200, body `No measurements yet`, and forbids the posted date — 6f1ced9
 
 #### Manual
 
-- [x] 1.4 Those two steps sit after `measurements renders for signed-in user` and before `measurement rejects out-of-range weight`
-- [x] 1.5 The date is computed in UTC as today plus two calendar days inside `scripts/smoke.mjs`, and the field message is not an expectation
-- [x] 1.6 `src/lib/measurement-input.test.ts` is unchanged
+- [x] 1.4 Those two steps sit after `measurements renders for signed-in user` and before `measurement rejects out-of-range weight` — 6f1ced9
+- [x] 1.5 The date is computed in UTC as today plus two calendar days inside `scripts/smoke.mjs`, and the field message is not an expectation — 6f1ced9
+- [x] 1.6 `src/lib/measurement-input.test.ts` is unchanged — 6f1ced9
 
 ### Phase 2: Cookbook
 
 #### Automated
 
-- [ ] 2.1 `npm test` exits 0
-- [ ] 2.2 `scripts/smoke.mjs` still places the future-date POST before the out-of-range weight step, and the following GET expects `No measurements yet`
+- [x] 2.1 `npm test` exits 0
+- [x] 2.2 `scripts/smoke.mjs` still places the future-date POST before the out-of-range weight step, and the following GET expects `No measurements yet`
 
 #### Manual
 
