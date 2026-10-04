@@ -213,14 +213,14 @@ No schema, migration, or data backfill. Production access rules stay as they are
 
 #### Automated
 
-- [ ] 1.1 `npm run smoke` exits 0
-- [ ] 1.2 The second-trainee query expects `smoke-later-trainee-note` and forbids `smoke-earlier-trainee-note`
-- [ ] 1.3 The second trainee's legal update and delete expect 302 and a location containing `error=`
+- [x] 1.1 `npm run smoke` exits 0
+- [x] 1.2 The second-trainee query expects `smoke-later-trainee-note` and forbids `smoke-earlier-trainee-note`
+- [x] 1.3 The second trainee's legal update and delete expect 302 and a location containing `error=`
 
 #### Manual
 
-- [ ] 1.4 The captured id is the edit= UUID on the entry that shows `smoke-earlier-trainee-note`, and the posted form is a legal measurement whose note is `smoke-foreign-write-note`
-- [ ] 1.5 The final owner journal expects `smoke-earlier-trainee-note` and forbids `smoke-foreign-write-note`, and those strings come from the script constants
+- [x] 1.4 The captured id is the edit= UUID on the entry that shows `smoke-earlier-trainee-note`, and the posted form is a legal measurement whose note is `smoke-foreign-write-note`
+- [x] 1.5 The final owner journal expects `smoke-earlier-trainee-note` and forbids `smoke-foreign-write-note`, and those strings come from the script constants
 
 ### Phase 2: Trainer write refusal
 
