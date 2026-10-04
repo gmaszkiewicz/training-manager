@@ -193,6 +193,6 @@ No schema, migration, or data backfill. The date cap stays in the schema. The ta
 
 #### Manual
 
-- [x] 2.3 §6.3 names the smoke pattern: UTC today plus two days, weight `80.0`, the error redirect, then an empty journal that forbids that date
-- [x] 2.4 §6.5 records the shipped steps, the existing unit left in place, no new Vitest request, and no AI-native check
-- [x] 2.5 §4 and §5 place the storage proof on `scripts/smoke.mjs`
+- [x] 2.3 §6.3 names the smoke pattern: UTC today plus two days, weight `80.0`, the error redirect, then an empty journal that forbids that date — f527376
+- [x] 2.4 §6.5 records the shipped steps, the existing unit left in place, no new Vitest request, and no AI-native check — f527376
+- [x] 2.5 §4 and §5 place the storage proof on `scripts/smoke.mjs` — f527376
