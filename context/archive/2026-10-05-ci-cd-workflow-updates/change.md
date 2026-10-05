@@ -1,10 +1,10 @@
 ---
 change_id: ci-cd-workflow-updates
 title: Ci cd workflow updates
-status: impl_reviewed
+status: archived
 created: 2026-10-05
 updated: 2026-10-05
-archived_at: null
+archived_at: 2026-10-05T13:32:33Z
 ---
 
 ## Notes

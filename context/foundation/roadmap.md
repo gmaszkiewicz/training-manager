@@ -66,7 +66,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-14 | testing-delta-after-edit-delete | user can edit or delete an entry and still see each remaining entry's arrow and difference versus the previous remaining entry; a linked trainer sees that same comparison | S-04, S-05, S-06 | MS-08, US-01, FR-004, FR-005, FR-008 | done |
 | S-15 | testing-measurement-access-boundaries | user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person | S-04 | MS-09, FR-007, FR-008 | done |
 | S-16 | testing-reject-illegal-measurements | user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged | S-02 | MS-10, FR-003 | done |
-| S-17 | ci-cd-workflow-updates | a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off | — | MS-01 | in-progress |
+| S-17 | ci-cd-workflow-updates | a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off | — | MS-01 | done |
 | S-18 | block-merge-on-failed-ci | a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main` | — | MS-11 | done |
 
 ## Streams
@@ -305,7 +305,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Unknowns:**
   - Does the live worker build setting already match the migration-aware production build? — Owner: user. Block: no.
 - **Risk:** The quality gate already matches. A broad edit could erase the manual deploy path, which does not apply hosted migrations.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-18: Block merge when CI fails
 
@@ -381,3 +381,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-15: user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-measurement-access-boundaries/`. Lesson: —.
 - **S-16: user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-reject-illegal-measurements/`. Lesson: —.
 - **S-18: a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main`** — Archived 2026-10-05 → `context/archive/2026-10-05-block-merge-on-failed-ci/`. Lesson: —.
+- **S-17: a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off** — Archived 2026-10-05 → `context/archive/2026-10-05-ci-cd-workflow-updates/`. Lesson: —.
