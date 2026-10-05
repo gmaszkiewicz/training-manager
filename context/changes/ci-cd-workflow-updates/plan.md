@@ -165,12 +165,12 @@ If the dashboard has been on `npm run build`, hosted Supabase may be behind the 
 
 #### Automated
 
-- [ ] 1.1 README `## Deployment` states the Workers Builds build command `npm run build:workers`, the deploy command `npx wrangler deploy`, and that non-production branch builds stay off, and it still describes manual `npm run deploy` as `npm run build && wrangler deploy` without applying migrations
-- [ ] 1.2 README `## CI` names the ci job steps lint, `check:home-tokens`, `astro check`, `npm test`, and build with repository secrets `SUPABASE_URL` and `SUPABASE_KEY`, names the smoke job as local Supabase plus preview plus `npm run smoke`, and states that GitHub Actions does not deploy
-- [ ] 1.3 CLAUDE.md states Workers Builds build command `npm run build:workers`, that `scripts/workers-build.mjs` runs `supabase db push` only when `WORKERS_CI_BRANCH` is `main`, that `WORKERS_CI_BRANCH` must not be overridden, that non-production builds stay off, and that CI includes lint, `check:home-tokens`, `astro check`, `npm test`, build, and smoke
-- [ ] 1.4 `context/foundation/infrastructure.md` Operational Story and Getting Started step 5 state build command `npm run build:workers` and deploy command `npx wrangler deploy` with non-production builds off, those two places do not tell the reader to run `wrangler versions upload`, and the Operational Story describes GitHub Actions as the quality gate (lint, token check, `astro check`, test, build, smoke) that does not deploy
-- [ ] 1.5 `context/changes/deployment/deployment-plan.md` mermaid and section 5 name the current Workers Builds build command `npm run build:workers`, keep non-production builds off, stay in Polish, leave existing `[x]` items checked, and include one Polish sentence that the first connected build used `npm run build` and that this command does not apply hosted migrations
-- [ ] 1.6 `git diff -- .github/workflows/ci.yml` is empty
+- [x] 1.1 README `## Deployment` states the Workers Builds build command `npm run build:workers`, the deploy command `npx wrangler deploy`, and that non-production branch builds stay off, and it still describes manual `npm run deploy` as `npm run build && wrangler deploy` without applying migrations
+- [x] 1.2 README `## CI` names the ci job steps lint, `check:home-tokens`, `astro check`, `npm test`, and build with repository secrets `SUPABASE_URL` and `SUPABASE_KEY`, names the smoke job as local Supabase plus preview plus `npm run smoke`, and states that GitHub Actions does not deploy
+- [x] 1.3 CLAUDE.md states Workers Builds build command `npm run build:workers`, that `scripts/workers-build.mjs` runs `supabase db push` only when `WORKERS_CI_BRANCH` is `main`, that `WORKERS_CI_BRANCH` must not be overridden, that non-production builds stay off, and that CI includes lint, `check:home-tokens`, `astro check`, `npm test`, build, and smoke
+- [x] 1.4 `context/foundation/infrastructure.md` Operational Story and Getting Started step 5 state build command `npm run build:workers` and deploy command `npx wrangler deploy` with non-production builds off, those two places do not tell the reader to run `wrangler versions upload`, and the Operational Story describes GitHub Actions as the quality gate (lint, token check, `astro check`, test, build, smoke) that does not deploy
+- [x] 1.5 `context/changes/deployment/deployment-plan.md` mermaid and section 5 name the current Workers Builds build command `npm run build:workers`, keep non-production builds off, stay in Polish, leave existing `[x]` items checked, and include one Polish sentence that the first connected build used `npm run build` and that this command does not apply hosted migrations
+- [x] 1.6 `git diff -- .github/workflows/ci.yml` is empty
 
 #### Manual
 

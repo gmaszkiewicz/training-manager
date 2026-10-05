@@ -60,9 +60,9 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Local Supabase: `npx supabase start` (requires Docker)
 - Cloudflare local dev: secrets go in `.dev.vars` (gitignored)
 - Deploy: `npm run deploy` (`npm run build && wrangler deploy`). Requires `npx wrangler login`. Do not use `wrangler pages deploy`.
-- Auto-deploy: Cloudflare Workers Builds on push to `main` (build `npm run build:workers`, deploy `npx wrangler deploy`). `scripts/workers-build.mjs` runs `supabase db push` only when `WORKERS_CI_BRANCH` is `main`, then `npm run build`. GitHub Actions does not deploy. `SUPABASE_DB_URL` is a Workers Builds secret. `npm run deploy` does not apply migrations.
+- Auto-deploy: Cloudflare Workers Builds on push to `main` (build `npm run build:workers`, deploy `npx wrangler deploy`). Non-production branch builds stay off. `scripts/workers-build.mjs` runs `supabase db push` only when `WORKERS_CI_BRANCH` is `main`, then `npm run build`. Do not override `WORKERS_CI_BRANCH`. GitHub Actions does not deploy. `SUPABASE_DB_URL` is a Workers Builds secret. `npm run deploy` does not apply migrations.
 - Migrations must be backward compatible: they reach hosted Supabase before the new Worker, so the previous Worker briefly runs on the new schema. Add first, drop in a later release.
 
 ## CI
 
-GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint + build + smoke on every push and PR to main. It is a quality gate only. Requires `SUPABASE_URL` and `SUPABASE_KEY` repository secrets for the build step. Production promotion is Workers Builds.
+GitHub Actions workflow (`.github/workflows/ci.yml`) is a quality gate on every push and pull request to `main`. It does not deploy. The `ci` job runs lint, `check:home-tokens`, `astro check`, `npm test`, and build, with repository secrets `SUPABASE_URL` and `SUPABASE_KEY` for the build step. The `smoke` job starts local Supabase, builds, serves the production preview, and runs `npm run smoke`. Production promotion is Workers Builds.
