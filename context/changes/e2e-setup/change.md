@@ -1,7 +1,7 @@
 ---
 change_id: e2e-setup
 title: End-to-end test configuration
-status: implementing
+status: implemented
 created: 2026-10-05
 updated: 2026-10-05
 archived_at: null
