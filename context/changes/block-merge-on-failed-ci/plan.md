@@ -181,21 +181,21 @@ Branch protection does not change Worker deploys or Supabase. A green pull reque
 
 #### Automated
 
-- [x] 1.1 `gh repo view gmaszkiewicz/training-manager --json visibility --jq .visibility` prints `PUBLIC`
-- [x] 1.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` does not return HTTP 403. HTTP 200 with the matching rule is the current result before phase 2
+- [x] 1.1 `gh repo view gmaszkiewicz/training-manager --json visibility --jq .visibility` prints `PUBLIC` — c346232
+- [x] 1.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` does not return HTTP 403. HTTP 200 with the matching rule is the current result before phase 2 — c346232
 
 #### Manual
 
-- [x] 1.3 The human confirms the git history is acceptable to publish, then sets the repository visibility to public
+- [x] 1.3 The human confirms the git history is acceptable to publish, then sets the repository visibility to public — c346232
 
 ### Phase 2: Protect main
 
 #### Automated
 
-- [ ] 2.1 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows `required_status_checks.strict` false and contexts `ci` and `smoke`
-- [ ] 2.2 That response shows `enforce_admins.enabled` true
-- [ ] 2.3 That response shows `required_pull_request_reviews.required_approving_review_count` equal to 0, and `bypass_pull_request_allowances.users` does not include `gmaszkiewicz`
-- [ ] 2.4 `git diff -- .github/workflows/ci.yml` is empty
+- [x] 2.1 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows `required_status_checks.strict` false and contexts `ci` and `smoke`
+- [x] 2.2 That response shows `enforce_admins.enabled` true
+- [x] 2.3 That response shows `required_pull_request_reviews.required_approving_review_count` equal to 0, and `bypass_pull_request_allowances.users` does not include `gmaszkiewicz`
+- [x] 2.4 `git diff -- .github/workflows/ci.yml` is empty
 
 #### Manual
 
