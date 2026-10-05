@@ -25,7 +25,7 @@ Lokalny branch to `main`, remote to `origin` (`gmaszkiewicz/training-manager`). 
 ```mermaid
 flowchart LR
   pushMain["git push main"] --> workersBuilds["Workers Builds"]
-  workersBuilds --> buildCmd["npm run build"]
+  workersBuilds --> buildCmd["npm run build:workers"]
   buildCmd --> deployCmd["npx wrangler deploy"]
   deployCmd --> prod["training-manager.workers.dev"]
   cli["npx wrangler deploy"] --> prod
@@ -118,10 +118,13 @@ Bez GHA tokenów (`CLOUDFLARE_API_TOKEN` nie jest potrzebny). Cloudflare sam two
 2. [x] W dashboardzie: Worker `training-manager` → **Settings → Builds → Connect** (Cloudflare Workers & Pages GitHub App).
 3. Ustawienia builda (z [dokumentacji Builds](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)):
    - Git branch: **`main`**
-   - Build command: `npm run build`
+   - Build command: `npm run build:workers`
    - Deploy command: `npx wrangler deploy`
    - Builds for non-production branches: **wyłączone** (tylko produkcja na `main`)
    - [x] Build variable: `NODE_VERSION=22` (zgodne z `.nvmrc`)
+
+Pierwszy podłączony build użył `npm run build`, a ta komenda nie stosuje hostowanych migracji.
+
 4. Push na `main` → build → `wrangler deploy` → Active Deployment.
 5. Zweryfikować w dashboardzie **Deployments / build history**, że push faktycznie wypchnął nową wersję.
 
