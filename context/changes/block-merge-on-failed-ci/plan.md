@@ -192,10 +192,10 @@ Branch protection does not change Worker deploys or Supabase. A green pull reque
 
 #### Automated
 
-- [x] 2.1 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows `required_status_checks.strict` false and contexts `ci` and `smoke`
-- [x] 2.2 That response shows `enforce_admins.enabled` true
-- [x] 2.3 That response shows `required_pull_request_reviews.required_approving_review_count` equal to 0, and `bypass_pull_request_allowances.users` does not include `gmaszkiewicz`
-- [x] 2.4 `git diff -- .github/workflows/ci.yml` is empty
+- [x] 2.1 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows `required_status_checks.strict` false and contexts `ci` and `smoke` — 3c62e21
+- [x] 2.2 That response shows `enforce_admins.enabled` true — 3c62e21
+- [x] 2.3 That response shows `required_pull_request_reviews.required_approving_review_count` equal to 0, and `bypass_pull_request_allowances.users` does not include `gmaszkiewicz` — 3c62e21
+- [x] 2.4 `git diff -- .github/workflows/ci.yml` is empty — 3c62e21
 
 #### Manual
 
