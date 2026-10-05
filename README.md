@@ -158,11 +158,11 @@ npx wrangler login
 npm run deploy
 ```
 
-`npm run deploy` runs `npm run build && wrangler deploy`.
+`npm run deploy` runs `npm run build && wrangler deploy` and does not apply migrations.
 
 Set runtime `SUPABASE_URL` and `SUPABASE_KEY` with `npx wrangler secret put` (interactive prompt) or in the Worker dashboard under **Settings → Variables and Secrets**. Those are runtime secrets, not build variables. `secret put` publishes a new Worker version immediately.
 
-Auto-deploy on push to `main` is **Cloudflare Workers Builds**, not a GitHub Actions deploy job. In the Worker dashboard: **Settings → Builds → Connect**, production branch `main`, build command `npm run build`, deploy command `npx wrangler deploy`. Leave non-production branch builds off. Workers Builds creates its own API token; `CLOUDFLARE_API_TOKEN` is not required in GitHub.
+Auto-deploy on push to `main` is **Cloudflare Workers Builds**, not a GitHub Actions deploy job. In the Worker dashboard: **Settings → Builds → Connect**, production branch `main`, build command `npm run build:workers`, deploy command `npx wrangler deploy`. Leave non-production branch builds off. Workers Builds creates its own API token; `CLOUDFLARE_API_TOKEN` is not required in GitHub.
 
 ## Smoke test
 
@@ -181,8 +181,8 @@ It needs a reachable Supabase instance (local or cloud) with email confirmation 
 
 GitHub Actions is a quality gate only. It does not deploy. On every push and PR to `main`:
 
-- **ci** — lint, `astro check` and build. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
-- **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No secrets required.
+- **ci** — lint, `npm run check:home-tokens`, `npx astro check`, `npm test`, and `npm run build`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
+- **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No repository secrets.
 
 Production deploys run in Cloudflare Workers Builds when `main` is pushed.
 
