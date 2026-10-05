@@ -2,13 +2,13 @@
 
 ## Overview
 
-Make `main` accept a change only through a pull request whose `ci` and `smoke` checks are green. The repository is private on GitHub Free, so branch protection is unavailable until it is public. After that, protect `main` with required status checks, no admin bypass, and no direct push. `.github/workflows/ci.yml` stays as it is.
+Make `main` accept a change only through a pull request whose `ci` and `smoke` checks are green. The repository is public, and `main` already has a protection rule that matches this plan. Phase 2 reads that rule and sends the protection body only when the live rule differs. `.github/workflows/ci.yml` stays as it is.
 
 ## Current State Analysis
 
 `.github/workflows/ci.yml` runs on push and pull request to `main`. The `ci` job fails when lint, `check:home-tokens`, `astro check`, `npm test`, or `npm run build` fails. The `smoke` job fails when the local-Supabase auth smoke fails. The two jobs are separate checks. A recent run reported their names as `ci` and `smoke`.
 
-A red check does not block merge. `gmaszkiewicz/training-manager` is private. Both the branch-protection API and the rulesets API return HTTP 403 and ask for GitHub Pro. GitHub Free includes protected branches for public repositories. No protection rule and no ruleset exist in the repo.
+A red check did not block merge while the repository was private, because GitHub Free returned HTTP 403 from the branch-protection API. The repository is now public. `GET /repos/gmaszkiewicz/training-manager/branches/main/protection` returns HTTP 200. The live rule already has `strict` false, contexts `ci` and `smoke`, `enforce_admins` true, `required_approving_review_count` 0, force pushes off, deletions off, and no bypass list. No ruleset file exists in the repo.
 
 S-17 (`ci-cd-workflow-updates`) is already in progress. Its outcome is one written deploy path, with the quality gate left as it already runs. This change does not edit that plan or those docs.
 
@@ -22,8 +22,8 @@ Verify with the protection API, then with one red pull request, one rejected pus
 
 - `.github/workflows/ci.yml:3-7` triggers on push and pull request to `main`. The `ci` job is `:10-27`. The `smoke` job is `:29-57`. There is no deploy job.
 - Actions run `37271652220` reported job names `ci` and `smoke`. Those strings are the status-check contexts.
-- `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` and the rulesets endpoint both return 403 while the repo is private.
-- `gh repo view` reports `visibility: PRIVATE`.
+- `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` returned 403 while the repo was private. It now returns HTTP 200 with the matching rule.
+- `gh repo view` reports `visibility: PUBLIC`.
 - Git history does not track `.env` or `.dev.vars`. `wrangler.jsonc` is tracked and is Worker config, not the Supabase secret values.
 - GitHub's branch-protection API accepts `required_approving_review_count: 0`, which requires a pull request and does not require a reviewer. `null` for `required_pull_request_reviews` turns the pull-request requirement off and would leave direct push allowed.
 - S-17's Change ID is `ci-cd-workflow-updates`. Its roadmap status is `in-progress`.
@@ -42,7 +42,7 @@ Verify with the protection API, then with one red pull request, one rejected pus
 
 The human makes the repository public. The agent does not. Phase 2 starts only after the protection API no longer returns the Free-plan 403.
 
-Phase 2 sets classic branch protection on `main` through the GitHub API. The rule requires a pull request, requires the contexts `ci` and `smoke`, sets `strict` to false, sets `enforce_admins` to true, and sets the approving review count to 0. No bypass allowance lists the owner. Force pushes and branch deletion stay off.
+Phase 2 reads classic branch protection on `main` through the GitHub API. It sends the body below only when the live rule differs in `strict`, the contexts, `enforce_admins`, `required_approving_review_count`, force pushes, deletions, or a bypass user. A matching rule is left in place. The intended rule requires a pull request, requires the contexts `ci` and `smoke`, sets `strict` to false, sets `enforce_admins` to true, and sets the approving review count to 0. No bypass allowance lists the owner. Force pushes and branch deletion stay off.
 
 The proof is manual and uses a throwaway pull request. Do not push a failing commit to `main` to test the rule.
 
@@ -68,14 +68,14 @@ The human publishes `gmaszkiewicz/training-manager`. After that, the branch-prot
 
 **Intent**: Unlock protected branches on GitHub Free by making the repository public, without an agent performing that visibility change.
 
-**Contract**: Visibility becomes `PUBLIC`. The human performs the change in GitHub settings or with their own `gh repo edit`. Before the flip, they confirm the git history is acceptable to publish. `.env` and `.dev.vars` are not tracked. Phase 2 does not start while a protection request still returns HTTP 403 with the GitHub Pro message. A 404 `Branch not protected` after the flip is the expected state.
+**Contract**: Visibility is `PUBLIC`. The human confirms the git history was acceptable to publish. `.env` and `.dev.vars` are not tracked. Phase 2 does not start while a protection request still returns HTTP 403 with the GitHub Pro message. HTTP 200 with the matching rule is the current result, not a 404.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - `gh repo view gmaszkiewicz/training-manager --json visibility --jq .visibility` prints `PUBLIC`
-- `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` does not return HTTP 403. A 404 `Branch not protected` is the expected result before phase 2
+- `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` does not return HTTP 403. HTTP 200 with the matching rule is the current result before phase 2
 
 #### Manual Verification:
 
@@ -99,7 +99,7 @@ Require a pull request on `main` whose `ci` and `smoke` checks are green. Reject
 
 **Intent**: Turn the existing red checks into a merge block, and reject a push that bypasses the pull request.
 
-**Contract**: `PUT /repos/gmaszkiewicz/training-manager/branches/main/protection` leaves `main` with loose required checks `ci` and `smoke`, admins enforced, a pull request required, and zero approving reviews. Do not list a bypass actor. Do not edit `.github/workflows/ci.yml`.
+**Contract**: Read `GET /repos/gmaszkiewicz/training-manager/branches/main/protection` first. `PUT` the body below only when the live rule differs in `strict`, the contexts, `enforce_admins`, `required_approving_review_count`, force pushes, deletions, or a bypass user. The resulting rule has loose required checks `ci` and `smoke`, admins enforced, a pull request required, and zero approving reviews. Do not list a bypass actor. Do not edit `.github/workflows/ci.yml`. When the live rule already matches, do not `PUT`.
 
 ```json
 {
@@ -181,12 +181,12 @@ Branch protection does not change Worker deploys or Supabase. A green pull reque
 
 #### Automated
 
-- [ ] 1.1 `gh repo view gmaszkiewicz/training-manager --json visibility --jq .visibility` prints `PUBLIC`
-- [ ] 1.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` does not return HTTP 403. A 404 `Branch not protected` is the expected result before phase 2
+- [x] 1.1 `gh repo view gmaszkiewicz/training-manager --json visibility --jq .visibility` prints `PUBLIC`
+- [x] 1.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` does not return HTTP 403. HTTP 200 with the matching rule is the current result before phase 2
 
 #### Manual
 
-- [ ] 1.3 The human confirms the git history is acceptable to publish, then sets the repository visibility to public
+- [x] 1.3 The human confirms the git history is acceptable to publish, then sets the repository visibility to public
 
 ### Phase 2: Protect main
 
