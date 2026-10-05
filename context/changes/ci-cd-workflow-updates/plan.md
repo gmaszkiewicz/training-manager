@@ -2,7 +2,7 @@
 
 ## Overview
 
-Align the four documents that still describe Cloudflare Workers Builds and GitHub Actions with the pipeline that already exists. Workers Builds on `main` must be documented as `npm run build:workers`, and a person confirms the Cloudflare dashboard uses that command. `.github/workflows/ci.yml` stays as it is.
+Align the four documents that still describe Cloudflare Workers Builds and GitHub Actions with the pipeline that already exists. Workers Builds on `main` must be documented as `npm run build:workers`, and a person confirms the Cloudflare dashboard uses that command. After that docs pass, the workflow's action majors were bumped to `actions/checkout@v7`, `actions/setup-node@v7`, and `supabase/setup-cli@v3`. Triggers, jobs, and step commands stay the same.
 
 ## Current State Analysis
 
@@ -38,7 +38,7 @@ The Worker `training-manager` dashboard matches that build command, deploy comma
 
 ## What We're NOT Doing
 
-- Leave `.github/workflows/ci.yml` unchanged: same triggers, same jobs, same steps, no CLI pin, no concurrency rule, no deploy job.
+- Do not change `.github/workflows/ci.yml` triggers, jobs, or step commands, and do not add a concurrency rule or a deploy job. Action majors were updated to `actions/checkout@v7`, `actions/setup-node@v7`, and `supabase/setup-cli@v3`.
 - Leave `scripts/workers-build.mjs`, `package.json` scripts, and `context/foundation/tech-stack.md` unchanged.
 - Keep non-production Workers Builds off. Leave preview URLs and `wrangler versions upload` out of the current setup.
 - Leave the infrastructure pre-mortem, unknown unknowns, risk register, and the "CI/CD pipeline setup" out-of-scope line as written. Those passages warn or record research limits; they are not the current setup instructions.
@@ -111,7 +111,7 @@ Make `README.md`, `CLAUDE.md`, and `context/foundation/infrastructure.md` descri
 - CLAUDE.md states Workers Builds build command `npm run build:workers`, that `scripts/workers-build.mjs` runs `supabase db push` only when `WORKERS_CI_BRANCH` is `main`, that `WORKERS_CI_BRANCH` must not be overridden, that non-production builds stay off, and that CI includes lint, `check:home-tokens`, `astro check`, `npm test`, build, and smoke
 - `context/foundation/infrastructure.md` Operational Story and Getting Started step 5 state build command `npm run build:workers` and deploy command `npx wrangler deploy` with non-production builds off, those two places do not tell the reader to run `wrangler versions upload`, and the Operational Story describes GitHub Actions as the quality gate (lint, token check, `astro check`, test, build, smoke) that does not deploy
 - `context/changes/deployment/deployment-plan.md` mermaid and section 5 name the current Workers Builds build command `npm run build:workers`, keep non-production builds off, stay in Polish, leave existing `[x]` items checked, and include one Polish sentence that the first connected build used `npm run build` and that this command does not apply hosted migrations
-- `git diff -- .github/workflows/ci.yml` is empty
+- `.github/workflows/ci.yml` keeps the same triggers, jobs, and step commands. Its action majors are `actions/checkout@v7`, `actions/setup-node@v7`, and `supabase/setup-cli@v3`.
 
 #### Manual Verification:
 
@@ -130,7 +130,7 @@ Make `README.md`, `CLAUDE.md`, and `context/foundation/infrastructure.md` descri
 
 ### Integration Tests:
 
-- No new integration tests. `.github/workflows/ci.yml` is unchanged, so the existing lint, test, build, and smoke jobs stay the automated product gate.
+- No new integration tests. `.github/workflows/ci.yml` keeps the same jobs. Action majors are current, and the existing lint, test, build, and smoke jobs stay the automated product gate.
 
 ### Manual Testing Steps:
 
@@ -141,7 +141,7 @@ Make `README.md`, `CLAUDE.md`, and `context/foundation/infrastructure.md` descri
 
 ## Performance Considerations
 
-No runtime, bundle, or CI-time change. The workflow file is untouched.
+No runtime or bundle change. The workflow file only bumps action majors.
 
 ## Migration Notes
 
@@ -170,7 +170,7 @@ If the dashboard has been on `npm run build`, hosted Supabase may be behind the 
 - [x] 1.3 CLAUDE.md states Workers Builds build command `npm run build:workers`, that `scripts/workers-build.mjs` runs `supabase db push` only when `WORKERS_CI_BRANCH` is `main`, that `WORKERS_CI_BRANCH` must not be overridden, that non-production builds stay off, and that CI includes lint, `check:home-tokens`, `astro check`, `npm test`, build, and smoke — a6b1662
 - [x] 1.4 `context/foundation/infrastructure.md` Operational Story and Getting Started step 5 state build command `npm run build:workers` and deploy command `npx wrangler deploy` with non-production builds off, those two places do not tell the reader to run `wrangler versions upload`, and the Operational Story describes GitHub Actions as the quality gate (lint, token check, `astro check`, test, build, smoke) that does not deploy — a6b1662
 - [x] 1.5 `context/changes/deployment/deployment-plan.md` mermaid and section 5 name the current Workers Builds build command `npm run build:workers`, keep non-production builds off, stay in Polish, leave existing `[x]` items checked, and include one Polish sentence that the first connected build used `npm run build` and that this command does not apply hosted migrations — a6b1662
-- [x] 1.6 `git diff -- .github/workflows/ci.yml` is empty — a6b1662
+- [x] 1.6 `git diff -- .github/workflows/ci.yml` is empty — a6b1662. True at a6b1662; 12641a9 later bumped the action majors.
 
 #### Manual
 
