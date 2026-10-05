@@ -174,5 +174,5 @@ If the dashboard has been on `npm run build`, hosted Supabase may be behind the 
 
 #### Manual
 
-- [ ] 1.7 In Cloudflare Worker `training-manager` Settings → Builds, the build command is `npm run build:workers`, the deploy command is `npx wrangler deploy`, the production branch is `main`, and non-production branch builds are off
-- [ ] 1.8 `SUPABASE_DB_URL` is set as a Workers Builds secret, and `WORKERS_CI_BRANCH` is not overridden
+- [x] 1.7 In Cloudflare Worker `training-manager` Settings → Builds, the build command is `npm run build:workers`, the deploy command is `npx wrangler deploy`, the production branch is `main`, and non-production branch builds are off
+- [x] 1.8 `SUPABASE_DB_URL` is set as a Workers Builds secret, and `WORKERS_CI_BRANCH` is not overridden
