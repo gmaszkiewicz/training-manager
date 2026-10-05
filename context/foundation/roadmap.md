@@ -2,30 +2,30 @@
 project: Training Manager
 version: 1
 status: draft
-created: 2026-09-26
-updated: 2026-10-02
+created: 2026-10-05
+updated: 2026-10-05
 prd_version: 1
-main_goal: speed
-top_blocker: time
-milestone_id: trainee-delta-trainer-preview
-milestone_seq: 1
+main_goal: low-complexity
+top_blocker: none
+milestone_id: measurement-date-filter
+milestone_seq: 2
 milestone_status: open
 ---
 
 # Roadmap: Training Manager
 
-> Derived from `context/foundation/prd.md` (v1) + auto-researched codebase baseline.
+> Derived from `context/foundation/prd.md` (v1), next tranche after M-1, + auto-researched codebase baseline.
 > Edit-in-place; archive when superseded.
 > Slices below are listed in dependency order. The "At a glance" table is the index.
 
 ## Milestone
 
-**M-1: Trainee delta and trainer preview** — Status: open
+**M-2: Measurement list by date** — Status: open
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel.
-- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07)
+- **Intent:** A trainee can narrow the measurement list by date. The comparison list, trainer preview, and the screens around them were delivered in M-1 and stay done. This milestone keeps that filter as one slice.
+- **Source materials:** `context/foundation/prd.md` (v1), next tranche after M-1
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07
+- **Scope anchors:** FR-009 is the new work. Carried from M-1 and already done: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page.
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
@@ -40,54 +40,54 @@ A trainee reporting body measurements today sends links and works in generic she
 
 ## North star
 
-The north star — the smallest end-to-end slice that proves the product works, placed as early as its prerequisites allow — is **S-02: user can add a body-measurement entry with an optional note and see the up/down difference versus the previous entry; the earliest entry has no comparison.** It sits immediately after a trainee account exists, because that comparison is the product and the sequencing goal is speed.
+The north star — the smallest end-to-end slice that proves the product works, placed as early as its prerequisites allow — is **S-14: user can narrow the measurement list by date.** It is the only requirement M-1 did not deliver, and the sequencing goal is to keep that remaining work as one slice.
 
 ## At a glance
 
-| ID   | Change ID                  | Outcome (user can …)                                                                                                                                      | Prerequisites | PRD refs                  | Status   |
-| ---- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------- | -------- |
-| S-01 | trainee-signup             | user can register with email and password as a trainee and open an empty journal                                                                         | —             | FR-001                    | done     |
-| S-02 | trainee-measurement-delta  | user can add a body-measurement entry with an optional note and see the up/down difference versus the previous entry; the earliest entry has no comparison | S-01          | US-01, FR-003, FR-006     | done     |
-| S-03 | trainer-signup             | user can register with email and password and pick the trainer role                                                                                      | S-01          | FR-002                    | done     |
-| S-04 | trainer-link-preview       | user can link an existing trainee by email and preview that trainee's measurement list, including the arrow and difference versus the previous entry    | S-02, S-03    | FR-007, FR-008            | done        |
-| S-05 | edit-measurement-entry     | user can edit a measurement entry they created, and the list shows the arrow and difference versus the previous entry using the edited values            | S-02          | US-01, FR-004             | done |
-| S-06 | delete-measurement-entry   | user can delete a measurement entry they created, and each remaining entry compares to the previous remaining entry                                      | S-02          | US-01, FR-005             | done |
-| S-07 | product-home               | user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome                    | —             | MS-01                     | done        |
-| S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | done |
-| S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | done |
-| S-10 | trainer-panel-ui           | user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard`                       | S-04, S-09    | MS-04                     | done |
-| S-11 | shared-topbar              | user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email | S-07, S-08, S-09, S-10 | MS-05          | done |
-| S-12 | horizontal-measurements    | user can enter the measurement fields in a horizontal row on the trainee journal, and both the trainee and a linked trainer can read each entry's fields in a horizontal row; linked trainees sit beside each other on the trainer panel | S-09, S-10    | MS-06                     | done |
-| S-13 | measurement-copy-polish    | user can open measurements at `/measurements`, greet without a role name, find a trainee by email, and read each field's unit beside its name with a clearer difference versus the previous entry | S-11, S-12    | MS-07                     | done |
+| ID   | Change ID                  | Outcome (user can …)                                                                                                                                      | Prerequisites | PRD refs                  | Status |
+| ---- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------- | ------ |
+| S-01 | trainee-signup             | user can register with email and password as a trainee and open an empty journal                                                                         | —             | FR-001                    | done   |
+| S-02 | trainee-measurement-delta  | user can add a body-measurement entry with an optional note and see the up/down difference versus the previous entry; the earliest entry has no comparison | S-01          | US-01, FR-003, FR-006     | done   |
+| S-03 | trainer-signup             | user can register with email and password and pick the trainer role                                                                                      | S-01          | FR-002                    | done   |
+| S-04 | trainer-link-preview       | user can link an existing trainee by email and preview that trainee's measurement list, including the arrow and difference versus the previous entry    | S-02, S-03    | FR-007, FR-008            | done   |
+| S-05 | edit-measurement-entry     | user can edit a measurement entry they created, and the list shows the arrow and difference versus the previous entry using the edited values            | S-02          | US-01, FR-004             | done   |
+| S-06 | delete-measurement-entry   | user can delete a measurement entry they created, and each remaining entry compares to the previous remaining entry                                      | S-02          | US-01, FR-005             | done   |
+| S-07 | product-home               | user can open the public home and see Training Manager — what it does and how to sign in or sign up — in place of the starter welcome                    | —             | MS-01                     | done   |
+| S-08 | auth-signin-form           | user can sign in, register, and read the email confirmation on the same visual contract as the public home, instead of the starter glass card          | —             | MS-02                     | done   |
+| S-09 | trainee-journal-ui         | user can open the trainee journal after sign-in and see the same visual contract as the public home and auth entry screens, instead of the starter glass card on `/dashboard` | S-02, S-08    | MS-03                     | done   |
+| S-10 | trainer-panel-ui           | user can open the trainer panel after sign-in and see the same visual contract as the trainee journal, instead of the starter glass card on `/dashboard` | S-04, S-09    | MS-04                     | done   |
+| S-11 | shared-topbar              | user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email | S-07, S-08, S-09, S-10 | MS-05 | done   |
+| S-12 | horizontal-measurements    | user can enter the measurement fields in a horizontal row on the trainee journal, and both the trainee and a linked trainer can read each entry's fields in a horizontal row; linked trainees sit beside each other on the trainer panel | S-09, S-10    | MS-06                     | done   |
+| S-13 | measurement-copy-polish    | user can open measurements at `/measurements`, greet without a role name, find a trainee by email, and read each field's unit beside its name with a clearer difference versus the previous entry | S-11, S-12    | MS-07                     | done   |
+| S-14 | measurement-date-filter    | user can narrow the measurement list by date                                                                                                              | S-02          | FR-009                    | ready  |
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                | Chain                                      | Note                                                                                                      |
-| ------ | -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| A      | Measurement journal  | `S-01` → `S-02` → `S-05` → `S-06`          | Speed puts the comparison (S-02) immediately after the trainee account. S-05 and S-06 can run side by side once S-02 is done. |
-| B      | Trainer preview      | `S-03` → `S-04`                            | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed.                 |
-| C      | Public home          | `S-07`                                     | Stands alone: the public page does not read or change measurement data, so it can run beside the remaining journal edits. |
-| D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
-| E      | Dashboard visual contract | `S-09` → `S-10` → `S-12` → `S-13`       | Restyles the measurements screen without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. S-12 turns the measurement fields on that journal and on the trainer list from a column into a horizontal row. S-13 polishes the copy and moves the screen to `/measurements`. Can run beside S-05 and S-06. |
-| F      | Shared top bar            | `S-11`                                  | Joins streams C, D, and E: one bar on the public home, auth entry, and both dashboards. Does not change measurement data, so it can run beside S-05 and S-06. |
+| Stream | Theme              | Chain                                      | Note                                                                                                      |
+| ------ | ------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| A      | Measurement journal | `S-01` → `S-02` → `S-05` → `S-06` → `S-14` | The date filter is the only new slice, and it sits on the list that already exists.                      |
+| B      | Trainer preview    | `S-03` → `S-04`                            | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed.                 |
+| C      | Public home        | `S-07`                                     | Stands alone. Delivered in M-1.                                                                           |
+| D      | Auth entry screens | `S-08`                                     | Stands alone. Delivered in M-1.                                                                           |
+| E      | Dashboard screens  | `S-09` → `S-10` → `S-11` → `S-12` → `S-13` | Joins the public home and the auth screens at S-11: one bar on those screens and both dashboards. Delivered in M-1. |
 
 ## Baseline
 
-What's already in place in the codebase as of 2026-09-26 (auto-researched + user-confirmed).
+What's already in place in the codebase as of 2026-10-05 (auto-researched + user-confirmed).
 Foundations below assume these are present and do NOT re-scaffold them.
 
-- **Frontend:** present — per tech-stack.md: Astro + React + TypeScript + Tailwind; scaffold is in the tree (`src/pages`, `src/components`)
-- **Backend / API:** partial — per tech-stack.md: Astro SSR; auth routes exist (`src/pages/api/auth/`); no measurement API yet
-- **Data:** partial — per tech-stack.md: Supabase Postgres; client is wired; no migrations in the repo
-- **Auth:** partial — per tech-stack.md: Supabase email/password; session middleware is present (`src/middleware.ts`); sign-up does not pick trainee vs trainer
-- **Deploy / infra:** present — per tech-stack.md: Cloudflare Workers + GitHub Actions as a quality gate (`.github/workflows/ci.yml`)
+- **Frontend:** present — per tech-stack.md; pages and components are in the tree (`src/pages`, `src/components`)
+- **Backend / API:** present — per tech-stack.md; measurement create, update, and delete routes exist (`src/pages/api/measurements/`)
+- **Data:** present — per tech-stack.md; profile and measurement migrations are in the repo (`supabase/migrations/`)
+- **Auth:** present — per tech-stack.md; session check and protected routes are in `src/middleware.ts`, and sign-up records trainee or trainer
+- **Deploy / infra:** present — per tech-stack.md; the quality-gate workflow is `.github/workflows/ci.yml`
 - **Observability:** absent — no logging library, error tracking, or metrics
 
 ## Foundations
 
-No foundation items. The app shell, sign-in, and deployment are already in place (see Baseline). The trainee role, private measurement storage, and the trainer link are introduced in the first slice that uses each of them: S-01, S-02, and S-04.
+No foundation items. Accounts, measurement storage, trainer preview, and deployment are already in place (see Baseline). The date filter is introduced in S-14, the slice that uses it.
 
 ## Slices
 
@@ -247,23 +247,37 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Risk:** `/dashboard` no longer opens the screen, so an old address 404s. Copy and the route change do not change stored measurements, who is linked, or how the difference is calculated. It can run beside S-05 and S-06.
 - **Status:** done
 
+### S-14: Trainee narrows the list by date
+
+- **Outcome:** user can narrow the measurement list by date
+- **Change ID:** measurement-date-filter
+- **PRD refs:** FR-009
+- **Prerequisites:** S-02
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:**
+  - Does "by date" mean one calendar day or a from-to range? — Owner: user. Block: no.
+- **Risk:** The list and its comparison already exist, so this slice only narrows what is shown. Reading "by date" as more than one control would grow the slice; it stays one filter on the trainee list.
+- **Status:** ready
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                 | Suggested issue title                                                          | Ready for `/10x-plan` | Notes                                      |
 | ---------- | ------------------------- | ------------------------------------------------------------------------------ | --------------------- | ------------------------------------------ |
-| S-01       | trainee-signup            | Trainee can register and open an empty journal                                | yes                   | Run `/10x-plan trainee-signup`             |
-| S-02       | trainee-measurement-delta | Trainee can log a measurement and see the delta versus the previous entry     | no                    | Prerequisites not done                     |
-| S-03       | trainer-signup            | Trainer can register                                                           | no                    | Prerequisites not done. Can run beside S-02 |
-| S-04       | trainer-link-preview      | Trainer can link a trainee by email and preview their measurements            | no                    | Prerequisites not done                     |
-| S-05       | edit-measurement-entry    | Trainee can edit a measurement entry                                           | no                    | Prerequisites not done. Can run beside S-06 |
-| S-06       | delete-measurement-entry  | Trainee can delete a measurement entry                                         | no                    | Prerequisites not done. Can run beside S-05 |
-| S-07       | product-home              | Visitor sees Training Manager on the public home instead of the starter welcome | yes                   | Run `/10x-plan product-home`. Can run beside S-05 and S-06 |
-| S-08       | auth-signin-form          | Sign-in, registration, and email confirmation leave the starter glass card      | yes                   | Run `/10x-plan auth-signin-form`. Can run beside S-05 and S-06 |
-| S-09       | trainee-journal-ui        | Trainee journal on `/dashboard` leaves the starter glass card                     | yes                   | Research in `context/changes/trainee-journal-ui/`. Run `/10x-plan trainee-journal-ui`. Can run beside S-05 and S-06 |
-| S-10       | trainer-panel-ui          | Trainer panel on `/dashboard` leaves the starter glass card                       | yes                   | Run `/10x-plan trainer-panel-ui`. Can run beside S-05 and S-06 |
-| S-11       | shared-topbar             | Shared top bar on the public home, sign-in, sign-up, and both dashboards         | yes                   | Run `/10x-new shared-topbar`. Can run beside S-05 and S-06 |
-| S-12       | horizontal-measurements   | Trainee enters measurements in a row; trainee and trainer read each entry in a row; linked trainees sit in a row | yes                 | Change folder exists. Plan in `context/changes/horizontal-measurements/`. Can run beside S-05 and S-06 |
-| S-13       | measurement-copy-polish   | Measurements screen, greeting, and field units                                  | no                    | [#41](https://github.com/gmaszkiewicz/training-manager/issues/41). Change folder exists. Work is on `cursor/measurement-copy-polish`. Can run beside S-05 and S-06 |
+| S-01       | trainee-signup            | Trainee can register and open an empty journal                                | no                    | Delivered in M-1                           |
+| S-02       | trainee-measurement-delta | Trainee can log a measurement and see the delta versus the previous entry     | no                    | Delivered in M-1                           |
+| S-03       | trainer-signup            | Trainer can register                                                           | no                    | Delivered in M-1                           |
+| S-04       | trainer-link-preview      | Trainer can link a trainee by email and preview their measurements            | no                    | Delivered in M-1                           |
+| S-05       | edit-measurement-entry    | Trainee can edit a measurement entry                                           | no                    | Delivered in M-1                           |
+| S-06       | delete-measurement-entry  | Trainee can delete a measurement entry                                         | no                    | Delivered in M-1                           |
+| S-07       | product-home              | Visitor sees Training Manager on the public home instead of the starter welcome | no                   | Delivered in M-1                           |
+| S-08       | auth-signin-form          | Sign-in, registration, and email confirmation leave the starter glass card    | no                    | Delivered in M-1                           |
+| S-09       | trainee-journal-ui        | Trainee journal leaves the starter glass card                                 | no                    | Delivered in M-1                           |
+| S-10       | trainer-panel-ui          | Trainer panel leaves the starter glass card                                   | no                    | Delivered in M-1                           |
+| S-11       | shared-topbar             | Shared top bar on the public home, sign-in, sign-up, and both dashboards      | no                    | Delivered in M-1                           |
+| S-12       | horizontal-measurements   | Measurements enter and display in a row                                       | no                    | Delivered in M-1                           |
+| S-13       | measurement-copy-polish   | Measurements screen, greeting, and field units                                | no                    | Delivered in M-1                           |
+| S-14       | measurement-date-filter   | Trainee can narrow the measurement list by date                               | yes                   | Run `/10x-plan measurement-date-filter`    |
 
 ## Open Roadmap Questions
 
@@ -278,11 +292,10 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Training-results journal (module 3)** — Why parked: PRD §Non-Goals. This milestone is body measurements only.
 - **Mobile app** — Why parked: PRD §Non-Goals. Web only.
 - **Good/bad coloring of deltas** — Why parked: PRD §Non-Goals. Arrow and numeric difference versus the previous entry only.
-- **Date filter on the measurement list (FR-009)** — Why parked: PRD §Non-Goals. Nice-to-have, out of this milestone unless the required slices are already done.
 
 ## Milestone History
 
-None yet.
+- **M-1: Trainee delta and trainer preview** (`trainee-delta-trainer-preview`) — closed 2026-10-05. A trainee can record measurements and see the difference versus the previous entry, and a linked trainer can preview that list on the product's own screens.
 
 ## Done
 
