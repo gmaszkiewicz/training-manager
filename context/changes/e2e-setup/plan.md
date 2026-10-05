@@ -206,24 +206,24 @@ No schema change and no hosted data change. The test user exists only on the loc
 
 #### Automated
 
-- [x] 1.1 `@playwright/test` is installed (`npm ls @playwright/test --depth=0`)
-- [x] 1.2 Config and auth setup lint (`npx eslint playwright.config.ts tests/e2e/auth.setup.ts`)
-- [x] 1.3 Git ignore covers Playwright auth state, results, reports, and CLI logs (`git check-ignore -q playwright/.auth/user.json test-results/x playwright-report/x .playwright-cli/x`)
-- [x] 1.4 `.env.example` lists `E2E_USERNAME=` and `E2E_PASSWORD=`
-- [x] 1.5 `context/foundation/test-stack.md` records the E2E runner, commands, port 4321, preview web server, auth setup, storage state, seed, and browser CLI
-- [x] 1.6 Vitest includes only `src/**/*.test.ts`, and `npm test` passes
+- [x] 1.1 `@playwright/test` is installed (`npm ls @playwright/test --depth=0`) — d1e2638
+- [x] 1.2 Config and auth setup lint (`npx eslint playwright.config.ts tests/e2e/auth.setup.ts`) — d1e2638
+- [x] 1.3 Git ignore covers Playwright auth state, results, reports, and CLI logs (`git check-ignore -q playwright/.auth/user.json test-results/x playwright-report/x .playwright-cli/x`) — d1e2638
+- [x] 1.4 `.env.example` lists `E2E_USERNAME=` and `E2E_PASSWORD=` — d1e2638
+- [x] 1.5 `context/foundation/test-stack.md` records the E2E runner, commands, port 4321, preview web server, auth setup, storage state, seed, and browser CLI — d1e2638
+- [x] 1.6 Vitest includes only `src/**/*.test.ts`, and `npm test` passes — d1e2638
 
 #### Manual
 
-- [x] 1.7 Local `.env` credentials target the local Supabase stack, and `.env` and `playwright/.auth/` stay untracked
+- [x] 1.7 Local `.env` credentials target the local Supabase stack, and `.env` and `playwright/.auth/` stay untracked — d1e2638
 
 ### Phase 2: Signed-out journal gate
 
 #### Automated
 
-- [ ] 2.1 The seed opts out of the saved session, opens `/measurements`, and expects `/auth/signin` plus the Sign in heading
-- [ ] 2.2 With nothing listening on the preview port, `npx playwright test tests/e2e/seed.spec.ts` exits 0
+- [x] 2.1 The seed opts out of the saved session, opens `/measurements`, and expects `/auth/signin` plus the Sign in heading
+- [x] 2.2 With nothing listening on the preview port, `npx playwright test tests/e2e/seed.spec.ts` exits 0
 
 #### Manual
 
-- [ ] 2.3 A signed-out visit to `/measurements` in a browser shows the Sign in page
+- [x] 2.3 A signed-out visit to `/measurements` in a browser shows the Sign in page
