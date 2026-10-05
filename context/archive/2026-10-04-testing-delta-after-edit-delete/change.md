@@ -1,10 +1,10 @@
 ---
 change_id: testing-delta-after-edit-delete
 title: Testing delta after edit delete
-status: impl_reviewed
+status: archived
 created: 2026-10-04
-updated: 2026-10-04
-archived_at: null
+updated: 2026-10-05
+archived_at: 2026-10-05T02:31:45Z
 ---
 
 ## Notes
