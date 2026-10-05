@@ -65,4 +65,4 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 
 ## CI
 
-GitHub Actions workflow (`.github/workflows/ci.yml`) is a quality gate on every push and pull request to `main`. It does not deploy. The `ci` job runs lint, `check:home-tokens`, `astro check`, `npm test`, and build, with repository secrets `SUPABASE_URL` and `SUPABASE_KEY` for the build step. The `smoke` job starts local Supabase, builds, serves the production preview, and runs `npm run smoke`. Production promotion is Workers Builds.
+GitHub Actions workflow (`.github/workflows/ci.yml`) is a quality gate on every push and pull request to `main`. It does not deploy. The `ci` job runs lint, `check:home-tokens`, `astro check`, `npm test`, and build, with repository secrets `SUPABASE_URL` and `SUPABASE_KEY` for the build step. The `smoke` job starts local Supabase, builds, serves the production preview, and runs `npm run smoke`. The `e2e` job starts the same local Supabase, creates a throwaway trainee, and runs `npx playwright test`; Playwright builds and serves the preview. Production promotion is Workers Builds.

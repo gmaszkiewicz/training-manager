@@ -183,6 +183,7 @@ GitHub Actions is a quality gate only. It does not deploy. On every push and PR 
 
 - **ci** — lint, `npm run check:home-tokens`, `npx astro check`, `npm test`, and `npm run build`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
 - **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No repository secrets.
+- **e2e** — starts the same local Supabase, creates a throwaway trainee, and runs `npx playwright test`. Playwright builds and serves the preview. The HTML report is uploaded as the `playwright-report` artifact. No repository secrets.
 
 Production deploys run in Cloudflare Workers Builds when `main` is pushed.
 
