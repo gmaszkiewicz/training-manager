@@ -221,9 +221,9 @@ No schema change and no hosted data change. The test user exists only on the loc
 
 #### Automated
 
-- [x] 2.1 The seed opts out of the saved session, opens `/measurements`, and expects `/auth/signin` plus the Sign in heading
-- [x] 2.2 With nothing listening on the preview port, `npx playwright test tests/e2e/seed.spec.ts` exits 0
+- [x] 2.1 The seed opts out of the saved session, opens `/measurements`, and expects `/auth/signin` plus the Sign in heading — 8cb71df
+- [x] 2.2 With nothing listening on the preview port, `npx playwright test tests/e2e/seed.spec.ts` exits 0 — 8cb71df
 
 #### Manual
 
-- [x] 2.3 A signed-out visit to `/measurements` in a browser shows the Sign in page
+- [x] 2.3 A signed-out visit to `/measurements` in a browser shows the Sign in page — 8cb71df
