@@ -67,7 +67,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-15 | testing-measurement-access-boundaries | user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person | S-04 | MS-09, FR-007, FR-008 | done |
 | S-16 | testing-reject-illegal-measurements | user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged | S-02 | MS-10, FR-003 | done |
 | S-17 | ci-cd-workflow-updates | a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off | — | MS-01 | in-progress |
-| S-18 | block-merge-on-failed-ci | a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main` | — | MS-11 | in-progress |
+| S-18 | block-merge-on-failed-ci | a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main` | — | MS-11 | done |
 
 ## Streams
 
@@ -317,7 +317,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The repository is already public, so branch protection on GitHub Free can enforce the rule. A null pull-request requirement, or a required check name other than `ci` and `smoke`, would leave a direct push or a red check able to reach `main`. Fork pull requests from outside this repository do not receive Actions secrets, so their build check can fail. The workflow file stays as it is.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -380,3 +380,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-14: user can edit or delete an entry and still see each remaining entry's arrow and difference versus the previous remaining entry; a linked trainer sees that same comparison** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-delta-after-edit-delete/`. Lesson: —.
 - **S-15: user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-measurement-access-boundaries/`. Lesson: —.
 - **S-16: user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-reject-illegal-measurements/`. Lesson: —.
+- **S-18: a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main`** — Archived 2026-10-05 → `context/archive/2026-10-05-block-merge-on-failed-ci/`. Lesson: —.
