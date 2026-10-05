@@ -12,7 +12,7 @@ The repo already deploys `main` through Cloudflare Workers Builds and uses GitHu
 
 ## Desired End State
 
-README, CLAUDE.md, the infrastructure operational steps, and the deployment plan describe one pipeline: the current GitHub Actions gates, Workers Builds build command `npm run build:workers`, deploy command `npx wrangler deploy`, and non-production builds off. The Worker `training-manager` dashboard matches that, `SUPABASE_DB_URL` is set, and `WORKERS_CI_BRANCH` is left at Cloudflare's default.
+README, CLAUDE.md, and the infrastructure operational steps describe the current GitHub Actions gates. Those three and the deployment plan agree on Workers Builds build command `npm run build:workers`, deploy command `npx wrangler deploy`, and non-production builds off. The deployment plan's opening CI sentence stays the shorter historical list. The Worker `training-manager` dashboard matches the Workers Builds settings, `SUPABASE_DB_URL` is set, and `WORKERS_CI_BRANCH` is left at Cloudflare's default.
 
 ## Key Decisions Made
 
@@ -65,6 +65,6 @@ GitHub Actions stays the quality gate. Workers Builds on `main` runs `npm run bu
 
 ## Success Criteria (Summary)
 
-- The four documents name `npm run build:workers` as the Workers Builds build command, keep non-production builds off, and describe the CI gates that `.github/workflows/ci.yml` already runs.
+- README, CLAUDE.md, and infrastructure.md describe the CI gates that `.github/workflows/ci.yml` already runs. All four documents name `npm run build:workers` as the Workers Builds build command and keep non-production builds off. The deployment plan's opening CI sentence stays the shorter historical list.
 - `.github/workflows/ci.yml` has no diff from this change.
 - Worker `training-manager` Builds uses that build command and deploy command, with `SUPABASE_DB_URL` set and `WORKERS_CI_BRANCH` left at the default.
