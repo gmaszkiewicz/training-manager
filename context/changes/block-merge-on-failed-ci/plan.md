@@ -199,6 +199,6 @@ Branch protection does not change Worker deploys or Supabase. A green pull reque
 
 #### Manual
 
-- [x] 2.5 A pull request whose `ci` or `smoke` check is failing cannot be merged
-- [x] 2.6 `git push` to `main` is rejected for the owner
-- [x] 2.7 A pull request whose `ci` and `smoke` checks are both green can be merged with no second approving review
+- [x] 2.5 A pull request whose `ci` or `smoke` check is failing cannot be merged — 5c2f57c
+- [x] 2.6 `git push` to `main` is rejected for the owner — 5c2f57c
+- [x] 2.7 A pull request whose `ci` and `smoke` checks are both green can be merged with no second approving review — 5c2f57c
