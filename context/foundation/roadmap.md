@@ -3,13 +3,13 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-10-02
+updated: 2026-10-05
 prd_version: 1
 main_goal: speed
 top_blocker: time
 milestone_id: trainee-delta-trainer-preview
 milestone_seq: 1
-milestone_status: open
+milestone_status: done
 ---
 
 # Roadmap: Training Manager
@@ -20,12 +20,12 @@ milestone_status: open
 
 ## Milestone
 
-**M-1: Trainee delta and trainer preview** — Status: open
+**M-1: Trainee delta and trainer preview** — Status: done
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel.
-- **Source materials:** `context/foundation/prd.md` (v1); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07)
+- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel. The comparison after an edit or a delete, measurement ownership, and refusal of a create dated after tomorrow are covered by the archived test rollout.
+- **Source materials:** `context/foundation/prd.md` (v1); `context/foundation/test-plan.md` (phases 1–3); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07)
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07
+- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07, MS-08, MS-09, MS-10
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page.
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
@@ -33,6 +33,9 @@ milestone_status: open
   - MS-05: One top bar, the same as on the public home, on `/`, both dashboards, sign-in, and sign-up. A guest reads "Hello guest" with Home, Sign in, and Sign up. A signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out lives only in that bar. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email.
   - MS-06: The trainee enters measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel.
   - MS-07: The measurements screen and the redirects that open it use `/measurements`. The greeting has no role name. The trainer finds a trainee by email, and each field shows its unit beside the name with a clearer difference versus the previous entry.
+  - MS-08: Prove the remaining chain, the oldest entry, and the trainer's copy of that chain.
+  - MS-09: Prove ownership on read and write, and that an email link cannot open the wrong journal; confirm anonymous smoke still hits the current journal route.
+  - MS-10: Prove an illegal entry is refused and not stored, on both entry paths.
 
 ## Vision recap
 
@@ -59,6 +62,9 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-11 | shared-topbar              | user can use the same top bar on the public home, sign-in, sign-up, and both dashboards: a guest reads "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer reads "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email | S-07, S-08, S-09, S-10 | MS-05          | done |
 | S-12 | horizontal-measurements    | user can enter the measurement fields in a horizontal row on the trainee journal, and both the trainee and a linked trainer can read each entry's fields in a horizontal row; linked trainees sit beside each other on the trainer panel | S-09, S-10    | MS-06                     | done |
 | S-13 | measurement-copy-polish    | user can open measurements at `/measurements`, greet without a role name, find a trainee by email, and read each field's unit beside its name with a clearer difference versus the previous entry | S-11, S-12    | MS-07                     | done |
+| S-14 | testing-delta-after-edit-delete | user can edit or delete an entry and still see each remaining entry's arrow and difference versus the previous remaining entry; a linked trainer sees that same comparison | S-04, S-05, S-06 | MS-08, US-01, FR-004, FR-005, FR-008 | done |
+| S-15 | testing-measurement-access-boundaries | user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person | S-04 | MS-09, FR-007, FR-008 | done |
+| S-16 | testing-reject-illegal-measurements | user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged | S-02 | MS-10, FR-003 | done |
 
 ## Streams
 
@@ -72,6 +78,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
 | E      | Dashboard visual contract | `S-09` → `S-10` → `S-12` → `S-13`       | Restyles the measurements screen without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. S-12 turns the measurement fields on that journal and on the trainer list from a column into a horizontal row. S-13 polishes the copy and moves the screen to `/measurements`. Can run beside S-05 and S-06. |
 | F      | Shared top bar            | `S-11`                                  | Joins streams C, D, and E: one bar on the public home, auth entry, and both dashboards. Does not change measurement data, so it can run beside S-05 and S-06. |
+| G      | Measurement tests         | `S-14` → `S-15` → `S-16`                | Rollout order from the test plan. The three slices do not depend on each other; each one locks a risk the product slices already ship. |
 
 ## Baseline
 
@@ -247,6 +254,42 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Risk:** `/dashboard` no longer opens the screen, so an old address 404s. Copy and the route change do not change stored measurements, who is linked, or how the difference is calculated. It can run beside S-05 and S-06.
 - **Status:** done
 
+### S-14: Delta after edit and delete
+
+- **Outcome:** user can edit or delete an entry and still see each remaining entry's arrow and difference versus the previous remaining entry; a linked trainer sees that same comparison
+- **Change ID:** testing-delta-after-edit-delete
+- **PRD refs:** MS-08, US-01, FR-004, FR-005, FR-008
+- **Prerequisites:** S-04, S-05, S-06
+- **Parallel with:** S-15, S-16
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** The comparison is the product. This slice locks that chain after an edit or a delete, including the trainer's copy, and was archived with the phase-1 tests.
+- **Status:** done
+
+### S-15: Measurement access boundaries
+
+- **Outcome:** user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person
+- **Change ID:** testing-measurement-access-boundaries
+- **PRD refs:** MS-09, FR-007, FR-008
+- **Prerequisites:** S-04
+- **Parallel with:** S-14, S-16
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Privacy of body measurements is the next risk in the test plan. This slice locks ownership and the email link, and was archived with the phase-2 smoke steps.
+- **Status:** done
+
+### S-16: Reject illegal measurements
+
+- **Outcome:** user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged
+- **Change ID:** testing-reject-illegal-measurements
+- **PRD refs:** MS-10, FR-003
+- **Prerequisites:** S-02
+- **Parallel with:** S-14, S-15
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** A future-dated create must not land on the list. This slice locks that refusal on an empty journal, and was archived with the phase-3 smoke steps. The edit path is outside what that phase shipped.
+- **Status:** done
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                 | Suggested issue title                                                          | Ready for `/10x-plan` | Notes                                      |
@@ -264,6 +307,9 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-11       | shared-topbar             | Shared top bar on the public home, sign-in, sign-up, and both dashboards         | yes                   | Run `/10x-new shared-topbar`. Can run beside S-05 and S-06 |
 | S-12       | horizontal-measurements   | Trainee enters measurements in a row; trainee and trainer read each entry in a row; linked trainees sit in a row | yes                 | Change folder exists. Plan in `context/changes/horizontal-measurements/`. Can run beside S-05 and S-06 |
 | S-13       | measurement-copy-polish   | Measurements screen, greeting, and field units                                  | no                    | [#41](https://github.com/gmaszkiewicz/training-manager/issues/41). Change folder exists. Work is on `cursor/measurement-copy-polish`. Can run beside S-05 and S-06 |
+| S-14       | testing-delta-after-edit-delete | Prove the comparison chain after edit and delete, including the trainer preview | no                    | Archived 2026-10-05 → `context/archive/2026-10-04-testing-delta-after-edit-delete/` |
+| S-15       | testing-measurement-access-boundaries | Prove ownership, the email link, and that a trainer cannot change entries | no                    | Archived 2026-10-05 → `context/archive/2026-10-04-testing-measurement-access-boundaries/` |
+| S-16       | testing-reject-illegal-measurements | Prove a create dated after tomorrow is refused and stays off the empty journal | no                    | Archived 2026-10-05 → `context/archive/2026-10-04-testing-reject-illegal-measurements/` |
 
 ## Open Roadmap Questions
 
@@ -282,7 +328,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 
 ## Milestone History
 
-None yet.
+- **M-1: Trainee delta and trainer preview** (`trainee-delta-trainer-preview`) — closed 2026-10-05. A trainee can record measurements and see the difference versus the previous entry, and a linked trainer can preview that list. The archived test rollout is recorded on this milestone as S-14, S-15, and S-16.
 
 ## Done
 
@@ -299,3 +345,6 @@ None yet.
 - **S-13: user can open measurements at `/measurements`, greet without a role name, find a trainee by email, and read each field's unit beside its name with a clearer difference versus the previous entry** — Archived 2026-10-01 → `context/archive/2026-09-30-measurement-copy-polish/`. Lesson: —.
 - **S-05: user can edit a measurement entry they created, and the list shows the arrow and difference versus the previous entry using the edited values** — Archived 2026-10-02 → `context/archive/2026-10-02-edit-measurement-entry/`. Lesson: —.
 - **S-06: user can delete a measurement entry they created, and each remaining entry compares to the previous remaining entry** — Archived 2026-10-02 → `context/archive/2026-10-02-delete-measurement-entry/`. Lesson: —.
+- **S-14: user can edit or delete an entry and still see each remaining entry's arrow and difference versus the previous remaining entry; a linked trainer sees that same comparison** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-delta-after-edit-delete/`. Lesson: —.
+- **S-15: user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-measurement-access-boundaries/`. Lesson: —.
+- **S-16: user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged** — Archived 2026-10-05 → `context/archive/2026-10-04-testing-reject-illegal-measurements/`. Lesson: —.
