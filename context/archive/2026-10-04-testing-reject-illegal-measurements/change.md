@@ -1,10 +1,10 @@
 ---
 change_id: testing-reject-illegal-measurements
 title: Reject illegal measurements before they appear on the list
-status: impl_reviewed
+status: archived
 created: 2026-10-04
-updated: 2026-10-04
-archived_at: null
+updated: 2026-10-05
+archived_at: 2026-10-05T02:33:10Z
 ---
 
 ## Notes
