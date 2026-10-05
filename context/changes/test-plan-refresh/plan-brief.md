@@ -17,15 +17,15 @@ The guide lists risk #6 and leaves rollout phases 4 and 5 not started. Phase 4's
 
 ## Key Decisions Made
 
-| Decision               | Choice                                                                                 | Why (1 sentence)                                                   | Source       |
-| ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------ |
-| What this change ships | The guide only                                                                         | The new checks are later rollout phases left `not started`         | Plan         |
-| Risk numbers           | Keep #1–#5 and append #6                                                               | Later sections already cite those numbers                          | Change notes |
-| Risk #6 proof          | Insert a known row, apply the migration under test, select numbers, count, and owner   | An empty apply and a `db push` exit code do not read existing rows | Research     |
-| Risk #1 adjustment     | Keep the comparison-rule unit and add one smoke edit                                   | The unit builds the edited weight in memory                        | Research     |
-| Playwright             | Record 1.63.0 for the S-19 seed, no CI job                                             | The runner exists and the workflow does not run it                 | Research     |
-| Exclusions             | Kitchen-sink screens, visual restyles, and no browser suite beyond the signed-out seed | Interview Q5, with the seed already owned by S-19                  | Change notes |
-| Interview              | Zero further questions                                                                 | The brief and the research already fixed the wording               | Plan         |
+| Decision               | Choice                                                                                                                 | Why (1 sentence)                                                   | Source       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------ |
+| What this change ships | The guide only                                                                                                         | The new checks are later rollout phases left `not started`         | Plan         |
+| Risk numbers           | Keep #1–#5 and append #6                                                                                               | Later sections already cite those numbers                          | Change notes |
+| Risk #6 proof          | Insert a known row, apply the migration under test, select numbers, count, and owner                                   | An empty apply and a `db push` exit code do not read existing rows | Research     |
+| Risk #1 adjustment     | Keep the comparison-rule unit and add one smoke edit                                                                   | The unit builds the edited weight in memory                        | Research     |
+| Playwright             | Record 1.63.0 for the S-19 seed. The CI `e2e` job already runs `npx playwright test`. Do not add a job for risks #1–#6 | The runner exists and the `e2e` job runs `npx playwright test`     | Research     |
+| Exclusions             | Kitchen-sink screens, visual restyles, and no browser suite beyond the signed-out seed                                 | Interview Q5, with the seed already owned by S-19                  | Change notes |
+| Interview              | Zero further questions                                                                                                 | The brief and the research already fixed the wording               | Plan         |
 
 ## Scope
 
