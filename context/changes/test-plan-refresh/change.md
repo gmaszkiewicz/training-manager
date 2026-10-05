@@ -1,7 +1,7 @@
 ---
 change_id: test-plan-refresh
 title: Refresh the test plan for hosted migrations
-status: implemented
+status: impl_reviewed
 created: 2026-10-05
 updated: 2026-10-05
 archived_at: null
@@ -22,7 +22,7 @@ Guide today (last updated 2026-10-04). All three rollout phases are complete:
 
 Stale:
 
-- Playwright Test 1.63.0 is now in the manifest, playwright.config.ts, and context/foundation/test-stack.md (updated 2026-10-05). Context7 checked /microsoft/playwright v1.63.0 on 2026-10-05: webServer (command, url, reuseExistingServer outside CI) and a setup project with storageState are current. CI still runs npm test and smoke only.
+- Playwright Test 1.63.0 is now in the manifest, playwright.config.ts, and context/foundation/test-stack.md (updated 2026-10-05). Context7 checked /microsoft/playwright v1.63.0 on 2026-10-05: webServer (command, url, reuseExistingServer outside CI) and a setup project with storageState are current. The CI `e2e` job runs `npx playwright test` for the signed-out seed. This refresh does not add a Playwright job for risks #1–#6.
 - Roadmap S-19 (e2e-setup) is in progress: a browser runner against a production-like preview, and a signed-out visit to the journal is sent to sign-in. That slice already owns the seed. Do not open a second phase for it.
 - Hot spots, last 30 days, scopes src, scripts, supabase: 51 commits. src/lib 17, scripts/ 20, src/pages/kitchen-sink 12, src/lib/services 11, src/components/trainer 11, src/components/measurements 10, src/components/journal 10, supabase/migrations 7. The previous guide used 44 commits and src/lib 14.
 
