@@ -4,11 +4,11 @@
 
 ## What & Why
 
-Pull requests to `main` already run tests, the production build, and the auth smoke. A failure turns the check red and still leaves Merge available, because this private repository is on GitHub Free. Protected branches, which can block that merge, are available once the repository is public.
+Pull requests to `main` already run tests, the production build, and the auth smoke. A failure used to leave Merge available while the repository was private on GitHub Free. The repository is public now, and `main` already has the protection rule this plan describes.
 
 ## Starting Point
 
-`.github/workflows/ci.yml` runs jobs named `ci` and `smoke` on every pull request to `main`. The branch-protection API and the rulesets API both return HTTP 403 while the repository is private. No protection rule is stored in the repo. S-17 is a separate in-progress change that only aligns the written deploy path.
+`.github/workflows/ci.yml` runs jobs named `ci` and `smoke` on every pull request to `main`. The repository is public. Branch protection on `main` already matches this plan: loose checks `ci` and `smoke`, admins enforced, and zero approving reviews. Phase 2 writes that rule only when the live response differs. S-17 is a separate in-progress change that only aligns the written deploy path.
 
 ## Desired End State
 
@@ -43,7 +43,7 @@ Pull requests to `main` already run tests, the production build, and the auth sm
 
 ## Architecture / Approach
 
-The workflow already fails the right checks. Phase 1 is a human visibility change, because an agent must not publish the repository. Phase 2 calls the branch-protection API only after that 403 is gone. `required_pull_request_reviews` stays an object with zero required approvals. Setting it to null would allow a direct push again.
+The workflow already fails the right checks. Phase 1 is a human visibility confirmation, because an agent must not publish the repository. Phase 2 reads branch protection only after the Free-plan 403 is gone, and it PUTs the rule only when the live response differs. `required_pull_request_reviews` stays an object with zero required approvals. Setting it to null would allow a direct push again.
 
 ## Phases at a Glance
 
