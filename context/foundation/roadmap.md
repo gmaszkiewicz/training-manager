@@ -23,9 +23,9 @@ milestone_status: open
 **M-1: Trainee delta and trainer preview** — Status: open
 
 - **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel. The comparison after an edit or a delete, measurement ownership, and refusal of a create dated after tomorrow are covered by the archived test rollout.
-- **Source materials:** `context/foundation/prd.md` (v1); `context/foundation/test-plan.md` (phases 1–3); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07)
+- **Source materials:** `context/foundation/prd.md` (v1); `context/foundation/test-plan.md` (phases 1–3); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07); user description for blocking merge when CI fails (MS-11)
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07, MS-08, MS-09, MS-10
+- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07, MS-08, MS-09, MS-10, MS-11
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page. A reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off.
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
@@ -36,6 +36,7 @@ milestone_status: open
   - MS-08: Prove the remaining chain, the oldest entry, and the trainer's copy of that chain.
   - MS-09: Prove ownership on read and write, and that an email link cannot open the wrong journal; confirm anonymous smoke still hits the current journal route.
   - MS-10: Prove an illegal entry is refused and not stored, on both entry paths.
+  - MS-11: A pull request to `main` whose `ci` or `smoke` check fails cannot be merged, and a direct push to `main` is rejected. The repository is public so GitHub Free can enforce that rule. No second reviewer is required, and the branch does not have to contain the latest `main`.
 
 ## Vision recap
 
@@ -66,6 +67,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-15 | testing-measurement-access-boundaries | user cannot read another trainee's journal, preview a trainee they did not link, or change entries as a trainer, and an email link cannot open the wrong person | S-04 | MS-09, FR-007, FR-008 | done |
 | S-16 | testing-reject-illegal-measurements | user can submit a create dated after tomorrow and see it refused, with the empty journal unchanged | S-02 | MS-10, FR-003 | done |
 | S-17 | ci-cd-workflow-updates | a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off | — | MS-01 | in-progress |
+| S-18 | block-merge-on-failed-ci | a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main` | — | MS-11 | planning |
 
 ## Streams
 
@@ -80,6 +82,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | E      | Dashboard visual contract | `S-09` → `S-10` → `S-12` → `S-13`       | Restyles the measurements screen without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. S-12 turns the measurement fields on that journal and on the trainer list from a column into a horizontal row. S-13 polishes the copy and moves the screen to `/measurements`. Can run beside S-05 and S-06. |
 | F      | Shared top bar            | `S-11`                                  | Joins streams C, D, and E: one bar on the public home, auth entry, and both dashboards. Does not change measurement data, so it can run beside S-05 and S-06. |
 | G      | Measurement tests         | `S-14` → `S-15` → `S-16`                | Rollout order from the test plan. The three slices do not depend on each other; each one locks a risk the product slices already ship. |
+| H      | Merge gate                | `S-18`                                     | On MS-11. Blocks merge to `main` when `ci` or `smoke` fails, and rejects a direct push. Parallel with S-17. Does not change the workflow file. |
 
 ## Baseline
 
@@ -297,12 +300,24 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Change ID:** ci-cd-workflow-updates
 - **PRD refs:** MS-01
 - **Prerequisites:** —
-- **Parallel with:** —
+- **Parallel with:** S-18
 - **Blockers:** —
 - **Unknowns:**
   - Does the live worker build setting already match the migration-aware production build? — Owner: user. Block: no.
 - **Risk:** The quality gate already matches. A broad edit could erase the manual deploy path, which does not apply hosted migrations.
 - **Status:** in-progress
+
+### S-18: Block merge when CI fails
+
+- **Outcome:** a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main`
+- **Change ID:** block-merge-on-failed-ci
+- **PRD refs:** MS-11
+- **Prerequisites:** —
+- **Parallel with:** S-17
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** The repository is already public, so branch protection on GitHub Free can enforce the rule. A null pull-request requirement, or a required check name other than `ci` and `smoke`, would leave a direct push or a red check able to reach `main`. Fork pull requests from outside this repository do not receive Actions secrets, so their build check can fail. The workflow file stays as it is.
+- **Status:** planning
 
 ## Backlog Handoff
 
@@ -325,6 +340,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-15       | testing-measurement-access-boundaries | Prove ownership, the email link, and that a trainer cannot change entries | no                    | Archived 2026-10-05 → `context/archive/2026-10-04-testing-measurement-access-boundaries/` |
 | S-16       | testing-reject-illegal-measurements | Prove a create dated after tomorrow is refused and stays off the empty journal | no                    | Archived 2026-10-05 → `context/archive/2026-10-04-testing-reject-illegal-measurements/` |
 | S-17       | ci-cd-workflow-updates        | Align the written deploy path with the live worker                              | yes                   | On MS-01. Plan already exists in the change folder. Implementation can start. |
+| S-18       | block-merge-on-failed-ci      | Block merge to main when ci or smoke fails                                      | yes                   | On MS-11. Plan in `context/changes/block-merge-on-failed-ci/`. Repository is already public. Phase 2 sets branch protection. |
 
 ## Open Roadmap Questions
 
