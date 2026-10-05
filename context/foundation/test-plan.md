@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-10-04
+> Last updated: 2026-10-05
 
 ## 1. Strategy
 
@@ -84,23 +84,23 @@ plus the MCP/tools actually exposed in the current session. If a useful docs
 or search MCP such as Context7 or Exa.ai is not available, say that instead
 of assuming access.
 
-Test base: **sparse**. Vitest is configured (`src/**/*.test.ts`). Four product test files, all under `src/lib`. Most of the app has no direct test.
+Test base: **sparse**. Vitest is configured (`src/**/*.test.ts`). Four product test files, all under `src/lib`, plus one end-to-end seed. Most of the app has no direct test.
 
 | Layer              | Tool                       | Version | Notes                                                                                                                                                                                                                      |
 | ------------------ | -------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | unit + integration | Vitest                     | ^5.0.2  | `npm test` runs `vitest run`. Phase 1 adds the delta cases here. Phase 2's request boundary is `scripts/smoke.mjs`. Phase 3 keeps the existing rejection-rule unit here and adds the storage proof to `scripts/smoke.mjs`. |
-| API mocking        | none yet                   | —       | Phase 2 decides the cheapest stand-in at the auth and database boundary. Do not add a mock library before that research.                                                                                                   |
-| e2e                | none                       | —       | No Playwright in the manifest. Do not add one for these risks.                                                                                                                                                             |
+| API mocking        | none                       | —       | Phase 2 shipped without a mock library.                                                                                                                                                                                    |
+| e2e                | Playwright Test            | ^1.63.0 | Playwright Test 1.63.0 is the local browser layer for the signed-out seed S-19 owns. The CI `e2e` job runs `npx playwright test`. Do not add a Playwright job for risks #1–#6.                                             |
 | accessibility      | none                       | —       | Out of this rollout.                                                                                                                                                                                                       |
 | smoke              | `scripts/smoke.mjs`        | n/a     | Already in CI. Phase 2 confirms it still refuses an anonymous add on the current journal route.                                                                                                                            |
 | AI-native          | none — checked: 2026-10-03 | n/a     | Browser review would not beat a deterministic delta assertion. Excluded by §7.                                                                                                                                             |
 
 **Stack grounding tools (current session):**
 
-- Docs: none — Context7 is not in this session; checked: 2026-10-03
-- Search: WebSearch is available and was not used — this rollout keeps Vitest; checked: 2026-10-03
-- Runtime/browser: cursor-ide-browser — available for manual checks, not a test layer; checked: 2026-10-03
-- Provider/platform: GitHub CI subscription tools only. No Supabase or Cloudflare docs MCP; checked: 2026-10-03
+- Docs: Context7 on `/microsoft/playwright` v1.63.0 for `webServer` (command, url, reuseExistingServer outside CI) and a setup project with `storageState`; checked: 2026-10-05
+- Search: WebSearch is available and unused; checked: 2026-10-05
+- Runtime/browser: cursor-ide-browser is available and unused as a test layer; checked: 2026-10-05
+- Provider/platform: no Supabase or Cloudflare docs MCP; checked: 2026-10-05
 
 ## 5. Quality Gates
 
@@ -108,12 +108,14 @@ The full set of gates that must pass before a change reaches production.
 "Required for §3 Phase <N>" means the gate is enforced once that rollout
 phase lands; before that, the gate is `planned`.
 
-| Gate                 | Where      | Required?                                                                                | Catches                                                                                                                         |
-| -------------------- | ---------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| lint + `astro check` | local + CI | required                                                                                 | syntax and type drift                                                                                                           |
-| home token check     | CI         | required                                                                                 | home color-token drift                                                                                                          |
-| Vitest (`npm test`)  | local + CI | command already required; delta, access, and rejection cases required as Phases 1–3 land | wrong comparison chain, ownership gaps                                                                                          |
-| smoke                | CI         | required; Phase 2 confirms the current journal route                                     | anonymous measurement write on the live route; a future-date create in `scripts/smoke.mjs` that must stay off the empty journal |
+| Gate                 | Where          | Required?                                                                                | Catches                                                                                                                         |
+| -------------------- | -------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| lint + `astro check` | local + CI     | required                                                                                 | syntax and type drift                                                                                                           |
+| home token check     | CI             | required                                                                                 | home color-token drift                                                                                                          |
+| Vitest (`npm test`)  | local + CI     | command already required; delta, access, and rejection cases required as Phases 1–3 land | wrong comparison chain, ownership gaps                                                                                          |
+| smoke                | CI             | required; Phase 2 confirms the current journal route                                     | anonymous measurement write on the live route; a future-date create in `scripts/smoke.mjs` that must stay off the empty journal |
+| migration check      | local Supabase | planned until Phase 4 lands                                                              | measurement numbers, row count, or owning trainee changed by a migration                                                        |
+| saved-edit step      | local + CI     | planned until Phase 5 lands                                                              | a listed difference that does not use the saved weight                                                                          |
 
 ## 6. Cookbook Patterns
 
@@ -147,6 +149,8 @@ the relevant rollout phase ships; before that, the sub-section reads
 - Delta chain, including the trainer's copy: §6.1.
 - Ownership or email link: §6.2.
 - Rejection of an illegal entry: §6.3.
+- A migration that runs after rows exist: TBD — see §3 Phase 4.
+- A saved weight edit on the list: TBD — see §3 Phase 5.
 - Kitchen-sink and visual restyles: do not add a test (§7).
 
 ### 6.5 Per-rollout-phase notes
@@ -163,13 +167,13 @@ Exclusions agreed during the rollout (Phase 2 interview, Q5). Future
 contributors should respect these unless the underlying assumption changes.
 
 - **Kitchen-sink screens and visual restyles** — they churn and do not protect measurement numbers, ownership, or the delta chain. Re-evaluate if a restyle changes stored values, who can read a journal, or which numbers the delta uses. (Source: Phase 2 interview Q5. Hot-spot `src/pages/kitchen-sink`, 12 commits/30d, stays in negative space.)
-- **A new browser or screenshot suite** — the delta and the access checks have cheaper deterministic signals. Re-evaluate if a failure can only be seen in a rendered page and no unit or request result exposes it. (Source: accepted seed brief.)
+- **No broad browser or screenshot suite beyond the signed-out seed.** Re-evaluate if a failure can only be seen in a rendered page and no unit or request result exposes it. (Source: accepted seed brief.)
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-10-04
-- Stack versions last verified: 2026-10-03
-- AI-native tool references last verified: 2026-10-03
+- Strategy (§1–§5) last reviewed: 2026-10-05
+- Stack versions last verified: 2026-10-05
+- AI-native tool references last verified: 2026-10-05
 
 Refresh (`/10x-test-plan --refresh`) when:
 

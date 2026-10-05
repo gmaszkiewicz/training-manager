@@ -162,23 +162,23 @@ This change does not add or edit a SQL migration. Hosted apply stays `supabase d
 
 #### Automated
 
-- [x] 1.1 Section 3 keeps phases 1–3 at `complete` and adds phases 4 and 5 at `not started` with change folder `—`
-- [x] 1.2 Section 2 keeps risks #1–#5, appends risk #6, and cites no file:line anchor
+- [x] 1.1 Section 3 keeps phases 1–3 at `complete` and adds phases 4 and 5 at `not started` with change folder `—` — 9c5cac4
+- [x] 1.2 Section 2 keeps risks #1–#5, appends risk #6, and cites no file:line anchor — 9c5cac4
 
 #### Manual
 
-- [x] 1.3 Risk #6 proof reads: insert a known measurement row, apply the migration under test, then select its numbers, count, and owning trainee
-- [x] 1.4 Risk #1 response keeps the comparison-rule unit and adds one smoke edit of a saved weight
+- [x] 1.3 Risk #6 proof reads: insert a known measurement row, apply the migration under test, then select its numbers, count, and owning trainee — 9c5cac4
+- [x] 1.4 Risk #1 response keeps the comparison-rule unit and adds one smoke edit of a saved weight — 9c5cac4
 
 ### Phase 2: Stack, gates, and exclusions
 
 #### Automated
 
-- [ ] 2.1 Section 4 names Playwright 1.63.0, records the grounding note checked 2026-10-05, and does not say the manifest has no Playwright
-- [ ] 2.2 The header Last updated line and section 8 dates are 2026-10-05
+- [x] 2.1 Section 4 names Playwright 1.63.0, records the grounding note checked 2026-10-05, and does not say the manifest has no Playwright
+- [x] 2.2 The header Last updated line and section 8 dates are 2026-10-05
 
 #### Manual
 
-- [ ] 2.3 Section 7 keeps kitchen-sink screens and visual restyles excluded, and limits browsers to no suite beyond the signed-out seed
-- [ ] 2.4 Section 6 points phases 4 and 5 at TBD and does not record a shipped migration check or saved-edit step
-- [ ] 2.5 Section 5 keeps the existing required gates and marks the phase 4 migration check and the phase 5 saved-edit step as planned until those phases land
+- [x] 2.3 Section 7 keeps kitchen-sink screens and visual restyles excluded, and limits browsers to no suite beyond the signed-out seed
+- [x] 2.4 Section 6 points phases 4 and 5 at TBD and does not record a shipped migration check or saved-edit step
+- [x] 2.5 Section 5 keeps the existing required gates and marks the phase 4 migration check and the phase 5 saved-edit step as planned until those phases land
