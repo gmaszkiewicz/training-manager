@@ -85,7 +85,7 @@ The team treated “deploy to Cloudflare Pages” as already done and spent week
 
 ## Operational Story
 
-- **Preview deploys**: Connect the GitHub repo to Workers Builds. Production branch runs `npm run build` then `npx wrangler deploy`. Enable “Builds for non-production branches”; the preview command is `npx wrangler versions upload` (after the same build). GitHub gets a commit preview URL and a stable branch alias on `*.workers.dev`. Those URLs are public — put Cloudflare Access in front if they talk to a shared Supabase. Fork PRs do not get previews unless the Cloudflare GitHub App is allowed to build them. Current `.github/workflows/ci.yml` only lints and builds; it does not deploy.
+- **Workers Builds**: Connect the GitHub repo to Workers Builds. Production branch `main` uses build command `npm run build:workers` and deploy command `npx wrangler deploy`. Non-production branch builds stay off. GitHub Actions (`.github/workflows/ci.yml`) is the quality gate — lint, token check, `astro check`, test, build, and smoke — and it does not deploy.
 - **Secrets**: Production `SUPABASE_URL` and `SUPABASE_KEY` live as Wrangler secrets (`npx wrangler secret put SUPABASE_URL`, same for `SUPABASE_KEY`). Dashboard visibility is account-admin. Local copies go in gitignored `.dev.vars` (and `.env` for Node-side tooling). GitHub Actions already needs the same names as repository secrets for `npm run build`. Rotate by putting the new value, then confirm auth still works; do not commit values into `wrangler.jsonc`.
 - **Rollback**: `npx wrangler versions list` then `npx wrangler rollback <VERSION_ID> --message "reason"` (omit the id to take the previous version). Applies immediately to all routes; last 100 versions only. Typical time-to-revert is seconds. Wrangler prompts if the target version has different secrets. **Supabase migrations do not roll back with the Worker.**
 - **Approval**: A human must `wrangler login`, enable Workers Paid if CPU exceeds 10 ms, attach a custom domain (nameserver change), and rotate primary secrets. An agent may `npm run build`, `npx wrangler deploy`, `npx wrangler rollback --message …`, and `npx wrangler tail` once those humans steps exist. Do not let an agent run `wrangler secret put` unattended — it deploys immediately.
@@ -114,7 +114,7 @@ Pinned in this repo: Astro `^7.3.2`, `@astrojs/cloudflare` `^14.3.1`, Wrangler `
 2. Put production secrets (interactive prompt, not argv): `npx wrangler secret put SUPABASE_URL` and `npx wrangler secret put SUPABASE_KEY`. Locally copy `.env.example` into gitignored `.dev.vars` with the same keys (Cloudflare local) and `.env` if Node-side scripts need them.
 3. Deploy: `npm run build && npx wrangler deploy`. Confirm the Worker URL, then run `npx wrangler tail` and sign in once. If invocations exceed 10 ms CPU, switch the account to Workers Paid ($5/mo).
 4. Disable Auto Minify for this Worker/zone. If you attach a custom domain, use Cloudflare nameservers.
-5. Optional Git loop: connect the repo in Workers Builds; production deploy command `npm run build && npx wrangler deploy`; non-production `npm run build && npx wrangler versions upload`. Protect preview URLs with Cloudflare Access.
+5. Optional Git loop: connect the repo in Workers Builds; production branch `main` uses build command `npm run build:workers` and deploy command `npx wrangler deploy`. Non-production branch builds stay off.
 
 ## Out of Scope
 
