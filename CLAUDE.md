@@ -65,4 +65,4 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 
 ## CI
 
-GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint + build + smoke on every push and PR to main. It is a quality gate only. Requires `SUPABASE_URL` and `SUPABASE_KEY` repository secrets for the build step. Production promotion is Workers Builds.
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs on `push` to `main` and on `pull_request` targeting `main`. Job `ci` runs `npm run lint`, `npm run check:home-tokens`, `npx astro check`, `npm test`, and `npm run build`. That build uses repository secrets `SUPABASE_URL` and `SUPABASE_KEY`. Job `smoke` starts local Supabase, builds, serves the production preview, and runs `npm run smoke`, without GitHub secrets. GitHub Actions is a quality gate and does not deploy. Production promotion is Cloudflare Workers Builds.

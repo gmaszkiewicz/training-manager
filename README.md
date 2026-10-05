@@ -181,7 +181,7 @@ It needs a reachable Supabase instance (local or cloud) with email confirmation 
 
 GitHub Actions is a quality gate only. It does not deploy. On every push and PR to `main`:
 
-- **ci** — lint, `astro check` and build. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
+- **ci** — lint, `npm run check:home-tokens`, `astro check`, `npm test`, and build. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
 - **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No secrets required.
 
 Production deploys run in Cloudflare Workers Builds when `main` is pushed.
