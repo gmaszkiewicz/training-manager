@@ -1,10 +1,10 @@
 ---
 change_id: block-merge-on-failed-ci
 title: Block merge when CI fails
-status: impl_reviewed
+status: archived
 created: 2026-10-05
 updated: 2026-10-05
-archived_at: null
+archived_at: 2026-10-05T13:27:41Z
 ---
 
 ## Notes
