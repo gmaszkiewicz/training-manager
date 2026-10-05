@@ -174,11 +174,11 @@ This change does not add or edit a SQL migration. Hosted apply stays `supabase d
 
 #### Automated
 
-- [x] 2.1 Section 4 names Playwright 1.63.0, records the grounding note checked 2026-10-05, and does not say the manifest has no Playwright
-- [x] 2.2 The header Last updated line and section 8 dates are 2026-10-05
+- [x] 2.1 Section 4 names Playwright 1.63.0, records the grounding note checked 2026-10-05, and does not say the manifest has no Playwright — 3c33147
+- [x] 2.2 The header Last updated line and section 8 dates are 2026-10-05 — 3c33147
 
 #### Manual
 
-- [x] 2.3 Section 7 keeps kitchen-sink screens and visual restyles excluded, and limits browsers to no suite beyond the signed-out seed
-- [x] 2.4 Section 6 points phases 4 and 5 at TBD and does not record a shipped migration check or saved-edit step
-- [x] 2.5 Section 5 keeps the existing required gates and marks the phase 4 migration check and the phase 5 saved-edit step as planned until those phases land
+- [x] 2.3 Section 7 keeps kitchen-sink screens and visual restyles excluded, and limits browsers to no suite beyond the signed-out seed — 3c33147
+- [x] 2.4 Section 6 points phases 4 and 5 at TBD and does not record a shipped migration check or saved-edit step — 3c33147
+- [x] 2.5 Section 5 keeps the existing required gates and marks the phase 4 migration check and the phase 5 saved-edit step as planned until those phases land — 3c33147
