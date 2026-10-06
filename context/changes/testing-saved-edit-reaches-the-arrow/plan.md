@@ -164,24 +164,24 @@ No schema, migration, or data backfill. The arrow stays computed at list time. T
 
 #### Automated
 
-- [x] 1.1 `npm run smoke` exits 0
-- [x] 1.2 The edit POST uses weight `81.0`, date `2026-01-02`, and note `smoke-earlier-trainee-note`, and expects 302 with exact location `/measurements`
-- [x] 1.3 The following GET expects 200, body `↑ 1.0`, and forbids `↓ 1.5`
+- [x] 1.1 `npm run smoke` exits 0 — 74aaeea
+- [x] 1.2 The edit POST uses weight `81.0`, date `2026-01-02`, and note `smoke-earlier-trainee-note`, and expects 302 with exact location `/measurements` — 74aaeea
+- [x] 1.3 The following GET expects 200, body `↑ 1.0`, and forbids `↓ 1.5` — 74aaeea
 
 #### Manual
 
-- [x] 1.4 Those two steps sit after `measurements shows the weight delta` and before `signout clears session`
-- [x] 1.5 `src/lib/measurement-deltas.test.ts` is unchanged
+- [x] 1.4 Those two steps sit after `measurements shows the weight delta` and before `signout clears session` — 74aaeea
+- [x] 1.5 `src/lib/measurement-deltas.test.ts` is unchanged — 74aaeea
 
 ### Phase 2: Cookbook
 
 #### Automated
 
-- [ ] 2.1 `npm test` exits 0
-- [ ] 2.2 `scripts/smoke.mjs` still places the `81.0` edit after `measurements shows the weight delta` and before `signout clears session`, and the following GET expects `↑ 1.0` and forbids `↓ 1.5`
+- [x] 2.1 `npm test` exits 0
+- [x] 2.2 `scripts/smoke.mjs` still places the `81.0` edit after `measurements shows the weight delta` and before `signout clears session`, and the following GET expects `↑ 1.0` and forbids `↓ 1.5`
 
 #### Manual
 
-- [ ] 2.3 §6.4 names the smoke pattern: edit `2026-01-02` to weight `81.0`, exact `/measurements` redirect, then a list that contains `↑ 1.0` and excludes `↓ 1.5`
-- [ ] 2.4 §6.5 records the shipped steps, the existing comparison-rule unit left in place, no new in-memory unit, no `withDeltas` call from smoke, and no Playwright
-- [ ] 2.5 §4 names the saved-weight edit on `scripts/smoke.mjs`, and the §5 saved-edit gate is `required`
+- [x] 2.3 §6.4 names the smoke pattern: edit `2026-01-02` to weight `81.0`, exact `/measurements` redirect, then a list that contains `↑ 1.0` and excludes `↓ 1.5`
+- [x] 2.4 §6.5 records the shipped steps, the existing comparison-rule unit left in place, no new in-memory unit, no `withDeltas` call from smoke, and no Playwright
+- [x] 2.5 §4 names the saved-weight edit on `scripts/smoke.mjs`, and the §5 saved-edit gate is `required`
