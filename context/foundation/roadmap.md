@@ -71,7 +71,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-17 | ci-cd-workflow-updates | a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off | — | MS-01 | done |
 | S-18 | block-merge-on-failed-ci | a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main` | — | MS-11 | done |
 | S-19 | e2e-setup | a maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in | — | MS-12 | done |
-| S-20 | testing-hosted-migration-preserves-measurements | a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied | S-02, S-16 | MS-13 | in-progress |
+| S-20 | testing-hosted-migration-preserves-measurements | a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied | S-02, S-16 | MS-13 | done |
 
 ## Streams
 
@@ -345,7 +345,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** A migration applies on a database that already has measurement rows and then changes their numbers, drops rows, or leaves them owned by the wrong trainee. A successful `db push` is not proof the rows survived.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -413,3 +413,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-18: a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main`** — Archived 2026-10-05 → `context/archive/2026-10-05-block-merge-on-failed-ci/`. Lesson: —.
 - **S-17: a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off** — Archived 2026-10-05 → `context/archive/2026-10-05-ci-cd-workflow-updates/`. Lesson: —.
 - **S-19: a maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in** — Archived 2026-10-06 → `context/archive/2026-10-05-e2e-setup/`. Lesson: —.
+- **S-20: a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-hosted-migration-preserves-measurements/`. Lesson: —.
