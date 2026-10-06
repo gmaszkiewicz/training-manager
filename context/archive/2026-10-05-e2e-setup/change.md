@@ -1,10 +1,10 @@
 ---
 change_id: e2e-setup
 title: End-to-end test configuration
-status: impl_reviewed
+status: archived
 created: 2026-10-05
-updated: 2026-10-05
-archived_at: null
+updated: 2026-10-06
+archived_at: 2026-10-06T03:12:44Z
 ---
 
 ## Notes
