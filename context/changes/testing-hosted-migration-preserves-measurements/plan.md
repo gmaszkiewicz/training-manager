@@ -205,19 +205,19 @@ This change adds no SQL migration and does not push to hosted Supabase. `npm run
 
 #### Automated
 
-- [x] 2.1 The `migration-check` job installs Supabase CLI `2.117.0`, starts local Supabase with smoke’s excluded services, runs `npm run migration-check`, and stops Supabase
-- [x] 2.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows required contexts `ci`, `smoke`, and `migration-check`, with `strict` false
-- [x] 2.3 `CLAUDE.md` names the `migration-check` job beside `ci`, `smoke`, and `e2e`
+- [x] 2.1 The `migration-check` job installs Supabase CLI `2.117.0`, starts local Supabase with smoke’s excluded services, runs `npm run migration-check`, and stops Supabase — 7839834
+- [x] 2.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows required contexts `ci`, `smoke`, and `migration-check`, with `strict` false — 7839834
+- [x] 2.3 `CLAUDE.md` names the `migration-check` job beside `ci`, `smoke`, and `e2e` — 7839834
 
 #### Manual
 
-- [ ] 2.4 A pull request whose `migration-check` job is failing cannot be merged
+- [x] 2.4 A pull request whose `migration-check` job is failing cannot be merged — 7839834
 
 ### Phase 3: Test-plan gate
 
 #### Automated
 
-- [ ] 3.1 §6.4 names `npm run migration-check`, reset to the version before the newest file, one inserted row with `weight_kg` `80.0` and circumferences `50.0`, and the select of those numbers, count `1`, and `trainee_id`
-- [ ] 3.2 §6.5 records that phase 4 shipped this check, with no Playwright job and no hosted row select
-- [ ] 3.3 §4 names `scripts/migration-check.mjs` and §5 marks the migration check required on local Supabase and in CI
-- [ ] 3.4 §1, §2, and the §3 rollout rows are unchanged
+- [x] 3.1 §6.4 names `npm run migration-check`, reset to the version before the newest file, one inserted row with `weight_kg` `80.0` and circumferences `50.0`, and the select of those numbers, count `1`, and `trainee_id`
+- [x] 3.2 §6.5 records that phase 4 shipped this check, with no Playwright job and no hosted row select
+- [x] 3.3 §4 names `scripts/migration-check.mjs` and §5 marks the migration check required on local Supabase and in CI
+- [x] 3.4 §1, §2, and the §3 rollout rows are unchanged
