@@ -1,10 +1,10 @@
 ---
 change_id: test-plan-refresh
 title: Refresh the test plan for hosted migrations
-status: impl_reviewed
+status: archived
 created: 2026-10-05
-updated: 2026-10-05
-archived_at: null
+updated: 2026-10-06
+archived_at: 2026-10-06T19:05:37Z
 ---
 
 ## Notes
