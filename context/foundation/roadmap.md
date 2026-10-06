@@ -22,10 +22,10 @@ milestone_status: open
 
 **M-1: Trainee delta and trainer preview** — Status: open
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel. The comparison after an edit or a delete, measurement ownership, and refusal of a create dated after tomorrow are covered by the archived test rollout. A maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in. A measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied.
-- **Source materials:** `context/foundation/prd.md` (v1); `context/foundation/test-plan.md` (phases 1–4); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07); user description for blocking merge when CI fails (MS-11); user description for end-to-end test configuration (MS-12); test plan phase 4 for a migration that preserves existing measurement rows (MS-13)
+- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel. The comparison after an edit or a delete, measurement ownership, and refusal of a create dated after tomorrow are covered by the archived test rollout. A maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in. A measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied. One persisted weight edit changes the listed difference.
+- **Source materials:** `context/foundation/prd.md` (v1); `context/foundation/test-plan.md` (phases 1–4); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07); user description for blocking merge when CI fails (MS-11); user description for end-to-end test configuration (MS-12); test plan phase 4 for a migration that preserves existing measurement rows (MS-13); test plan phase 5 for one persisted weight edit that changes the listed difference (MS-14)
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07, MS-08, MS-09, MS-10, MS-11, MS-12, MS-13
+- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07, MS-08, MS-09, MS-10, MS-11, MS-12, MS-13, MS-14
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page. A reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off.
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
@@ -39,6 +39,7 @@ milestone_status: open
   - MS-11: A pull request to `main` whose `ci` or `smoke` check fails cannot be merged, and a direct push to `main` is rejected. The repository is public so GitHub Free can enforce that rule. No second reviewer is required, and the branch does not have to contain the latest `main`.
   - MS-12: Add a change for end-to-end test configuration.
   - MS-13: Prove a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied.
+  - MS-14: Prove one persisted weight edit changes the listed difference.
 
 ## Vision recap
 
@@ -72,6 +73,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-18 | block-merge-on-failed-ci | a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main` | — | MS-11 | done |
 | S-19 | e2e-setup | a maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in | — | MS-12 | done |
 | S-20 | testing-hosted-migration-preserves-measurements | a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied | S-02, S-16 | MS-13 | done |
+| S-21 | testing-saved-edit-reaches-the-arrow | a persisted weight edit changes the listed difference | S-05, S-14 | MS-14, US-01, FR-004 | ready |
 
 ## Streams
 
@@ -85,7 +87,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
 | E      | Dashboard visual contract | `S-09` → `S-10` → `S-12` → `S-13`       | Restyles the measurements screen without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. S-12 turns the measurement fields on that journal and on the trainer list from a column into a horizontal row. S-13 polishes the copy and moves the screen to `/measurements`. Can run beside S-05 and S-06. |
 | F      | Shared top bar            | `S-11`                                  | Joins streams C, D, and E: one bar on the public home, auth entry, and both dashboards. Does not change measurement data, so it can run beside S-05 and S-06. |
-| G      | Measurement tests         | `S-14` → `S-15` → `S-16` → `S-20`; `S-19` | Rollout order from the test plan. S-20 is phase 4 on MS-13: a seeded measurement row survives the migration under test. S-19 is the end-to-end test configuration on MS-12 and does not depend on this chain. |
+| G      | Measurement tests         | `S-14` → `S-15` → `S-16` → `S-20` → `S-21`; `S-19` | Rollout order from the test plan. S-20 is phase 4 on MS-13: a seeded measurement row survives the migration under test. S-21 is phase 5 on MS-14: one saved weight edit changes the listed difference. S-19 is the end-to-end test configuration on MS-12 and does not depend on this chain. |
 | H      | Merge gate                | `S-18`                                     | On MS-11. Blocks merge to `main` when `ci` or `smoke` fails, and rejects a direct push. Parallel with S-17. Does not change the workflow file. |
 
 ## Baseline
@@ -347,6 +349,18 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Risk:** A migration applies on a database that already has measurement rows and then changes their numbers, drops rows, or leaves them owned by the wrong trainee. A successful `db push` is not proof the rows survived.
 - **Status:** done
 
+### S-21: Saved edit reaches the arrow
+
+- **Outcome:** a persisted weight edit changes the listed difference
+- **Change ID:** testing-saved-edit-reaches-the-arrow
+- **PRD refs:** MS-14, US-01, FR-004
+- **Prerequisites:** S-05, S-14
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** The comparison rule is already locked by S-14. This slice proves one saved weight edit changes the listed difference, so a unit that builds the edited row in memory does not count.
+- **Status:** ready
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                 | Suggested issue title                                                          | Ready for `/10x-plan` | Notes                                      |
@@ -371,6 +385,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-18       | block-merge-on-failed-ci      | Block merge to main when ci or smoke fails                                      | yes                   | On MS-11. Plan in `context/changes/block-merge-on-failed-ci/`. Repository is already public. Phase 2 sets branch protection. |
 | S-19       | e2e-setup                     | End-to-end test configuration                                                    | yes                   | [#61](https://github.com/gmaszkiewicz/training-manager/issues/61). On MS-12. Change folder exists. Run `/10x-plan e2e-setup`. |
 | S-20       | testing-hosted-migration-preserves-measurements | Hosted migration preserves measurements                         | yes                   | [#65](https://github.com/gmaszkiewicz/training-manager/issues/65). On MS-13. Change folder exists. Run `/10x-plan testing-hosted-migration-preserves-measurements`. |
+| S-21       | testing-saved-edit-reaches-the-arrow | Saved edit reaches the arrow                                              | yes                   | [#68](https://github.com/gmaszkiewicz/training-manager/issues/68). On MS-14. Change folder exists. Run `/10x-research testing-saved-edit-reaches-the-arrow`. |
 
 ## Open Roadmap Questions
 
