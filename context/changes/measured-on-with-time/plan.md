@@ -272,8 +272,8 @@ Apply the new migration only. Do not rewrite the original create-table migration
 
 #### Automated
 
-- [ ] 1.1 New migration applies on local Supabase and `npm run migration-check` passes
-- [ ] 1.2 `npm run db:types` completes and `measured_on` on the measurements row is still typed as `string`
+- [x] 1.1 New migration applies on local Supabase and `npm run migration-check` passes
+- [x] 1.2 `npm run db:types` completes and `measured_on` on the measurements row is still typed as `string`
 
 #### Manual
 
@@ -283,8 +283,8 @@ Apply the new migration only. Do not rewrite the original create-table migration
 
 #### Automated
 
-- [ ] 2.1 `npm test` accepts `2026-10-07T23:59` as `2026-10-07T23:59:00`, rejects `2026-10-08T00:00` with the existing ceiling message, and rejects a date-only string
-- [ ] 2.2 `npm test` normalizes `2026-10-06T07:30:45` to `2026-10-06T07:30:00`
+- [x] 2.1 `npm test` accepts `2026-10-07T23:59` as `2026-10-07T23:59:00`, rejects `2026-10-08T00:00` with the existing ceiling message, and rejects a date-only string
+- [x] 2.2 `npm test` normalizes `2026-10-06T07:30:45` to `2026-10-06T07:30:00`
 
 #### Manual
 
@@ -295,7 +295,7 @@ Apply the new migration only. Do not rewrite the original create-table migration
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes and `npx astro check` passes
+- [x] 3.1 `npm run lint` passes and `npx astro check` passes
 
 #### Manual
 

@@ -33,8 +33,9 @@ function storeCookies(response) {
 }
 
 function measurementForm(measuredOn, weightKg, note = "") {
+  const measured_on = measuredOn.includes("T") ? measuredOn : `${measuredOn}T00:00`;
   return {
-    measured_on: measuredOn,
+    measured_on,
     weight_kg: weightKg,
     chest_cm: "50.0",
     waist_cm: "50.0",
