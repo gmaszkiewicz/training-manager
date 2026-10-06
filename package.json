@@ -14,6 +14,7 @@
     "check:home-tokens": "node scripts/check-home-tokens.mjs",
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
+    "migration-check": "node scripts/migration-check.mjs",
     "test": "vitest run",
     "db:types": "supabase gen types typescript --local > src/db/database.types.ts && prettier --write src/db/database.types.ts"
   },
