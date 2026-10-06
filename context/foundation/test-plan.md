@@ -72,8 +72,8 @@ orchestrator updates Status as artifacts appear on disk.
 | 1   | Delta after edit and delete             | Prove the remaining chain, the oldest entry, and the trainer's copy of that chain                                                                     | #1, #4        | unit; thin integration if save or preview can diverge | complete    | context/changes/testing-delta-after-edit-delete/       |
 | 2   | Measurement access boundaries           | Prove ownership on read and write, and that an email link cannot open the wrong journal; confirm anonymous smoke still hits the current journal route | #2, #3        | integration at the request boundary                   | complete    | context/changes/testing-measurement-access-boundaries/ |
 | 3   | Reject illegal measurements             | Prove an illegal entry is refused and not stored, on both entry paths                                                                                 | #5            | unit + one request                                    | complete    | context/changes/testing-reject-illegal-measurements/   |
-| 4   | Hosted migration preserves measurements | Prove a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied                       | #6            | local Supabase check                                  | not started | —                                                      |
-| 5   | Saved edit reaches the arrow            | Prove one persisted weight edit changes the listed difference                                                                                         | #1            | one smoke edit                                        | not started | —                                                      |
+| 4   | Hosted migration preserves measurements | Prove a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied                       | #6            | local Supabase check                                  | complete    | context/changes/testing-hosted-migration-preserves-measurements/ |
+| 5   | Saved edit reaches the arrow            | Prove one persisted weight edit changes the listed difference                                                                                         | #1            | one smoke edit                                        | change opened | context/changes/testing-saved-edit-reaches-the-arrow/ |
 
 ## 4. Stack
 
@@ -92,7 +92,7 @@ Test base: **sparse**. Vitest is configured (`src/**/*.test.ts`). Four product t
 | API mocking        | none                          | —       | Phase 2 shipped without a mock library.                                                                                                                                                                                    |
 | e2e                | Playwright Test               | ^1.63.0 | Playwright Test 1.63.0 is the local browser layer for the signed-out seed S-19 owns. The CI `e2e` job runs `npx playwright test`. Do not add a Playwright job for risks #1–#6.                                             |
 | accessibility      | none                          | —       | Out of this rollout.                                                                                                                                                                                                       |
-| smoke              | `scripts/smoke.mjs`           | n/a     | Already in CI. Phase 2 confirms it still refuses an anonymous add on the current journal route.                                                                                                                            |
+| smoke              | `scripts/smoke.mjs`           | n/a     | Already in CI. Phase 2 confirms it still refuses an anonymous add on the current journal route. Phase 5 adds the saved-weight edit on `scripts/smoke.mjs`.                                                                 |
 | migration check    | `scripts/migration-check.mjs` | 2.117.0 | Supabase CLI 2.117.0. `npm run migration-check` against a started local Supabase.                                                                                                                                          |
 | AI-native          | none — checked: 2026-10-03    | n/a     | Browser review would not beat a deterministic delta assertion. Excluded by §7.                                                                                                                                             |
 
@@ -116,7 +116,7 @@ phase lands; before that, the gate is `planned`.
 | Vitest (`npm test`)  | local + CI          | command already required; delta, access, and rejection cases required as Phases 1–3 land | wrong comparison chain, ownership gaps                                                                                          |
 | smoke                | CI                  | required; Phase 2 confirms the current journal route                                     | anonymous measurement write on the live route; a future-date create in `scripts/smoke.mjs` that must stay off the empty journal |
 | migration check      | local Supabase + CI | required                                                                                 | measurement numbers, row count, or owning trainee changed by the newest migration                                               |
-| saved-edit step      | local + CI          | planned until Phase 5 lands                                                              | a listed difference that does not use the saved weight                                                                          |
+| saved-edit step      | local + CI          | required                                                                                 | a listed difference that does not use the saved weight                                                                          |
 
 ## 6. Cookbook Patterns
 
@@ -151,7 +151,7 @@ the relevant rollout phase ships; before that, the sub-section reads
 - Ownership or email link: §6.2.
 - Rejection of an illegal entry: §6.3.
 - A migration that runs after rows exist: `scripts/migration-check.mjs`, run with `npm run migration-check` against a started local Supabase. The script resets to the version immediately before the newest file with `--no-seed`, signs up `migration-check@example.com` with a password of at least 6 characters and `data.role` `trainee`, inserts one profile and one measurement (`weight_kg` `80.0`, seven circumferences `50.0`), applies that newest file with `migration up`, and expects `migration-check-preserved` only when those numbers, `count(*)` `1`, and the signup `trainee_id` are still there. A journal read, a hosted `db push` exit code, an empty database with no pre-insert, and copying an `UPDATE` from a migration into the expected row are outside this pattern.
-- A saved weight edit on the list: TBD — see §3 Phase 5.
+- A saved weight edit on the list: `scripts/smoke.mjs`, run with `npm run smoke`. After `measurements shows the weight delta` and before sign-out, POST `/api/measurements/${measurementId}` with `measurementForm("2026-01-02", "81.0", earlierNote)`, expect 302 and exact location `/measurements`, then GET `/measurements` expecting `↑ 1.0` and forbidding `↓ 1.5`. The comparison-rule unit stays. A new in-memory unit, a `withDeltas` call from smoke, Playwright, a same-date note-only save, and weight `80.0` are not part of this pattern.
 - Kitchen-sink and visual restyles: do not add a test (§7).
 
 ### 6.5 Per-rollout-phase notes
@@ -163,6 +163,8 @@ Rollout phase 2 shipped those steps in `scripts/smoke.mjs`: the second-trainee q
 Rollout phase 3 shipped those two steps in `scripts/smoke.mjs`: a create of UTC today plus two calendar days with weight `80.0`, and the following `GET /measurements` that expects `No measurements yet` and forbids that date. The existing rejection-rule unit was left in place. No new Vitest request was added. No AI-native check was added. Checked 2026-10-04.
 
 Rollout phase 4 shipped `npm run migration-check` in `scripts/migration-check.mjs`. No Playwright job was added. No hosted row select was added. Checked 2026-10-06.
+
+Rollout phase 5 shipped those two steps in `scripts/smoke.mjs`: a POST `/api/measurements/${measurementId}` with `measurementForm("2026-01-02", "81.0", earlierNote)` that expects 302 and exact location `/measurements`, and the following `GET /measurements` that expects `↑ 1.0` and forbids `↓ 1.5`. The existing comparison-rule unit was left in place. No new Vitest case was added. No new in-memory unit was added. Smoke does not call `withDeltas`. No Playwright check was added. Checked 2026-10-06.
 
 ## 7. What We Deliberately Don't Test
 
