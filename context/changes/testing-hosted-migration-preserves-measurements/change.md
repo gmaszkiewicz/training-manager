@@ -1,7 +1,7 @@
 ---
 change_id: testing-hosted-migration-preserves-measurements
 title: Testing hosted migration preserves measurements
-status: preparing
+status: planned
 created: 2026-10-06
 updated: 2026-10-06
 archived_at: null
@@ -9,4 +9,4 @@ archived_at: null
 
 ## Notes
 
-<!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->
+[#65](https://github.com/gmaszkiewicz/training-manager/issues/65) — Test rollout Phase 4: Hosted migration preserves measurements. Roadmap S-20, MS-13. `context/foundation/test-plan.md` rollout Phase 4, risk #6.
