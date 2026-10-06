@@ -1,0 +1,24 @@
+---
+description: Open a GitHub issue whenever /10x-new creates a change folder
+alwaysApply: true
+---
+
+# New changes get a GitHub issue
+
+When `/10x-new` creates `context/changes/<change-id>/change.md`, open one issue in `gmaszkiewicz/training-manager` in the same turn. Do this only after the folder exists.
+
+1. If an open or closed issue already names this Change ID, link that issue. Do not open a second one.
+2. Title:
+   - Roadmap slice: `S-NN: <slice heading>`
+   - Test-plan rollout phase: `Test rollout Phase N: <phase name>`
+   - Otherwise: the `title` from `change.md`
+3. Body, matching existing issues:
+   - `## Outcome` — slice outcome, phase goal, or one sentence from the title
+   - `**Change ID:**` `` `<change-id>` ``
+   - slice id and PRD refs, or the test-plan phase and risk numbers, when they exist
+   - `**Prerequisites:**` or `none`
+   - `**Risk:**` one sentence
+4. Create it with `gh issue create`. Add `slice` only for a user-facing roadmap slice, and `north-star` only when the roadmap marks that slice.
+5. Write the issue URL into `## Notes` of that `change.md`.
+
+Skip this when validation fails and no folder is created.

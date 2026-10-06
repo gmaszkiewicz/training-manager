@@ -3,7 +3,7 @@
 
 import { Buffer } from "node:buffer";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, rmSync, writeFileSync, writeSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync, writeSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -21,17 +21,18 @@ function printOut(line) {
   writeSync(1, `${line}\n`);
 }
 
-function quoteCmdArg(arg) {
-  if (!/[\s"&|<>^]/.test(arg)) return arg;
-  return `"${arg.replaceAll('"', '""')}"`;
+function supabaseExecutable() {
+  if (process.platform === "win32") {
+    const exe = join(root, "node_modules", "@supabase", "cli-windows-x64", "bin", "supabase.exe");
+    if (existsSync(exe)) return exe;
+  }
+  return "supabase";
 }
 
 function runSupabase(args, { capture = false } = {}) {
-  const shell = process.platform === "win32";
-  return spawnSync("supabase", shell ? args.map(quoteCmdArg) : args, {
+  return spawnSync(supabaseExecutable(), args, {
     cwd: root,
     encoding: "utf8",
-    shell,
     stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
   });
 }
