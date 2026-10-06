@@ -255,6 +255,20 @@ const steps = [
     rememberTrainee(rememberMeasurement(() => request("/measurements"))),
     { status: 200, body: "↓ 1.5" },
   ],
+  [
+    "measurement edits the saved weight",
+    () =>
+      request(`/api/measurements/${measurementId}`, {
+        method: "POST",
+        form: measurementForm("2026-01-02", "81.0", earlierNote),
+      }),
+    { status: 302, location: "/measurements", exactLocation: true },
+  ],
+  [
+    "measurements shows the saved weight delta",
+    () => request("/measurements"),
+    { status: 200, body: "↑ 1.0", forbid: "↓ 1.5" },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["measurements redirects after signout", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
   [
