@@ -193,21 +193,21 @@ This change adds no SQL migration and does not push to hosted Supabase. `npm run
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes with `scripts/migration-check.mjs` included
-- [x] 1.2 `npm run migration-check` exits 0 against a started local Supabase and reports reset version `20261002120000` and applied file `20261002150000_measurements_delete_own.sql`
-- [x] 1.3 The passing select matches inserted `weight_kg` `80.0`, the seven circumference columns at `50.0`, `count(*)` `1`, and `trainee_id` from that run’s signup
+- [x] 1.1 `npm run lint` passes with `scripts/migration-check.mjs` included — f617a77
+- [x] 1.2 `npm run migration-check` exits 0 against a started local Supabase and reports reset version `20261002120000` and applied file `20261002150000_measurements_delete_own.sql` — f617a77
+- [x] 1.3 The passing select matches inserted `weight_kg` `80.0`, the seven circumference columns at `50.0`, `count(*)` `1`, and `trainee_id` from that run’s signup — f617a77
 
 #### Manual
 
-- [x] 1.4 A measurement row created in the local database before the command is absent afterward, and the command prints that it resets the local database before the reset starts
+- [x] 1.4 A measurement row created in the local database before the command is absent afterward, and the command prints that it resets the local database before the reset starts — f617a77
 
 ### Phase 2: CI and branch protection
 
 #### Automated
 
-- [ ] 2.1 The `migration-check` job installs Supabase CLI `2.117.0`, starts local Supabase with smoke’s excluded services, runs `npm run migration-check`, and stops Supabase
-- [ ] 2.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows required contexts `ci`, `smoke`, and `migration-check`, with `strict` false
-- [ ] 2.3 `CLAUDE.md` names the `migration-check` job beside `ci`, `smoke`, and `e2e`
+- [x] 2.1 The `migration-check` job installs Supabase CLI `2.117.0`, starts local Supabase with smoke’s excluded services, runs `npm run migration-check`, and stops Supabase
+- [x] 2.2 `gh api repos/gmaszkiewicz/training-manager/branches/main/protection` shows required contexts `ci`, `smoke`, and `migration-check`, with `strict` false
+- [x] 2.3 `CLAUDE.md` names the `migration-check` job beside `ci`, `smoke`, and `e2e`
 
 #### Manual
 
