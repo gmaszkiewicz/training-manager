@@ -217,7 +217,7 @@ This change adds no SQL migration and does not push to hosted Supabase. `npm run
 
 #### Automated
 
-- [x] 3.1 §6.4 names `npm run migration-check`, reset to the version before the newest file, one inserted row with `weight_kg` `80.0` and circumferences `50.0`, and the select of those numbers, count `1`, and `trainee_id`
-- [x] 3.2 §6.5 records that phase 4 shipped this check, with no Playwright job and no hosted row select
-- [x] 3.3 §4 names `scripts/migration-check.mjs` and §5 marks the migration check required on local Supabase and in CI
-- [x] 3.4 §1, §2, and the §3 rollout rows are unchanged
+- [x] 3.1 §6.4 names `npm run migration-check`, reset to the version before the newest file, one inserted row with `weight_kg` `80.0` and circumferences `50.0`, and the select of those numbers, count `1`, and `trainee_id` — 5e86546
+- [x] 3.2 §6.5 records that phase 4 shipped this check, with no Playwright job and no hosted row select — 5e86546
+- [x] 3.3 §4 names `scripts/migration-check.mjs` and §5 marks the migration check required on local Supabase and in CI — 5e86546
+- [x] 3.4 §1, §2, and the §3 rollout rows are unchanged — 5e86546
