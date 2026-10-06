@@ -37,11 +37,20 @@ export async function listMeasurements(
   }
 }
 
+type MeasurementSaveResult = { ok: true } | { ok: false; reason?: "duplicate" };
+
+function failedSave(error: { code: string }): MeasurementSaveResult {
+  if (error.code === "23505") {
+    return { ok: false, reason: "duplicate" };
+  }
+  return { ok: false };
+}
+
 export async function addMeasurement(
   supabase: SupabaseClient<Database>,
   traineeId: string,
   input: MeasurementInput,
-): Promise<{ ok: true } | { ok: false }> {
+): Promise<MeasurementSaveResult> {
   try {
     const { error } = await supabase.from("measurements").insert({
       trainee_id: traineeId,
@@ -58,7 +67,7 @@ export async function addMeasurement(
     });
 
     if (error) {
-      return { ok: false };
+      return failedSave(error);
     }
 
     return { ok: true };
@@ -72,7 +81,7 @@ export async function updateMeasurement(
   traineeId: string,
   measurementId: string,
   input: MeasurementInput,
-): Promise<{ ok: true } | { ok: false }> {
+): Promise<MeasurementSaveResult> {
   try {
     const { data, error } = await supabase
       .from("measurements")
@@ -87,13 +96,16 @@ export async function updateMeasurement(
         hips_cm: input.hips_cm,
         navel_cm: input.navel_cm,
         note: input.note,
-        created_at: new Date().toISOString(),
       })
       .eq("id", measurementId)
       .eq("trainee_id", traineeId)
       .select("id");
 
-    if (error || data.length === 0) {
+    if (error) {
+      return failedSave(error);
+    }
+
+    if (data.length === 0) {
       return { ok: false };
     }
 

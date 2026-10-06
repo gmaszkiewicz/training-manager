@@ -1,7 +1,7 @@
 ---
 change_id: measured-on-with-time
 title: Add time of day to measured_on
-status: planned
+status: implementing
 created: 2026-10-06
 updated: 2026-10-06
 archived_at: null

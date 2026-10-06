@@ -6,6 +6,7 @@ const NOTE_MAX_LENGTH = 1000;
 const ONE_DECIMAL_TEXT = /^\d+(?:[.,]\d)?$/;
 const ONE_DECIMAL_NUMBER = /^\d+(?:\.\d)?$/;
 const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+const MEASURED_ON = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 interface MeasurementFieldDefinition {
@@ -85,6 +86,14 @@ function latestMeasuredOn(now: Date): string {
   return formatUtcDate(latest.getUTCFullYear(), latest.getUTCMonth() + 1, latest.getUTCDate());
 }
 
+export function measuredOnMax(now: Date): string {
+  return `${latestMeasuredOn(now)}T23:59`;
+}
+
+export function toMeasuredOnLocalValue(value: string): string {
+  return value.replace(" ", "T").slice(0, 16);
+}
+
 function isValidCalendarDate(value: string): boolean {
   const match = CALENDAR_DATE.exec(value);
   if (match === null) {
@@ -104,15 +113,28 @@ function measuredOn(now: Date) {
   const latest = latestMeasuredOn(now);
   return z.unknown().transform((value, ctx): string => {
     if (value === undefined || value === null || value === "") {
-      return reject(ctx, "Date is required");
+      return reject(ctx, "Date and time are required.");
     }
-    if (typeof value !== "string" || !isValidCalendarDate(value)) {
-      return reject(ctx, "Date must be a valid YYYY-MM-DD calendar date");
+    if (typeof value !== "string") {
+      return reject(ctx, "Date and time must be a valid YYYY-MM-DDTHH:mm value.");
     }
-    if (value > latest) {
+    const match = MEASURED_ON.exec(value);
+    if (match === null) {
+      return reject(ctx, "Date and time must be a valid YYYY-MM-DDTHH:mm value.");
+    }
+    const date = `${match[1]}-${match[2]}-${match[3]}`;
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const second = Number(match[6] || "0");
+    if (!isValidCalendarDate(date) || hour > 23 || minute > 59 || second > 59) {
+      return reject(ctx, "Date and time must be a valid YYYY-MM-DDTHH:mm value.");
+    }
+    if (date > latest) {
       return reject(ctx, "Date must not be later than one day from today");
     }
-    return value;
+    const hourText = match[4];
+    const minuteText = match[5];
+    return `${date}T${hourText}:${minuteText}:00`;
   });
 }
 
