@@ -177,11 +177,11 @@ No schema, migration, or data backfill. The arrow stays computed at list time. T
 
 #### Automated
 
-- [x] 2.1 `npm test` exits 0
-- [x] 2.2 `scripts/smoke.mjs` still places the `81.0` edit after `measurements shows the weight delta` and before `signout clears session`, and the following GET expects `↑ 1.0` and forbids `↓ 1.5`
+- [x] 2.1 `npm test` exits 0 — 2092fb7
+- [x] 2.2 `scripts/smoke.mjs` still places the `81.0` edit after `measurements shows the weight delta` and before `signout clears session`, and the following GET expects `↑ 1.0` and forbids `↓ 1.5` — 2092fb7
 
 #### Manual
 
-- [x] 2.3 §6.4 names the smoke pattern: edit `2026-01-02` to weight `81.0`, exact `/measurements` redirect, then a list that contains `↑ 1.0` and excludes `↓ 1.5`
-- [x] 2.4 §6.5 records the shipped steps, the existing comparison-rule unit left in place, no new in-memory unit, no `withDeltas` call from smoke, and no Playwright
-- [x] 2.5 §4 names the saved-weight edit on `scripts/smoke.mjs`, and the §5 saved-edit gate is `required`
+- [x] 2.3 §6.4 names the smoke pattern: edit `2026-01-02` to weight `81.0`, exact `/measurements` redirect, then a list that contains `↑ 1.0` and excludes `↓ 1.5` — 2092fb7
+- [x] 2.4 §6.5 records the shipped steps, the existing comparison-rule unit left in place, no new in-memory unit, no `withDeltas` call from smoke, and no Playwright — 2092fb7
+- [x] 2.5 §4 names the saved-weight edit on `scripts/smoke.mjs`, and the §5 saved-edit gate is `required` — 2092fb7
