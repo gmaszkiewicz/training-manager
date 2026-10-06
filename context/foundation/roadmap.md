@@ -73,7 +73,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-18 | block-merge-on-failed-ci | a maintainer cannot merge a pull request to `main` while `ci` or `smoke` is failing, and cannot push straight to `main` | — | MS-11 | done |
 | S-19 | e2e-setup | a maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in | — | MS-12 | done |
 | S-20 | testing-hosted-migration-preserves-measurements | a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied | S-02, S-16 | MS-13 | done |
-| S-21 | testing-saved-edit-reaches-the-arrow | a persisted weight edit changes the listed difference | S-05, S-14 | MS-14, US-01, FR-004 | in-progress |
+| S-21 | testing-saved-edit-reaches-the-arrow | a persisted weight edit changes the listed difference | S-05, S-14 | MS-14, US-01, FR-004 | done |
 
 ## Streams
 
@@ -359,7 +359,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The comparison rule is already locked by S-14. This slice proves one saved weight edit changes the listed difference, so a unit that builds the edited row in memory does not count.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -429,3 +429,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-17: a reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off** — Archived 2026-10-05 → `context/archive/2026-10-05-ci-cd-workflow-updates/`. Lesson: —.
 - **S-19: a maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in** — Archived 2026-10-06 → `context/archive/2026-10-05-e2e-setup/`. Lesson: —.
 - **S-20: a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-hosted-migration-preserves-measurements/`. Lesson: —.
+- **S-21: a persisted weight edit changes the listed difference** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-saved-edit-reaches-the-arrow/`. Lesson: —.
