@@ -55,3 +55,42 @@ jobs:
           BASE_URL=http://localhost:4321 npm run smoke
       - if: always()
         run: supabase stop --no-backup
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: supabase/setup-cli@v3
+        with:
+          version: latest
+      - run: npm ci
+      - name: Start local Supabase
+        run: |
+          supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
+          supabase status -o env | grep -E '^(API_URL|ANON_KEY)=' > supabase.env
+      - name: Create the E2E user and write env files
+        run: |
+          source supabase.env
+          email="e2e@example.com"
+          password="E2e-Test-Passw0rd!"
+          curl -sf -o /dev/null -X POST "$API_URL/auth/v1/signup" \
+            -H "apikey: $ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$email\",\"password\":\"$password\",\"data\":{\"role\":\"trainee\"}}"
+          printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\nE2E_USERNAME=%s\nE2E_PASSWORD=%s\n' \
+            "$API_URL" "$ANON_KEY" "$email" "$password" > .env
+          cp .env .dev.vars
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+      - if: always()
+        run: supabase stop --no-backup
