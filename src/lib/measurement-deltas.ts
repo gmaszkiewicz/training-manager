@@ -7,12 +7,6 @@ function compareEntries(left: MeasurementEntry, right: MeasurementEntry): number
   if (left.measured_on > right.measured_on) {
     return 1;
   }
-  if (left.created_at < right.created_at) {
-    return -1;
-  }
-  if (left.created_at > right.created_at) {
-    return 1;
-  }
   if (left.id < right.id) {
     return -1;
   }

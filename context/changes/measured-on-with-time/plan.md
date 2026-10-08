@@ -277,7 +277,7 @@ Apply the new migration only. Do not rewrite the original create-table migration
 
 #### Manual
 
-- [ ] 1.3 Same-day history keeps its calendar date, uses the UTC creation minute, and nudges colliding later ids until unique
+- [x] 1.3 Same-day history keeps its calendar date, uses the UTC creation minute, and nudges colliding later ids until unique — daa4e23
 
 ### Phase 2: Validation and save
 
@@ -288,8 +288,8 @@ Apply the new migration only. Do not rewrite the original create-table migration
 
 #### Manual
 
-- [ ] 2.3 Editing a note leaves `created_at` unchanged
-- [ ] 2.4 A duplicate minute shows "A measurement at that date and time already exists."
+- [x] 2.3 Editing a note leaves `created_at` unchanged — daa4e23
+- [x] 2.4 A duplicate minute shows "A measurement at that date and time already exists." — daa4e23
 
 ### Phase 3: Form and list
 
@@ -299,18 +299,18 @@ Apply the new migration only. Do not rewrite the original create-table migration
 
 #### Manual
 
-- [ ] 3.2 Create form is a datetime-local "Date and time" control defaulting to the local minute
-- [ ] 3.3 Trainee and trainer lists show `YYYY-MM-DD HH:mm` for the stored wall clock
-- [ ] 3.4 Kitchen-sink journal and trainer still render the sample entry with a time
-- [ ] 3.5 The journal sink error state shows a datetime-local control labeled "Date and time" and the error "Date and time are required"
+- [x] 3.2 Create form is a datetime-local "Date and time" control defaulting to the local minute — daa4e23
+- [x] 3.3 Trainee and trainer lists show `YYYY-MM-DD HH:mm` for the stored wall clock — daa4e23
+- [x] 3.4 Kitchen-sink journal and trainer still render the sample entry with a time — daa4e23
+- [x] 3.5 The journal sink error state shows a datetime-local control labeled "Date and time" and the error "Date and time are required" — daa4e23
 
 ### Phase 4: Comparison and fixtures
 
 #### Automated
 
-- [ ] 4.1 `npm test` orders `2026-10-06T07:00:00` before `2026-10-06T19:00:00` before `2026-10-07T08:00:00`, and breaks an equal `measured_on` by `id`
-- [ ] 4.2 `npm test` no longer contains a case whose expected order depends on `created_at`
+- [x] 4.1 `npm test` orders `2026-10-06T07:00:00` before `2026-10-06T19:00:00` before `2026-10-07T08:00:00`, and breaks an equal `measured_on` by `id`
+- [x] 4.2 `npm test` no longer contains a case whose expected order depends on `created_at`
 
 #### Manual
 
-- [ ] 4.3 `npm run smoke` shows same-day arrows in clock order, and a note-only edit leaves that arrow in place
+- [x] 4.3 `npm run smoke` shows same-day arrows in clock order, and a note-only edit leaves that arrow in place

@@ -33,9 +33,8 @@ function storeCookies(response) {
 }
 
 function measurementForm(measuredOn, weightKg, note = "") {
-  const measured_on = measuredOn.includes("T") ? measuredOn : `${measuredOn}T00:00`;
   return {
-    measured_on,
+    measured_on: measuredOn,
     weight_kg: weightKg,
     chest_cm: "50.0",
     waist_cm: "50.0",
@@ -56,7 +55,8 @@ function utcDatePlusDays(days) {
   return `${date.getUTCFullYear()}-${month}-${day}`;
 }
 
-const futureMeasuredOn = utcDatePlusDays(2);
+const futureDate = utcDatePlusDays(2);
+const futureMeasuredOn = `${futureDate}T00:00`;
 
 function decodeBase64Url(value) {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
@@ -234,21 +234,21 @@ const steps = [
   [
     "future date leaves the journal empty",
     () => request("/measurements"),
-    { status: 200, body: "No measurements yet", forbid: futureMeasuredOn },
+    { status: 200, body: "No measurements yet", forbid: futureDate },
   ],
   [
     "measurement rejects out-of-range weight",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "800") }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01T07:00", "800") }),
     { status: 302, location: "/measurements?error=" },
   ],
   [
     "measurement saves the first entry",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "80.0") }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01T07:00", "80.0") }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
     "measurement saves the second entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-02", "78.5", earlierNote) }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01T19:00", "78.5", earlierNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
@@ -257,11 +257,25 @@ const steps = [
     { status: 200, body: "↓ 1.5" },
   ],
   [
+    "measurement note edit leaves the clock-order delta",
+    () =>
+      request(`/api/measurements/${measurementId}`, {
+        method: "POST",
+        form: measurementForm("2026-01-01T19:00", "78.5", earlierNote),
+      }),
+    { status: 302, location: "/measurements", exactLocation: true },
+  ],
+  [
+    "measurements keeps the clock-order delta after a note edit",
+    () => request("/measurements"),
+    { status: 200, body: "↓ 1.5" },
+  ],
+  [
     "measurement edits the saved weight",
     () =>
       request(`/api/measurements/${measurementId}`, {
         method: "POST",
-        form: measurementForm("2026-01-02", "81.0", earlierNote),
+        form: measurementForm("2026-01-01T19:00", "81.0", earlierNote),
       }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
@@ -304,7 +318,7 @@ const steps = [
   ],
   [
     "trainer measurement is rejected",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01", "80.0") }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01T07:00", "80.0") }),
     { status: 302, location: "/measurements?error=" },
   ],
   [
@@ -372,12 +386,12 @@ const steps = [
   ],
   [
     "second trainee saves the first entry",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-01", "90.0") }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-01T07:00", "90.0") }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
     "second trainee saves the second entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-02", "88.0", laterNote) }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-01T19:00", "88.0", laterNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
@@ -390,7 +404,7 @@ const steps = [
     () =>
       request(`/api/measurements/${measurementId}`, {
         method: "POST",
-        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+        form: measurementForm("2026-01-01T19:00", "78.5", foreignWriteNote),
       }),
     { status: 302, locationIncludes: "error=" },
   ],
@@ -399,7 +413,7 @@ const steps = [
     () =>
       request(`/api/measurements/${measurementId}/delete`, {
         method: "POST",
-        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+        form: measurementForm("2026-01-01T19:00", "78.5", foreignWriteNote),
       }),
     { status: 302, locationIncludes: "error=" },
   ],
@@ -420,7 +434,7 @@ const steps = [
   ],
   [
     "unlinked trainee saves an entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-03-01", "70.0", unlinkedNote) }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-03-01T08:00", "70.0", unlinkedNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
@@ -459,7 +473,7 @@ const steps = [
     () =>
       request(`/api/measurements/${measurementId}`, {
         method: "POST",
-        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+        form: measurementForm("2026-01-01T19:00", "78.5", foreignWriteNote),
       }),
     { status: 302, locationIncludes: "error=" },
   ],
@@ -468,7 +482,7 @@ const steps = [
     () =>
       request(`/api/measurements/${measurementId}/delete`, {
         method: "POST",
-        form: measurementForm("2026-01-02", "78.5", foreignWriteNote),
+        form: measurementForm("2026-01-01T19:00", "78.5", foreignWriteNote),
       }),
     { status: 302, locationIncludes: "error=" },
   ],

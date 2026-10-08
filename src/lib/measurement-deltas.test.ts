@@ -144,42 +144,49 @@ describe("withDeltas", () => {
     expect(result[2]?.deltas).toBeNull();
   });
 
-  it("compares same-date entries in created_at order", () => {
-    const earlier = entry({
-      id: "earlier",
-      measured_on: "2026-09-10",
-      created_at: "2026-09-10T08:00:00.000Z",
+  it("orders morning, evening, and the next day by the clock", () => {
+    const morning = entry({
+      id: "morning",
+      measured_on: "2026-10-06T07:00:00",
+      created_at: "2026-10-07T08:00:00.000Z",
       weight_kg: 80,
     });
-    const later = entry({
-      id: "later",
-      measured_on: "2026-09-10",
-      created_at: "2026-09-10T18:00:00.000Z",
+    const evening = entry({
+      id: "evening",
+      measured_on: "2026-10-06T19:00:00",
+      created_at: "2026-10-06T07:00:00.000Z",
       weight_kg: 81,
     });
+    const nextDay = entry({
+      id: "next",
+      measured_on: "2026-10-07T08:00:00",
+      created_at: "2026-10-06T19:00:00.000Z",
+      weight_kg: 82,
+    });
 
-    const result = withDeltas([later, earlier]);
+    const result = withDeltas([evening, nextDay, morning]);
 
-    expect(result.map((item) => item.id)).toEqual(["later", "earlier"]);
+    expect(result.map((item) => item.measured_on)).toEqual([
+      "2026-10-07T08:00:00",
+      "2026-10-06T19:00:00",
+      "2026-10-06T07:00:00",
+    ]);
     expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
-    const laterDeltas = result[0]?.deltas;
-    if (laterDeltas) {
-      expect(formatDelta(laterDeltas.weight_kg)).toBe("↑ 1.0");
-    }
-    expect(result[1]?.deltas).toBeNull();
+    expect(result[1]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
+    expect(result[2]?.deltas).toBeNull();
   });
 
-  it("breaks a same-date and same-created_at tie by id", () => {
+  it("breaks an equal measured_on by id", () => {
     const first = entry({
       id: "a",
-      measured_on: "2026-09-10",
-      created_at: "2026-09-10T08:00:00.000Z",
+      measured_on: "2026-10-06T07:00:00",
+      created_at: "2026-10-06T18:00:00.000Z",
       weight_kg: 80,
     });
     const second = entry({
       id: "b",
-      measured_on: "2026-09-10",
-      created_at: "2026-09-10T08:00:00.000Z",
+      measured_on: "2026-10-06T07:00:00",
+      created_at: "2026-10-06T08:00:00.000Z",
       weight_kg: 82,
     });
 
@@ -379,79 +386,30 @@ describe("withDeltas", () => {
     expect(result[1]?.deltas).toBeNull();
   });
 
-  it("shows Q up 1 kg and R up 1 kg before a note-only save", () => {
-    const p = entry({
-      id: "p",
-      measured_on: "2026-01-01",
-      created_at: "2026-01-01T08:00:00.000Z",
-      weight_kg: 80,
-    });
-    const r = entry({
-      id: "r",
-      measured_on: "2026-01-01",
-      created_at: "2026-01-01T12:00:00.000Z",
-      weight_kg: 81,
-    });
-    const q = entry({
-      id: "q",
-      measured_on: "2026-01-08",
-      created_at: "2026-01-08T08:00:00.000Z",
-      weight_kg: 82,
-    });
-
-    const result = withDeltas([p, q, r]);
-
-    expect(result.map((item) => item.id)).toEqual(["q", "r", "p"]);
-    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
-    expect(result[1]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
-    const qDeltas = result[0]?.deltas;
-    if (qDeltas) {
-      expect(formatDelta(qDeltas.weight_kg)).toBe("↑ 1.0");
-    }
-    const rDeltas = result[1]?.deltas;
-    if (rDeltas) {
-      expect(formatDelta(rDeltas.weight_kg)).toBe("↑ 1.0");
-    }
-    expect(result[2]?.deltas).toBeNull();
-  });
-
-  it("shows Q up 2 kg and P down 1 kg after a note-only save", () => {
-    const p = entry({
-      id: "p",
-      measured_on: "2026-01-01",
-      created_at: "2026-01-01T18:00:00.000Z",
+  it("keeps clock order when a note is the only change", () => {
+    const morning = entry({
+      id: "morning",
+      measured_on: "2026-10-06T07:00:00",
+      created_at: "2026-10-06T18:00:00.000Z",
       weight_kg: 80,
       note: "checked",
     });
-    const r = entry({
-      id: "r",
-      measured_on: "2026-01-01",
-      created_at: "2026-01-01T12:00:00.000Z",
+    const evening = entry({
+      id: "evening",
+      measured_on: "2026-10-06T19:00:00",
+      created_at: "2026-10-06T08:00:00.000Z",
       weight_kg: 81,
     });
-    const q = entry({
-      id: "q",
-      measured_on: "2026-01-08",
-      created_at: "2026-01-08T08:00:00.000Z",
-      weight_kg: 82,
-    });
 
-    const result = withDeltas([r, p, q]);
+    const result = withDeltas([morning, evening]);
 
-    expect(result.map((item) => item.id)).toEqual(["q", "p", "r"]);
-    expect(result[0]?.id).toBe("q");
-    expect(result.map((item) => item.weight_kg)).toEqual([82, 80, 81]);
+    expect(result.map((item) => item.id)).toEqual(["evening", "morning"]);
     expect(result[1]?.note).toBe("checked");
-    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 2 });
-    expect(result[1]?.deltas?.weight_kg).toEqual({ direction: "down", difference: 1 });
-    const qDeltas = result[0]?.deltas;
-    if (qDeltas) {
-      expect(formatDelta(qDeltas.weight_kg)).toBe("↑ 2.0");
+    expect(result[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
+    const eveningDeltas = result[0]?.deltas;
+    if (eveningDeltas) {
+      expect(formatDelta(eveningDeltas.weight_kg)).toBe("↑ 1.0");
     }
-    const pDeltas = result[1]?.deltas;
-    if (pDeltas) {
-      expect(formatDelta(pDeltas.weight_kg)).toBe("↓ 1.0");
-    }
-    expect(result[2]?.deltas).toBeNull();
+    expect(result[1]?.deltas).toBeNull();
   });
 });
