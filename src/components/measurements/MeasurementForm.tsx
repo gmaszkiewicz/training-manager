@@ -6,7 +6,12 @@ import { SubmitButton } from "@/components/auth/SubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createMeasurementInputSchema, measurementFields } from "@/lib/measurement-input";
+import {
+  createMeasurementInputSchema,
+  measuredOnMax,
+  measurementFields,
+  toMeasuredOnLocalValue,
+} from "@/lib/measurement-input";
 import type { MeasurementEntry, MeasurementField } from "@/types";
 
 interface Props {
@@ -46,15 +51,17 @@ function subscribeToNothing(): () => void {
   return () => undefined;
 }
 
-function formatLocalDate(date: Date): string {
+function formatLocalMinute(date: Date): string {
   const year = String(date.getFullYear());
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
-function localTodaySnapshot(): string {
-  return formatLocalDate(new Date());
+function localMinuteSnapshot(): string {
+  return formatLocalMinute(new Date());
 }
 
 function emptyTodaySnapshot(): string {
@@ -103,14 +110,16 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export default function MeasurementForm({ serverError, idPrefix = "", entry = null }: Props) {
-  // SSR runs in UTC. The input's default and max must be the browser's local calendar date.
-  const browserToday = useSyncExternalStore(subscribeToNothing, localTodaySnapshot, emptyTodaySnapshot);
-  const [measuredOn, setMeasuredOn] = useState<string | null>(entry?.measured_on ?? null);
+  // SSR runs in UTC. A new entry defaults to the browser's local minute.
+  const browserMinute = useSyncExternalStore(subscribeToNothing, localMinuteSnapshot, emptyTodaySnapshot);
+  const entryMinute = entry ? toMeasuredOnLocalValue(entry.measured_on) : null;
+  const [measuredOn, setMeasuredOn] = useState<string | null>(entryMinute);
   const [values, setValues] = useState(entry ? fieldValues(entry) : emptyValues);
   const [note, setNote] = useState(entry?.note ?? "");
   const [errors, setErrors] = useState<FormErrors>({});
-  const dateValue = measuredOn ?? browserToday;
-  const dateMax = entry ? laterDate(browserToday, entry.measured_on) : browserToday;
+  const dateValue = measuredOn ?? browserMinute;
+  const ceiling = measuredOnMax(new Date());
+  const dateMax = entryMinute ? laterDate(ceiling, entryMinute) : ceiling;
 
   function clearError(field: ErrorField) {
     if (errors[field]) {
@@ -148,14 +157,15 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     >
       <div className="space-y-4">
         <div className="flex flex-nowrap items-start gap-2">
-          <div className="w-36 max-w-36 min-w-36 shrink-0">
+          <div className="w-56 max-w-56 min-w-56 shrink-0">
             <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
-              Date
+              Date and time
             </Label>
             <Input
               id={`${idPrefix}measured_on`}
               name="measured_on"
-              type="date"
+              type="datetime-local"
+              step="60"
               value={dateValue}
               max={dateMax || undefined}
               onChange={(event) => {

@@ -6,7 +6,7 @@ const now = new Date("2026-09-28T12:00:00.000Z");
 
 function validInput(overrides: Record<string, unknown> = {}) {
   return {
-    measured_on: "2026-09-28",
+    measured_on: "2026-09-28T12:00",
     weight_kg: 80,
     chest_cm: 50,
     waist_cm: 50,
@@ -164,9 +164,9 @@ describe("createMeasurementInputSchema", () => {
   });
 
   it("accepts UTC today plus one day and rejects plus two days", () => {
-    const today = schema.safeParse(validInput({ measured_on: "2026-09-28" }));
-    const plusOne = schema.safeParse(validInput({ measured_on: "2026-09-29" }));
-    const plusTwo = schema.safeParse(validInput({ measured_on: "2026-09-30" }));
+    const today = schema.safeParse(validInput({ measured_on: "2026-09-28T12:00" }));
+    const plusOne = schema.safeParse(validInput({ measured_on: "2026-09-29T23:59" }));
+    const plusTwo = schema.safeParse(validInput({ measured_on: "2026-09-30T00:00" }));
 
     expect(today.success).toBe(true);
     expect(plusOne.success).toBe(true);
@@ -177,10 +177,47 @@ describe("createMeasurementInputSchema", () => {
   });
 
   it("rejects a calendar date that does not exist", () => {
-    const result = schema.safeParse(validInput({ measured_on: "2026-02-29" }));
+    const result = schema.safeParse(validInput({ measured_on: "2026-02-29T00:00" }));
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(messageFor(result.error.issues, "measured_on")).toBe("Date must be a valid YYYY-MM-DD calendar date");
+      expect(messageFor(result.error.issues, "measured_on")).toBe(
+        "Date and time must be a valid YYYY-MM-DDTHH:mm value.",
+      );
+    }
+  });
+
+  it("accepts the ceiling minute, rejects the next date, and rejects a date-only string", () => {
+    const ceilingNow = new Date("2026-10-06T22:00:00.000Z");
+    const ceilingSchema = createMeasurementInputSchema(ceilingNow);
+    const allowed = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-07T23:59" }));
+    const rejected = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-08T00:00" }));
+    const dateOnly = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-06" }));
+
+    expect(allowed.success).toBe(true);
+    if (allowed.success) {
+      expect(allowed.data.measured_on).toBe("2026-10-07T23:59:00");
+    }
+    expect(rejected.success).toBe(false);
+    if (!rejected.success) {
+      expect(messageFor(rejected.error.issues, "measured_on")).toBe("Date must not be later than one day from today");
+    }
+    expect(dateOnly.success).toBe(false);
+    if (!dateOnly.success) {
+      expect(messageFor(dateOnly.error.issues, "measured_on")).toBe(
+        "Date and time must be a valid YYYY-MM-DDTHH:mm value.",
+      );
+    }
+  });
+
+  it("zeros seconds instead of rounding", () => {
+    const ceilingNow = new Date("2026-10-06T22:00:00.000Z");
+    const result = createMeasurementInputSchema(ceilingNow).safeParse(
+      validInput({ measured_on: "2026-10-06T07:30:45" }),
+    );
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.measured_on).toBe("2026-10-06T07:30:00");
     }
   });
 });

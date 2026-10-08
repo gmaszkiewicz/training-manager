@@ -21,11 +21,11 @@ export default function JournalSinkStates({ variant }: Props) {
     <div className="w-full max-w-sm space-y-4">
       <FormField
         id="sink-measured-on"
-        type="date"
-        label="Date"
+        type="datetime-local"
+        label="Date and time"
         value=""
         onChange={() => undefined}
-        error="Date is required"
+        error="Date and time are required."
         icon={<Calendar className="size-4" />}
       />
     </div>

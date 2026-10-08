@@ -52,6 +52,9 @@ export const POST: APIRoute = async (context) => {
 
   const saved = await updateMeasurement(supabase, user.id, measurementId, parsed.data);
   if (!saved.ok) {
+    if (saved.reason === "duplicate") {
+      return measurementsError(context, "A measurement at that date and time already exists.", measurementId);
+    }
     return measurementsError(context, "Could not save the measurement", measurementId);
   }
 
