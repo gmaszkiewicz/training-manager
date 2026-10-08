@@ -30,6 +30,7 @@ function requestedRoleFromMetadata(metadata: { role?: unknown } | null | undefin
 }
 
 let role: ProfileRole | null = null;
+let traineeAccountId: string | undefined;
 let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
 let editingEntry: MeasurementWithDeltas | null = null;
@@ -47,6 +48,7 @@ if (supabase && user) {
     if (ensured.ok) {
       role = ensured.role;
       if (role === "trainee") {
+        traineeAccountId = user.id;
         const listed = await listMeasurements(supabase, user.id);
         measurementsLoaded = listed.ok;
         if (listed.ok) {
@@ -98,6 +100,8 @@ if (supabase && user) {
       serverError={traineeServerError}
       editingEntry={editingEntry}
       confirmingEntry={confirmingEntry}
+      accountUserId={traineeAccountId}
+      subjectTraineeId={traineeAccountId}
     />
   ) : (
     <TrainerPanel
