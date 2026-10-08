@@ -308,9 +308,9 @@ Apply the new migration only. Do not rewrite the original create-table migration
 
 #### Automated
 
-- [x] 4.1 `npm test` orders `2026-10-06T07:00:00` before `2026-10-06T19:00:00` before `2026-10-07T08:00:00`, and breaks an equal `measured_on` by `id`
-- [x] 4.2 `npm test` no longer contains a case whose expected order depends on `created_at`
+- [x] 4.1 `npm test` orders `2026-10-06T07:00:00` before `2026-10-06T19:00:00` before `2026-10-07T08:00:00`, and breaks an equal `measured_on` by `id` — 9ff7b4b
+- [x] 4.2 `npm test` no longer contains a case whose expected order depends on `created_at` — 9ff7b4b
 
 #### Manual
 
-- [x] 4.3 `npm run smoke` shows same-day arrows in clock order, and a note-only edit leaves that arrow in place
+- [x] 4.3 `npm run smoke` shows same-day arrows in clock order, and a note-only edit leaves that arrow in place — 9ff7b4b
