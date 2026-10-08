@@ -248,7 +248,8 @@ const steps = [
   ],
   [
     "measurement saves the second entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01T19:00", "78.5", earlierNote) }),
+    () =>
+      request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01T19:00", "78.5", earlierNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
@@ -391,7 +392,8 @@ const steps = [
   ],
   [
     "second trainee saves the second entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-02-01T19:00", "88.0", laterNote) }),
+    () =>
+      request("/api/measurements", { method: "POST", form: measurementForm("2026-02-01T19:00", "88.0", laterNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
@@ -434,7 +436,8 @@ const steps = [
   ],
   [
     "unlinked trainee saves an entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm("2026-03-01T08:00", "70.0", unlinkedNote) }),
+    () =>
+      request("/api/measurements", { method: "POST", form: measurementForm("2026-03-01T08:00", "70.0", unlinkedNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
