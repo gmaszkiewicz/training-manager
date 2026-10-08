@@ -1,10 +1,10 @@
 ---
 change_id: measured-on-with-time
 title: Add time of day to measured_on
-status: impl_reviewed
+status: archived
 created: 2026-10-06
 updated: 2026-10-08
-archived_at: null
+archived_at: 2026-10-08T03:55:20Z
 ---
 
 ## Notes

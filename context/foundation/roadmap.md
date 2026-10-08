@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-10-06
+updated: 2026-10-08
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -75,7 +75,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-19 | e2e-setup | a maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in | — | MS-12 | done |
 | S-20 | testing-hosted-migration-preserves-measurements | a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied | S-02, S-16 | MS-13 | done |
 | S-21 | testing-saved-edit-reaches-the-arrow | a persisted weight edit changes the listed difference | S-05, S-14 | MS-14, US-01, FR-004 | done |
-| S-22 | measured-on-with-time | user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused | S-02 | MS-15 | in-progress |
+| S-22 | measured-on-with-time | user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused | S-02 | MS-15 | done |
 
 ## Streams
 
@@ -373,7 +373,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Existing same-day rows and edits that rewrite `created_at` can collide with a unique date-and-time rule or blur creation time versus measurement time.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -445,3 +445,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-19: a maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in** — Archived 2026-10-06 → `context/archive/2026-10-05-e2e-setup/`. Lesson: —.
 - **S-20: a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-hosted-migration-preserves-measurements/`. Lesson: —.
 - **S-21: a persisted weight edit changes the listed difference** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-saved-edit-reaches-the-arrow/`. Lesson: —.
+- **S-22: user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused** — Archived 2026-10-08 → `context/archive/2026-10-06-measured-on-with-time/`. Lesson: —.
