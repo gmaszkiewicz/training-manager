@@ -289,11 +289,11 @@ No database migration. A browser with no saved keys opens on UTC today and 10 pe
 
 #### Automated
 
-- [ ] 1.1 `npm test` shows each measurement day once, plus UTC today, newest first.
-- [ ] 1.2 `npm test` falls back to UTC today when the saved day is absent, and to page size 10 unless the saved size is 5, 10, or 15.
-- [ ] 1.3 `npm test` filters one calendar day without reordering or recomputing deltas, and page 1 is the first slice of that newest-first list.
-- [ ] 1.4 `npm test` shows a focused entry on its own day and page even when a different day is saved.
-- [ ] 1.5 `npm test` accepts the stored page sizes "5", "10", and "15", and falls back to 10 for any other string.
+- [x] 1.1 `npm test` shows each measurement day once, plus UTC today, newest first.
+- [x] 1.2 `npm test` falls back to UTC today when the saved day is absent, and to page size 10 unless the saved size is 5, 10, or 15.
+- [x] 1.3 `npm test` filters one calendar day without reordering or recomputing deltas, and page 1 is the first slice of that newest-first list.
+- [x] 1.4 `npm test` shows a focused entry on its own day and page even when a different day is saved.
+- [x] 1.5 `npm test` accepts the stored page sizes "5", "10", and "15", and falls back to 10 for any other string.
 
 ### Phase 2: Trainee journal browser
 
