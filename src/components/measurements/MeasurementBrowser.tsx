@@ -1,6 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { formatDelta } from "@/lib/measurement-deltas";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
 import {
@@ -181,7 +180,6 @@ export default function MeasurementBrowser({
   const visibleEntries = pageSlice(dayEntries, currentPage, pageSize);
   const showPager = dayEntries.length > pageSize;
   const dayId = `${idPrefix}measurement-day`;
-  const pageSizeLabelId = `${idPrefix}measurement-page-size-label`;
   const cancelHref = measurementCancelHref(openEditingId);
 
   function onDayChange(event: ChangeEvent<HTMLSelectElement>) {
@@ -211,12 +209,9 @@ export default function MeasurementBrowser({
 
   return (
     <div className="w-full">
-      <div className="mt-6 flex w-full flex-wrap items-end gap-4">
+      <div className="mt-6 flex w-full flex-wrap items-center gap-4">
         <div className="w-40 shrink-0">
-          <Label htmlFor={dayId} className="text-muted-foreground mb-1">
-            Filter
-          </Label>
-          <select id={dayId} className={selectClassName} value={day} onChange={onDayChange}>
+          <select id={dayId} aria-label="Month" className={selectClassName} value={day} onChange={onDayChange}>
             {dates.map((date) => (
               <option key={date} value={date}>
                 {date}
@@ -225,10 +220,7 @@ export default function MeasurementBrowser({
           </select>
         </div>
         <div className="ml-auto shrink-0">
-          <Label id={pageSizeLabelId} className="text-muted-foreground mb-1">
-            Show
-          </Label>
-          <div className="flex gap-2" role="group" aria-labelledby={pageSizeLabelId}>
+          <div className="flex gap-2" role="group" aria-label="Entries per page">
             {pageSizes.map((size) => (
               <Button
                 key={size}
