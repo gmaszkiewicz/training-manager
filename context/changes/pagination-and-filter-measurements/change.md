@@ -1,7 +1,7 @@
 ---
 change_id: pagination-and-filter-measurements
 title: Pagination and filter measurements
-status: implementing
+status: implemented
 created: 2026-10-08
 updated: 2026-10-08
 archived_at: null

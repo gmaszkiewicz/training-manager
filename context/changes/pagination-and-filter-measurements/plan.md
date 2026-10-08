@@ -317,12 +317,12 @@ No database migration. A browser with no saved keys opens on the month of UTC to
 
 #### Automated
 
-- [x] 3.1 `npm run lint` and `npx astro check` pass.
-- [x] 3.2 `npm run smoke` shows the trainer's selected trainee note and delta from UTC today, and not the other trainee's note.
-- [x] 3.6 `npm run check:home-tokens` passes.
+- [x] 3.1 `npm run lint` and `npx astro check` pass. — 531db80
+- [x] 3.2 `npm run smoke` shows the trainer's selected trainee note and delta from UTC today, and not the other trainee's note. — 531db80
+- [x] 3.6 `npm run check:home-tokens` passes. — 531db80
 
 #### Manual
 
-- [x] 3.3 Switching trainees keeps one page size for the account and a separate month per trainee.
-- [x] 3.4 The trainer list has no Edit or Delete links, and a selected trainee with rows only in another month shows "No measurements in this month".
-- [x] 3.5 Kitchen sink trainer sample still renders when today is pinned to `2026-09-15`.
+- [x] 3.3 Switching trainees keeps one page size for the account and a separate month per trainee. — 531db80
+- [x] 3.4 The trainer list has no Edit or Delete links, and a selected trainee with rows only in another month shows "No measurements in this month". — 531db80
+- [x] 3.5 Kitchen sink trainer sample still renders when today is pinned to `2026-09-15`. — 531db80
