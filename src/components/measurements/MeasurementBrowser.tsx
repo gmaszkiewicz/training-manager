@@ -181,7 +181,7 @@ export default function MeasurementBrowser({
   const visibleEntries = pageSlice(dayEntries, currentPage, pageSize);
   const showPager = dayEntries.length > pageSize;
   const dayId = `${idPrefix}measurement-day`;
-  const pageSizeId = `${idPrefix}measurement-page-size`;
+  const pageSizeLabelId = `${idPrefix}measurement-page-size-label`;
   const cancelHref = measurementCancelHref(openEditingId);
 
   function onDayChange(event: ChangeEvent<HTMLSelectElement>) {
@@ -193,8 +193,7 @@ export default function MeasurementBrowser({
     }
   }
 
-  function onPageSizeChange(event: ChangeEvent<HTMLSelectElement>) {
-    const nextSize = parsePageSize(event.target.value);
+  function choosePageSize(nextSize: PageSize) {
     const focusedStillOnDay = focusedEntryId !== null && dayEntries.some((entry) => entry.id === focusedEntryId);
     const next = viewOf({
       entries,
@@ -211,11 +210,11 @@ export default function MeasurementBrowser({
   }
 
   return (
-    <div>
-      <div className="mt-6 flex flex-wrap items-start gap-4">
+    <div className="w-full">
+      <div className="mt-6 flex w-full flex-wrap items-end gap-4">
         <div className="w-40 shrink-0">
           <Label htmlFor={dayId} className="text-muted-foreground mb-1">
-            Date
+            Filter
           </Label>
           <select id={dayId} className={selectClassName} value={day} onChange={onDayChange}>
             {dates.map((date) => (
@@ -225,17 +224,26 @@ export default function MeasurementBrowser({
             ))}
           </select>
         </div>
-        <div className="w-24 shrink-0">
-          <Label htmlFor={pageSizeId} className="text-muted-foreground mb-1">
-            Per page
+        <div className="ml-auto shrink-0">
+          <Label id={pageSizeLabelId} className="text-muted-foreground mb-1">
+            Show
           </Label>
-          <select id={pageSizeId} className={selectClassName} value={String(pageSize)} onChange={onPageSizeChange}>
+          <div className="flex gap-2" role="group" aria-labelledby={pageSizeLabelId}>
             {pageSizes.map((size) => (
-              <option key={size} value={String(size)}>
+              <Button
+                key={size}
+                type="button"
+                variant={pageSize === size ? "default" : "outline"}
+                className="min-w-9 px-2"
+                aria-pressed={pageSize === size}
+                onClick={() => {
+                  choosePageSize(size);
+                }}
+              >
                 {size}
-              </option>
+              </Button>
             ))}
-          </select>
+          </div>
         </div>
       </div>
       {entries.length === 0 ? (
