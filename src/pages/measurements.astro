@@ -31,6 +31,7 @@ function requestedRoleFromMetadata(metadata: { role?: unknown } | null | undefin
 
 let role: ProfileRole | null = null;
 let traineeAccountId: string | undefined;
+let trainerAccountId: string | undefined;
 let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
 let editingEntry: MeasurementWithDeltas | null = null;
@@ -69,6 +70,7 @@ if (supabase && user) {
           }
         }
       } else {
+        trainerAccountId = user.id;
         const listedLinks = await listTrainerLinks(supabase);
         trainerLinksLoaded = listedLinks.ok;
         if (listedLinks.ok) {
@@ -112,6 +114,7 @@ if (supabase && user) {
       selectedLink={selectedLink}
       trainerMeasurementsLoaded={trainerMeasurementsLoaded}
       entries={entries}
+      accountUserId={trainerAccountId}
     />
   )}
 </Layout>
