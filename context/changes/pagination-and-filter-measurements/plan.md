@@ -73,7 +73,7 @@ Add a pure helper, with unit tests, for the day list, the one-day filter, the pa
 
 **Intent**: Put every rule that decides which rows are visible in one module so the journal island and the tests share it. The helper must not sort again and must not recompute deltas.
 
-**Contract**: Export the page sizes `5`, `10`, and `15`, with default `10`. A measurement day is the first ten characters of `measured_on` after a leading space is replaced with `T`, so both `2026-01-01T07:00:00` and `2026-01-01 07:00:00` are `2026-01-01`. `utcToday(now)` is that UTC calendar day. Date options are the unique measurement days plus `today`, sorted newest first. A saved day is used only when it is in that list; otherwise the day is `today`. A saved page size is used only when it is `5`, `10`, or `15`. Filtering keeps the incoming order. Page numbers are 1-based, and page 1 is the start of that newest-first array. When `focusedEntryId` matches a row, the day is that row's day and the page is the page that contains it, even if a different day was saved. Callers pass `savedDay: null` for the server render.
+**Contract**: Export the page sizes `5`, `10`, and `15`, with default `10`. A measurement day is the first ten characters of `measured_on` after a leading space is replaced with `T`, so both `2026-01-01T07:00:00` and `2026-01-01 07:00:00` are `2026-01-01`. `utcToday(now)` is that UTC calendar day. Date options are the unique measurement days plus `today`, sorted newest first. A saved day is used only when it is in that list; otherwise the day is `today`. `localStorage` stores the page size as the string `"5"`, `"10"`, or `"15"`. The parser accepts only those three strings and falls back to `10` for anything else, including a number, `"10.0"`, or `" 10"`. Filtering keeps the incoming order. Page numbers are 1-based, and page 1 is the start of that newest-first array. When `focusedEntryId` matches a row, the day is that row's day and the page is the page that contains it, even if a different day was saved. Callers pass `savedDay: null` for the server render.
 
 ```ts
 export function viewOf(input: {
@@ -93,7 +93,7 @@ export function viewOf(input: {
 
 **Intent**: Lock the decisions before any UI uses them.
 
-**Contract**: Cover the success criteria below. Use a fixed `today`. Include one fixture where two rows share a day and an older row on another day still carries a delta, and assert the filtered row's delta object is the same object the caller passed in.
+**Contract**: Cover the success criteria below. Use a fixed `today`. Include one fixture where two rows share a day and an older row on another day still carries a delta, and assert the filtered row's delta object is the same object the caller passed in. Assert the page-size parser against the stored strings `"5"`, `"10"`, and `"15"`, and against a non-matching string.
 
 ### Success Criteria:
 
@@ -103,6 +103,7 @@ export function viewOf(input: {
 - `npm test` falls back to UTC today when the saved day is absent, and to page size 10 unless the saved size is 5, 10, or 15.
 - `npm test` filters one calendar day without reordering or recomputing deltas, and page 1 is the first slice of that newest-first list.
 - `npm test` shows a focused entry on its own day and page even when a different day is saved.
+- `npm test` accepts the stored page sizes "5", "10", and "15", and falls back to 10 for any other string.
 
 ---
 
@@ -152,6 +153,14 @@ The trainee journal gets the date dropdown, the page-size dropdown, the pager, b
 
 **Contract**: The first trainee's visible pair and the second trainee's visible pair use `utcDatePlusDays(0)` at `07:00` and `19:00`, with the same weights and notes as now. Rejected future dates, rejected weights, and rejected foreign writes may keep their current timestamps. Do not forbid an off-day note via the raw body.
 
+#### 5. Token check file list
+
+**File**: `scripts/check-home-tokens.mjs`
+
+**Intent**: CI reads a hard-coded path list with `readFileSync` and throws when a path is missing. The new island has to be on that list as soon as it exists, or literal colours in it skip the check.
+
+**Contract**: Add `src/components/measurements/MeasurementBrowser.tsx` to `FILES`. Leave `MeasurementList.astro` on the list until Phase 3 deletes that file.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -159,6 +168,7 @@ The trainee journal gets the date dropdown, the page-size dropdown, the pager, b
 - `npm run lint` and `npx astro check` pass.
 - `npm run smoke` shows "No measurements yet" for an empty trainee journal and the weight delta for two entries stored on UTC today.
 - `npm test` passes.
+- `npm run check:home-tokens` passes.
 
 #### Manual Verification:
 
@@ -198,7 +208,7 @@ The trainer uses the same island. Page size is shared for the account. The selec
 
 **Intent**: Remove the Astro list once both journals render the island.
 
-**Contract**: Delete the file only after nothing imports it.
+**Contract**: Delete the file only after nothing imports it. In the same change, remove `src/components/measurements/MeasurementList.astro` from `FILES` in `scripts/check-home-tokens.mjs`. Leave `MeasurementBrowser.tsx` on that list. The script has no existence check, so a stale path fails CI.
 
 #### 2. Trainer kitchen sink
 
@@ -222,6 +232,7 @@ The trainer uses the same island. Page size is shared for the account. The selec
 
 - `npm run lint` and `npx astro check` pass.
 - `npm run smoke` shows the trainer's selected trainee note and delta from UTC today, and not the other trainee's note.
+- `npm run check:home-tokens` passes.
 
 #### Manual Verification:
 
@@ -238,7 +249,7 @@ The trainer uses the same island. Page size is shared for the account. The selec
 ### Unit Tests:
 
 - Date options: duplicate days collapse, UTC today is always present, order is newest first.
-- Saved day and page size: valid values stick; missing, unknown, and malformed values fall back to UTC today and 10.
+- Saved day and page size: the stored strings `"5"`, `"10"`, and `"15"` stick; missing, unknown, and any other string fall back to UTC today and 10.
 - Filter and page: incoming order and delta objects stay intact; page 1 is the newest slice; the last page holds the remainder.
 - Focused id: that row's day and page win over the saved day; an unknown id does not.
 
@@ -282,6 +293,7 @@ No database migration. A browser with no saved keys opens on UTC today and 10 pe
 - [ ] 1.2 `npm test` falls back to UTC today when the saved day is absent, and to page size 10 unless the saved size is 5, 10, or 15.
 - [ ] 1.3 `npm test` filters one calendar day without reordering or recomputing deltas, and page 1 is the first slice of that newest-first list.
 - [ ] 1.4 `npm test` shows a focused entry on its own day and page even when a different day is saved.
+- [ ] 1.5 `npm test` accepts the stored page sizes "5", "10", and "15", and falls back to 10 for any other string.
 
 ### Phase 2: Trainee journal browser
 
@@ -290,6 +302,7 @@ No database migration. A browser with no saved keys opens on UTC today and 10 pe
 - [ ] 2.1 `npm run lint` and `npx astro check` pass.
 - [ ] 2.2 `npm run smoke` shows "No measurements yet" for an empty trainee journal and the weight delta for two entries stored on UTC today.
 - [ ] 2.3 `npm test` passes.
+- [ ] 2.9 `npm run check:home-tokens` passes.
 
 #### Manual
 
@@ -305,6 +318,7 @@ No database migration. A browser with no saved keys opens on UTC today and 10 pe
 
 - [ ] 3.1 `npm run lint` and `npx astro check` pass.
 - [ ] 3.2 `npm run smoke` shows the trainer's selected trainee note and delta from UTC today, and not the other trainee's note.
+- [ ] 3.6 `npm run check:home-tokens` passes.
 
 #### Manual
 
