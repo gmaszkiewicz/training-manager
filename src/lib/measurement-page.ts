@@ -4,8 +4,8 @@ export type PageSize = (typeof pageSizes)[number];
 
 export const defaultPageSize: PageSize = 10;
 
-export function measurementDay(measuredOn: string): string {
-  return measuredOn.replace(" ", "T").slice(0, 10);
+export function measurementMonth(measuredOn: string): string {
+  return measuredOn.replace(" ", "T").slice(0, 7);
 }
 
 function formatUtcDate(year: number, month: number, day: number): string {
@@ -39,8 +39,8 @@ export function dayStorageKey(accountUserId: string, subjectTraineeId: string): 
   return `tm.measurements.day.${accountUserId}.${subjectTraineeId}`;
 }
 
-export function filterByDay<T extends { measured_on: string }>(entries: readonly T[], day: string): T[] {
-  return entries.filter((entry) => measurementDay(entry.measured_on) === day);
+export function filterByMonth<T extends { measured_on: string }>(entries: readonly T[], month: string): T[] {
+  return entries.filter((entry) => measurementMonth(entry.measured_on) === month);
 }
 
 function pageCount(length: number, pageSize: PageSize): number {
@@ -81,18 +81,27 @@ function compareNewestFirst(left: string, right: string): number {
 }
 
 function datesNewestFirst(entries: readonly { measured_on: string }[], today: string): string[] {
-  const days: string[] = [];
+  const months: string[] = [];
   for (const entry of entries) {
-    const day = measurementDay(entry.measured_on);
-    if (!days.includes(day)) {
-      days.push(day);
+    const month = measurementMonth(entry.measured_on);
+    if (!months.includes(month)) {
+      months.push(month);
     }
   }
-  if (!days.includes(today)) {
-    days.push(today);
+  const currentMonth = measurementMonth(today);
+  if (!months.includes(currentMonth)) {
+    months.push(currentMonth);
   }
-  days.sort(compareNewestFirst);
-  return days;
+  months.sort(compareNewestFirst);
+  return months;
+}
+
+function savedMonth(savedDay: string | null, dates: string[]): string | null {
+  if (savedDay === null) {
+    return null;
+  }
+  const month = measurementMonth(savedDay);
+  return dates.includes(month) ? month : null;
 }
 
 export function viewOf({
@@ -109,16 +118,16 @@ export function viewOf({
   savedDay: string | null;
 }): { dates: string[]; day: string; page: number } {
   const dates = datesNewestFirst(entries, today);
+  const currentMonth = measurementMonth(today);
   if (focusedEntryId !== null) {
     const focused = entries.find((entry) => entry.id === focusedEntryId);
     if (focused) {
-      const day = measurementDay(focused.measured_on);
-      const index = filterByDay(entries, day).findIndex((entry) => entry.id === focused.id);
+      const day = measurementMonth(focused.measured_on);
+      const index = filterByMonth(entries, day).findIndex((entry) => entry.id === focused.id);
       const page = index < 0 ? 1 : Math.floor(index / pageSize) + 1;
       return { dates, day, page };
     }
   }
 
-  const day = savedDay !== null && dates.includes(savedDay) ? savedDay : today;
-  return { dates, day, page: 1 };
+  return { dates, day: savedMonth(savedDay, dates) ?? currentMonth, page: 1 };
 }

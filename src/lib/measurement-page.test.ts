@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   dayStorageKey,
   defaultPageSize,
-  filterByDay,
-  measurementDay,
+  filterByMonth,
+  measurementMonth,
   pageSizeStorageKey,
   pageSizes,
   pageSlice,
@@ -15,10 +15,10 @@ import {
 
 const today = "2026-10-08";
 
-describe("measurementDay", () => {
-  it("reads the calendar day from a T or a space", () => {
-    expect(measurementDay("2026-01-01T07:00:00")).toBe("2026-01-01");
-    expect(measurementDay("2026-01-01 07:00:00")).toBe("2026-01-01");
+describe("measurementMonth", () => {
+  it("reads yyyy-mm from a T or a space", () => {
+    expect(measurementMonth("2026-01-01T07:00:00")).toBe("2026-01");
+    expect(measurementMonth("2026-01-01 07:00:00")).toBe("2026-01");
   });
 });
 
@@ -55,7 +55,7 @@ describe("storage keys", () => {
 });
 
 describe("viewOf", () => {
-  it("lists each measurement day once, plus today, newest first", () => {
+  it("lists each measurement month once, plus the current month, newest first", () => {
     const view = viewOf({
       entries: [
         { id: "late", measured_on: "2026-10-09T08:00:00" },
@@ -70,8 +70,8 @@ describe("viewOf", () => {
       savedDay: null,
     });
 
-    expect(view.dates).toEqual(["2026-10-09", today, "2026-02-01", "2026-01-01"]);
-    expect(view.day).toBe(today);
+    expect(view.dates).toEqual(["2026-10", "2026-02", "2026-01"]);
+    expect(view.day).toBe("2026-10");
     expect(view.page).toBe(1);
   });
 
@@ -84,11 +84,11 @@ describe("viewOf", () => {
       savedDay: null,
     });
 
-    expect(view.day).toBe(today);
+    expect(view.day).toBe("2026-10");
     expect(view.page).toBe(1);
   });
 
-  it("falls back to today when the saved day is not listed", () => {
+  it("falls back to the current month when the saved month is not listed", () => {
     const view = viewOf({
       entries: [{ id: "a", measured_on: "2026-09-01T08:00:00" }],
       today,
@@ -97,8 +97,8 @@ describe("viewOf", () => {
       savedDay: "2026-03-03",
     });
 
-    expect(view.dates).toEqual([today, "2026-09-01"]);
-    expect(view.day).toBe(today);
+    expect(view.dates).toEqual(["2026-10", "2026-09"]);
+    expect(view.day).toBe("2026-10");
     expect(view.page).toBe(1);
   });
 
@@ -114,7 +114,7 @@ describe("viewOf", () => {
       savedDay: "2026-08-01",
     });
 
-    expect(view.day).toBe("2026-08-01");
+    expect(view.day).toBe("2026-08");
     expect(view.page).toBe(1);
   });
 
@@ -135,7 +135,7 @@ describe("viewOf", () => {
       savedDay: "2026-08-15",
     });
 
-    expect(view.day).toBe("2026-09-01");
+    expect(view.day).toBe("2026-09");
     expect(view.page).toBe(2);
   });
 
@@ -148,7 +148,7 @@ describe("viewOf", () => {
       savedDay: "2026-09-01",
     });
 
-    expect(view.day).toBe("2026-09-01");
+    expect(view.day).toBe("2026-09");
     expect(view.page).toBe(1);
   });
 
@@ -161,21 +161,21 @@ describe("viewOf", () => {
         focusedEntryId: null,
         savedDay: "2026-01-01",
       }),
-    ).toEqual({ dates: [today], day: today, page: 1 });
+    ).toEqual({ dates: ["2026-10"], day: "2026-10", page: 1 });
   });
 });
 
-describe("filterByDay", () => {
-  it("filters one calendar day without reordering or recomputing deltas", () => {
+describe("filterByMonth", () => {
+  it("filters one calendar month without reordering or recomputing deltas", () => {
     const morningDelta = { direction: "up", difference: 0.4 };
     const eveningDelta = { direction: "down", difference: 1.5 };
     const olderDelta = { direction: "up", difference: 2 };
     const morning = { id: "morning", measured_on: "2026-10-06 07:00:00", deltas: morningDelta };
     const evening = { id: "evening", measured_on: "2026-10-06T19:00:00", deltas: eveningDelta };
-    const older = { id: "older", measured_on: "2026-10-01T08:00:00", deltas: olderDelta };
+    const older = { id: "older", measured_on: "2026-09-01T08:00:00", deltas: olderDelta };
     const input = [morning, evening, older];
 
-    const filtered = filterByDay(input, "2026-10-06");
+    const filtered = filterByMonth(input, "2026-10");
 
     expect(filtered.map((entry) => entry.id)).toEqual(["morning", "evening"]);
     expect(filtered[0]).toBe(morning);
@@ -192,8 +192,8 @@ describe("pageSlice", () => {
     const eveningDelta = { direction: "down", difference: 1.5 };
     const evening = { id: "evening", measured_on: "2026-10-06T19:00:00", deltas: eveningDelta };
     const morning = { id: "morning", measured_on: "2026-10-06T07:00:00", deltas: null };
-    const older = { id: "older", measured_on: "2026-10-01T08:00:00", deltas: { direction: "up", difference: 2 } };
-    const dayRows = filterByDay([evening, morning, older], "2026-10-06");
+    const older = { id: "older", measured_on: "2026-09-01T08:00:00", deltas: { direction: "up", difference: 2 } };
+    const dayRows = filterByMonth([evening, morning, older], "2026-10");
 
     expect(pageSlice(dayRows, 1, 10).map((entry) => entry.id)).toEqual(["evening", "morning"]);
     expect(pageSlice(dayRows, 1, 5)[0]).toBe(evening);
@@ -205,7 +205,7 @@ describe("pageSlice", () => {
       id: `row-${String(index)}`,
       measured_on: `2026-09-02T12:${String(59 - index).padStart(2, "0")}:00`,
     }));
-    const dayRows = filterByDay(rows, "2026-09-02");
+    const dayRows = filterByMonth(rows, "2026-09");
 
     expect(pageSlice(dayRows, 1, 5).map((entry) => entry.id)).toEqual(["row-0", "row-1", "row-2", "row-3", "row-4"]);
     expect(pageSlice(dayRows, 3, 5).map((entry) => entry.id)).toEqual(["row-10", "row-11"]);
