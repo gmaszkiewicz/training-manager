@@ -300,29 +300,29 @@ No database migration. A browser with no saved keys opens on the month of UTC to
 
 #### Automated
 
-- [x] 2.1 `npm run lint` and `npx astro check` pass.
-- [x] 2.2 `npm run smoke` shows "No measurements yet" for an empty trainee journal and the weight delta for two entries stored on UTC today.
-- [x] 2.3 `npm test` passes.
-- [x] 2.9 `npm run check:home-tokens` passes.
+- [x] 2.1 `npm run lint` and `npx astro check` pass. — c095050
+- [x] 2.2 `npm run smoke` shows "No measurements yet" for an empty trainee journal and the weight delta for two entries stored on UTC today. — c095050
+- [x] 2.3 `npm test` passes. — c095050
+- [x] 2.9 `npm run check:home-tokens` passes. — c095050
 
 #### Manual
 
-- [x] 2.4 Trainee Date and Per page controls offer the measurement months plus the month of UTC today, and 5, 10, and 15; a fresh browser starts on that month and 10.
-- [x] 2.5 A selected month with no rows shows "No measurements in this month" while other months remain in the date list.
-- [x] 2.6 With no edit or delete target, Previous and Next appear only when the month has more rows than the page size; changing the month or the page size returns to page 1, and reload restores the saved month and page size.
-- [x] 2.7 Edit and delete for a row in another month open that row's month and page, and do not replace the saved month until the date control changes.
-- [x] 2.8 Kitchen sink journal still shows the 2026-09-15 sample when today is pinned to that day, and shows "No measurements in this month" when today is `2026-10-01`.
+- [x] 2.4 Trainee Date and Per page controls offer the measurement months plus the month of UTC today, and 5, 10, and 15; a fresh browser starts on that month and 10. — c095050
+- [x] 2.5 A selected month with no rows shows "No measurements in this month" while other months remain in the date list. — c095050
+- [x] 2.6 With no edit or delete target, Previous and Next appear only when the month has more rows than the page size; changing the month or the page size returns to page 1, and reload restores the saved month and page size. — c095050
+- [x] 2.7 Edit and delete for a row in another month open that row's month and page, and do not replace the saved month until the date control changes. — c095050
+- [x] 2.8 Kitchen sink journal still shows the 2026-09-15 sample when today is pinned to that day, and shows "No measurements in this month" when today is `2026-10-01`. — c095050
 
 ### Phase 3: Trainer browser
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` and `npx astro check` pass.
-- [ ] 3.2 `npm run smoke` shows the trainer's selected trainee note and delta from UTC today, and not the other trainee's note.
-- [ ] 3.6 `npm run check:home-tokens` passes.
+- [x] 3.1 `npm run lint` and `npx astro check` pass.
+- [x] 3.2 `npm run smoke` shows the trainer's selected trainee note and delta from UTC today, and not the other trainee's note.
+- [x] 3.6 `npm run check:home-tokens` passes.
 
 #### Manual
 
-- [ ] 3.3 Switching trainees keeps one page size for the account and a separate month per trainee.
-- [ ] 3.4 The trainer list has no Edit or Delete links, and a selected trainee with rows only in another month shows "No measurements in this month".
-- [ ] 3.5 Kitchen sink trainer sample still renders when today is pinned to `2026-09-15`.
+- [x] 3.3 Switching trainees keeps one page size for the account and a separate month per trainee.
+- [x] 3.4 The trainer list has no Edit or Delete links, and a selected trainee with rows only in another month shows "No measurements in this month".
+- [x] 3.5 Kitchen sink trainer sample still renders when today is pinned to `2026-09-15`.

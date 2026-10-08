@@ -1,6 +1,6 @@
 ---
 import { ServerError } from "@/components/auth/ServerError";
-import MeasurementList from "@/components/measurements/MeasurementList.astro";
+import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { TrainerLink } from "@/lib/trainer-preview";
@@ -15,6 +15,8 @@ interface Props {
   trainerMeasurementsLoaded: boolean;
   entries: MeasurementWithDeltas[];
   idPrefix?: string;
+  accountUserId?: string;
+  today?: string;
 }
 
 const {
@@ -26,6 +28,8 @@ const {
   trainerMeasurementsLoaded,
   entries,
   idPrefix = "",
+  accountUserId,
+  today,
 } = Astro.props;
 ---
 
@@ -77,11 +81,15 @@ const {
                 </div>
                 {selectedLink ? (
                   trainerMeasurementsLoaded ? (
-                    entries.length === 0 ? (
-                      <p class="mt-6 text-sm text-muted-foreground">No measurements yet</p>
-                    ) : (
-                      <MeasurementList entries={entries} />
-                    )
+                    <MeasurementBrowser
+                      entries={entries}
+                      readOnly={true}
+                      accountUserId={accountUserId}
+                      subjectTraineeId={selectedLink.traineeId}
+                      idPrefix={idPrefix}
+                      today={today}
+                      client:load
+                    />
                   ) : (
                     <ServerError message="Could not load measurements" />
                   )
