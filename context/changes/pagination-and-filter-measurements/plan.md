@@ -282,6 +282,10 @@ No database migration. A browser with no saved keys opens on the month of UTC to
 - Smoke fixtures: `scripts/smoke.mjs`
 - UTC today constraint: `context/archive/2026-10-06-measured-on-with-time/plan.md`
 
+## Addendum
+
+After Phases 1–3, the page-size control is a right-aligned button group of `5`, `10`, and `15`, not a native `<select>`. The month control stays a native `<select>`. Neither control has a visible label. The month control's accessible name is `Month`. The button group's accessible name is `Entries per page`. Paging, storage keys, and empty copy are unchanged. Commits: `b4fa349`, `8282641`.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
