@@ -407,14 +407,14 @@ After Phases 1–3, the page-size control is a right-aligned button group of `5`
 
 #### Automated
 
-- [x] 4.1 `npm test` shows the visible page's deltas match `withDeltas` on the full journal, including the oldest row whose previous measurement is outside the page.
-- [x] 4.2 `npm run lint` and `npx astro check` pass.
-- [x] 4.3 `npm run smoke` shows "No measurements yet" for an empty trainee journal and the weight delta for two entries stored on UTC today.
-- [x] 4.4 `npm run check:home-tokens` passes.
+- [x] 4.1 `npm test` shows the visible page's deltas match `withDeltas` on the full journal, including the oldest row whose previous measurement is outside the page. — 6c4655c
+- [x] 4.2 `npm run lint` and `npx astro check` pass. — 6c4655c
+- [x] 4.3 `npm run smoke` shows "No measurements yet" for an empty trainee journal and the weight delta for two entries stored on UTC today. — 6c4655c
+- [x] 4.4 `npm run check:home-tokens` passes. — 6c4655c
 
 #### Manual
 
-- [x] 4.5 Changing the month, the page size, or the page loads that page, and a full row from another month is not in the page source.
-- [x] 4.6 Reload with a saved month shows that month after the current month, and the address stays `/measurements` or `/measurements?trainee=…`.
-- [x] 4.7 Edit and delete for a row in another month still open that row, and the oldest visible arrow still matches the previous measurement.
-- [x] 4.8 The kitchen sink journal and trainer sample still render from the entries they are given, with no request to the measurements read.
+- [x] 4.5 Changing the month, the page size, or the page loads that page, and a full row from another month is not in the page source. — 6c4655c
+- [x] 4.6 Reload with a saved month shows that month after the current month, and the address stays `/measurements` or `/measurements?trainee=…`. — 6c4655c
+- [x] 4.7 Edit and delete for a row in another month still open that row, and the oldest visible arrow still matches the previous measurement. — 6c4655c
+- [x] 4.8 The kitchen sink journal and trainer sample still render from the entries they are given, with no request to the measurements read. — 6c4655c
