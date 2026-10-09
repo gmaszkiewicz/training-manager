@@ -568,7 +568,7 @@ export default function MeasurementBrowser({
             })}
           </ul>
           {showPager ? (
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
               <button
                 type="button"
                 className={pagerButtonClassName}
