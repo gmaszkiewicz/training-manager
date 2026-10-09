@@ -530,14 +530,17 @@ export default function MeasurementBrowser({
                         >
                           {formatMeasurement(entry[field.field])}
                         </div>
-                        {entry.deltas ? (
-                          <p
-                            className="text-card-foreground mt-1 text-base font-semibold"
-                            aria-label={accessibleDelta(field.label, field.unit, entry.deltas[field.field])}
-                          >
-                            {formatDelta(entry.deltas[field.field])}
-                          </p>
-                        ) : null}
+                        <p
+                          className="text-card-foreground mt-1 min-h-lh text-base font-semibold"
+                          aria-hidden={entry.deltas ? undefined : true}
+                          aria-label={
+                            entry.deltas
+                              ? accessibleDelta(field.label, field.unit, entry.deltas[field.field])
+                              : undefined
+                          }
+                        >
+                          {entry.deltas ? formatDelta(entry.deltas[field.field]) : "\u00a0"}
+                        </p>
                       </div>
                     ))}
                   </div>

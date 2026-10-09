@@ -12,7 +12,7 @@ Trainees and trainers see every measurement at once. This change shows one calen
 
 ## Desired End State
 
-Date lists every month that has a row, plus the month of UTC today. Per page lists 5, 10, and 15. The rows underneath are that month only. Page 1 is the newest slice. A fresh browser opens on the current month and 10. Reload restores the account's page size and that trainee's month. No rows at all says `No measurements yet`. A month with none says `No measurements in this month`. The arrow versus the previous measurement does not change just because that row is off screen.
+Date lists every month that has a row, plus the month of UTC today. Per page lists 5, 10, and 15. The rows underneath are that month only. Page 1 is the newest slice. A fresh browser opens on the current month and 10. Reload restores the account's page size and that trainee's month. No rows at all says `No measurements yet`. A month with none says `No measurements in this month`. The arrow versus the previous measurement does not change just because that row is off screen. The browser receives that page, the month names, and the page count, not the full rows of other months.
 
 ## Key Decisions Made
 
@@ -22,12 +22,13 @@ Date lists every month that has a row, plus the month of UTC today. Per page lis
 | Order | Newest `measured_on`, larger `id` wins | That is the journal order already; a backdated insert stays in its own month. |
 | Memory | `localStorage`, keys include the account id | A clean `/measurements` URL still restores the last choice, and two accounts on one browser do not share it. |
 | Trainer memory | One page size per account, one month per trainee | Switching people keeps the density and does not reuse the previous trainee's month. |
-| Deltas | Compute on the full list, then filter and page | The difference stays the one versus the previous measurement, on or off this page. |
+| Deltas | Visible page plus the next older row | The arrow matches the full journal without sending the other rows to the browser. |
 | Default month | The month of UTC today; a missing saved month falls back to that month | The empty journal shows the current month and `No measurements yet`. |
 | Empty month | `No measurements in this month` when other months have rows | `No measurements yet` stays only for a journal with no rows at all. |
 | Default page size | 10 | The middle of 5, 10, and 15 until a choice is saved. |
 | Pager | Previous and Next, not stored; month or size change returns to page 1 | The saved controls are the two dropdowns, not the page index. An open edit or delete stays on the page that contains that row. |
 | Clock | UTC today, same as validation and smoke | The server HTML and the first client render have to agree. |
+| Read | One page, the month names, the count, and one older row | Full rows outside the page stay on the server, and the oldest visible arrow still matches the full journal. |
 
 ## Scope
 
@@ -41,16 +42,17 @@ Date lists every month that has a row, plus the month of UTC today. Per page lis
 
 **Out of scope:**
 
-- Query params or cookies for these controls
+- Month, page, or page size in a cookie or on the `/measurements` address
 - Remembering the page index
 - Deltas recomputed on the visible rows only
 - Sort by `created_at`, an "all dates" option, numbered pages
-- Schema changes or SQL pagination
+- Schema changes
+- Full measurement rows for a month or page that is not on screen
 - shadcn Select
 
 ## Architecture / Approach
 
-The server still loads the trainee's full list and runs `withDeltas`. A pure helper in `src/lib/measurement-page.ts` builds the month list and the page. `MeasurementBrowser` renders the dropdowns and the current rows. Hydration uses the month of UTC today and page size 10; an effect applies storage after mount. Edit and delete hrefs are built from ids inside the island.
+Phases 1–3 load the full list and slice it in the browser. Phase 4 asks the server for one page of the selected month. A narrow read supplies the `YYYY-MM` list. One older row supplies the arrow for the oldest row on the page. The first HTML is the current month at 10 per page. A saved choice that differs is a second read. The kitchen sink still slices the entries it is given.
 
 ## Phases at a Glance
 
@@ -59,15 +61,16 @@ The server still loads the trainee's full list and runs `withDeltas`. A pure hel
 | 1. Month and page model | Tested rules for months, pages, fallbacks, and the focused row | A second sort would change deltas or order. |
 | 2. Trainee journal browser | Dropdowns, pager, empty copy, storage, smoke on UTC today | Smoke looks at raw HTML, which still contains island props for other months. |
 | 3. Trainer browser | Same island, shared page size, month per trainee | A trainer key scoped wrong would show one trainee's month on another. |
+| 4. Paged journal read | Server returns one page, the month names, and one older row | A missing older row would change the arrow on the oldest visible measurement. |
 
 **Prerequisites:** none
-**Estimated effort:** ~2-3 sessions across 3 phases
+**Estimated effort:** Phases 1–3 are done. Phase 4 is about one session.
 
 ## Open Risks & Assumptions
 
 - For up to two hours after local midnight in Poland, UTC today is still the previous local date. The measurement form already uses that clock.
-- The first paint uses the current month and 10, then stored values apply. A saved month that differs will flash once.
-- Hidden rows remain in the island payload, so smoke must not treat their absence from the body as proof of the filter.
+- A saved month that is not the current month flashes the current month, then the second read replaces it.
+- The month list is `YYYY-MM` values from `measured_on`, not full measurement rows.
 
 ## Success Criteria (Summary)
 
