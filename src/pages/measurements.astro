@@ -3,12 +3,22 @@ import TraineeJournal from "@/components/journal/TraineeJournal.astro";
 import TrainerPanel from "@/components/trainer/TrainerPanel.astro";
 import Topbar from "@/components/Topbar.astro";
 import Layout from "@/layouts/Layout.astro";
+import {
+  dayStorageKey,
+  defaultPageSize,
+  journalMonth,
+  measurementMonth,
+  pageSizeStorageKey,
+  parsePageSize,
+  utcToday,
+  type PageSize,
+} from "@/lib/measurement-page";
 import { ensureProfile } from "@/lib/services/ensure-profile";
-import { listMeasurements } from "@/lib/services/measurements";
+import { getMeasurement, readMeasurementPage } from "@/lib/services/measurements";
 import { listTrainerLinks } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 import { selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
-import type { MeasurementWithDeltas, Profile } from "@/types";
+import type { MeasurementEntry, MeasurementWithDeltas, Profile } from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
@@ -30,15 +40,36 @@ function requestedRoleFromMetadata(metadata: { role?: unknown } | null | undefin
 }
 
 let role: ProfileRole | null = null;
+let traineeAccountId: string | undefined;
+let trainerAccountId: string | undefined;
 let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
-let editingEntry: MeasurementWithDeltas | null = null;
-let confirmingEntry: MeasurementWithDeltas | null = null;
+let editingEntry: MeasurementEntry | null = null;
+let confirmingEntry: MeasurementEntry | null = null;
+let dates: string[] = [];
+let page = 1;
+let pageCount = 1;
+let pageSize: PageSize = defaultPageSize;
 let traineeServerError = serverError;
 let trainerLinks: TrainerLink[] = [];
 let selectedLink: TrainerLink | null = null;
 let trainerLinksLoaded = false;
 let trainerMeasurementsLoaded = false;
+const now = new Date();
+const today = utcToday(now);
+let month = measurementMonth(today);
+
+function cookieValue(name: string): string | null {
+  return Astro.cookies.get(name)?.value ?? null;
+}
+
+function preferredPageSize(accountUserId: string): PageSize {
+  return parsePageSize(cookieValue(pageSizeStorageKey(accountUserId)));
+}
+
+function preferredMonth(accountUserId: string, subjectTraineeId: string): string {
+  return journalMonth(cookieValue(dayStorageKey(accountUserId, subjectTraineeId))) ?? measurementMonth(today);
+}
 
 if (supabase && user) {
   const requestedRole = requestedRoleFromMetadata(user.user_metadata);
@@ -47,26 +78,41 @@ if (supabase && user) {
     if (ensured.ok) {
       role = ensured.role;
       if (role === "trainee") {
-        const listed = await listMeasurements(supabase, user.id);
+        traineeAccountId = user.id;
+        const editId = Astro.url.searchParams.get("edit");
+        const deleteId = Astro.url.searchParams.get("delete");
+        const listed = await readMeasurementPage(supabase, user.id, {
+          month: preferredMonth(user.id, user.id),
+          page: 1,
+          pageSize: preferredPageSize(user.id),
+          focusId: deleteId ?? editId,
+          now,
+        });
         measurementsLoaded = listed.ok;
         if (listed.ok) {
           entries = listed.entries;
+          dates = listed.dates;
+          page = listed.page;
+          pageCount = listed.pageCount;
+          pageSize = listed.pageSize;
+          month = listed.month;
         }
-        const editId = Astro.url.searchParams.get("edit");
         if (editId !== null) {
-          editingEntry = entries.find((entry) => entry.id === editId) ?? null;
+          const loaded = await getMeasurement(supabase, user.id, editId);
+          editingEntry = loaded.ok ? loaded.entry : null;
           if (editingEntry === null) {
             traineeServerError = serverError ?? "Could not open that measurement";
           }
         }
-        const deleteId = Astro.url.searchParams.get("delete");
         if (deleteId !== null) {
-          confirmingEntry = entries.find((entry) => entry.id === deleteId) ?? null;
+          const loaded = await getMeasurement(supabase, user.id, deleteId);
+          confirmingEntry = loaded.ok ? loaded.entry : null;
           if (confirmingEntry === null) {
             traineeServerError = serverError ?? "Could not delete the measurement";
           }
         }
       } else {
+        trainerAccountId = user.id;
         const listedLinks = await listTrainerLinks(supabase);
         trainerLinksLoaded = listedLinks.ok;
         if (listedLinks.ok) {
@@ -74,10 +120,21 @@ if (supabase && user) {
           trainerLinks = preview.links;
           selectedLink = preview.selected;
           if (selectedLink) {
-            const listed = await listMeasurements(supabase, selectedLink.traineeId);
+            const listed = await readMeasurementPage(supabase, selectedLink.traineeId, {
+              month: preferredMonth(user.id, selectedLink.traineeId),
+              page: 1,
+              pageSize: preferredPageSize(user.id),
+              focusId: null,
+              now,
+            });
             trainerMeasurementsLoaded = listed.ok;
             if (listed.ok) {
               entries = listed.entries;
+              dates = listed.dates;
+              page = listed.page;
+              pageCount = listed.pageCount;
+              pageSize = listed.pageSize;
+              month = listed.month;
             }
           }
         }
@@ -98,6 +155,14 @@ if (supabase && user) {
       serverError={traineeServerError}
       editingEntry={editingEntry}
       confirmingEntry={confirmingEntry}
+      accountUserId={traineeAccountId}
+      subjectTraineeId={traineeAccountId}
+      today={today}
+      dates={dates}
+      page={page}
+      pageCount={pageCount}
+      pageSize={pageSize}
+      month={month}
     />
   ) : (
     <TrainerPanel
@@ -108,6 +173,13 @@ if (supabase && user) {
       selectedLink={selectedLink}
       trainerMeasurementsLoaded={trainerMeasurementsLoaded}
       entries={entries}
+      accountUserId={trainerAccountId}
+      today={today}
+      dates={dates}
+      page={page}
+      pageCount={pageCount}
+      pageSize={pageSize}
+      month={month}
     />
   )}
 </Layout>

@@ -1,16 +1,25 @@
 ---
 import { ServerError } from "@/components/auth/ServerError";
+import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import MeasurementForm from "@/components/measurements/MeasurementForm";
-import MeasurementList from "@/components/measurements/MeasurementList.astro";
-import type { MeasurementWithDeltas } from "@/types";
+import type { PageSize } from "@/lib/measurement-page";
+import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   measurementsLoaded: boolean;
   entries: MeasurementWithDeltas[];
   serverError: string | null;
-  editingEntry?: MeasurementWithDeltas | null;
-  confirmingEntry?: MeasurementWithDeltas | null;
+  editingEntry?: MeasurementEntry | null;
+  confirmingEntry?: MeasurementEntry | null;
   idPrefix?: string;
+  accountUserId?: string;
+  subjectTraineeId?: string;
+  today?: string;
+  dates?: string[];
+  page?: number;
+  pageCount?: number;
+  pageSize?: PageSize;
+  month?: string;
 }
 
 const {
@@ -20,18 +29,15 @@ const {
   editingEntry = null,
   confirmingEntry = null,
   idPrefix = "",
+  accountUserId,
+  subjectTraineeId,
+  today,
+  dates,
+  page,
+  pageCount,
+  pageSize,
+  month,
 } = Astro.props;
-
-function editHref(entry: MeasurementWithDeltas): string {
-  return `/measurements?edit=${encodeURIComponent(entry.id)}`;
-}
-
-function deleteHref(entry: MeasurementWithDeltas): string {
-  if (editingEntry) {
-    return `/measurements?delete=${encodeURIComponent(entry.id)}&edit=${encodeURIComponent(editingEntry.id)}`;
-  }
-  return `/measurements?delete=${encodeURIComponent(entry.id)}`;
-}
 ---
 
 <div class="flex justify-center px-4 pb-8">
@@ -48,17 +54,22 @@ function deleteHref(entry: MeasurementWithDeltas): string {
     {measurementsLoaded ? (
       <>
         <MeasurementForm serverError={serverError} idPrefix={idPrefix} entry={editingEntry} client:load />
-        {entries.length === 0 ? (
-          <p class="mt-6 text-sm text-muted-foreground">No measurements yet</p>
-        ) : (
-          <MeasurementList
-            entries={entries}
-            editHref={editHref}
-            deleteHref={deleteHref}
-            confirmingId={confirmingEntry?.id}
-            preserveEditId={editingEntry?.id}
-          />
-        )}
+        <MeasurementBrowser
+          entries={entries}
+          readOnly={false}
+          editingId={editingEntry?.id}
+          confirmingId={confirmingEntry?.id}
+          accountUserId={accountUserId}
+          subjectTraineeId={subjectTraineeId}
+          idPrefix={idPrefix}
+          today={today}
+          dates={dates}
+          page={page}
+          pageCount={pageCount}
+          pageSize={pageSize}
+          month={month}
+          client:load
+        />
       </>
     ) : (
       <ServerError message="Could not load your measurements" />
