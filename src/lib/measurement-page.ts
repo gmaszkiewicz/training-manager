@@ -1,3 +1,6 @@
+import { withDeltas } from "@/lib/measurement-deltas";
+import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
+
 export const pageSizes = [5, 10, 15] as const;
 
 export type PageSize = (typeof pageSizes)[number];
@@ -6,6 +9,19 @@ export const defaultPageSize: PageSize = 10;
 
 export function measurementMonth(measuredOn: string): string {
   return measuredOn.replace(" ", "T").slice(0, 7);
+}
+
+const JOURNAL_MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+export function journalMonth(value: string | null): string | null {
+  if (value === null || value === "") {
+    return null;
+  }
+  const month = measurementMonth(value);
+  if (!JOURNAL_MONTH.test(month)) {
+    return null;
+  }
+  return month;
 }
 
 function formatUtcDate(year: number, month: number, day: number): string {
@@ -130,4 +146,44 @@ export function viewOf({
   }
 
   return { dates, day: savedMonth(savedDay, dates) ?? currentMonth, page: 1 };
+}
+
+export function monthWindow(month: string): { start: string; end: string } {
+  const year = Number(month.slice(0, 4));
+  const monthNumber = Number(month.slice(5, 7));
+  const start = `${month}-01T00:00:00`;
+  if (monthNumber === 12) {
+    return { start, end: `${String(year + 1)}-01-01T00:00:00` };
+  }
+  const nextMonth = String(monthNumber + 1).padStart(2, "0");
+  return { start, end: `${String(year)}-${nextMonth}-01T00:00:00` };
+}
+
+export function pageContaining(newerInMonth: number, pageSize: PageSize): number {
+  return Math.floor(newerInMonth / pageSize) + 1;
+}
+
+export function measurementMonths(measuredOns: readonly string[], today: string): string[] {
+  return datesNewestFirst(
+    measuredOns.map((measuredOn) => ({ measured_on: measuredOn })),
+    today,
+  );
+}
+
+export function resolveMeasurementPage(
+  page: number,
+  rowCount: number,
+  pageSize: PageSize,
+): { page: number; pageCount: number } {
+  const pages = pageCount(rowCount, pageSize);
+  return { page: resolvePage(page, pages), pageCount: pages };
+}
+
+export function deltasForVisiblePage(
+  visible: readonly MeasurementEntry[],
+  older: MeasurementEntry | null,
+): MeasurementWithDeltas[] {
+  const compared = withDeltas(older === null ? [...visible] : [...visible, older]);
+  const visibleIds = new Set(visible.map((entry) => entry.id));
+  return compared.filter((entry) => visibleIds.has(entry.id));
 }
