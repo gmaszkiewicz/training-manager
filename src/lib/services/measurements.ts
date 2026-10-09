@@ -88,17 +88,37 @@ export async function getMeasurement(
   }
 }
 
+const MEASURED_ON_PAGE = 1000;
+
 async function selectMeasuredOn(
   supabase: SupabaseClient<Database>,
   traineeId: string,
 ): Promise<{ ok: true; measuredOns: string[] } | { ok: false }> {
-  const { data, error } = await supabase.from("measurements").select("measured_on").eq("trainee_id", traineeId);
+  const measuredOns: string[] = [];
+  let from = 0;
 
-  if (error) {
-    return { ok: false };
+  for (;;) {
+    const { data, error } = await supabase
+      .from("measurements")
+      .select("measured_on")
+      .eq("trainee_id", traineeId)
+      .order("measured_on", { ascending: true })
+      .range(from, from + MEASURED_ON_PAGE - 1);
+
+    if (error) {
+      return { ok: false };
+    }
+
+    for (const row of data) {
+      measuredOns.push(row.measured_on);
+    }
+
+    if (data.length < MEASURED_ON_PAGE) {
+      return { ok: true, measuredOns };
+    }
+
+    from += MEASURED_ON_PAGE;
   }
-
-  return { ok: true, measuredOns: data.map((row) => row.measured_on) };
 }
 
 async function countNewerInMonth(
