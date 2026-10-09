@@ -21,7 +21,7 @@ const FILES = [
   "src/components/auth/PasswordToggle.tsx",
   "src/components/measurements/MeasurementForm.tsx",
   "src/components/journal/TraineeJournal.astro",
-  "src/components/measurements/MeasurementList.astro",
+  "src/components/measurements/MeasurementBrowser.tsx",
   "src/components/trainer/TrainerPanel.astro",
   "src/pages/kitchen-sink/home.astro",
   "src/pages/kitchen-sink/journal.astro",

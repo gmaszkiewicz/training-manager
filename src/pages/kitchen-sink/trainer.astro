@@ -61,7 +61,8 @@ const sampleEntry: MeasurementWithDeltas = {
         </h2>
         <p class="text-muted-foreground text-sm">
           TrainerPanel in trainer mode with links loaded, two trainees in one row with the first selected, one sample
-          measurement entry, and no server error. Form ids are unprefixed.
+          measurement entry, and no server error. <code class="text-foreground">today="2026-09-15"</code> keeps the
+          sample row on screen. The sample row has no Edit or Delete link. Form ids are unprefixed.
         </p>
         <TrainerPanel
           mode="trainer"
@@ -72,6 +73,7 @@ const sampleEntry: MeasurementWithDeltas = {
           trainerMeasurementsLoaded={true}
           entries={[sampleEntry]}
           idPrefix=""
+          today="2026-09-15"
         />
       </section>
 
@@ -145,12 +147,36 @@ const sampleEntry: MeasurementWithDeltas = {
         />
       </section>
 
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty-month">
+        <h2 id="state-empty-month" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty month
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          One selected trainee with the sample entry and <code class="text-foreground">today="2026-10-01"</code>. The
+          date list includes 2026-10 and 2026-09. The selected month has no rows, so the copy is "No measurements in
+          this month". No Edit or Delete link. <code class="text-foreground">idPrefix="empty-month-"</code> keeps the
+          form and select ids off Default and Empty.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          serverError={null}
+          trainerLinksLoaded={true}
+          trainerLinks={[sampleLink]}
+          selectedLink={sampleLink}
+          trainerMeasurementsLoaded={true}
+          entries={[sampleEntry]}
+          idPrefix="empty-month-"
+          today="2026-10-01"
+        />
+      </section>
+
       <section class="flex flex-col gap-4" aria-labelledby="state-error-query">
         <h2 id="state-error-query" class="border-border border-b pb-2 text-lg font-semibold">
           Error, query
         </h2>
         <p class="text-muted-foreground text-sm">
-          Same as Default with <code class="text-foreground">serverError="No trainee with that email"</code> and{" "}
+          Same as Default with <code class="text-foreground">serverError="No trainee with that email"</code>,{" "}
+          <code class="text-foreground">today="2026-09-15"</code>, and{" "}
           <code class="text-foreground">idPrefix="error-query-"</code>.
         </p>
         <TrainerPanel
@@ -162,6 +188,7 @@ const sampleEntry: MeasurementWithDeltas = {
           trainerMeasurementsLoaded={true}
           entries={[sampleEntry]}
           idPrefix="error-query-"
+          today="2026-09-15"
         />
       </section>
 

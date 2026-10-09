@@ -1,8 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/db/database.types";
-import { withDeltas } from "@/lib/measurement-deltas";
-import type { MeasurementWithDeltas } from "@/types";
+import {
+  deltasForVisiblePage,
+  measurementMonth,
+  measurementMonths,
+  monthWindow,
+  pageContaining,
+  resolveMeasurementPage,
+  utcToday,
+  type PageSize,
+} from "@/lib/measurement-page";
+import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
 
 interface MeasurementInput {
   measured_on: string;
@@ -20,18 +29,261 @@ interface MeasurementInput {
 const measurementColumns =
   "id, measured_on, created_at, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm, note";
 
-export async function listMeasurements(
+const MEASUREMENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function quoteFilterValue(value: string): string {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function strictlyBeforeFilter(measuredOn: string, id: string): string {
+  const measured = quoteFilterValue(measuredOn);
+  const rowId = quoteFilterValue(id);
+  return `measured_on.lt.${measured},and(measured_on.eq.${measured},id.lt.${rowId})`;
+}
+
+function strictlyAfterFilter(measuredOn: string, id: string): string {
+  const measured = quoteFilterValue(measuredOn);
+  const rowId = quoteFilterValue(id);
+  return `measured_on.gt.${measured},and(measured_on.eq.${measured},id.gt.${rowId})`;
+}
+
+function oldestRow(rows: readonly MeasurementEntry[]): MeasurementEntry | null {
+  let oldest: MeasurementEntry | null = null;
+  for (const row of rows) {
+    if (
+      oldest === null ||
+      row.measured_on < oldest.measured_on ||
+      (row.measured_on === oldest.measured_on && row.id < oldest.id)
+    ) {
+      oldest = row;
+    }
+  }
+  return oldest;
+}
+
+export async function getMeasurement(
   supabase: SupabaseClient<Database>,
   traineeId: string,
-): Promise<{ ok: true; entries: MeasurementWithDeltas[] } | { ok: false }> {
+  measurementId: string,
+): Promise<{ ok: true; entry: MeasurementEntry | null } | { ok: false }> {
+  if (!MEASUREMENT_ID.test(measurementId)) {
+    return { ok: true, entry: null };
+  }
+
   try {
-    const { data, error } = await supabase.from("measurements").select(measurementColumns).eq("trainee_id", traineeId);
+    const { data, error } = await supabase
+      .from("measurements")
+      .select(measurementColumns)
+      .eq("trainee_id", traineeId)
+      .eq("id", measurementId)
+      .maybeSingle();
 
     if (error) {
       return { ok: false };
     }
 
-    return { ok: true, entries: withDeltas(data) };
+    return { ok: true, entry: data };
+  } catch {
+    return { ok: false };
+  }
+}
+
+const MEASURED_ON_PAGE = 1000;
+
+async function selectMeasuredOn(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+): Promise<{ ok: true; measuredOns: string[] } | { ok: false }> {
+  const measuredOns: string[] = [];
+  let from = 0;
+
+  for (;;) {
+    const { data, error } = await supabase
+      .from("measurements")
+      .select("measured_on")
+      .eq("trainee_id", traineeId)
+      .order("measured_on", { ascending: true })
+      .range(from, from + MEASURED_ON_PAGE - 1);
+
+    if (error) {
+      return { ok: false };
+    }
+
+    for (const row of data) {
+      measuredOns.push(row.measured_on);
+    }
+
+    if (data.length < MEASURED_ON_PAGE) {
+      return { ok: true, measuredOns };
+    }
+
+    from += MEASURED_ON_PAGE;
+  }
+}
+
+async function countNewerInMonth(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  start: string,
+  end: string,
+  measuredOn: string,
+  id: string,
+): Promise<{ ok: true; count: number } | { ok: false }> {
+  const { count, error } = await supabase
+    .from("measurements")
+    .select("id", { count: "exact", head: true })
+    .eq("trainee_id", traineeId)
+    .gte("measured_on", start)
+    .lt("measured_on", end)
+    .or(strictlyAfterFilter(measuredOn, id));
+
+  if (error || count === null) {
+    return { ok: false };
+  }
+
+  return { ok: true, count };
+}
+
+async function selectPage(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  start: string,
+  end: string,
+  page: number,
+  pageSize: PageSize,
+): Promise<{ ok: true; rows: MeasurementEntry[]; count: number } | { ok: false }> {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await supabase
+    .from("measurements")
+    .select(measurementColumns, { count: "exact" })
+    .eq("trainee_id", traineeId)
+    .gte("measured_on", start)
+    .lt("measured_on", end)
+    .order("measured_on", { ascending: false })
+    .order("id", { ascending: false })
+    .range(from, to);
+
+  if (error || count === null) {
+    return { ok: false };
+  }
+
+  return { ok: true, rows: data, count };
+}
+
+async function selectOlderRow(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  oldest: MeasurementEntry,
+): Promise<{ ok: true; row: MeasurementEntry | null } | { ok: false }> {
+  const { data, error } = await supabase
+    .from("measurements")
+    .select(measurementColumns)
+    .eq("trainee_id", traineeId)
+    .or(strictlyBeforeFilter(oldest.measured_on, oldest.id))
+    .order("measured_on", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    return { ok: false };
+  }
+
+  return { ok: true, row: data[0] ?? null };
+}
+
+export async function readMeasurementPage(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  input: {
+    month: string;
+    page: number;
+    pageSize: PageSize;
+    focusId: string | null;
+    now: Date;
+  },
+): Promise<
+  | {
+      ok: true;
+      dates: string[];
+      month: string;
+      page: number;
+      pageSize: PageSize;
+      pageCount: number;
+      entries: MeasurementWithDeltas[];
+    }
+  | { ok: false }
+> {
+  try {
+    const measured = await selectMeasuredOn(supabase, traineeId);
+    if (!measured.ok) {
+      return { ok: false };
+    }
+
+    const today = utcToday(input.now);
+    const todayMonth = measurementMonth(today);
+    let dates = measurementMonths(measured.measuredOns, today);
+    let month = dates.includes(input.month) ? input.month : todayMonth;
+    let page = Number.isInteger(input.page) && input.page >= 1 ? input.page : 1;
+
+    if (input.focusId !== null) {
+      const focused = await getMeasurement(supabase, traineeId, input.focusId);
+      if (!focused.ok) {
+        return { ok: false };
+      }
+      if (focused.entry) {
+        month = measurementMonth(focused.entry.measured_on);
+        if (!dates.includes(month)) {
+          dates = measurementMonths([...measured.measuredOns, focused.entry.measured_on], today);
+        }
+        const focusedWindow = monthWindow(month);
+        const newer = await countNewerInMonth(
+          supabase,
+          traineeId,
+          focusedWindow.start,
+          focusedWindow.end,
+          focused.entry.measured_on,
+          focused.entry.id,
+        );
+        if (!newer.ok) {
+          return { ok: false };
+        }
+        page = pageContaining(newer.count, input.pageSize);
+      }
+    }
+
+    const window = monthWindow(month);
+    let selected = await selectPage(supabase, traineeId, window.start, window.end, page, input.pageSize);
+    if (!selected.ok) {
+      return { ok: false };
+    }
+    const resolved = resolveMeasurementPage(page, selected.count, input.pageSize);
+    if (resolved.page !== page) {
+      selected = await selectPage(supabase, traineeId, window.start, window.end, resolved.page, input.pageSize);
+      if (!selected.ok) {
+        return { ok: false };
+      }
+    }
+
+    const oldest = oldestRow(selected.rows);
+    let older: MeasurementEntry | null = null;
+    if (oldest) {
+      const olderResult = await selectOlderRow(supabase, traineeId, oldest);
+      if (!olderResult.ok) {
+        return { ok: false };
+      }
+      older = olderResult.row;
+    }
+
+    return {
+      ok: true,
+      dates,
+      month,
+      page: resolved.page,
+      pageSize: input.pageSize,
+      pageCount: resolved.pageCount,
+      entries: deltasForVisiblePage(selected.rows, older),
+    };
   } catch {
     return { ok: false };
   }
