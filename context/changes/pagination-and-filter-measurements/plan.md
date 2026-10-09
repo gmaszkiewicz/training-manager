@@ -18,13 +18,13 @@ Trainees and trainers on `/measurements` see one calendar month of measurements 
 
 ## Desired End State
 
-A loaded journal, trainee or trainer, shows two dropdowns. **Date** lists each `YYYY-MM` that already has a row, plus the month of UTC today, newest first, once each. **Per page** lists 5, 10, and 15. The list under them is only the selected month, already ordered by `withDeltas`, sliced into pages. Page 1 is the newest slice. **Previous** and **Next** appear only when that month has more rows than the page size, with the text `Page X of Y`.
+A loaded journal, trainee or trainer, shows two dropdowns. **Date** lists each `YYYY-MM` that already has a row, plus the month of UTC today, newest first, once each. **Per page** lists 5, 10, and 15. The list under them is only the selected month, already ordered by `withDeltas`, sliced into pages. Page 1 is the newest slice. **Previous** and **Next** appear only when that month has more rows than the page size, with the text `Page X of Y`. That group sits on the right edge of the journal, in line with the page-size buttons.
 
 A browser with nothing saved opens on the month of UTC today and 10 per page. Reloading `/measurements` restores the account's page size and the saved month for that trainee. A saved value is kept when its `YYYY-MM` is in that list, so both `2026-08` and `2026-08-01` select August; otherwise the month is the month of UTC today. Page number is not saved. Changing the month, or changing the page size when no edit or delete target is open, returns to page 1.
 
 No rows at all: the date list is the month of UTC today only, and the copy is `No measurements yet`. Rows exist, but not in the selected month: `No measurements in this month`. Arrows still compare each row with the chronologically previous row in the full journal, even when that row is in another month or on another page. The browser receives the visible page, the `YYYY-MM` month list, and the page count. It does not receive full rows for other months or other pages.
 
-Edit and delete keep working. When `edit` or `delete` identifies a row, that visit shows that row's month and the page that contains it. The saved month is not overwritten until the user changes the date control. Trainers still have no edit or delete controls. Switching trainees keeps one page size and a separate month per trainee.
+Edit and delete keep working. When `edit` or `delete` identifies a row, that visit shows that row's month and the page that contains it. The saved month is not overwritten until the user changes the date control. Trainers still have no edit or delete controls. A row with no delta still reserves one line under each value, so that strip is as tall as a row that shows an arrow. The empty line is hidden from assistive tech. That gap shows on the trainer journal, which has no Edit or Delete links. Switching trainees keeps one page size and a separate month per trainee.
 
 Verify with `npm test` for the month and page rules, `npm run lint`, `npx astro check`, and `npm run smoke` against entries stored on UTC today, which fall in the current month. Confirm the saved choices and both empty sentences in the browser.
 
@@ -337,6 +337,7 @@ The trainer uses the same island. Page size is shared for the account. The selec
 3. Open edit and delete from a row in a non-saved month. Confirm that month is shown and the stored month is unchanged until the date dropdown moves.
 4. Sign in as a trainer linked to two trainees. Set 15 per page and a month on the first, switch to the second, and confirm the page size stays 15 while the month is that trainee's own saved month or the month of UTC today.
 5. Compare `/kitchen-sink/journal` and `/kitchen-sink/trainer` for the sample row and `No measurements in this month`.
+6. On the trainer journal, a row with no delta keeps the same measurement-strip height as a row with an arrow. When a month has more than one page, Previous, the page label, and Next sit on the right, in line with 5, 10, and 15.
 
 ## Performance Considerations
 
@@ -357,6 +358,8 @@ No database migration. A browser with no saved keys opens on the month of UTC to
 ## Addendum
 
 After Phases 1–3, the page-size control is a right-aligned button group of `5`, `10`, and `15`, not a native `<select>`. The month control stays a native `<select>`. Neither control has a visible label. The month control's accessible name is `Month`. The button group's accessible name is `Entries per page`. Paging, storage keys, and empty copy are unchanged. Commits: `b4fa349`, `8282641`.
+
+A row with no delta keeps a one-line slot under each value, hidden from assistive tech when empty, so the measurement strip matches a row that has an arrow. **Previous**, `Page X of Y`, and **Next** are right-aligned on the same edge as the page-size buttons. Commits: `b203430`, `b186d3a`.
 
 ## Progress
 
