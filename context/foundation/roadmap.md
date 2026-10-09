@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-10-08
+updated: 2026-10-09
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -22,10 +22,10 @@ milestone_status: open
 
 **M-1: Trainee delta and trainer preview** — Status: open
 
-- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel. The comparison after an edit or a delete, measurement ownership, and refusal of a create dated after tomorrow are covered by the archived test rollout. A maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in. A measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied. One persisted weight edit changes the listed difference. A trainee records each measurement with a date and time; creation time stays separate and immutable; a second entry with the same date and time is refused.
+- **Intent:** A trainee can record body measurements and see the up/down difference versus the previous entry, and a trainer who linked that trainee can preview the same list. A visitor opening the public home sees Training Manager and can go to sign-in or sign-up. Sign-in, registration, and email confirmation use that same visual contract instead of the starter glass card. The trainee journal on `/dashboard` uses that contract too, and the trainer panel on the same route uses the trainee journal's contract instead of the starter glass card. The same top bar appears on the public home, sign-in, sign-up, and both dashboards: a guest sees "Hello guest" with Home, Sign in, and Sign up; a signed-in trainee or trainer sees "Hello trainee" or "Hello trainer" and their email as one phrase, with Home, Measurements, and Sign out, and the current page is marked. Sign out is not repeated under the measurements. The journal and the trainer panel are titled Body measurements and do not repeat the welcome or the email. A trainee enters the measurement fields in a horizontal row, and both the trainee and a linked trainer read each entry's fields in a horizontal row instead of a column. Trainees linked by a trainer sit beside each other in one horizontal row on the trainer panel. The comparison after an edit or a delete, measurement ownership, and refusal of a create dated after tomorrow are covered by the archived test rollout. A maintainer can run browser-level tests against a production-like preview, and a signed-out visit to the journal is sent to sign-in. A measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied. One persisted weight edit changes the listed difference. A trainee records each measurement with a date and time; creation time stays separate and immutable; a second entry with the same date and time is refused. The measurement list shows one calendar month at a time, paged 5, 10, or 15, newest first, and a linked trainer sees that same page.
 - **Source materials:** `context/foundation/prd.md` (v1); `context/foundation/test-plan.md` (phases 1–4); user description for the public home (MS-01); user description for the auth entry screens (MS-02); user description for the trainee journal UI (MS-03); user description for the trainer panel UI (MS-04); user description for the shared top bar (MS-05); user description for horizontal measurement entry and display (MS-06); user description for measurement copy and the `/measurements` route (MS-07); user description for blocking merge when CI fails (MS-11); user description for end-to-end test configuration (MS-12); test plan phase 4 for a migration that preserves existing measurement rows (MS-13); test plan phase 5 for one persisted weight edit that changes the listed difference (MS-14); user description for measurement date and time (MS-15)
 - **Done when:** every S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07, MS-08, MS-09, MS-10, MS-11, MS-12, MS-13, MS-14, MS-15
+- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, US-01, MS-01, MS-02, MS-03, MS-04, MS-05, MS-06, MS-07, MS-08, MS-09, MS-10, MS-11, MS-12, MS-13, MS-14, MS-15
   - MS-01: Remove the starter welcome and replace the public home with Training Manager's own page. A reader can follow one deploy path in the project docs, and the live worker settings match it: the quality gate stays as it already runs, a production build applies hosted migrations, and non-production builds stay off.
   - MS-02: Sign-in, registration, and email confirmation use the same visual contract as the public home, instead of the starter glass card.
   - MS-03: The trainee journal on `/dashboard` uses the same visual contract as the public home and auth entry screens, instead of the starter glass card.
@@ -76,6 +76,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-20 | testing-hosted-migration-preserves-measurements | a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied | S-02, S-16 | MS-13 | done |
 | S-21 | testing-saved-edit-reaches-the-arrow | a persisted weight edit changes the listed difference | S-05, S-14 | MS-14, US-01, FR-004 | done |
 | S-22 | measured-on-with-time | user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused | S-02 | MS-15 | done |
+| S-23 | pagination-and-filter-measurements | user can see one calendar month of measurements at a time, paged 5, 10, or 15, newest first, and a linked trainer sees the same list | S-13, S-22 | FR-009 | done |
 
 ## Streams
 
@@ -83,7 +84,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 
 | Stream | Theme                | Chain                                      | Note                                                                                                      |
 | ------ | -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| A      | Measurement journal  | `S-01` → `S-02` → `S-05` → `S-06` → `S-22` | Speed puts the comparison (S-02) immediately after the trainee account. S-05 and S-06 can run side by side once S-02 is done. S-22 adds date and time on the same journal after S-02. |
+| A      | Measurement journal  | `S-01` → `S-02` → `S-05` → `S-06` → `S-22` → `S-23` | Speed puts the comparison (S-02) immediately after the trainee account. S-05 and S-06 can run side by side once S-02 is done. S-22 adds date and time on the same journal after S-02. S-23 pages that journal one month at a time. |
 | B      | Trainer preview      | `S-03` → `S-04`                            | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed.                 |
 | C      | Public home          | `S-07` → `S-17`                            | S-17 is the deploy-path task on the same anchor, MS-01. It does not change the public home. |
 | D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
@@ -375,6 +376,18 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Risk:** Existing same-day rows and edits that rewrite `created_at` can collide with a unique date-and-time rule or blur creation time versus measurement time.
 - **Status:** done
 
+### S-23: Pagination and filter measurements
+
+- **Outcome:** user can see one calendar month of measurements at a time, paged 5, 10, or 15, newest first, and a linked trainer sees the same list
+- **Change ID:** pagination-and-filter-measurements
+- **PRD refs:** FR-009
+- **Prerequisites:** S-13, S-22
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Paging or filtering the journal could hide entries, show another trainee's measurements, or change the difference versus the previous entry.
+- **Status:** done
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                 | Suggested issue title                                                          | Ready for `/10x-plan` | Notes                                      |
@@ -401,6 +414,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-20       | testing-hosted-migration-preserves-measurements | Hosted migration preserves measurements                         | yes                   | [#65](https://github.com/gmaszkiewicz/training-manager/issues/65). On MS-13. Change folder exists. Run `/10x-plan testing-hosted-migration-preserves-measurements`. |
 | S-21       | testing-saved-edit-reaches-the-arrow | Saved edit reaches the arrow                                              | yes                   | [#68](https://github.com/gmaszkiewicz/training-manager/issues/68). On MS-14. Change folder exists. Run `/10x-research testing-saved-edit-reaches-the-arrow`. |
 | S-22       | measured-on-with-time             | Add time of day to measured_on                                             | yes                   | [#71](https://github.com/gmaszkiewicz/training-manager/issues/71). On MS-15. Change folder exists. Run `/10x-research measured-on-with-time`. |
+| S-23       | pagination-and-filter-measurements | Pagination and filter measurements                                         | no                    | [#74](https://github.com/gmaszkiewicz/training-manager/issues/74). On FR-009. Archived 2026-10-09 → `context/archive/2026-10-08-pagination-and-filter-measurements/` |
 
 ## Open Roadmap Questions
 
@@ -415,7 +429,6 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Training-results journal (module 3)** — Why parked: PRD §Non-Goals. This milestone is body measurements only.
 - **Mobile app** — Why parked: PRD §Non-Goals. Web only.
 - **Good/bad coloring of deltas** — Why parked: PRD §Non-Goals. Arrow and numeric difference versus the previous entry only.
-- **Date filter on the measurement list (FR-009)** — Why parked: PRD §Non-Goals. Nice-to-have, out of this milestone unless the required slices are already done.
 
 ## Milestone History
 
@@ -446,3 +459,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-20: a measurement row inserted before a migration keeps its numbers, its count, and its owner after that migration is applied** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-hosted-migration-preserves-measurements/`. Lesson: —.
 - **S-21: a persisted weight edit changes the listed difference** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-saved-edit-reaches-the-arrow/`. Lesson: —.
 - **S-22: user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused** — Archived 2026-10-08 → `context/archive/2026-10-06-measured-on-with-time/`. Lesson: —.
+- **S-23: user can see one calendar month of measurements at a time, paged 5, 10, or 15, newest first, and a linked trainer sees the same list** — Archived 2026-10-09 → `context/archive/2026-10-08-pagination-and-filter-measurements/`. Lesson: —.
