@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest";
 
+import { withDeltas } from "@/lib/measurement-deltas";
 import {
   dayStorageKey,
   defaultPageSize,
+  deltasForVisiblePage,
   filterByMonth,
+  journalMonth,
   measurementMonth,
+  monthWindow,
+  pageContaining,
   pageSizeStorageKey,
   pageSizes,
   pageSlice,
   parsePageSize,
   utcToday,
   viewOf,
+  type PageSize,
 } from "@/lib/measurement-page";
+import type { MeasurementEntry } from "@/types";
 
 const today = "2026-10-08";
 
@@ -19,6 +26,16 @@ describe("measurementMonth", () => {
   it("reads yyyy-mm from a T or a space", () => {
     expect(measurementMonth("2026-01-01T07:00:00")).toBe("2026-01");
     expect(measurementMonth("2026-01-01 07:00:00")).toBe("2026-01");
+  });
+});
+
+describe("journalMonth", () => {
+  it("keeps a yyyy-mm value and reads the month from a full timestamp", () => {
+    expect(journalMonth("2026-08")).toBe("2026-08");
+    expect(journalMonth("2026-08-01")).toBe("2026-08");
+    expect(journalMonth("2026-13")).toBeNull();
+    expect(journalMonth("nope")).toBeNull();
+    expect(journalMonth(null)).toBeNull();
   });
 });
 
@@ -218,5 +235,125 @@ describe("pageSlice", () => {
     expect(pageSlice(rows, 0, 5).map((entry) => entry.id)).toEqual(["row-0", "row-1", "row-2", "row-3", "row-4"]);
     expect(pageSlice(rows, 4, 5).map((entry) => entry.id)).toEqual(["row-10", "row-11"]);
     expect(pageSlice([], 2, 10)).toEqual([]);
+  });
+});
+
+function row(id: string, measuredOn: string, weightKg: number): MeasurementEntry {
+  return {
+    id,
+    measured_on: measuredOn,
+    created_at: "2026-01-01T00:00:00.000Z",
+    weight_kg: weightKg,
+    arms_cm: 30,
+    calf_cm: 30,
+    chest_cm: 30,
+    hips_cm: 30,
+    navel_cm: 30,
+    note: null,
+    thigh_cm: 30,
+    waist_cm: 30,
+  };
+}
+
+function orderLikeWithDeltas(entries: MeasurementEntry[]): MeasurementEntry[] {
+  const byId = new Map(entries.map((entry) => [entry.id, entry]));
+  const ordered: MeasurementEntry[] = [];
+  for (const entry of withDeltas(entries)) {
+    const original = byId.get(entry.id);
+    if (original) {
+      ordered.push(original);
+    }
+  }
+  return ordered;
+}
+
+function expectPageMatchesJournal(journal: MeasurementEntry[], month: string, pageNumber: number, pageSize: PageSize) {
+  const ordered = orderLikeWithDeltas(journal);
+  const inMonth = ordered.filter((entry) => measurementMonth(entry.measured_on) === month);
+  const start = (pageNumber - 1) * pageSize;
+  const visible = inMonth.slice(start, start + pageSize);
+  const oldest = visible[visible.length - 1];
+  let older: MeasurementEntry | null = null;
+  if (visible.length > 0) {
+    const oldestIndex = ordered.findIndex((entry) => entry.id === oldest.id);
+    older = ordered[oldestIndex + 1] ?? null;
+  }
+  const paged = deltasForVisiblePage(visible, older);
+  const full = withDeltas(journal);
+  const visibleIds = new Set(visible.map((entry) => entry.id));
+  expect(paged).toEqual(full.filter((entry) => visibleIds.has(entry.id)));
+  if (older) {
+    expect(visibleIds.has(older.id)).toBe(false);
+  }
+  return { visible, older, paged };
+}
+
+describe("monthWindow", () => {
+  it("is half-open and December ends at the next January", () => {
+    const january = monthWindow("2026-01");
+    expect(january).toEqual({
+      start: "2026-01-01T00:00:00",
+      end: "2026-02-01T00:00:00",
+    });
+    expect("2026-01-01T00:00:00" >= january.start).toBe(true);
+    expect("2026-01-31T23:59:00" < january.end).toBe(true);
+    expect("2026-02-01T00:00:00" < january.end).toBe(false);
+
+    const december = monthWindow("2026-12");
+    expect(december).toEqual({
+      start: "2026-12-01T00:00:00",
+      end: "2027-01-01T00:00:00",
+    });
+    expect("2026-12-31T23:59:00" < december.end).toBe(true);
+    expect("2027-01-01T00:00:00" < december.end).toBe(false);
+  });
+});
+
+describe("pageContaining", () => {
+  it("is floor of newer rows in the month over the page size, plus one", () => {
+    expect(pageContaining(0, 5)).toBe(1);
+    expect(pageContaining(4, 5)).toBe(1);
+    expect(pageContaining(5, 5)).toBe(2);
+    expect(pageContaining(6, 10)).toBe(1);
+  });
+});
+
+describe("deltasForVisiblePage", () => {
+  const journal = [
+    row("feb", "2026-02-02T08:00:00", 90),
+    row("a", "2026-01-06T08:00:00", 71),
+    row("dec-a", "2025-12-01T08:00:00", 69),
+    row("f", "2026-01-10T08:00:00", 76),
+    row("c", "2026-01-07T08:00:00", 73),
+    row("dec-b", "2025-12-20T08:00:00", 70),
+    row("e", "2026-01-09T08:00:00", 75),
+    row("b", "2026-01-06T08:00:00", 72),
+    row("d", "2026-01-08T08:00:00", 74),
+  ];
+
+  it("matches withDeltas when the oldest visible row's previous measurement is outside the page", () => {
+    const page1 = expectPageMatchesJournal(journal, "2026-01", 1, 5);
+
+    expect(page1.visible.map((entry) => entry.id)).toEqual(["f", "e", "d", "c", "b"]);
+    expect(page1.older?.id).toBe("a");
+    expect(page1.paged.find((entry) => entry.id === "b")?.deltas?.weight_kg).toEqual({
+      direction: "up",
+      difference: 1,
+    });
+
+    const page2 = expectPageMatchesJournal(journal, "2026-01", 2, 5);
+
+    expect(page2.visible.map((entry) => entry.id)).toEqual(["a"]);
+    expect(page2.older?.id).toBe("dec-b");
+    expect(measurementMonth(page2.older?.measured_on ?? "")).toBe("2025-12");
+    expect(page2.paged[0]?.deltas?.weight_kg).toEqual({ direction: "up", difference: 1 });
+  });
+
+  it("leaves null deltas when the visible page has no older row", () => {
+    const only = [row("only", "2026-03-01T08:00:00", 80)];
+    const page = expectPageMatchesJournal(only, "2026-03", 1, 10);
+
+    expect(page.older).toBeNull();
+    expect(page.paged).toEqual([{ ...only[0], deltas: null }]);
   });
 });

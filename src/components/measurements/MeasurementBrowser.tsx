@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { formatDelta } from "@/lib/measurement-deltas";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
@@ -6,6 +6,8 @@ import {
   dayStorageKey,
   defaultPageSize,
   filterByMonth,
+  journalMonth,
+  measurementMonth,
   pageSizeStorageKey,
   pageSizes,
   pageSlice,
@@ -26,6 +28,28 @@ interface Props {
   subjectTraineeId?: string | null;
   idPrefix?: string;
   today?: string;
+  dates?: string[];
+  page?: number;
+  pageCount?: number;
+  pageSize?: PageSize;
+  month?: string;
+}
+
+interface PageQuery {
+  month: string;
+  page: number;
+  size: PageSize;
+  focusId: string | null;
+  traineeId: string | null;
+}
+
+interface MeasurementPageBody {
+  dates: string[];
+  month: string;
+  page: number;
+  pageSize: PageSize;
+  pageCount: number;
+  entries: MeasurementWithDeltas[];
 }
 
 const textActionClassName = "text-primary focus-visible:ring-ring hover:underline focus-visible:ring-2";
@@ -119,6 +143,92 @@ function writeStored(key: string, value: string): void {
   }
 }
 
+function writeCookie(name: string, value: string): void {
+  try {
+    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  } catch {
+    // The document request then keeps the default month and page size.
+  }
+}
+
+function writePreference(key: string, value: string): void {
+  writeStored(key, value);
+  writeCookie(key, value);
+}
+
+function isPageSize(value: unknown): value is PageSize {
+  return value === 5 || value === 10 || value === 15;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function monthOfFocused(rows: readonly { id: string; measured_on: string }[], focusedId: string | null): string | null {
+  if (focusedId === null) {
+    return null;
+  }
+  const focused = rows.find((entry) => entry.id === focusedId);
+  if (!focused) {
+    return null;
+  }
+  return measurementMonth(focused.measured_on);
+}
+
+function readMeasurementPageBody(value: unknown): MeasurementPageBody | null {
+  if (value === null || typeof value !== "object") {
+    return null;
+  }
+  const body = value as Record<string, unknown>;
+  if (!isStringArray(body.dates) || typeof body.month !== "string") {
+    return null;
+  }
+  if (typeof body.page !== "number" || !Number.isInteger(body.page) || body.page < 1) {
+    return null;
+  }
+  if (typeof body.pageCount !== "number" || !Number.isInteger(body.pageCount) || body.pageCount < 1) {
+    return null;
+  }
+  if (!isPageSize(body.pageSize) || !Array.isArray(body.entries)) {
+    return null;
+  }
+  return {
+    dates: body.dates,
+    month: body.month,
+    page: body.page,
+    pageSize: body.pageSize,
+    pageCount: body.pageCount,
+    entries: body.entries as MeasurementWithDeltas[],
+  };
+}
+
+function measurementReadUrl(query: PageQuery): string {
+  const params = new URLSearchParams();
+  params.set("month", query.month);
+  params.set("page", String(query.page));
+  params.set("size", String(query.size));
+  if (query.focusId !== null) {
+    params.set("focus", query.focusId);
+  }
+  if (query.traineeId !== null) {
+    params.set("trainee", query.traineeId);
+  }
+  return `/api/measurements?${params.toString()}`;
+}
+
+async function fetchMeasurementPage(query: PageQuery): Promise<MeasurementPageBody | null> {
+  try {
+    const response = await fetch(measurementReadUrl(query), { cache: "no-store" });
+    if (!response.ok) {
+      return null;
+    }
+    const payload: unknown = await response.json();
+    return readMeasurementPageBody(payload);
+  } catch {
+    return null;
+  }
+}
+
 export default function MeasurementBrowser({
   entries,
   readOnly,
@@ -128,83 +238,215 @@ export default function MeasurementBrowser({
   subjectTraineeId = null,
   idPrefix = "",
   today,
+  dates: datesProp,
+  page: pageProp,
+  pageCount: pageCountProp,
+  pageSize: pageSizeProp,
+  month: monthProp,
 }: Props) {
   const todayValue = today ?? utcToday(new Date());
+  const serverMonth = journalMonth(monthProp ?? null);
   const accountId = namedId(accountUserId);
   const subjectId = namedId(subjectTraineeId);
   const openEditingId = namedId(editingId);
   const openConfirmingId = namedId(confirmingId);
   const focusedEntryId = openConfirmingId ?? openEditingId;
-  const initialView = viewOf({
-    entries,
-    today: todayValue,
-    pageSize: defaultPageSize,
-    focusedEntryId,
-    savedDay: null,
-  });
-  const [pageSize, setPageSize] = useState<PageSize>(defaultPageSize);
-  const [day, setDay] = useState(initialView.day);
-  const [page, setPage] = useState(initialView.page);
+  const paged = Array.isArray(datesProp) && typeof pageProp === "number" && typeof pageCountProp === "number";
+  const focusedMonth = monthOfFocused(entries, focusedEntryId);
+  const localInitial = paged
+    ? null
+    : viewOf({
+        entries,
+        today: todayValue,
+        pageSize: defaultPageSize,
+        focusedEntryId,
+        savedDay: null,
+      });
+  const [pageSize, setPageSize] = useState<PageSize>(isPageSize(pageSizeProp) ? pageSizeProp : defaultPageSize);
+  const [day, setDay] = useState(localInitial?.day ?? serverMonth ?? focusedMonth ?? measurementMonth(todayValue));
+  const [page, setPage] = useState(localInitial?.page ?? pageProp ?? 1);
+  const [remoteDates, setRemoteDates] = useState<string[]>(datesProp ?? []);
+  const [remotePageCount, setRemotePageCount] = useState(pageCountProp ?? 1);
+  const [remoteEntries, setRemoteEntries] = useState<MeasurementWithDeltas[]>(entries);
+  const requestSerial = useRef(0);
 
-  // SSR and the hydration render stay on the default view. Browser memory is applied after that paint.
+  const loadPage = useCallback((query: PageQuery): void => {
+    const serial = ++requestSerial.current;
+    void fetchMeasurementPage(query).then((body) => {
+      if (body === null || serial !== requestSerial.current) {
+        return;
+      }
+      setRemoteDates(body.dates);
+      setDay(body.month);
+      setPage(body.page);
+      setPageSize(body.pageSize);
+      setRemotePageCount(body.pageCount);
+      setRemoteEntries(body.entries);
+    });
+  }, []);
+
+  // The document request already applied the preference cookie. Storage is copied onto that cookie after hydration, and a page is requested only when the cookie was missing.
   /* eslint-disable react-hooks/set-state-in-effect -- storage is applied after the hydration render */
   useEffect(() => {
     if (accountId === null) {
       return;
     }
     const storedSize = parsePageSize(readStored(pageSizeStorageKey(accountId)));
+    writeCookie(pageSizeStorageKey(accountId), String(storedSize));
     const storedDay = subjectId === null ? null : readStored(dayStorageKey(accountId, subjectId));
-    const next = viewOf({
-      entries,
-      today: todayValue,
-      pageSize: storedSize,
-      focusedEntryId,
-      savedDay: storedDay,
+    if (subjectId !== null && storedDay !== null) {
+      writeCookie(dayStorageKey(accountId, subjectId), storedDay);
+    }
+    if (!paged) {
+      const next = viewOf({
+        entries,
+        today: todayValue,
+        pageSize: storedSize,
+        focusedEntryId,
+        savedDay: storedDay,
+      });
+      setPageSize(storedSize);
+      setDay(next.day);
+      setPage(next.page);
+      return;
+    }
+
+    const serverSize = isPageSize(pageSizeProp) ? pageSizeProp : defaultPageSize;
+    const traineeId = readOnly && subjectId !== null ? subjectId : null;
+    const currentMonth = focusedMonth ?? serverMonth ?? measurementMonth(todayValue);
+    if (focusedEntryId !== null) {
+      if (storedSize === serverSize) {
+        return;
+      }
+      loadPage({
+        month: currentMonth,
+        page: 1,
+        size: storedSize,
+        focusId: focusedEntryId,
+        traineeId,
+      });
+      return;
+    }
+
+    const storedMonth = storedDay === null ? null : measurementMonth(storedDay);
+    const savedMonth = storedMonth !== null && datesProp.includes(storedMonth) ? storedMonth : null;
+    const sizeDiffers = storedSize !== serverSize;
+    const monthDiffers = savedMonth !== null && savedMonth !== currentMonth;
+    if (!sizeDiffers && !monthDiffers) {
+      return;
+    }
+    loadPage({
+      month: savedMonth ?? currentMonth,
+      page: 1,
+      size: storedSize,
+      focusId: null,
+      traineeId,
     });
-    setPageSize(storedSize);
-    setDay(next.day);
-    setPage(next.page);
-  }, [accountId, subjectId, entries, todayValue, focusedEntryId]);
+  }, [
+    accountId,
+    subjectId,
+    entries,
+    todayValue,
+    focusedEntryId,
+    focusedMonth,
+    paged,
+    pageSizeProp,
+    datesProp,
+    readOnly,
+    loadPage,
+    serverMonth,
+  ]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const dates = viewOf({
-    entries,
-    today: todayValue,
-    pageSize,
-    focusedEntryId: null,
-    savedDay: null,
-  }).dates;
-  const dayEntries = filterByMonth(entries, day);
-  const pageCount = pageCountOf(dayEntries.length, pageSize);
-  const currentPage = clampPage(page, pageCount);
-  const visibleEntries = pageSlice(dayEntries, currentPage, pageSize);
-  const showPager = dayEntries.length > pageSize;
+  const monthRows = filterByMonth(entries, day);
+  const localPageCount = pageCountOf(monthRows.length, pageSize);
+  const localPage = clampPage(page, localPageCount);
+  const dates = paged
+    ? remoteDates
+    : viewOf({
+        entries,
+        today: todayValue,
+        pageSize,
+        focusedEntryId: null,
+        savedDay: null,
+      }).dates;
+  const pageCount = paged ? remotePageCount : localPageCount;
+  const currentPage = paged ? page : localPage;
+  const visibleEntries = paged ? remoteEntries : pageSlice(monthRows, localPage, pageSize);
+  const showPager = paged ? pageCount > 1 : monthRows.length > pageSize;
+  const noMeasurementsYet = paged
+    ? remoteEntries.length === 0 && remotePageCount === 1 && remoteDates.length <= 1
+    : entries.length === 0;
+  const monthIsEmpty = paged ? remoteEntries.length === 0 : monthRows.length === 0;
   const dayId = `${idPrefix}measurement-day`;
   const cancelHref = measurementCancelHref(openEditingId);
 
+  function traineeForRead(): string | null {
+    if (!readOnly || subjectId === null) {
+      return null;
+    }
+    return subjectId;
+  }
+
   function onDayChange(event: ChangeEvent<HTMLSelectElement>) {
     const nextDay = event.target.value;
-    setDay(nextDay);
-    setPage(1);
     if (accountId !== null && subjectId !== null) {
-      writeStored(dayStorageKey(accountId, subjectId), nextDay);
+      writePreference(dayStorageKey(accountId, subjectId), nextDay);
     }
+    if (!paged) {
+      setDay(nextDay);
+      setPage(1);
+      return;
+    }
+    const keepFocus = focusedEntryId !== null && focusedMonth === nextDay;
+    loadPage({
+      month: nextDay,
+      page: 1,
+      size: pageSize,
+      focusId: keepFocus ? focusedEntryId : null,
+      traineeId: traineeForRead(),
+    });
   }
 
   function choosePageSize(nextSize: PageSize) {
-    const focusedStillOnDay = focusedEntryId !== null && dayEntries.some((entry) => entry.id === focusedEntryId);
-    const next = viewOf({
-      entries,
-      today: todayValue,
-      pageSize: nextSize,
-      focusedEntryId: focusedStillOnDay ? focusedEntryId : null,
-      savedDay: day,
-    });
-    setPageSize(nextSize);
-    setPage(next.page);
     if (accountId !== null) {
-      writeStored(pageSizeStorageKey(accountId), String(nextSize));
+      writePreference(pageSizeStorageKey(accountId), String(nextSize));
     }
+    if (!paged) {
+      const focusedStillOnDay = focusedEntryId !== null && monthRows.some((entry) => entry.id === focusedEntryId);
+      const next = viewOf({
+        entries,
+        today: todayValue,
+        pageSize: nextSize,
+        focusedEntryId: focusedStillOnDay ? focusedEntryId : null,
+        savedDay: day,
+      });
+      setPageSize(nextSize);
+      setPage(next.page);
+      return;
+    }
+    const keepFocus = focusedEntryId !== null && focusedMonth !== null && focusedMonth === day;
+    loadPage({
+      month: day,
+      page: 1,
+      size: nextSize,
+      focusId: keepFocus ? focusedEntryId : null,
+      traineeId: traineeForRead(),
+    });
+  }
+
+  function showPage(nextPage: number) {
+    if (!paged) {
+      setPage(nextPage);
+      return;
+    }
+    loadPage({
+      month: day,
+      page: nextPage,
+      size: pageSize,
+      focusId: null,
+      traineeId: traineeForRead(),
+    });
   }
 
   return (
@@ -238,9 +480,9 @@ export default function MeasurementBrowser({
           </div>
         </div>
       </div>
-      {entries.length === 0 ? (
+      {noMeasurementsYet ? (
         <p className="text-muted-foreground mt-6 text-sm">No measurements yet</p>
-      ) : dayEntries.length === 0 ? (
+      ) : monthIsEmpty ? (
         <p className="text-muted-foreground mt-6 text-sm">No measurements in this month</p>
       ) : (
         <>
@@ -329,7 +571,7 @@ export default function MeasurementBrowser({
                 className={pagerButtonClassName}
                 disabled={currentPage <= 1}
                 onClick={() => {
-                  setPage(currentPage - 1);
+                  showPage(currentPage - 1);
                 }}
               >
                 Previous
@@ -342,7 +584,7 @@ export default function MeasurementBrowser({
                 className={pagerButtonClassName}
                 disabled={currentPage >= pageCount}
                 onClick={() => {
-                  setPage(currentPage + 1);
+                  showPage(currentPage + 1);
                 }}
               >
                 Next

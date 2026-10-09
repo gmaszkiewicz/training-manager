@@ -3,6 +3,7 @@ import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { PageSize } from "@/lib/measurement-page";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementWithDeltas } from "@/types";
 
@@ -17,6 +18,11 @@ interface Props {
   idPrefix?: string;
   accountUserId?: string;
   today?: string;
+  dates?: string[];
+  page?: number;
+  pageCount?: number;
+  pageSize?: PageSize;
+  month?: string;
 }
 
 const {
@@ -30,6 +36,11 @@ const {
   idPrefix = "",
   accountUserId,
   today,
+  dates,
+  page,
+  pageCount,
+  pageSize,
+  month,
 } = Astro.props;
 ---
 
@@ -88,6 +99,11 @@ const {
                       subjectTraineeId={selectedLink.traineeId}
                       idPrefix={idPrefix}
                       today={today}
+                      dates={dates}
+                      page={page}
+                      pageCount={pageCount}
+                      pageSize={pageSize}
+                      month={month}
                       client:load
                     />
                   ) : (
