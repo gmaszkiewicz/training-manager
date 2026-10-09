@@ -12,7 +12,7 @@ Trainees and trainers see every measurement at once. This change shows one calen
 
 ## Desired End State
 
-Date lists every month that has a row, plus the month of UTC today. Per page lists 5, 10, and 15. The rows underneath are that month only. Page 1 is the newest slice. A fresh browser opens on the current month and 10. Reload restores the account's page size and that trainee's month. No rows at all says `No measurements yet`. A month with none says `No measurements in this month`. The arrow versus the previous measurement does not change just because that row is off screen. The browser receives that page, the month names, and the page count, not the full rows of other months.
+Date lists every month that has a row, plus the month of UTC today. Per page lists 5, 10, and 15. The rows underneath are that month only. Page 1 is the newest slice. Previous, the page label, and Next sit on the right, in line with the page-size buttons. A row with no delta still reserves that delta line. A fresh browser opens on the current month and 10. Reload restores the account's page size and that trainee's month. No rows at all says `No measurements yet`. A month with none says `No measurements in this month`. The arrow versus the previous measurement does not change just because that row is off screen. The browser receives that page, the month names, and the page count, not the full rows of other months.
 
 ## Key Decisions Made
 
@@ -26,7 +26,8 @@ Date lists every month that has a row, plus the month of UTC today. Per page lis
 | Default month | The month of UTC today; a missing saved month falls back to that month | The empty journal shows the current month and `No measurements yet`. |
 | Empty month | `No measurements in this month` when other months have rows | `No measurements yet` stays only for a journal with no rows at all. |
 | Default page size | 10 | The middle of 5, 10, and 15 until a choice is saved. |
-| Pager | Previous and Next, not stored; month or size change returns to page 1 | The saved controls are the two dropdowns, not the page index. An open edit or delete stays on the page that contains that row. |
+| Pager | Previous and Next, not stored; month or size change returns to page 1; the group is right-aligned | The saved controls are the two dropdowns, not the page index. An open edit or delete stays on the page that contains that row. The page controls line up with the page-size buttons. |
+| Row height | A missing delta still reserves one line under each value | Trainer rows have no Edit or Delete, so omitting that line would shorten the card. The empty line stays out of the accessible name. |
 | Clock | UTC today, same as validation and smoke | The server HTML and the first client render have to agree. |
 | Read | One page, the month names, the count, and one older row | Full rows outside the page stay on the server, and the oldest visible arrow still matches the full journal. |
 
@@ -75,5 +76,6 @@ Phases 1–3 load the full list and slice it in the browser. Phase 4 asks the se
 ## Success Criteria (Summary)
 
 - A loaded journal shows one month, newest measurements on page 1, with 5, 10, or 15 per page.
+- A row with no delta stays as tall as a row with an arrow, and Previous, the page label, and Next sit on the right.
 - Reload restores that account's page size and that trainee's month; a missing month returns to the month of UTC today.
 - Empty journal and empty month use the two sentences above, and the arrows match the full journal.
