@@ -359,6 +359,8 @@ No database migration. A browser with no saved keys opens on the month of UTC to
 
 After Phases 1–3, the page-size control is a right-aligned button group of `5`, `10`, and `15`, not a native `<select>`. The month control stays a native `<select>`. Neither control has a visible label. The month control's accessible name is `Month`. The button group's accessible name is `Entries per page`. Paging, storage keys, and empty copy are unchanged. Commits: `b4fa349`, `8282641`.
 
+After Phase 4, the saved month and page size also live in a cookie with the same key names as `localStorage`: `tm.measurements.pageSize.<accountUserId>` and `tm.measurements.day.<accountUserId>.<subjectTraineeId>`. The cookie is `Path=/; Max-Age=31536000; SameSite=Lax`, written from the browser. The first HTML of `/measurements` uses that month and page size. The page number stays out of the cookie. When `edit` or `delete` identifies a row, that visit still shows that row's month. A browser that only has `localStorage` copies it onto the cookie after mount and requests the page once; the next document request uses the cookie. This replaces the earlier decision to keep the month and page size out of a cookie.
+
 A row with no delta keeps a one-line slot under each value, hidden from assistive tech when empty, so the measurement strip matches a row that has an arrow. **Previous**, `Page X of Y`, and **Next** are right-aligned on the same edge as the page-size buttons. Commits: `b203430`, `b186d3a`.
 
 ## Progress
