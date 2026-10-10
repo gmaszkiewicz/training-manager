@@ -1,9 +1,10 @@
 const MISSING_ACCOUNT_CODE = "user_not_found";
 
-export type ResetRequestResult = "sent" | "email-failed";
+export type ResetRequestResult = "sent" | "unknown" | "email-failed";
 
 export const PASSWORD_RESET_NOTICE = "Your password was reset. Sign in with the new password.";
 export const RESET_SENT_NOTICE = "Check your email for a password reset link.";
+export const RESET_UNKNOWN_EMAIL_ERROR = "No account with that email.";
 export const RESET_EMAIL_ERROR = "We could not send the reset email. Try again later.";
 export const RESET_LINK_ERROR = "This reset link is no longer valid.";
 export const PASSWORD_SHORT_ERROR = "Password must be at least 6 characters.";
@@ -22,13 +23,19 @@ export function isExpiredRecoveryHash(hash: string): boolean {
 }
 
 export function resetRequestResult(error: { code?: string | null } | null): ResetRequestResult {
-  if (error === null || error.code === MISSING_ACCOUNT_CODE) {
+  if (error === null) {
     return "sent";
+  }
+  if (error.code === MISSING_ACCOUNT_CODE) {
+    return "unknown";
   }
   return "email-failed";
 }
 
 export function resetPageError(code: string | null): string | null {
+  if (code === "unknown-email") {
+    return RESET_UNKNOWN_EMAIL_ERROR;
+  }
   if (code === "reset-email") {
     return RESET_EMAIL_ERROR;
   }
