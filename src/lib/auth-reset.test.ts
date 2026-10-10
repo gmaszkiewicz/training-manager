@@ -7,8 +7,8 @@ describe("resetRequestResult", () => {
     expect(resetRequestResult(null)).toBe("sent");
   });
 
-  it("treats a missing account as sent", () => {
-    expect(resetRequestResult({ code: "user_not_found" })).toBe("sent");
+  it("treats a missing account as unknown", () => {
+    expect(resetRequestResult({ code: "user_not_found" })).toBe("unknown");
   });
 
   it("treats a rate limit or any other send failure as email-failed", () => {

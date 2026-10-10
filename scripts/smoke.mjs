@@ -658,9 +658,9 @@ const steps = [
     { status: 200, body: ["Forgot password?", 'href="/auth/reset-password"'] },
   ],
   [
-    "unknown email reset looks sent",
+    "unknown email reset is rejected",
     () => request("/api/auth/reset-password", { method: "POST", form: { email: unknownEmail } }),
-    { status: 302, location: "/auth/reset-password?notice=reset-sent", exactLocation: true },
+    { status: 302, location: "/auth/reset-password?error=unknown-email", exactLocation: true },
   ],
   [
     "unusable reset token is rejected",

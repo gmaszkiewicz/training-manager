@@ -143,6 +143,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      email_is_registered: { Args: { p_email: string }; Returns: boolean };
       link_trainee_by_email: { Args: { p_email: string }; Returns: string };
       measurement_months: {
         Args: { p_trainee_id: string };
