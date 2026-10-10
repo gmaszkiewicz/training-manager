@@ -642,6 +642,26 @@ const steps = [
     () => request("/measurements"),
     { status: 200, body: ["Add measurement", earlierNote], forbid: foreignWriteNote },
   ],
+  [
+    "signin shows forgot password",
+    () => request("/auth/signin"),
+    { status: 200, body: ["Forgot password?", 'href="/auth/reset-password"'] },
+  ],
+  [
+    "unknown email reset looks sent",
+    () => request("/api/auth/reset-password", { method: "POST", form: { email: unknownEmail } }),
+    { status: 302, location: "/auth/reset-password?notice=reset-sent", exactLocation: true },
+  ],
+  [
+    "unusable reset token is rejected",
+    () =>
+      request("/api/auth/reset-password/confirm", {
+        method: "POST",
+        form: { token_hash: "not-a-token", type: "recovery", password, confirmPassword: password },
+      }),
+    { status: 302, location: "/auth/reset-password?error=reset-link", exactLocation: true },
+  ],
+  ["measurements stays signed in after a reminder", () => request("/measurements"), { status: 200 }],
 ];
 
 function sameStrings(left, right) {

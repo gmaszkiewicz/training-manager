@@ -307,10 +307,10 @@ Local mail uses the new template only after `npx supabase stop` and `npx supabas
 
 #### Automated
 
-- [ ] 1.1 `npm test` passes, including the reset-request cases: no error and a missing account both mean sent, and a rate limit or other send failure means email-failed
-- [ ] 1.2 `npm run lint` passes
-- [ ] 1.3 `npm run check:home-tokens` passes with the new reset views on the scanned file list
-- [ ] 1.4 `npm run smoke` passes, including the unknown-email request, the dead reset link, and the existing session still on `/measurements`
+- [x] 1.1 `npm test` passes, including the reset-request cases: no error and a missing account both mean sent, and a rate limit or other send failure means email-failed
+- [x] 1.2 `npm run lint` passes
+- [x] 1.3 `npm run check:home-tokens` passes with the new reset views on the scanned file list
+- [x] 1.4 `npm run smoke` passes, including the unknown-email request, the dead reset link, and the existing session still on `/measurements`
 
 #### Manual
 
