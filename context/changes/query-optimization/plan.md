@@ -230,8 +230,8 @@ The migration only adds a function and grants. Existing rows are unchanged. The 
 
 #### Automated
 
-- [x] 2.1 Smoke proves the month catalog, the June difference, the linked trainer, and the unlinked trainer: `npm run smoke`
+- [x] 2.1 Smoke proves the month catalog, the June difference, the linked trainer, and the unlinked trainer: `npm run smoke` — e82e76e
 
 #### Manual
 
-- [x] 2.2 A linked trainer’s month dropdown on `/measurements` lists the same months as that trainee’s journal
+- [x] 2.2 A linked trainer’s month dropdown on `/measurements` lists the same months as that trainee’s journal — e82e76e
