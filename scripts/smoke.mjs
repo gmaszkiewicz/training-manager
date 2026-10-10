@@ -1,7 +1,10 @@
 // Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
 // Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
+// Catalog proof reads SUPABASE_URL and SUPABASE_KEY. A local run exports them from `supabase status -o env`.
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
+const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
+const SUPABASE_KEY = process.env.SUPABASE_KEY ?? "";
 const email = `smoke-${Date.now()}@example.com`;
 const secondEmail = `smoke-second-${Date.now()}@example.com`;
 const unlinkedEmail = `smoke-unlinked-${Date.now()}@example.com`;
@@ -59,6 +62,22 @@ const futureDate = utcDatePlusDays(2);
 const futureMeasuredOn = `${futureDate}T00:00`;
 const todayMorning = `${utcDatePlusDays(0)}T07:00`;
 const todayEvening = `${utcDatePlusDays(0)}T19:00`;
+const fixtureMonths = ["2024-01", "2024-06", "2026-03"];
+
+function utcCurrentMonth(now = new Date()) {
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+  return `${now.getUTCFullYear()}-${month}`;
+}
+
+function catalogDates(now = new Date()) {
+  const months = [...fixtureMonths];
+  const current = utcCurrentMonth(now);
+  if (!months.includes(current)) {
+    months.push(current);
+  }
+  months.sort((left, right) => (left < right ? 1 : left > right ? -1 : 0));
+  return months;
+}
 
 function decodeBase64Url(value) {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
@@ -89,7 +108,7 @@ function cookieText(raw) {
   }
 }
 
-function sessionUserId() {
+function sessionPayload() {
   const bases = new Set();
   for (const name of jar.keys()) {
     const match = /^(sb-.+-auth-token)(?:\.\d+)?$/.exec(name);
@@ -108,13 +127,24 @@ function sessionUserId() {
     }
     const jsonText = encoded.startsWith("base64-") ? decodeBase64Url(encoded.slice("base64-".length)) : encoded;
     try {
-      const id = userIdFromSession(JSON.parse(jsonText));
-      if (id) return id;
+      const session = JSON.parse(jsonText);
+      if (userIdFromSession(session)) return session;
     } catch {
       // A torn cookie is ignored; another auth cookie may still hold the session.
     }
   }
-  return "";
+  return null;
+}
+
+function sessionUserId() {
+  const session = sessionPayload();
+  return session ? userIdFromSession(session) : "";
+}
+
+function sessionAccessToken() {
+  const session = sessionPayload();
+  if (!session || typeof session.access_token !== "string") return "";
+  return session.access_token;
 }
 
 function rememberTrainee(run) {
@@ -198,6 +228,41 @@ async function request(path, { method = "GET", form } = {}) {
   storeCookies(response);
   const body = await response.text();
   return { status: response.status, location: response.headers.get("location") ?? "", body };
+}
+
+async function measurementMonthsRpc() {
+  if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
+    return { status: 0, location: "", body: "" };
+  }
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/measurement_months`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ p_trainee_id: unlinkedTraineeId }),
+  });
+  const body = await response.text();
+  return { status: response.status, location: "", body };
+}
+
+function januaryCatalog() {
+  return {
+    dates: catalogDates(),
+    datesBelow: 5,
+    entriesLength: 3,
+    pageCount: 1,
+  };
+}
+
+function juneDifference(withDates) {
+  const spec = {
+    entriesLength: 1,
+    weightDelta: { direction: "up", difference: 8 },
+  };
+  if (withDates) spec.dates = catalogDates();
+  return spec;
 }
 
 const steps = [
@@ -441,6 +506,41 @@ const steps = [
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
+    "unlinked trainee saves 2024-01-02",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2024-01-02T08:00", "80.0", "") }),
+    { status: 302, location: "/measurements", exactLocation: true },
+  ],
+  [
+    "unlinked trainee saves 2024-01-15",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2024-01-15T08:00", "81.0", "") }),
+    { status: 302, location: "/measurements", exactLocation: true },
+  ],
+  [
+    "unlinked trainee saves 2024-01-28",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2024-01-28T08:00", "82.0", "") }),
+    { status: 302, location: "/measurements", exactLocation: true },
+  ],
+  [
+    "unlinked trainee saves 2024-06-01",
+    () => request("/api/measurements", { method: "POST", form: measurementForm("2024-06-01T08:00", "90.0", "") }),
+    { status: 302, location: "/measurements", exactLocation: true },
+  ],
+  [
+    "unlinked trainee January catalog",
+    () => request("/api/measurements?month=2024-01&size=5&page=1"),
+    { status: 200, json: januaryCatalog },
+  ],
+  [
+    "unlinked trainee June difference",
+    () => request("/api/measurements?month=2024-06&size=5&page=1"),
+    { status: 200, json: () => juneDifference(false) },
+  ],
+  [
+    "unlinked trainee measurement months",
+    () => measurementMonthsRpc(),
+    { status: 200, json: () => ({ measuredMonths: fixtureMonths }) },
+  ],
+  [
     "signout after the unlinked trainee",
     () => request("/api/auth/signout", { method: "POST" }),
     { status: 302, location: "/" },
@@ -495,6 +595,39 @@ const steps = [
     { status: 200, bodyAny: [earlierNote, laterNote], forbid: unlinkedNote },
   ],
   [
+    "trainer unlinked catalog is the current month",
+    () => request(`/api/measurements?month=2024-06&size=5&page=1&trainee=${unlinkedTraineeId}`),
+    {
+      status: 200,
+      json: () => ({ dates: [utcCurrentMonth()], entriesLength: 0, pageCount: 1 }),
+    },
+  ],
+  [
+    "trainer measurement months before the link",
+    () => measurementMonthsRpc(),
+    { status: 200, json: () => ({ measuredMonths: [] }) },
+  ],
+  [
+    "trainer links the unlinked trainee",
+    () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
+    { status: 302, location: () => `/measurements?trainee=${unlinkedTraineeId}`, exactLocation: true },
+  ],
+  [
+    "trainer linked January catalog",
+    () => request(`/api/measurements?month=2024-01&size=5&page=1&trainee=${unlinkedTraineeId}`),
+    { status: 200, json: januaryCatalog },
+  ],
+  [
+    "trainer linked June difference",
+    () => request(`/api/measurements?month=2024-06&size=5&page=1&trainee=${unlinkedTraineeId}`),
+    { status: 200, json: () => juneDifference(true) },
+  ],
+  [
+    "trainer measurement months after the link",
+    () => measurementMonthsRpc(),
+    { status: 200, json: () => ({ measuredMonths: fixtureMonths }) },
+  ],
+  [
     "signout before checking the trainee journal",
     () => request("/api/auth/signout", { method: "POST" }),
     { status: 302, location: "/" },
@@ -510,6 +643,88 @@ const steps = [
     { status: 200, body: ["Add measurement", earlierNote], forbid: foreignWriteNote },
   ],
 ];
+
+function sameStrings(left, right) {
+  return (
+    Array.isArray(left) &&
+    Array.isArray(right) &&
+    left.length === right.length &&
+    left.every((item, index) => item === right[index])
+  );
+}
+
+function monthSetEquals(rows, expected) {
+  if (!Array.isArray(rows) || rows.length !== expected.length) return false;
+  const actual = [];
+  for (const row of rows) {
+    if (!row || typeof row !== "object" || typeof row.measured_month !== "string") return false;
+    actual.push(row.measured_month);
+  }
+  actual.sort();
+  const wanted = [...expected].sort();
+  return actual.every((month, index) => month === wanted[index]);
+}
+
+function sameWeightDelta(actual, expected) {
+  if (!actual || typeof actual !== "object") return false;
+  const keys = Object.keys(actual);
+  return (
+    keys.length === 2 &&
+    keys.includes("direction") &&
+    keys.includes("difference") &&
+    actual.direction === expected.direction &&
+    actual.difference === expected.difference
+  );
+}
+
+function jsonProblems(parsed, spec) {
+  const problems = [];
+  const dates = parsed && typeof parsed === "object" ? parsed.dates : undefined;
+  const entries = parsed && typeof parsed === "object" ? parsed.entries : undefined;
+  const pageCount = parsed && typeof parsed === "object" ? parsed.pageCount : undefined;
+  if (spec.dates !== undefined && !sameStrings(dates, spec.dates)) {
+    problems.push(`dates ${JSON.stringify(dates)} expected ${JSON.stringify(spec.dates)}`);
+  }
+  if (spec.datesBelow !== undefined) {
+    const length = Array.isArray(dates) ? dates.length : -1;
+    if (!(length < spec.datesBelow)) {
+      problems.push(`dates.length ${length} expected < ${spec.datesBelow}`);
+    }
+  }
+  if (spec.entriesLength !== undefined) {
+    const length = Array.isArray(entries) ? entries.length : -1;
+    if (length !== spec.entriesLength) {
+      problems.push(`entries.length ${length} expected ${spec.entriesLength}`);
+    }
+  }
+  if (spec.pageCount !== undefined && pageCount !== spec.pageCount) {
+    problems.push(`pageCount ${JSON.stringify(pageCount)} expected ${spec.pageCount}`);
+  }
+  if (spec.weightDelta !== undefined) {
+    const only = Array.isArray(entries) && entries.length === 1 ? entries[0] : undefined;
+    const deltas = only && typeof only === "object" ? only.deltas : undefined;
+    const delta = deltas && typeof deltas === "object" ? deltas.weight_kg : undefined;
+    if (!sameWeightDelta(delta, spec.weightDelta)) {
+      problems.push(`deltas.weight_kg ${JSON.stringify(delta ?? null)} expected ${JSON.stringify(spec.weightDelta)}`);
+    }
+  }
+  if (spec.measuredMonths !== undefined && !monthSetEquals(parsed, spec.measuredMonths)) {
+    problems.push(`measured_month set ${JSON.stringify(parsed)} expected ${JSON.stringify(spec.measuredMonths)}`);
+  }
+  return problems;
+}
+
+function matchJson(body, spec) {
+  let parsed;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return { ok: false, detail: " json parse" };
+  }
+  const problems = jsonProblems(parsed, spec);
+  if (problems.length === 0) return { ok: true, detail: "" };
+  return { ok: false, detail: ` ${problems.join("; ")}` };
+}
 
 let failed = 0;
 for (const [name, run, expected] of steps) {
@@ -529,7 +744,16 @@ for (const [name, run, expected] of steps) {
     expected.forbid === undefined ? [] : Array.isArray(expected.forbid) ? expected.forbid : [expected.forbid];
   const forbidOk = forbids.every((text) => !actual.body.includes(text));
   const measurementOk = actual.measurementMissing !== true;
-  const ok = actual.status === expected.status && locationOk && bodyOk && bodyAnyOk && forbidOk && measurementOk;
+  const jsonSpec = typeof expected.json === "function" ? expected.json() : expected.json;
+  const jsonResult = jsonSpec === undefined ? { ok: true, detail: "" } : matchJson(actual.body, jsonSpec);
+  const ok =
+    actual.status === expected.status &&
+    locationOk &&
+    bodyOk &&
+    bodyAnyOk &&
+    forbidOk &&
+    measurementOk &&
+    jsonResult.ok;
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
@@ -546,7 +770,7 @@ for (const [name, run, expected] of steps) {
       .join(" ");
     const expectedMeasurement = actual.measurementMissing ? ` edit= id for ${JSON.stringify(earlierNote)}` : "";
     console.log(
-      `      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedBodyAny}${expectedForbid}${expectedMeasurement}`,
+      `      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedBodyAny}${expectedForbid}${expectedMeasurement}${jsonResult.detail}`,
     );
   }
 }

@@ -144,6 +144,12 @@ export type Database = {
     };
     Functions: {
       link_trainee_by_email: { Args: { p_email: string }; Returns: string };
+      measurement_months: {
+        Args: { p_trainee_id: string };
+        Returns: {
+          measured_month: string;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;
