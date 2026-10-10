@@ -9,6 +9,15 @@ export const RESET_LINK_ERROR = "This reset link is no longer valid.";
 export const PASSWORD_SHORT_ERROR = "Password must be at least 6 characters.";
 export const PASSWORD_MISMATCH_ERROR = "Passwords do not match.";
 
+export function isExpiredRecoveryHash(hash: string): boolean {
+  const value = hash.startsWith("#") ? hash.slice(1) : hash;
+  if (value === "") {
+    return false;
+  }
+  const params = new URLSearchParams(value);
+  return params.get("error") === "access_denied" || params.get("error_code") === "otp_expired";
+}
+
 export function resetRequestResult(error: { code?: string | null } | null): ResetRequestResult {
   if (error === null || error.code === MISSING_ACCOUNT_CODE) {
     return "sent";
