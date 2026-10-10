@@ -88,39 +88,6 @@ export async function getMeasurement(
   }
 }
 
-const MEASURED_ON_PAGE = 1000;
-
-async function selectMeasuredOn(
-  supabase: SupabaseClient<Database>,
-  traineeId: string,
-): Promise<{ ok: true; measuredOns: string[] } | { ok: false }> {
-  const measuredOns: string[] = [];
-  let from = 0;
-
-  for (;;) {
-    const { data, error } = await supabase
-      .from("measurements")
-      .select("measured_on")
-      .eq("trainee_id", traineeId)
-      .order("measured_on", { ascending: true })
-      .range(from, from + MEASURED_ON_PAGE - 1);
-
-    if (error) {
-      return { ok: false };
-    }
-
-    for (const row of data) {
-      measuredOns.push(row.measured_on);
-    }
-
-    if (data.length < MEASURED_ON_PAGE) {
-      return { ok: true, measuredOns };
-    }
-
-    from += MEASURED_ON_PAGE;
-  }
-}
-
 async function countNewerInMonth(
   supabase: SupabaseClient<Database>,
   traineeId: string,
@@ -215,14 +182,15 @@ export async function readMeasurementPage(
   | { ok: false }
 > {
   try {
-    const measured = await selectMeasuredOn(supabase, traineeId);
-    if (!measured.ok) {
+    const { data, error } = await supabase.rpc("measurement_months", { p_trainee_id: traineeId });
+    if (error) {
       return { ok: false };
     }
 
+    const months = data.map((row) => row.measured_month);
     const today = utcToday(input.now);
     const todayMonth = measurementMonth(today);
-    let dates = measurementMonths(measured.measuredOns, today);
+    let dates = measurementMonths(months, today);
     let month = dates.includes(input.month) ? input.month : todayMonth;
     let page = Number.isInteger(input.page) && input.page >= 1 ? input.page : 1;
 
@@ -234,7 +202,7 @@ export async function readMeasurementPage(
       if (focused.entry) {
         month = measurementMonth(focused.entry.measured_on);
         if (!dates.includes(month)) {
-          dates = measurementMonths([...measured.measuredOns, focused.entry.measured_on], today);
+          dates = measurementMonths([...months, focused.entry.measured_on], today);
         }
         const focusedWindow = monthWindow(month);
         const newer = await countNewerInMonth(

@@ -217,14 +217,14 @@ The migration only adds a function and grants. Existing rows are unchanged. The 
 
 #### Automated
 
-- [ ] 1.1 Migration applies and an existing measurement row survives: `npm run migration-check`
-- [ ] 1.2 Unit tests pass: `npm test`
-- [ ] 1.3 Lint passes: `npm run lint`
-- [ ] 1.4 Type check passes: `npx astro check`
+- [x] 1.1 Migration applies and an existing measurement row survives: `npm run migration-check`
+- [x] 1.2 Unit tests pass: `npm test`
+- [x] 1.3 Lint passes: `npm run lint`
+- [x] 1.4 Type check passes: `npx astro check`
 
 #### Manual
 
-- [ ] 1.5 A journal with more than one entry in a month still lists each month once, includes the UTC current month, and the pager still reads “Page N of M”
+- [x] 1.5 A journal with more than one entry in a month still lists each month once, includes the UTC current month, and the pager still reads “Page N of M”
 
 ### Phase 2: Catalog proof
 
