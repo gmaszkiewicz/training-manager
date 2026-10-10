@@ -6,8 +6,8 @@ export interface TopbarModelInput {
 }
 
 export interface TopbarLink {
-  id: "home" | "measurements" | "signin" | "signup";
-  label: "Home" | "Measurements" | "Sign in" | "Sign up";
+  id: "home" | "measurements" | "profile" | "signin" | "signup";
+  label: "Home" | "Measurements" | "Profile" | "Sign in" | "Sign up";
   href: string;
   current: boolean;
 }
@@ -50,6 +50,7 @@ export function topbarModel({ signedIn, email, role, pathname }: TopbarModelInpu
       [
         { id: "home", label: "Home", href: "/" },
         { id: "measurements", label: "Measurements", href: "/measurements" },
+        { id: "profile", label: "Profile", href: "/profile" },
       ],
       pathname,
     ),

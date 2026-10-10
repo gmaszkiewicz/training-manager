@@ -15,23 +15,28 @@ const laterNote = "smoke-later-trainee-note";
 const unlinkedNote = "smoke-unlinked-trainee-note";
 const foreignWriteNote = "smoke-foreign-write-note";
 const password = "Smoke-Test-Passw0rd!";
+const profileEmail = `smoke-profile-${Date.now()}@example.com`;
+const profilePassword = "Smoke-Profile-Current1!";
+const profileNextPassword = "Smoke-Profile-Nextword1!";
 const jar = new Map();
+const jarA = new Map();
+const jarB = new Map();
 let traineeId = "";
 let secondTraineeId = "";
 let unlinkedTraineeId = "";
 let measurementId = "";
 
-function cookieHeader() {
-  return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
+function cookieHeaderFrom(cookieJar) {
+  return [...cookieJar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
 }
 
-function storeCookies(response) {
+function storeCookiesInto(cookieJar, response) {
   for (const raw of response.headers.getSetCookie()) {
     const [pair, ...attrs] = raw.split(";");
     const [name, ...rest] = pair.split("=");
     const expired = attrs.some((a) => /max-age=0/i.test(a.trim()));
-    if (expired) jar.delete(name.trim());
-    else jar.set(name.trim(), rest.join("="));
+    if (expired) cookieJar.delete(name.trim());
+    else cookieJar.set(name.trim(), rest.join("="));
   }
 }
 
@@ -214,20 +219,24 @@ function followRedirect() {
   return request(redirectPath);
 }
 
-async function request(path, { method = "GET", form } = {}) {
+async function requestWith(cookieJar, path, { method = "GET", form } = {}) {
   const response = await fetch(BASE_URL + path, {
     method,
     redirect: "manual",
     headers: {
-      Cookie: cookieHeader(),
+      Cookie: cookieHeaderFrom(cookieJar),
       Origin: BASE_URL,
       ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
     },
     body: form ? new URLSearchParams(form).toString() : undefined,
   });
-  storeCookies(response);
+  storeCookiesInto(cookieJar, response);
   const body = await response.text();
   return { status: response.status, location: response.headers.get("location") ?? "", body };
+}
+
+async function request(path, options) {
+  return requestWith(jar, path, options);
 }
 
 async function measurementMonthsRpc() {
@@ -268,6 +277,7 @@ function juneDifference(withDates) {
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["measurements redirects anonymous user", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
+  ["profile redirects anonymous user", () => request("/profile"), { status: 302, location: "/auth/signin" }],
   [
     "measurements redirect anonymous user",
     () => request("/api/measurements", { method: "POST" }),
@@ -662,6 +672,81 @@ const steps = [
     { status: 302, location: "/auth/reset-password?error=reset-link", exactLocation: true },
   ],
   ["measurements stays signed in after a reminder", () => request("/measurements"), { status: 200 }],
+  [
+    "profile user signs up",
+    () =>
+      requestWith(new Map(), "/api/auth/signup", {
+        method: "POST",
+        form: { email: profileEmail, password: profilePassword, role: "trainee" },
+      }),
+    { status: 302, location: "/measurements" },
+  ],
+  [
+    "profile jar A signs in",
+    () =>
+      requestWith(jarA, "/api/auth/signin", {
+        method: "POST",
+        form: { email: profileEmail, password: profilePassword },
+      }),
+    { status: 302, location: "/measurements" },
+  ],
+  [
+    "profile jar B signs in",
+    () =>
+      requestWith(jarB, "/api/auth/signin", {
+        method: "POST",
+        form: { email: profileEmail, password: profilePassword },
+      }),
+    { status: 302, location: "/measurements" },
+  ],
+  [
+    "profile rejects the wrong current password",
+    () =>
+      requestWith(jarA, "/api/auth/password", {
+        method: "POST",
+        form: { currentPassword: "wrong", password: profileNextPassword, confirmPassword: profileNextPassword },
+      }),
+    { status: 302, location: "/profile?error=current-password", exactLocation: true },
+  ],
+  ["profile other session stays signed in", () => requestWith(jarB, "/profile"), { status: 200 }],
+  [
+    "profile changes the password",
+    () =>
+      requestWith(jarA, "/api/auth/password", {
+        method: "POST",
+        form: {
+          currentPassword: profilePassword,
+          password: profileNextPassword,
+          confirmPassword: profileNextPassword,
+        },
+      }),
+    { status: 302, location: "/profile?notice=password-changed", exactLocation: true },
+  ],
+  ["profile stays signed in after the change", () => requestWith(jarA, "/profile"), { status: 200 }],
+  ["profile other session ends", () => requestWith(jarB, "/profile"), { status: 302, location: "/auth/signin" }],
+  [
+    "profile signs out",
+    () => requestWith(jarA, "/api/auth/signout", { method: "POST" }),
+    { status: 302, location: "/" },
+  ],
+  [
+    "profile old password is rejected",
+    () =>
+      requestWith(jarA, "/api/auth/signin", {
+        method: "POST",
+        form: { email: profileEmail, password: profilePassword },
+      }),
+    { status: 302, location: "/auth/signin?error=" },
+  ],
+  [
+    "profile new password signs in",
+    () =>
+      requestWith(jarA, "/api/auth/signin", {
+        method: "POST",
+        form: { email: profileEmail, password: profileNextPassword },
+      }),
+    { status: 302, location: "/measurements" },
+  ],
 ];
 
 function sameStrings(left, right) {
