@@ -1,5 +1,5 @@
 ---
-change_id: handle-change-and-forgotten-pass
+change_id: handle-change-and-reset-pass
 title: Forgot password from sign-in and password change on Profile
 status: new
 created: 2026-10-10
