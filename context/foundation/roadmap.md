@@ -78,7 +78,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-21 | testing-saved-edit-reaches-the-arrow | a persisted weight edit changes the listed difference | S-05, S-14 | MS-14, US-01, FR-004 | done |
 | S-22 | measured-on-with-time | user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused | S-02 | MS-15 | done |
 | S-23 | pagination-and-filter-measurements | user can see one calendar month of measurements at a time, paged 5, 10, or 15, newest first, and a linked trainer sees the same list | S-13, S-22 | FR-009 | done |
-| S-24 | query-optimization | user can open the same calendar-month page as today, with the same rows, order, page size, and difference versus the previous entry, including when that previous entry sits outside the page, and a linked trainer sees that same page, while the list is built without walking the whole journal | S-23 | MS-16, FR-009 | ready |
+| S-24 | query-optimization | user can open the same calendar-month page as today, with the same rows, order, page size, and difference versus the previous entry, including when that previous entry sits outside the page, and a linked trainer sees that same page, while the list is built without walking the whole journal | S-23 | MS-16, FR-009 | planning |
 
 ## Streams
 
@@ -400,7 +400,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** A shorter read can drop a row from the month page, show another trainee's measurements, or change the difference when the previous entry sits outside the page.
-- **Status:** ready
+- **Status:** planning
 
 ## Backlog Handoff
 
