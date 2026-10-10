@@ -1,0 +1,26 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
+import Topbar from "@/components/Topbar.astro";
+import { PASSWORD_CHANGED_NOTICE, profilePageError } from "@/lib/auth-reset";
+
+const error = Astro.url.searchParams.get("error");
+const notice = Astro.url.searchParams.get("notice");
+const serverError = profilePageError(error);
+---
+
+<Layout title="Profile">
+  <div class="p-4 sm:p-8">
+    <Topbar />
+  </div>
+  <div class="flex justify-center px-4 pb-8 sm:px-8">
+    <div class="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-card-foreground">
+      <h1 class="mb-2 text-center text-2xl font-bold text-card-foreground">Profile</h1>
+      <h2 class="mb-6 text-center text-lg font-semibold text-card-foreground">Change password</h2>
+      {notice === "password-changed" ? (
+        <p class="mb-4 text-center text-sm text-muted-foreground">{PASSWORD_CHANGED_NOTICE}</p>
+      ) : null}
+      <ChangePasswordForm serverError={serverError} client:load />
+    </div>
+  </div>
+</Layout>

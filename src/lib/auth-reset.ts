@@ -8,6 +8,9 @@ export const RESET_EMAIL_ERROR = "We could not send the reset email. Try again l
 export const RESET_LINK_ERROR = "This reset link is no longer valid.";
 export const PASSWORD_SHORT_ERROR = "Password must be at least 6 characters.";
 export const PASSWORD_MISMATCH_ERROR = "Passwords do not match.";
+export const PASSWORD_CHANGED_NOTICE = "Your password was changed.";
+export const CURRENT_PASSWORD_ERROR = "Current password is incorrect.";
+export const PASSWORD_UNCHANGED_ERROR = "Your password was not changed.";
 
 export function isExpiredRecoveryHash(hash: string): boolean {
   const value = hash.startsWith("#") ? hash.slice(1) : hash;
@@ -31,6 +34,22 @@ export function resetPageError(code: string | null): string | null {
   }
   if (code === "reset-link") {
     return RESET_LINK_ERROR;
+  }
+  if (code === "password-short") {
+    return PASSWORD_SHORT_ERROR;
+  }
+  if (code === "password-mismatch") {
+    return PASSWORD_MISMATCH_ERROR;
+  }
+  return null;
+}
+
+export function profilePageError(code: string | null): string | null {
+  if (code === "current-password") {
+    return CURRENT_PASSWORD_ERROR;
+  }
+  if (code === "password-unchanged") {
+    return PASSWORD_UNCHANGED_ERROR;
   }
   if (code === "password-short") {
     return PASSWORD_SHORT_ERROR;

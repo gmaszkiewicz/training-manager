@@ -314,23 +314,23 @@ Local mail uses the new template only after `npx supabase stop` and `npx supabas
 
 #### Manual
 
-- [ ] 1.5 After a local Supabase restart, Mailpit shows one reset mail, its link opens the set-password form while `/measurements` still redirects to sign-in, saving a new password opens sign-in with the reset notice, the old password fails, and the new password opens `/measurements`
-- [ ] 1.6 Opening that same link again shows "This reset link is no longer valid." and the email form
-- [ ] 1.7 Requesting a reset for an address with no account shows "Check your email for a password reset link."
-- [ ] 1.8 The hosted project's recovery template uses the same `token_hash` link, and its redirect allow list includes the production origin plus `/auth/reset-password`
+- [x] 1.5 After a local Supabase restart, Mailpit shows one reset mail, its link opens the set-password form while `/measurements` still redirects to sign-in, saving a new password opens sign-in with the reset notice, the old password fails, and the new password opens `/measurements`
+- [x] 1.6 Opening that same link again shows "This reset link is no longer valid." and the email form
+- [x] 1.7 Requesting a reset for an address with no account shows "Check your email for a password reset link."
+- [x] 1.8 The hosted project's recovery template uses the same `token_hash` link, and its redirect allow list includes the production origin plus `/auth/reset-password`
 
 ### Phase 2: Profile password change
 
 #### Automated
 
-- [ ] 2.1 `npm test` passes, including signed-in Profile after Measurements and guest links unchanged
-- [ ] 2.2 `npm run lint` passes
-- [ ] 2.3 `npm run check:home-tokens` passes with the Profile view on the scanned file list
-- [ ] 2.4 `npm run smoke` passes, including a wrong current password, a successful change, the other session ending, and the old password failing
+- [x] 2.1 `npm test` passes, including signed-in Profile after Measurements and guest links unchanged
+- [x] 2.2 `npm run lint` passes
+- [x] 2.3 `npm run check:home-tokens` passes with the Profile view on the scanned file list
+- [x] 2.4 `npm run smoke` passes, including a wrong current password, a successful change, the other session ending, and the old password failing
 
 #### Manual
 
-- [ ] 2.5 A trainee and a trainer each see Home, Measurements, Profile, Sign out, and Profile is marked on `/profile`
-- [ ] 2.6 A wrong current password leaves this browser on Profile and still signed in
-- [ ] 2.7 A successful change stays on Profile with "Your password was changed." and another browser signed in as the same user is sent to sign-in
-- [ ] 2.8 The home kitchen sink shows the Profile-marked bar
+- [x] 2.5 A trainee and a trainer each see Home, Measurements, Profile, Sign out, and Profile is marked on `/profile`
+- [x] 2.6 A wrong current password leaves this browser on Profile and still signed in
+- [x] 2.7 A successful change stays on Profile with "Your password was changed." and another browser signed in as the same user is sent to sign-in
+- [x] 2.8 The home kitchen sink shows the Profile-marked bar

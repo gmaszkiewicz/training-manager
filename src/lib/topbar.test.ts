@@ -61,6 +61,7 @@ describe("topbarModel", () => {
       links: [
         { id: "home", label: "Home", href: "/", current: true },
         { id: "measurements", label: "Measurements", href: "/measurements", current: false },
+        { id: "profile", label: "Profile", href: "/profile", current: false },
       ],
     });
   });
@@ -76,6 +77,11 @@ describe("topbarModel", () => {
     expect(result.greeting).toBe("Hello,");
     expect(result.email).toBe("ada@example.com");
     expect(result.showSignOut).toBe(true);
+    expect(result.links).toEqual([
+      { id: "home", label: "Home", href: "/", current: true },
+      { id: "measurements", label: "Measurements", href: "/measurements", current: false },
+      { id: "profile", label: "Profile", href: "/profile", current: false },
+    ]);
   });
 
   it("marks Measurements on /measurements with href /measurements and no query", () => {
@@ -89,6 +95,22 @@ describe("topbarModel", () => {
     expect(result.links).toEqual([
       { id: "home", label: "Home", href: "/", current: false },
       { id: "measurements", label: "Measurements", href: "/measurements", current: true },
+      { id: "profile", label: "Profile", href: "/profile", current: false },
+    ]);
+  });
+
+  it("marks Profile on /profile", () => {
+    const result = topbarModel({
+      signedIn: true,
+      email: "ada@example.com",
+      role: "trainee",
+      pathname: "/profile",
+    });
+
+    expect(result.links).toEqual([
+      { id: "home", label: "Home", href: "/", current: false },
+      { id: "measurements", label: "Measurements", href: "/measurements", current: false },
+      { id: "profile", label: "Profile", href: "/profile", current: true },
     ]);
   });
 
@@ -118,6 +140,7 @@ describe("topbarModel", () => {
       links: [
         { id: "home", label: "Home", href: "/", current: true },
         { id: "measurements", label: "Measurements", href: "/measurements", current: false },
+        { id: "profile", label: "Profile", href: "/profile", current: false },
       ],
     });
   });

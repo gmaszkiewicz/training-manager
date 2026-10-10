@@ -18,6 +18,7 @@ const FILES = [
   "src/components/auth/SignUpForm.tsx",
   "src/components/auth/ResetPasswordRequestForm.tsx",
   "src/components/auth/ResetPasswordForm.tsx",
+  "src/components/auth/ChangePasswordForm.tsx",
   "src/components/auth/ResetPasswordHashError.tsx",
   "src/components/auth/FormField.tsx",
   "src/components/auth/SubmitButton.tsx",
@@ -31,6 +32,7 @@ const FILES = [
   "src/pages/kitchen-sink/journal.astro",
   "src/pages/kitchen-sink/trainer.astro",
   "src/pages/measurements.astro",
+  "src/pages/profile.astro",
 ];
 
 const PATTERN =
