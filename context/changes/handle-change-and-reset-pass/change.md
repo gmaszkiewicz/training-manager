@@ -1,7 +1,7 @@
 ---
 change_id: handle-change-and-reset-pass
 title: Forgot password from sign-in and password change on Profile
-status: planned
+status: implementing
 created: 2026-10-10
 updated: 2026-10-10
 archived_at: null

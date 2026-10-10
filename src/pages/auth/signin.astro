@@ -2,8 +2,10 @@
 import Layout from "@/layouts/Layout.astro";
 import SignInForm from "@/components/auth/SignInForm";
 import Topbar from "@/components/Topbar.astro";
+import { PASSWORD_RESET_NOTICE } from "@/lib/auth-reset";
 
 const error = Astro.url.searchParams.get("error");
+const notice = Astro.url.searchParams.get("notice");
 ---
 
 <Layout title="Sign in">
@@ -12,7 +14,18 @@ const error = Astro.url.searchParams.get("error");
     <div class="flex flex-1 items-center justify-center">
       <div class="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-card-foreground">
         <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Sign in</h1>
+        {notice === "password-reset" ? (
+          <p class="mb-4 text-center text-sm text-muted-foreground">{PASSWORD_RESET_NOTICE}</p>
+        ) : null}
         <SignInForm serverError={error} client:load />
+        <p class="mt-4 text-center text-sm text-muted-foreground">
+          <a
+            href="/auth/reset-password"
+            class="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Forgot password?
+          </a>
+        </p>
         <p class="mt-4 text-center text-sm text-muted-foreground">
           Don't have an account?{" "}
           <a href="/auth/signup" class="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring">
