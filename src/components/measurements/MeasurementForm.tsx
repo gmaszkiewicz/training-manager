@@ -1,4 +1,4 @@
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import { CircleAlert, Plus, Ruler, Scale } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { ServerError } from "@/components/auth/ServerError";
@@ -6,13 +6,16 @@ import { SubmitButton } from "@/components/auth/SubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDelta, previewAgainst } from "@/lib/measurement-deltas";
 import {
   createMeasurementInputSchema,
   measuredOnMax,
   measurementFields,
+  parseMeasuredOn,
+  parseMeasurementField,
   toMeasuredOnLocalValue,
 } from "@/lib/measurement-input";
-import type { MeasurementEntry, MeasurementField } from "@/types";
+import type { FieldDelta, MeasurementEntry, MeasurementField } from "@/types";
 
 interface Props {
   serverError?: string | null;
@@ -85,6 +88,106 @@ function isErrorField(value: PropertyKey): value is ErrorField {
   return measurementFields.some((field) => field.field === value);
 }
 
+type PreviousRow = Pick<MeasurementEntry, "measured_on" | MeasurementField>;
+
+interface LoadedPrevious {
+  minute: string;
+  entry: PreviousRow | null;
+}
+
+function accessibleDelta(label: string, unit: string, delta: FieldDelta): string {
+  const direction = delta.direction === "none" ? "unchanged" : delta.direction;
+  return `${label} ${direction} ${delta.difference.toFixed(1)} ${unit}`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function readFiniteNumber(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  return value;
+}
+
+function readMeasuredOn(value: unknown): string | null {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+  return value;
+}
+
+function previousMinuteLabel(measuredOn: string): string {
+  return toMeasuredOnLocalValue(measuredOn).replace("T", " ");
+}
+
+function readPreviousBody(value: unknown): PreviousRow | null {
+  if (!isRecord(value) || !isRecord(value.entry)) {
+    return null;
+  }
+  const measured_on = readMeasuredOn(value.entry.measured_on);
+  const weight_kg = readFiniteNumber(value.entry.weight_kg);
+  const chest_cm = readFiniteNumber(value.entry.chest_cm);
+  const waist_cm = readFiniteNumber(value.entry.waist_cm);
+  const arms_cm = readFiniteNumber(value.entry.arms_cm);
+  const thigh_cm = readFiniteNumber(value.entry.thigh_cm);
+  const calf_cm = readFiniteNumber(value.entry.calf_cm);
+  const hips_cm = readFiniteNumber(value.entry.hips_cm);
+  const navel_cm = readFiniteNumber(value.entry.navel_cm);
+  if (
+    measured_on === null ||
+    weight_kg === null ||
+    chest_cm === null ||
+    waist_cm === null ||
+    arms_cm === null ||
+    thigh_cm === null ||
+    calf_cm === null ||
+    hips_cm === null ||
+    navel_cm === null
+  ) {
+    return null;
+  }
+  return { measured_on, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm };
+}
+
+function previousMeasurementUrl(minute: string): string {
+  const params = new URLSearchParams();
+  params.set("measured_on", minute);
+  return `/api/measurements/previous?${params.toString()}`;
+}
+
+async function fetchPreviousMeasurement(minute: string): Promise<PreviousRow | null> {
+  try {
+    const response = await fetch(previousMeasurementUrl(minute), { cache: "no-store" });
+    if (!response.ok) {
+      return null;
+    }
+    const payload: unknown = await response.json();
+    return readPreviousBody(payload);
+  } catch {
+    return null;
+  }
+}
+
+function previousForMinute(loaded: LoadedPrevious | null, minute: string | null): PreviousRow | null {
+  if (loaded === null || minute === null || loaded.minute !== minute) {
+    return null;
+  }
+  return loaded.entry;
+}
+
+function parsedMeasurementFields(values: Record<MeasurementField, string>): Partial<Record<MeasurementField, number>> {
+  const current: Partial<Record<MeasurementField, number>> = {};
+  for (const field of measurementFields) {
+    const parsed = parseMeasurementField(field.field, values[field.field]);
+    if (parsed !== null) {
+      current[field.field] = parsed;
+    }
+  }
+  return current;
+}
+
 function errorsFor(issues: { path: PropertyKey[]; message: string }[]): FormErrors {
   const next: FormErrors = {};
   for (const issue of issues) {
@@ -117,9 +220,34 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [values, setValues] = useState(entry ? fieldValues(entry) : emptyValues);
   const [note, setNote] = useState(entry?.note ?? "");
   const [errors, setErrors] = useState<FormErrors>({});
+  const [loadedPrevious, setLoadedPrevious] = useState<LoadedPrevious | null>(null);
   const dateValue = measuredOn ?? browserMinute;
+  const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date()) : null;
+  const previousEntry = previousForMinute(loadedPrevious, previewMinute);
+  const preview = previousEntry === null ? null : previewAgainst(previousEntry, parsedMeasurementFields(values));
+  const previousMinuteCaption =
+    previousEntry !== null && measurementFields.some((field) => values[field.field].trim() !== "")
+      ? `Against ${previousMinuteLabel(previousEntry.measured_on)}`
+      : null;
   const ceiling = measuredOnMax(new Date());
   const dateMax = entryMinute ? laterDate(ceiling, entryMinute) : ceiling;
+
+  useEffect(() => {
+    if (previewMinute === null) {
+      return;
+    }
+    const minute = previewMinute;
+    let active = true;
+    void fetchPreviousMeasurement(minute).then((row) => {
+      if (!active) {
+        return;
+      }
+      setLoadedPrevious({ minute, entry: row });
+    });
+    return () => {
+      active = false;
+    };
+  }, [previewMinute]);
 
   function clearError(field: ErrorField) {
     if (errors[field]) {
@@ -176,26 +304,46 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
               className="relative px-2 pr-7 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-1 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             />
             <FieldError message={errors.measured_on} />
+            {entry === null ? (
+              <p
+                className="text-card-foreground mt-1 min-h-lh text-base font-semibold whitespace-nowrap"
+                aria-hidden={previousMinuteCaption ? undefined : true}
+              >
+                {previousMinuteCaption ?? "\u00a0"}
+              </p>
+            ) : null}
           </div>
 
-          {measurementFields.map((field) => (
-            <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0 [&_p]:block [&_p]:break-words">
-              <FormField
-                id={`${idPrefix}${field.field}`}
-                name={field.field}
-                type="number"
-                step="0.1"
-                label={`${field.label} ${field.unit}`}
-                value={values[field.field]}
-                onChange={(value) => {
-                  setValues((current) => ({ ...current, [field.field]: value }));
-                  clearError(field.field);
-                }}
-                error={errors[field.field]}
-                icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
-              />
-            </div>
-          ))}
+          {measurementFields.map((field) => {
+            const delta = preview ? preview[field.field] : null;
+            return (
+              <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0 [&_p]:block [&_p]:break-words">
+                <FormField
+                  id={`${idPrefix}${field.field}`}
+                  name={field.field}
+                  type="number"
+                  step="0.1"
+                  label={`${field.label} ${field.unit}`}
+                  value={values[field.field]}
+                  onChange={(value) => {
+                    setValues((current) => ({ ...current, [field.field]: value }));
+                    clearError(field.field);
+                  }}
+                  error={errors[field.field]}
+                  icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
+                />
+                {entry === null ? (
+                  <p
+                    className="text-card-foreground mt-1 min-h-lh text-base font-semibold"
+                    aria-hidden={delta ? undefined : true}
+                    aria-label={delta ? accessibleDelta(field.label, field.unit, delta) : undefined}
+                  >
+                    {delta ? formatDelta(delta) : "\u00a0"}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
 
         <div className="w-0 min-w-full">
