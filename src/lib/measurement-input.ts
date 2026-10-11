@@ -74,6 +74,25 @@ function measurementNumber(definition: MeasurementFieldDefinition, min: number, 
   });
 }
 
+const measurementFieldNumbers = {
+  weight_kg: measurementNumber(weightField, 20, 400),
+  chest_cm: measurementNumber(chestField, 10, 300),
+  waist_cm: measurementNumber(waistField, 10, 300),
+  arms_cm: measurementNumber(armsField, 10, 300),
+  thigh_cm: measurementNumber(thighField, 10, 300),
+  calf_cm: measurementNumber(calfField, 10, 300),
+  hips_cm: measurementNumber(hipsField, 10, 300),
+  navel_cm: measurementNumber(navelField, 10, 300),
+};
+
+export function parseMeasurementField(field: MeasurementField, value: unknown): number | null {
+  const parsed = measurementFieldNumbers[field].safeParse(value);
+  if (!parsed.success) {
+    return null;
+  }
+  return parsed.data;
+}
+
 function formatUtcDate(year: number, month: number, day: number): string {
   const paddedMonth = String(month).padStart(2, "0");
   const paddedDay = String(day).padStart(2, "0");
@@ -171,14 +190,14 @@ function note() {
 export function createMeasurementInputSchema(now: Date) {
   return z.object({
     measured_on: measuredOn(now),
-    weight_kg: measurementNumber(weightField, 20, 400),
-    chest_cm: measurementNumber(chestField, 10, 300),
-    waist_cm: measurementNumber(waistField, 10, 300),
-    arms_cm: measurementNumber(armsField, 10, 300),
-    thigh_cm: measurementNumber(thighField, 10, 300),
-    calf_cm: measurementNumber(calfField, 10, 300),
-    hips_cm: measurementNumber(hipsField, 10, 300),
-    navel_cm: measurementNumber(navelField, 10, 300),
+    weight_kg: measurementFieldNumbers.weight_kg,
+    chest_cm: measurementFieldNumbers.chest_cm,
+    waist_cm: measurementFieldNumbers.waist_cm,
+    arms_cm: measurementFieldNumbers.arms_cm,
+    thigh_cm: measurementFieldNumbers.thigh_cm,
+    calf_cm: measurementFieldNumbers.calf_cm,
+    hips_cm: measurementFieldNumbers.hips_cm,
+    navel_cm: measurementFieldNumbers.navel_cm,
     note: note(),
   });
 }

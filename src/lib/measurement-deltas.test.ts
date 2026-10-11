@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDelta, withDeltas } from "@/lib/measurement-deltas";
-import type { MeasurementEntry } from "@/types";
+import { formatDelta, previewAgainst, withDeltas } from "@/lib/measurement-deltas";
+import { parseMeasurementField } from "@/lib/measurement-input";
+import type { MeasurementEntry, MeasurementField } from "@/types";
 
 function entry(
   partial: Pick<MeasurementEntry, "id" | "measured_on" | "created_at" | "weight_kg"> & Partial<MeasurementEntry>,
@@ -411,5 +412,74 @@ describe("withDeltas", () => {
       expect(formatDelta(eveningDeltas.weight_kg)).toBe("↑ 1.0");
     }
     expect(result[1]?.deltas).toBeNull();
+  });
+});
+
+function previousNumbers(weight: number, chest = 50): Pick<MeasurementEntry, MeasurementField> {
+  return {
+    weight_kg: weight,
+    chest_cm: chest,
+    waist_cm: 50,
+    arms_cm: 50,
+    thigh_cm: 50,
+    calf_cm: 50,
+    hips_cm: 50,
+    navel_cm: 50,
+  };
+}
+
+describe("previewAgainst", () => {
+  it("shows a decrease of 1.5", () => {
+    const result = previewAgainst(previousNumbers(80), { weight_kg: 78.5 });
+
+    expect(result.weight_kg).toEqual({ direction: "down", difference: 1.5 });
+    expect(result.chest_cm).toBeNull();
+    const weight = result.weight_kg;
+    if (weight) {
+      expect(formatDelta(weight)).toBe("↓ 1.5");
+    }
+  });
+
+  it("shows an increase of 0.2 without a float artifact", () => {
+    const result = previewAgainst(previousNumbers(80.1), { weight_kg: 80.3 });
+
+    expect(result.weight_kg).toEqual({ direction: "up", difference: 0.2 });
+    const weight = result.weight_kg;
+    if (weight) {
+      expect(formatDelta(weight)).toBe("↑ 0.2");
+    }
+  });
+
+  it("shows no arrow when values are equal", () => {
+    const result = previewAgainst(previousNumbers(80), { weight_kg: 80 });
+
+    expect(result.weight_kg).toEqual({ direction: "none", difference: 0 });
+    const weight = result.weight_kg;
+    if (weight) {
+      expect(formatDelta(weight)).toBe("0.0");
+    }
+  });
+
+  it("leaves a rejected weight blank while a valid circumference still shows a difference", () => {
+    const previous = previousNumbers(80, 50);
+    for (const weight of ["", "78.55", 19.9]) {
+      const parsedWeight = parseMeasurementField("weight_kg", weight);
+      const parsedChest = parseMeasurementField("chest_cm", "60");
+      expect(parsedWeight).toBeNull();
+      expect(parsedChest).toBe(60);
+
+      const current: Partial<Record<MeasurementField, number>> = {};
+      if (parsedChest !== null) {
+        current.chest_cm = parsedChest;
+      }
+      const result = previewAgainst(previous, current);
+
+      expect(result.weight_kg).toBeNull();
+      expect(result.chest_cm).toEqual({ direction: "up", difference: 10 });
+      const chest = result.chest_cm;
+      if (chest) {
+        expect(formatDelta(chest)).toBe("↑ 10.0");
+      }
+    }
   });
 });

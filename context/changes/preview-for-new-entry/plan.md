@@ -252,26 +252,26 @@ No schema change. Existing rows stay as they are. The lookup uses the unique `(t
 
 #### Automated
 
-- [x] 1.1 `npm test` selects the latest saved row whose time is strictly before a minute sitting between two rows, including an earlier minute on the same calendar day.
-- [x] 1.2 `npm test` selects the row before a saved minute when the typed minute equals that saved minute, and selects nothing when every saved row is later.
-- [x] 1.3 `npm run lint` passes.
+- [x] 1.1 `npm test` selects the latest saved row whose time is strictly before a minute sitting between two rows, including an earlier minute on the same calendar day. — 0e5dde3
+- [x] 1.2 `npm test` selects the row before a saved minute when the typed minute equals that saved minute, and selects nothing when every saved row is later. — 0e5dde3
+- [x] 1.3 `npm run lint` passes. — 0e5dde3
 
 #### Manual
 
-- [x] 1.4 As a signed-in trainee, with rows at 2026-10-06T09:00:00, 2026-10-06T10:00:00, and 2026-10-06T11:00:00, requesting 2026-10-06T11:00 returns the 10:00 row, not the 09:00 row; a trainer or signed-out request is refused.
+- [x] 1.4 As a signed-in trainee, with rows at 2026-10-06T09:00:00, 2026-10-06T10:00:00, and 2026-10-06T11:00:00, requesting 2026-10-06T11:00 returns the 10:00 row, not the 09:00 row; a trainer or signed-out request is refused. — 0e5dde3
 
 ### Phase 2: Live preview
 
 #### Automated
 
-- [ ] 2.1 `npm test` formats 78.5 against a previous 80 as ↓ 1.5, 80.3 against 80.1 as ↑ 0.2, and equal numbers as 0.0.
-- [ ] 2.2 `npm test` leaves a field blank when it is empty, has more than one decimal, or is outside that field's range, while a valid sibling field still shows a difference.
-- [ ] 2.3 `npm run lint` passes.
+- [x] 2.1 `npm test` formats 78.5 against a previous 80 as ↓ 1.5, 80.3 against 80.1 as ↑ 0.2, and equal numbers as 0.0.
+- [x] 2.2 `npm test` leaves a field blank when it is empty, has more than one decimal, or is outside that field's range, while a valid sibling field still shows a difference.
+- [x] 2.3 `npm run lint` passes.
 
 #### Manual
 
-- [ ] 2.4 On a new entry, moving the minute switches the previous row, and a valid keystroke updates that field's difference without a new request.
-- [ ] 2.5 Edit measurement shows no preview, and an unacceptable minute or a failed lookup leaves Add measurement usable with no differences.
+- [x] 2.4 On a new entry, moving the minute switches the previous row, and a valid keystroke updates that field's difference without a new request.
+- [x] 2.5 Edit measurement shows no preview, and an unacceptable minute or a failed lookup leaves Add measurement usable with no differences.
 
 ### Phase 3: Copy
 

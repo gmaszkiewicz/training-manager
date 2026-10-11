@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createMeasurementInputSchema, parseMeasuredOn } from "@/lib/measurement-input";
+import { createMeasurementInputSchema, parseMeasuredOn, parseMeasurementField } from "@/lib/measurement-input";
 
 const now = new Date("2026-09-28T12:00:00.000Z");
 
@@ -237,5 +237,19 @@ describe("parseMeasuredOn", () => {
     expect(parseMeasuredOn("2026-10-06", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-02-29T00:00", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-10-08T00:00", ceilingNow)).toBeNull();
+  });
+});
+
+describe("parseMeasurementField", () => {
+  it("returns the number when that field would pass submit", () => {
+    expect(parseMeasurementField("weight_kg", "78.5")).toBe(78.5);
+    expect(parseMeasurementField("chest_cm", "60")).toBe(60);
+  });
+
+  it("returns null when the field is empty, has more than one decimal, or is outside its range", () => {
+    expect(parseMeasurementField("weight_kg", "")).toBeNull();
+    expect(parseMeasurementField("weight_kg", "78.55")).toBeNull();
+    expect(parseMeasurementField("weight_kg", 19.9)).toBeNull();
+    expect(parseMeasurementField("chest_cm", "60")).toBe(60);
   });
 });
