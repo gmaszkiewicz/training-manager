@@ -28,6 +28,14 @@ import AuthSinkStates from "@/components/kitchen-sink/AuthSinkStates";
             <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Sign in</h1>
             <SignInForm client:load />
             <p class="mt-4 text-center text-sm text-muted-foreground">
+              <a
+                href="/auth/reset-password"
+                class="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Forgot password?
+              </a>
+            </p>
+            <p class="mt-4 text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <a href="/auth/signup" class="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring">
                 Sign up
@@ -95,9 +103,9 @@ import AuthSinkStates from "@/components/kitchen-sink/AuthSinkStates";
           Focus-visible
         </h2>
         <p class="text-muted-foreground text-sm">
-          Tab through the email field, password toggle, submit button, and sign-up link in the Default sign-in form, and
-          the confirm-email "Back to sign in" link. The ring is the shared <code class="text-foreground">--ring</code>,
-          not a purple ring.
+          Tab through the email field, password toggle, submit button, Forgot password link, and sign-up link in the
+          Default sign-in form, and the confirm-email "Back to sign in" link. The ring is the shared{" "}
+          <code class="text-foreground">--ring</code>, not a purple ring.
         </p>
       </section>
 
