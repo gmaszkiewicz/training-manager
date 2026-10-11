@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-10-10
+updated: 2026-10-11
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -80,7 +80,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-22 | measured-on-with-time | user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused | S-02 | MS-15 | done |
 | S-23 | pagination-and-filter-measurements | user can see one calendar month of measurements at a time, paged 5, 10, or 15, newest first, and a linked trainer sees the same list | S-13, S-22 | FR-009 | done |
 | S-24 | query-optimization | user can open the same calendar-month page as today, with the same rows, order, page size, and difference versus the previous entry, including when that previous entry sits outside the page, and a linked trainer sees that same page, while the list is built without walking the whole journal | S-23 | MS-16, FR-009 | done |
-| S-25 | handle-change-and-reset-pass | user can request a password reminder from sign-in, and a signed-in user can change their password from Profile in the menu between Measurements and Sign out | S-08, S-11 | MS-17 | in-progress |
+| S-25 | handle-change-and-reset-pass | user can request a password reminder from sign-in, and a signed-in user can change their password from Profile in the menu between Measurements and Sign out | S-08, S-11 | MS-17 | done |
 
 ## Streams
 
@@ -414,7 +414,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** A reminder or a password change could lock the account or update the wrong user. Profile is new in the menu; this slice only adds password change, so later Profile features stay out.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -491,3 +491,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-22: user can record a measurement with date and time; `created_at` stays the immutable creation time; a second entry with the same date and time is refused** — Archived 2026-10-08 → `context/archive/2026-10-06-measured-on-with-time/`. Lesson: —.
 - **S-23: user can see one calendar month of measurements at a time, paged 5, 10, or 15, newest first, and a linked trainer sees the same list** — Archived 2026-10-09 → `context/archive/2026-10-08-pagination-and-filter-measurements/`. Lesson: —.
 - **S-24: user can open the same calendar-month page as today, with the same rows, order, page size, and difference versus the previous entry, including when that previous entry sits outside the page, and a linked trainer sees that same page, while the list is built without walking the whole journal** — Archived 2026-10-10 → `context/archive/2026-10-10-query-optimization/`. Lesson: —.
+- **S-25: user can request a password reminder from sign-in, and a signed-in user can change their password from Profile in the menu between Measurements and Sign out** — Archived 2026-10-11 → `context/archive/2026-10-10-handle-change-and-reset-pass/`. Lesson: —.
