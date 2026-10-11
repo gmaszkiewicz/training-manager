@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
           Topbar
         </h2>
         <p class="text-muted-foreground text-sm">
-          Preview bars for the five product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
+          Preview bars for the six product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
           <code class="text-foreground">preview</code> so this sink stays session-free.
         </p>
 
@@ -62,6 +62,15 @@ import { Button } from "@/components/ui/button";
             <code class="text-foreground">/measurements</code>: the email only, Measurements marked, no Hello line.
           </p>
           <Topbar preview={{ signedIn: true, email: "ada@example.com", role: null, pathname: "/measurements" }} />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainee <code class="text-foreground">ada@example.com</code> on{" "}
+            <code class="text-foreground">/profile</code>: "Hello, ada@example.com", Profile marked, href{" "}
+            <code class="text-foreground">/profile</code>.
+          </p>
+          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: "trainee", pathname: "/profile" }} />
         </div>
       </section>
 
