@@ -8,6 +8,7 @@ export const RESET_EMAIL_ERROR = "We could not send the reset email. Try again l
 export const RESET_LINK_ERROR = "This reset link is no longer valid.";
 export const PASSWORD_SHORT_ERROR = "Password must be at least 6 characters.";
 export const PASSWORD_MISMATCH_ERROR = "Passwords do not match.";
+export const PASSWORD_SAME_ERROR = "New password must be different from the current password.";
 export const PASSWORD_CHANGED_NOTICE = "Your password was changed.";
 export const CURRENT_PASSWORD_ERROR = "Current password is incorrect.";
 export const PASSWORD_UNCHANGED_ERROR = "Your password was not changed.";
@@ -20,6 +21,42 @@ export function isExpiredRecoveryHash(hash: string): boolean {
   }
   const params = new URLSearchParams(value);
   return params.get("error") === "access_denied" || params.get("error_code") === "otp_expired";
+}
+
+export function recoverySessionFromHash(hash: string): { accessToken: string; refreshToken: string } | null {
+  const value = hash.startsWith("#") ? hash.slice(1) : hash;
+  if (value === "") {
+    return null;
+  }
+  const params = new URLSearchParams(value);
+  if (params.get("type") !== "recovery") {
+    return null;
+  }
+  const accessToken = params.get("access_token") ?? "";
+  const refreshToken = params.get("refresh_token") ?? "";
+  if (accessToken === "" || refreshToken === "" || !isRecoveryAccessToken(accessToken)) {
+    return null;
+  }
+  return { accessToken, refreshToken };
+}
+
+export function isRecoveryAccessToken(accessToken: string): boolean {
+  const segment = accessToken.split(".")[1];
+  if (!segment) {
+    return false;
+  }
+  try {
+    const padded = segment.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (segment.length % 4)) % 4);
+    const payload = JSON.parse(
+      new TextDecoder().decode(Uint8Array.from(atob(padded), (char) => char.charCodeAt(0))),
+    ) as {
+      amr?: { method?: string }[];
+    };
+    const methods = Array.isArray(payload.amr) ? payload.amr.map((entry) => entry.method) : [];
+    return methods.includes("otp") && !methods.includes("password");
+  } catch {
+    return false;
+  }
 }
 
 export function resetRequestResult(error: { code?: string | null } | null): ResetRequestResult {
@@ -41,6 +78,9 @@ export function resetPageError(code: string | null): string | null {
   }
   if (code === "password-mismatch") {
     return PASSWORD_MISMATCH_ERROR;
+  }
+  if (code === "password-same") {
+    return PASSWORD_SAME_ERROR;
   }
   return null;
 }
