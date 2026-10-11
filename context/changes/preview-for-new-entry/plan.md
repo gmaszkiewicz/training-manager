@@ -252,13 +252,13 @@ No schema change. Existing rows stay as they are. The lookup uses the unique `(t
 
 #### Automated
 
-- [ ] 1.1 `npm test` selects the latest saved row whose time is strictly before a minute sitting between two rows, including an earlier minute on the same calendar day.
-- [ ] 1.2 `npm test` selects the row before a saved minute when the typed minute equals that saved minute, and selects nothing when every saved row is later.
-- [ ] 1.3 `npm run lint` passes.
+- [x] 1.1 `npm test` selects the latest saved row whose time is strictly before a minute sitting between two rows, including an earlier minute on the same calendar day.
+- [x] 1.2 `npm test` selects the row before a saved minute when the typed minute equals that saved minute, and selects nothing when every saved row is later.
+- [x] 1.3 `npm run lint` passes.
 
 #### Manual
 
-- [ ] 1.4 As a signed-in trainee, with rows at 2026-10-06T09:00:00, 2026-10-06T10:00:00, and 2026-10-06T11:00:00, requesting 2026-10-06T11:00 returns the 10:00 row, not the 09:00 row; a trainer or signed-out request is refused.
+- [x] 1.4 As a signed-in trainee, with rows at 2026-10-06T09:00:00, 2026-10-06T10:00:00, and 2026-10-06T11:00:00, requesting 2026-10-06T11:00 returns the 10:00 row, not the 09:00 row; a trainer or signed-out request is refused.
 
 ### Phase 2: Live preview
 
