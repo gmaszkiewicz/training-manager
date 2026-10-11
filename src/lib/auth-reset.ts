@@ -9,6 +9,7 @@ export const RESET_LINK_ERROR = "This reset link is no longer valid.";
 export const PASSWORD_SHORT_ERROR = "Password must be at least 6 characters.";
 export const PASSWORD_MISMATCH_ERROR = "Passwords do not match.";
 export const PASSWORD_SAME_ERROR = "New password must be different from the current password.";
+export const RESET_SIGNOUT_ERROR = "Your password was reset. We could not sign you out.";
 export const PASSWORD_CHANGED_NOTICE = "Your password was changed.";
 export const CURRENT_PASSWORD_ERROR = "Current password is incorrect.";
 export const PASSWORD_UNCHANGED_ERROR = "Your password was not changed.";
@@ -81,6 +82,9 @@ export function resetPageError(code: string | null): string | null {
   }
   if (code === "password-same") {
     return PASSWORD_SAME_ERROR;
+  }
+  if (code === "sign-out") {
+    return RESET_SIGNOUT_ERROR;
   }
   return null;
 }
