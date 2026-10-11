@@ -9,6 +9,8 @@ archived_at: null
 
 ## Notes
 
+S-27. Outcome: user can move through the journal on a week of day buttons, open the month grid from the month name, set date and time together in one field, and read each saved entry's values centered with the same icons as a new measurement. PRD refs: MS-19.
+
 1) Journal calendar: a week strip of day buttons. Clicking the month name (for example "October 2026") expands the month grid.
 2) Date and time stays one field. Its popup contains the month grid and the time together.
 3) Center the values on saved entries, and add the same icons used when adding a new measurement.
