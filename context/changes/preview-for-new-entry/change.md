@@ -1,7 +1,7 @@
 ---
 change_id: preview-for-new-entry
 title: Preview the delta versus the previous entry from the new entry date
-status: preparing
+status: planned
 created: 2026-10-11
 updated: 2026-10-11
 archived_at: null
