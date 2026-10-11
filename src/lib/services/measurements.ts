@@ -11,7 +11,7 @@ import {
   utcToday,
   type PageSize,
 } from "@/lib/measurement-page";
-import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
+import type { MeasurementEntry, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface MeasurementInput {
   measured_on: string;
@@ -28,6 +28,11 @@ interface MeasurementInput {
 
 const measurementColumns =
   "id, measured_on, created_at, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm, note";
+
+const previousMeasurementColumns =
+  "id, measured_on, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm";
+
+type PreviousMeasurementEntry = Pick<MeasurementEntry, "id" | "measured_on" | MeasurementField>;
 
 const MEASUREMENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -83,6 +88,32 @@ export async function getMeasurement(
     }
 
     return { ok: true, entry: data };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export async function readPreviousMeasurement(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  measuredOn: string,
+): Promise<{ ok: true; entry: PreviousMeasurementEntry | null } | { ok: false }> {
+  try {
+    const { data, error } = await supabase
+      .from("measurements")
+      .select(previousMeasurementColumns)
+      .eq("trainee_id", traineeId)
+      .lt("measured_on", measuredOn)
+      .order("measured_on", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      return { ok: false };
+    }
+
+    const row = data[0] ?? null;
+    return { ok: true, entry: row };
   } catch {
     return { ok: false };
   }
