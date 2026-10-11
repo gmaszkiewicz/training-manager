@@ -45,6 +45,9 @@ export const POST: APIRoute = async (context) => {
     return context.redirect("/profile?error=password-unchanged");
   }
 
-  await supabase.auth.signOut({ scope: "others" });
+  const signedOut = await supabase.auth.signOut({ scope: "others" });
+  if (signedOut.error) {
+    return context.redirect("/profile?error=other-sessions");
+  }
   return context.redirect("/profile?notice=password-changed");
 };
