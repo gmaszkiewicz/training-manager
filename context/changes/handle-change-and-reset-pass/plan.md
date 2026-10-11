@@ -2,7 +2,7 @@
 
 ## Overview
 
-A signed-out person can request a password reset from sign-in and choose a new password from the email link. A signed-in trainee or trainer can change their password on Profile, in the menu between Measurements and Sign out. The reset link does not leave a session. The Profile change keeps this browser signed in and signs out the others.
+A signed-out person can request a password reset from sign-in and choose a new password from the email link. A signed-in trainee or trainer can change their password on Profile, in the menu between Measurements and Sign out. A finished reset does not leave a session. A recovery hash, and a retry after the same password, keep a recovery session only until a different password is saved. The Profile change keeps this browser signed in and signs out the others.
 
 ## Current State Analysis
 
@@ -14,7 +14,7 @@ Sign-up already requires a password of at least 6 characters and a matching conf
 
 ## Desired End State
 
-From sign-in, Forgot password opens `/auth/reset-password`. Submitting an email always shows "Check your email for a password reset link." when the send is accepted or the account is missing. The mail link opens that same page with a one-time token. Submitting a new password ends the recovery session and opens `/auth/signin` with "Your password was reset. Sign in with the new password." The old password fails. An expired or used link shows "This reset link is no longer valid." and the email form.
+From sign-in, Forgot password opens `/auth/reset-password`. Submitting an email always shows "Check your email for a password reset link." when the send is accepted or the account is missing. The local mail link opens that same page with a one-time token. A hosted link that returns the session in the URL hash opens the same new-password form after the browser stores that recovery session. Submitting a different password ends the recovery session and opens `/auth/signin` with "Your password was reset. Sign in with the new password." The old password fails. Submitting the current password stays on the new-password form with "New password must be different from the current password." and keeps the recovery session. An expired or used link shows "This reset link is no longer valid." and the email form.
 
 A signed-in user opens Profile between Measurements and Sign out. The form asks for the current password, the new password, and a confirmation. Success stays on `/profile` with "Your password was changed." Other sessions for that user are signed out. A wrong current password stays on Profile and leaves this session signed in.
 
@@ -25,7 +25,7 @@ A signed-in user opens Profile between Measurements and Sign out. The form asks 
 - Several `topbarModel` tests assert the signed-in link array exactly (`src/lib/topbar.test.ts`).
 - `scripts/check-home-tokens.mjs` only scans a fixed file list. New views are ungated until they are added.
 - Smoke keeps one cookie jar and finishes signed in as the original trainee with `password` (`scripts/smoke.mjs`). New password steps need their own user and jars.
-- The default Supabase recovery link verifies on the auth server and returns a PKCE code tied to the browser that requested the mail. That signs the user in before they choose a password, and it fails on another device.
+- The default hosted recovery link verifies on the auth server and redirects to `/auth/reset-password#access_token=...&refresh_token=...&type=recovery`. The server render never sees that hash, so the page would show the email form. The browser posts the tokens to a session route. That route stores them only when the access token's `amr` includes `otp` and does not include `password`. Local mail uses the `token_hash` template and does not take this path. A PKCE `code` is not exchanged: the reset client does not store a code verifier.
 
 ## What We're NOT Doing
 
@@ -38,10 +38,13 @@ A signed-in user opens Profile between Measurements and Sign out. The form asks 
 - A Playwright test that opens Mailpit. The live link stays a manual check.
 - Sending recovery mail from `scripts/smoke.mjs`.
 - Committing hosted Supabase dashboard settings. Production redirect and template updates stay a manual check.
+- Exchanging a PKCE `code` query. The reset client does not store a code verifier.
 
 ## Implementation Approach
 
 `/auth/reset-password` is both the request page and the set-password page. The recovery template links to `{{ .SiteURL }}/auth/reset-password?token_hash={{ .TokenHash }}&type=recovery`. The page renders the set-password form when that token is present. `verifyOtp` runs only on the submit that also sets the new password, then the route signs that session out and redirects to sign-in. A mail client that only GETs the link does not consume the token and does not create a session.
+
+When the link arrives as a recovery hash, the page posts `access_token` and `refresh_token` to `POST /api/auth/reset-password/session`. That route calls `setSession` and redirects to `/auth/reset-password?recovery=1`, which shows the new-password form. Confirm then updates the password from the recovery session because `token_hash` is empty. An `updateUser` error of `same_password` does not sign out. It redirects to `/auth/reset-password?error=password-same` and the recovery session stays, so the visitor can submit a different password.
 
 Missing accounts use the same sent notice as a real send. Rate limits and other send failures stay visible. Profile is `/profile`, protected like Measurements, with the same password rules as sign-up. The current password is proved with `signInWithPassword` on the existing client. Failure leaves that session in place. Success replaces this browser's session, then other sessions are signed out. On success this browser stays on Profile.
 
@@ -49,7 +52,7 @@ Missing accounts use the same sent notice as a real send. Rate limits and other 
 
 ### Token lifetime
 
-Call `verifyOtp` only on the password POST. A GET that verifies the token lets a mail client consume it while prefetching, and it writes a session before a new password exists. After a successful verify, sign out even when the password update fails, so the recovery session does not remain.
+Call `verifyOtp` only on the password POST that still has `token_hash`. A GET that verifies the token lets a mail client consume it while prefetching, and it writes a session before a new password exists. After a successful verify, sign out when the password update fails for a reason other than `same_password`. `same_password` keeps the recovery session and returns the visitor to the new-password form. A different password still signs out and opens sign-in.
 
 ### Current password proof
 
@@ -57,7 +60,7 @@ Prove the current password with `signInWithPassword` on the cookie-backed client
 
 ### Recovery email shape
 
-The default Supabase link verifies on the auth server and returns a PKCE code. The code verifier cookie lives on the browser that requested the reset, and exchanging the code signs the user in. The recovery template must use the `token_hash` link below. Hosted Supabase does not read `supabase/config.toml`. The hosted template and redirect allow list have to match, or production mail cannot finish this flow.
+The recovery template must use the `token_hash` link below so a mail scanner does not consume the token before the visitor chooses a password. Hosted Supabase does not read `supabase/config.toml`. Until the hosted template matches, the default confirmation URL verifies on the auth server and redirects with the session in the URL hash. The hash handoff covers that landing. The redirect allow list still has to include the production origin plus `/auth/reset-password`, or the auth server sends the browser to the site URL and the reset page never sees the hash. A PKCE `code` is not exchanged.
 
 ### Local mail budget
 
@@ -93,7 +96,7 @@ Sign-in gains Forgot password. `/auth/reset-password` requests the mail and acce
 
 **Intent**: One public page for requesting a link and for setting the new password, using the sign-in shell.
 
-**Contract**: `Layout`, `Topbar`, and the same `max-w-sm rounded-2xl border border-border bg-card p-8` card as sign-in. The heading is "Reset password". When `token_hash` and `type=recovery` are present and `error` is not `reset-link`, show the new-password form. `error=reset-link`, a missing token, or any other `type` shows the email form. `notice=reset-sent` renders exactly "Check your email for a password reset link." `error=reset-email` renders exactly "We could not send the reset email. Try again later." `error=reset-link` renders exactly "This reset link is no longer valid." `error=password-short` renders exactly "Password must be at least 6 characters." `error=password-mismatch` renders exactly "Passwords do not match." Notices use `text-muted-foreground`. Errors use the existing `ServerError` treatment. A hash of `error=access_denied` or `error_code=otp_expired` is replaced with `/auth/reset-password?error=reset-link`, and that rewrite does not call `verifyOtp`. This GET does not call `verifyOtp` and does not write a session.
+**Contract**: `Layout`, `Topbar`, and the same `max-w-sm rounded-2xl border border-border bg-card p-8` card as sign-in. The heading is "Reset password". Show the new-password form when `token_hash` and `type=recovery` are present and `error` is not `reset-link`. Also show it when the cookie session is a recovery access token and either the query is `recovery=1` or `error` is `password-same`, `password-short`, or `password-mismatch`. Otherwise show the email form. `notice=reset-sent` renders exactly "Check your email for a password reset link." `error=reset-email` renders exactly "We could not send the reset email. Try again later." `error=reset-link` renders exactly "This reset link is no longer valid." `error=password-short` renders exactly "Password must be at least 6 characters." `error=password-mismatch` renders exactly "Passwords do not match." `error=password-same` renders exactly "New password must be different from the current password." Notices use `text-muted-foreground`. Errors use the existing `ServerError` treatment. A hash of `error=access_denied` or `error_code=otp_expired` is replaced with `/auth/reset-password?error=reset-link`, and that rewrite does not call `verifyOtp`. A hash that contains `access_token` and `type=recovery` hides the choice and shows "Opening your reset link..." until the session POST returns. That handoff does not call `verifyOtp`. This GET does not call `verifyOtp` and does not write a session.
 
 #### 4. Request and set-password forms
 
@@ -103,7 +106,7 @@ Sign-in gains Forgot password. `/auth/reset-password` requests the mail and acce
 
 **Intent**: Reuse the auth field, toggle, and submit pieces so client checks match sign-up.
 
-**Contract**: The request form posts `email` to `POST /api/auth/reset-password`. Client messages match sign-in: "Email is required" and "Enter a valid email address". The set-password form posts `token_hash`, `type`, `password`, and `confirmPassword` to `POST /api/auth/reset-password/confirm`. Client messages match sign-up: "Password is required", "Password must be at least 6 characters", "Please confirm your password", and "Passwords do not match". Submit pending text is "Sending reset email..." or "Saving password...".
+**Contract**: The request form posts `email` to `POST /api/auth/reset-password`. Client messages match sign-in: "Email is required" and "Enter a valid email address". The set-password form posts `token_hash`, `type`, `password`, and `confirmPassword` to `POST /api/auth/reset-password/confirm`. `token_hash` is empty when the form is shown from a recovery session. `type` is `recovery`. Client messages match sign-up: "Password is required", "Password must be at least 6 characters", "Please confirm your password", and "Passwords do not match". Submit pending text is "Sending reset email..." or "Saving password...".
 
 #### 5. Reset request route
 
@@ -119,7 +122,7 @@ Sign-in gains Forgot password. `/auth/reset-password` requests the mail and acce
 
 **Intent**: Turn a still-valid recovery token into a new password, then leave the visitor signed out.
 
-**Contract**: `POST` reads `token_hash`, `type`, `password`, and `confirmPassword`. A missing token or a `type` other than `recovery` redirects to exactly `/auth/reset-password?error=reset-link` and does not call `verifyOtp`. A password shorter than 6 characters, or a confirmation that differs, redirects to `/auth/reset-password` with the same `token_hash`, `type=recovery`, and `error=password-short` or `error=password-mismatch`, and does not call `verifyOtp`. Otherwise call `verifyOtp({ token_hash, type: "recovery" })`, then `updateUser({ password })`, then `signOut()` on that session, then redirect to exactly `/auth/signin?notice=password-reset`. If verify fails, redirect to exactly `/auth/reset-password?error=reset-link` and write no session. If verify succeeds and `updateUser` fails, `signOut()` still runs, then redirect to `/auth/reset-password?error=reset-link`.
+**Contract**: `POST` reads `token_hash`, `type`, `password`, and `confirmPassword`. A missing client redirects to `/auth/reset-password?error=reset-link`. An empty `token_hash`, or a `type` other than `recovery`, does not call `verifyOtp`. It updates the password only when the cookie session is a recovery access token. A password shorter than 6 characters, or a confirmation that differs, redirects to `/auth/reset-password?error=password-short` or `error=password-mismatch` and leaves that session in place. When `token_hash` and `type=recovery` are both present, those same validation failures redirect to `/auth/reset-password` with that `token_hash`, `type=recovery`, and the error, and do not call `verifyOtp`. Otherwise call `verifyOtp({ token_hash, type: "recovery" })`. If verify fails, redirect to exactly `/auth/reset-password?error=reset-link` and write no session. Then `updateUser({ password })`. `error.code` of `same_password` redirects to exactly `/auth/reset-password?error=password-same` and does not call `signOut()`. Any other `updateUser` failure calls `signOut()` and redirects to `/auth/reset-password?error=reset-link`. Success calls `signOut()` and redirects to exactly `/auth/signin?notice=password-reset`.
 
 #### 7. Outcome helper
 
@@ -127,7 +130,7 @@ Sign-in gains Forgot password. `/auth/reset-password` requests the mail and acce
 
 **Intent**: Keep the enumeration rule testable without calling GoTrue.
 
-**Contract**: Export the request-result helper used by the reset route, and the fixed notice and error sentences used by the reset and sign-in pages, so the copy above has one source. Unit tests live next to it.
+**Contract**: Export the request-result helper used by the reset route, and the fixed notice and error sentences used by the reset and sign-in pages, so the copy above has one source. Export `isRecoveryAccessToken`: true only when the access token's `amr` includes `otp` and does not include `password`. Export `recoverySessionFromHash`: it reads `access_token`, `refresh_token`, and `type=recovery` from a hash, and returns null for any other type, a missing token, or a token that fails `isRecoveryAccessToken`. Unit tests live next to it.
 
 #### 8. Local recovery template and redirect
 
@@ -153,13 +156,23 @@ Sign-in gains Forgot password. `/auth/reset-password` requests the mail and acce
 
 **Intent**: Cover the new views with the token gate, and prove the reminder redirects without sending mail.
 
-**Contract**: Add the new reset page and both reset form components to the scanned file list. Smoke gains three checks that do not request a reset for an existing account: `GET /auth/signin` contains `Forgot password?` and `href="/auth/reset-password"`; a `POST /api/auth/reset-password` for an address with no account redirects to exactly `/auth/reset-password?notice=reset-sent`; a `POST /api/auth/reset-password/confirm` with an unusable token redirects to exactly `/auth/reset-password?error=reset-link`. Run the two POSTs on the existing end-of-file session and then assert `GET /measurements` is still 200, so a reminder cannot sign that user out. Do not change the existing steps' user, password, or cookie jar.
+**Contract**: Add the new reset page, both reset form components, and `ResetPasswordHashError` to the scanned file list. Smoke gains three checks that do not request a reset for an existing account: `GET /auth/signin` contains `Forgot password?` and `href="/auth/reset-password"`; a `POST /api/auth/reset-password` for an address with no account redirects to exactly `/auth/reset-password?notice=reset-sent`; a `POST /api/auth/reset-password/confirm` with an unusable token redirects to exactly `/auth/reset-password?error=reset-link`. Run the two POSTs on the existing end-of-file session and then assert `GET /measurements` is still 200, so a reminder cannot sign that user out. Do not change the existing steps' user, password, or cookie jar.
+
+#### 10. Recovery hash session
+
+**File**: `src/pages/api/auth/reset-password/session.ts`
+
+**File**: `src/components/auth/ResetPasswordHashError.tsx`
+
+**Intent**: Turn a hosted recovery hash into the new-password form without calling `verifyOtp` from the browser.
+
+**Contract**: On mount, an expired hash still replaces the location with `/auth/reset-password?error=reset-link`. A hash that `recoverySessionFromHash` accepts posts `access_token` and `refresh_token` to `POST /api/auth/reset-password/session` and does not call `verifyOtp`. The route rejects a missing token, a token that fails `isRecoveryAccessToken`, a missing client, or a `setSession` result that is not a recovery access token, with `/auth/reset-password?error=reset-link`. Success redirects to exactly `/auth/reset-password?recovery=1`.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- `npm test` passes, including the reset-request cases: no error and a missing account both mean sent, and a rate limit or other send failure means email-failed
+- `npm test` passes, including the reset-request cases: no error and a missing account both mean sent, and a rate limit or other send failure means email-failed. A recovery access token is accepted only for `amr` method `otp` without `password`. `recoverySessionFromHash` reads a recovery hash and rejects a different type or an empty hash
 - `npm run lint` passes
 - `npm run check:home-tokens` passes with the new reset views on the scanned file list
 - `npm run smoke` passes, including the unknown-email request, the dead reset link, and the existing session still on `/measurements`
@@ -170,6 +183,8 @@ Sign-in gains Forgot password. `/auth/reset-password` requests the mail and acce
 - Opening that same link again shows "This reset link is no longer valid." and the email form
 - Requesting a reset for an address with no account shows "Check your email for a password reset link."
 - The hosted project's recovery template uses the same `token_hash` link, and its redirect allow list includes the production origin plus `/auth/reset-password`
+- Saving the current password shows "New password must be different from the current password." on the new-password form. Saving a different password from that form opens sign-in with the reset notice
+- A recovery hash with `access_token`, `refresh_token`, and `type=recovery` opens the new-password form. Saving a different password from that form opens sign-in with the reset notice
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -262,6 +277,7 @@ Profile appears between Measurements and Sign out for every signed-in user. Chan
 ### Unit Tests:
 
 - Reset-request mapping: no error → sent; missing account → sent; rate limit or other send failure → email-failed.
+- `isRecoveryAccessToken`: `otp` → true; `password` → false; both → false; garbage → false. `recoverySessionFromHash`: a recovery hash returns both tokens; another type or an empty hash returns null.
 - `topbarModel`: guest links unchanged; signed-in links are Home, Measurements, Profile for trainee, trainer, and null role; `/profile` marks Profile.
 
 ### Integration Tests:
@@ -279,6 +295,8 @@ Profile appears between Measurements and Sign out for every signed-in user. Chan
 6. As a trainee and as a trainer, confirm the menu order and the marked Profile item.
 7. Change the password with a wrong current password, then with the right one, from a second signed-in browser. Confirm the first browser stays on Profile and the second is sent to sign-in.
 8. On the hosted project, set the recovery template to the `token_hash` link and allow the production `/auth/reset-password` URL.
+9. From a local mail link, submit the current password. Confirm the new-password form stays open with "New password must be different from the current password." Submit a different password and confirm sign-in shows the reset notice.
+10. Open `/auth/reset-password` with a recovery hash (`access_token`, `refresh_token`, `type=recovery`). Confirm the new-password form appears, then a different password opens sign-in with the reset notice.
 
 ## Performance Considerations
 
@@ -288,7 +306,7 @@ Each Profile change adds one `signInWithPassword` besides `updateUser`. Reset ma
 
 No SQL migration. Existing sessions and passwords keep working. The previous Worker does not know `/profile` or `/auth/reset-password`; those URLs arrive with this Worker, so there is no old-code dependency on a new schema.
 
-Local mail uses the new template only after `npx supabase stop` and `npx supabase start`. Hosted Supabase needs the same recovery template and the production redirect URL in the dashboard. Until that is done, production reset mail cannot complete this flow.
+Local mail uses the new template only after `npx supabase stop` and `npx supabase start`. Hosted Supabase needs the same recovery template and the production redirect URL in the dashboard. Until the template matches, a default confirmation URL still opens the new-password form through the recovery hash, as long as the redirect allow list sends the browser to `/auth/reset-password`. A redirect to the site URL never reaches that handoff.
 
 ## References
 
@@ -318,6 +336,8 @@ Local mail uses the new template only after `npx supabase stop` and `npx supabas
 - [x] 1.6 Opening that same link again shows "This reset link is no longer valid." and the email form — adcc2fb
 - [x] 1.7 Requesting a reset for an address with no account shows "Check your email for a password reset link." — adcc2fb
 - [x] 1.8 The hosted project's recovery template uses the same `token_hash` link, and its redirect allow list includes the production origin plus `/auth/reset-password` — adcc2fb
+- [x] 1.9 Saving the current password shows "New password must be different from the current password." on the new-password form. Saving a different password from that form opens sign-in with the reset notice — bd56203
+- [x] 1.10 A recovery hash with `access_token`, `refresh_token`, and `type=recovery` opens the new-password form. Saving a different password from that form opens sign-in with the reset notice — bd56203
 
 ### Phase 2: Profile password change
 
