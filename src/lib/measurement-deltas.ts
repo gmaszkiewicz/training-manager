@@ -27,6 +27,29 @@ function deltaBetween(current: number, previous: number): FieldDelta {
   };
 }
 
+function deltaOrNull(current: number | undefined, previous: number): FieldDelta | null {
+  if (current === undefined) {
+    return null;
+  }
+  return deltaBetween(current, previous);
+}
+
+export function previewAgainst(
+  previous: Pick<MeasurementEntry, MeasurementField>,
+  current: Partial<Record<MeasurementField, number>>,
+): Record<MeasurementField, FieldDelta | null> {
+  return {
+    weight_kg: deltaOrNull(current.weight_kg, previous.weight_kg),
+    chest_cm: deltaOrNull(current.chest_cm, previous.chest_cm),
+    waist_cm: deltaOrNull(current.waist_cm, previous.waist_cm),
+    arms_cm: deltaOrNull(current.arms_cm, previous.arms_cm),
+    thigh_cm: deltaOrNull(current.thigh_cm, previous.thigh_cm),
+    calf_cm: deltaOrNull(current.calf_cm, previous.calf_cm),
+    hips_cm: deltaOrNull(current.hips_cm, previous.hips_cm),
+    navel_cm: deltaOrNull(current.navel_cm, previous.navel_cm),
+  };
+}
+
 function deltasAgainst(current: MeasurementEntry, previous: MeasurementEntry): Record<MeasurementField, FieldDelta> {
   return {
     weight_kg: deltaBetween(current.weight_kg, previous.weight_kg),
