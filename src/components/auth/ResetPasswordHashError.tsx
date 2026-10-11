@@ -10,6 +10,11 @@ export default function ResetPasswordHashError() {
     }
     const session = recoverySessionFromHash(hash);
     if (!session) {
+      const value = hash.startsWith("#") ? hash.slice(1) : hash;
+      const params = new URLSearchParams(value);
+      if (params.get("type") === "recovery" && (params.get("access_token") ?? "") !== "") {
+        window.location.replace("/auth/reset-password?error=reset-link");
+      }
       return;
     }
     const form = document.createElement("form");

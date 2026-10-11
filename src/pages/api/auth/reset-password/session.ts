@@ -25,6 +25,7 @@ export const POST: APIRoute = async (context) => {
     refresh_token: refreshToken,
   });
   if (error || !isRecoveryAccessToken(data.session?.access_token ?? "")) {
+    await supabase.auth.signOut();
     return context.redirect("/auth/reset-password?error=reset-link");
   }
 
