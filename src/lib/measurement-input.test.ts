@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createMeasurementInputSchema } from "@/lib/measurement-input";
+import { createMeasurementInputSchema, parseMeasuredOn } from "@/lib/measurement-input";
 
 const now = new Date("2026-09-28T12:00:00.000Z");
 
@@ -219,5 +219,23 @@ describe("createMeasurementInputSchema", () => {
     if (result.success) {
       expect(result.data.measured_on).toBe("2026-10-06T07:30:00");
     }
+  });
+});
+
+describe("parseMeasuredOn", () => {
+  const ceilingNow = new Date("2026-10-06T22:00:00.000Z");
+
+  it("returns the normalized minute", () => {
+    expect(parseMeasuredOn("2026-10-06T07:30", ceilingNow)).toBe("2026-10-06T07:30:00");
+    expect(parseMeasuredOn("2026-10-06T07:30:45", ceilingNow)).toBe("2026-10-06T07:30:00");
+    expect(parseMeasuredOn("2026-10-07T23:59", ceilingNow)).toBe("2026-10-07T23:59:00");
+  });
+
+  it("returns null when the minute is empty, malformed, or too late", () => {
+    expect(parseMeasuredOn("", ceilingNow)).toBeNull();
+    expect(parseMeasuredOn(null, ceilingNow)).toBeNull();
+    expect(parseMeasuredOn("2026-10-06", ceilingNow)).toBeNull();
+    expect(parseMeasuredOn("2026-02-29T00:00", ceilingNow)).toBeNull();
+    expect(parseMeasuredOn("2026-10-08T00:00", ceilingNow)).toBeNull();
   });
 });

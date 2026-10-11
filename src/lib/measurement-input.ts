@@ -138,6 +138,14 @@ function measuredOn(now: Date) {
   });
 }
 
+export function parseMeasuredOn(value: unknown, now: Date): string | null {
+  const parsed = measuredOn(now).safeParse(value);
+  if (!parsed.success) {
+    return null;
+  }
+  return parsed.data;
+}
+
 function note() {
   return z
     .unknown()
