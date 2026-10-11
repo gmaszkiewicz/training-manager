@@ -29,9 +29,12 @@ async function commitPassword(context: Parameters<APIRoute>[0], supabase: Supaba
   if (isSamePassword(updated.error)) {
     return context.redirect("/auth/reset-password?error=password-same");
   }
-  await supabase.auth.signOut();
+  const signedOut = await supabase.auth.signOut();
   if (updated.error) {
     return context.redirect("/auth/reset-password?error=reset-link");
+  }
+  if (signedOut.error) {
+    return context.redirect("/auth/reset-password?error=sign-out");
   }
   return context.redirect("/auth/signin?notice=password-reset");
 }

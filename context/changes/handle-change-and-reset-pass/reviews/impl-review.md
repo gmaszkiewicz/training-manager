@@ -5,71 +5,72 @@
 - **Scope**: Full plan
 - **Reviewed phases**: 1, 2
 - **Date**: 2026-10-11
-- **Verdict**: REJECTED
-- **Findings**: 1 critical, 2 warnings, 1 observation
+- **Verdict**: NEEDS ATTENTION
+- **Findings**: 0 critical, 3 warnings, 2 observations
 
 ## Verdicts
 
 | Dimension | Verdict |
 |-----------|---------|
-| Plan Adherence | FAIL |
-| Scope Discipline | WARNING |
-| Safety & Quality | FAIL |
+| Plan Adherence | WARNING |
+| Scope Discipline | PASS |
+| Safety & Quality | WARNING |
 | Architecture | PASS |
 | Pattern Consistency | PASS |
 | Success Criteria | WARNING |
 
 ## Findings
 
-### F1 — Unknown email is told it has no account
-
-- **Severity**: ❌ CRITICAL
-- **Impact**: 🔎 MEDIUM — real tradeoff; pause to reason through it
-- **Dimension**: Safety & Quality
-- **Location**: src/pages/api/auth/reset-password.ts:15
-- **Detail**: The plan says a missing account and a real send both redirect to exactly `/auth/reset-password?notice=reset-sent`, and "What We're NOT Doing" forbids telling the visitor whether an email has an account. Migration Notes say there is no SQL migration. `POST /api/auth/reset-password` calls `email_is_registered` and, when that returns false, redirects to `/auth/reset-password?error=unknown-email` ("No account with that email."). `resetRequestResult` maps `user_not_found` to `"unknown"` (`src/lib/auth-reset.ts:29`). Smoke expects that error URL (`scripts/smoke.mjs:661`). The new function is `security definer` and `grant execute` goes to `anon` and `authenticated` (`supabase/migrations/20261010150700_email_is_registered.sql:17`). Sibling functions `link_trainee_by_email` and `measurement_months` revoke `anon` and do not grant it back. The publishable anon key can call `/rest/v1/rpc/email_is_registered` directly, which also skips the auth email rate limit. This branch is `cursor/handle-change-and-reset-pass`; commit `3ae9397` is not on `main`.
-- **Fix A ⭐ Recommended**: Restore the identical sent notice and drop the lookup
-  - Strength: Matches the plan, the phase 1 tests as written, and the sibling functions that do not expose `auth.users` to `anon`. Removes the public oracle, not only the page copy.
-  - Tradeoff: A visitor with a typo sees "Check your email for a password reset link." and gets no mail. The migration file has to come out before this branch reaches hosted Supabase, or a later migration has to drop the function.
-  - Confidence: HIGH — the plan states this rule in the desired end state, the phase contract, and the not-doing list, and the grant is in the new migration.
-  - Blind spot: None significant. This commit is not on `main`, so the function is not on the hosted project from this branch.
-- **Fix B**: Keep the distinct error and amend the plan
-  - Strength: Preserves commit `3ae9397`, which made this the product behavior on purpose.
-  - Tradeoff: Account existence stays public. The anon grant still has to go, and the server would need a key that is not the publishable anon key, which this route does not have today.
-  - Confidence: MEDIUM — the commit is explicit, but the plan's security rule was not revised with it.
-  - Blind spot: Have not checked whether hosted Supabase already has this function applied outside this branch.
-- **Decision**: Fixed via Fix A
-
-### F2 — Other sessions can stay signed in after a reported password change
+### F1 — Failed recovery check can leave a session cookie
 
 - **Severity**: ⚠️ WARNING
 - **Impact**: 🔎 MEDIUM — real tradeoff; pause to reason through it
 - **Dimension**: Safety & Quality
-- **Location**: src/pages/api/auth/password.ts:48
-- **Detail**: After `updateUser` succeeds, `signOut({ scope: "others" })` is awaited and its error is ignored. The route always redirects to `/profile?notice=password-changed`. If that logout fails, this browser stays signed in and the notice still claims the change finished, while another session can keep working. The plan's success path is update, then sign out others, then that notice. Reset confirm does call `signOut()` when `updateUser` returns an error (`src/pages/api/auth/reset-password/confirm.ts`).
-- **Fix**: If `signOut({ scope: "others" })` returns an error, do not redirect to `notice=password-changed`. The new password is already stored, so do not use `password-unchanged` either. Surface a result that does not claim the other sessions ended, and leave this session in place.
-  - Strength: The success notice stays true. This session is not signed out by mistake.
-  - Tradeoff: Needs one new sentence. The plan has no copy for "password changed, other sessions still open."
-  - Confidence: MEDIUM — `@supabase/auth-js` returns the logout error without revoking other sessions, and this route drops that error. Have not reproduced a failed `scope: "others"` call against local GoTrue.
-  - Blind spot: Have not forced a logout failure in this app.
+- **Location**: src/pages/api/auth/reset-password/session.ts:27
+- **Detail**: The plan says a `setSession` result that is not a recovery access token redirects to `/auth/reset-password?error=reset-link`. `isRecoveryAccessToken` only base64-decodes `amr`; GoTrue is what accepts the token. In `@supabase/auth-js`, an expired access token (or one with no `exp`) goes through `_callRefreshToken`, which calls `_saveSession` before `setSession` returns. If that refresh succeeds and the new access token fails `isRecoveryAccessToken`, this route redirects to `error=reset-link` and does not call `signOut`. The browser keeps the refreshed session. A forged `amr` alone is not stored; a refresh token GoTrue accepts is required.
+- **Fix**: On the failure branch, call `signOut()` before redirecting to `error=reset-link`.
+  - Strength: The rejection matches the contract. A refresh that GoTrue already wrote does not remain after the recovery check fails.
+  - Tradeoff: An extra sign-out on a path that usually has no session. Have not reproduced the expired-token refresh against local GoTrue.
+  - Confidence: MEDIUM — the cookie write is in `GoTrueClient._callRefreshToken` before it returns to `_setSession`; this route never clears it.
+  - Blind spot: Have not forced an expired recovery access token plus a valid refresh token through the running app.
 - **Decision**: Fixed via Fix now
 
-### F3 — Checked reset rows describe the sent notice the route no longer returns
+### F2 — Rejected recovery hash stays on the opening line
 
 - **Severity**: ⚠️ WARNING
 - **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Success Criteria
-- **Location**: context/changes/handle-change-and-reset-pass/plan.md:319
-- **Detail**: Progress 1.7 is `[x]` for "Check your email for a password reset link." Progress 1.1 is `[x]` for "a missing account both mean sent." Fix A restored that behavior: a missing account is `"sent"`, and smoke expects `/auth/reset-password?notice=reset-sent`. The checked rows now match the route. `npm run smoke` was not re-run: nothing answered on `http://localhost:4321`.
-- **Fix**: After F1 is decided, rewrite 1.1 and 1.7 so the checked rows match the behavior that ships. Do not leave 1.7 checked for the sent sentence while the route returns `unknown-email`.
-- **Decision**: DISMISSED — Fix A restored the sent notice, so 1.1 and 1.7 already match the route.
+- **Dimension**: Plan Adherence
+- **Location**: src/components/auth/ResetPasswordHashError.tsx:12
+- **Detail**: `reset-password.astro` hides the form and shows "Opening your reset link..." whenever the hash contains `access_token=` and `type=recovery`. `recoverySessionFromHash` returns null when `refresh_token` is missing or `amr` is not `otp` without `password`. The component then returns without posting and without replacing the location, so the opening line never clears. An expired hash (`error=access_denied` or `error_code=otp_expired`) still redirects to `error=reset-link`.
+- **Fix**: When the hash contains `access_token` and `type=recovery` but `recoverySessionFromHash` returns null, replace the location with `/auth/reset-password?error=reset-link`.
+- **Decision**: Fixed via Fix now
 
-### F4 — Unplanned redirect for an expired recovery hash
+### F3 — Profile sign-out failure is outside the written contract
+
+- **Severity**: ⚠️ WARNING
+- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
+- **Dimension**: Plan Adherence
+- **Location**: src/pages/api/auth/password.ts:50
+- **Detail**: The Profile contract says a successful `updateUser` then `signOut({ scope: "others" })` redirects to exactly `/profile?notice=password-changed`. If that sign-out returns an error, the route redirects to `/profile?error=other-sessions`. `profilePageError` renders "Your password was changed. We could not sign out your other sessions." through `ServerError`. That sentence is not in the plan. `updateUser` failure still avoids signing out other sessions and uses `password-unchanged`.
+- **Fix**: Add `error=other-sessions` and that sentence to the Profile page contract.
+- **Decision**: Fixed via Fix now
+
+### F4 — Reset confirm ignores a failed sign-out
 
 - **Severity**: 💡 OBSERVATION
 - **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Scope Discipline
-- **Location**: src/components/auth/ResetPasswordHashError.tsx:7
-- **Detail**: The plan's expired link is `error=reset-link` on the query string. `ResetPasswordHashError` rewrites a Supabase hash (`error=access_denied` or `error_code=otp_expired`) to that query. It does not call `verifyOtp`. `createCookieFreeClient` in `src/lib/supabase.ts` is also an unplanned file; the reset route uses it so that request does not write cookies, which the plan required.
-- **Fix**: Leave the hash redirect and the cookie-free client. Add one sentence to the reset-page contract describing the hash rewrite.
+- **Dimension**: Safety & Quality
+- **Location**: src/pages/api/auth/reset-password/confirm.ts:32
+- **Detail**: After `updateUser` succeeds, `commitPassword` calls `signOut()` and always redirects to `/auth/signin?notice=password-reset`. The plan asks for that redirect and does not mention a sign-out error. Profile does not claim the other sessions ended when `signOut({ scope: "others" })` fails. Default `signOut()` scope is `global`.
+- **Fix**: If `signOut()` returns an error, do not redirect to `notice=password-reset`.
+- **Decision**: Fixed via Fix now
+
+### F5 — Smoke was not re-run
+
+- **Severity**: 💡 OBSERVATION
+- **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
+- **Dimension**: Success Criteria
+- **Location**: N/A
+- **Detail**: `npm test` passed (71 tests), including the sent/missing-account mapping and the `amr` / `recoverySessionFromHash` cases. `npm run lint` and `npm run check:home-tokens` passed. `npm run smoke` did not run: nothing is listening on `http://localhost:4321`. Progress 1.4 and 2.4 are already checked from an earlier run.
+- **Fix**: Re-run `npm run smoke` against a local preview before archive.
 - **Decision**: Fixed via Fix now
