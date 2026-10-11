@@ -2,7 +2,7 @@
 
 ## Overview
 
-While a trainee fills in a new measurement, show the same up/down difference the saved list would show against the row strictly before the typed minute, and let them copy one number or all eight from that row.
+While a trainee fills in a new measurement, show the same up/down difference the saved list would show against the row strictly before the typed minute.
 
 ## Current State Analysis
 
@@ -14,13 +14,13 @@ The form does not receive the month page (`src/components/journal/TraineeJournal
 
 ## Desired End State
 
-On a new entry, each number that would pass submit shows the list's difference against the latest saved row whose `measured_on` is strictly before the typed minute. Copying one number, or all eight, replaces what is typed with that row's one-decimal values. The note and the minute stay as typed.
+On a new entry, each number that would pass submit shows the list's difference against the latest saved row whose `measured_on` is strictly before the typed minute.
 
 Worked case. Saved rows are 80 kg at `2026-10-06T10:00:00` and 78.5 kg at `2026-10-06T11:00:00`.
 
-- Typing `2026-10-06T11:00` still uses the 10:00 row. Weight `78.5` reads `↓ 1.5`. Weight `77.0`, then copy weight, becomes `80.0`.
+- Typing `2026-10-06T11:00` still uses the 10:00 row. Weight `78.5` reads `↓ 1.5`.
 - Typing `2026-10-06T11:30` uses the 11:00 row. Weight `78.5` reads `0.0`.
-- Typing a minute before both rows shows no difference and no copy control.
+- Typing a minute before both rows shows no difference.
 
 Verify by filling a new entry at `/measurements` and by the unit tests in each phase.
 
@@ -34,9 +34,8 @@ Verify by filling a new entry at `/measurements` and by the unit tests in each p
 
 ## What We're NOT Doing
 
-- Preview or copy while editing a saved entry.
-- Copying the note, or copying the date and time.
-- A confirm step before a typed number is replaced.
+- Preview while editing a saved entry.
+- Copying a previous row's numbers into the new entry. That idea is deferred until the interaction is clear.
 - Good/bad coloring of the difference.
 - Sending the month page or the whole journal to the form.
 - Letting a trainer use this lookup.
@@ -45,7 +44,7 @@ Verify by filling a new entry at `/measurements` and by the unit tests in each p
 
 ## Implementation Approach
 
-Add one trainee-only read: the latest row with `measured_on` less than the typed minute. The form requests that row when the minute changes and would pass the existing date check. It calculates each field locally with the list's tenths math, and only for a number that would pass submit. Copy writes those previous numbers back into the inputs.
+Add one trainee-only read: the latest row with `measured_on` less than the typed minute. The form requests that row when the minute changes and would pass the existing date check. It calculates each field locally with the list's tenths math, and only for a number that would pass submit.
 
 The pure selection rule is what the tests lock. The query is the production implementation of that rule. It does not load the journal and then filter it in memory.
 
@@ -53,7 +52,7 @@ The pure selection rule is what the tests lock. The query is the production impl
 
 - **Timing & lifecycle:** The new-entry minute is empty during server render and becomes the browser-local minute after hydration (`src/components/measurements/MeasurementForm.tsx:112-120`). Request the minute actually shown. Drop a response whose minute is no longer the one on screen.
 - **State sequencing:** A numeric edit recalculates from the previous row already stored. It does not start another request. Only a new accepted minute does.
-- **User experience spec:** The stored value is the naive clock minute, not a UTC conversion. Compare that same `YYYY-MM-DDTHH:mm:00` string. Copy controls are `type="button"` so they do not submit the form. A field with no difference still offers its copy control when a previous row is loaded.
+- **User experience spec:** The stored value is the naive clock minute, not a UTC conversion. Compare that same `YYYY-MM-DDTHH:mm:00` string.
 
 ## Phase 1: Previous-entry lookup
 
@@ -167,52 +166,12 @@ For each field, call `parseMeasurementField` on the input string. When that retu
 
 ---
 
-## Phase 3: Copy
-
-### Overview
-
-The trainee can replace one number, or all eight, with the previous row's values. The note and the minute stay.
-
-### Changes Required:
-
-#### 1. Copy rule
-
-**File**: `src/lib/measurement-copy.ts`
-
-**Intent**: Lock the replace behavior in a pure function the form can call and tests can pin down.
-
-**Contract**: Export `applyCopy(values: Record<MeasurementField, string>, previous: Pick<MeasurementEntry, MeasurementField>, target: MeasurementField | "all"): Record<MeasurementField, string>`. A single field target replaces that field with `previous[field].toFixed(1)` and leaves the other seven strings untouched. `"all"` replaces all eight the same way. The return value has only those eight keys. Tests in `src/lib/measurement-copy.test.ts`: weight `"77.0"` copied from previous weight `80` becomes `"80.0"`; copy all replaces every number; the result has no note and no minute.
-
-#### 2. Copy controls
-
-**File**: `src/components/measurements/MeasurementForm.tsx`
-
-**Intent**: Put a copy control next to each field's preview, plus one control for all eight numbers.
-
-**Contract**: Render the controls only when `entry` is null and a previous row is stored. Each control is `type="button"`. Under each field, including a field whose difference is blank, a control labeled `Copy` has accessible name `Copy ${label}` and calls `applyCopy` for that field. One control labeled `Copy all values`, with that same accessible name, calls `applyCopy` with `"all"`. Write the returned strings into the number inputs and clear those fields' errors. Do not change `note` or the minute. Use the list's text-action classes (`text-primary focus-visible:ring-ring hover:underline focus-visible:ring-2`).
-
-### Success Criteria:
-
-#### Automated Verification:
-
-- `npm test` replaces a typed weight of 77.0 with the previous weight 80.0, replaces all eight numbers on copy all, and leaves the note and the minute out of that result.
-- `npm run lint` passes.
-
-#### Manual Verification:
-
-- Copy weight replaces 77.0, copy all replaces the eight numbers and leaves the note and the date, and no copy control appears when there is no earlier row.
-
-**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
-
----
-
 ## Testing Strategy
 
 ### Unit Tests:
 
 - `previousMeasurement`: a minute between two rows, an earlier minute on the same calendar day, a minute equal to a saved row, a minute before every row, and a same-timestamp pair ordered by `id`.
 - `previewAgainst` plus `parseMeasurementField`: the `↓ 1.5`, `↑ 0.2`, and `0.0` cases; empty, `78.55`, and out-of-range weight stay blank while a valid circumference still has a difference.
-- `applyCopy`: one field replaces `77.0` with `80.0`; all eight are replaced; note and minute are absent.
 
 ### Integration Tests:
 
@@ -221,10 +180,10 @@ The trainee can replace one number, or all eight, with the previous row's values
 ### Manual Testing Steps:
 
 1. Sign in as a trainee with 80 kg at `2026-10-06T10:00:00` and 78.5 kg at `2026-10-06T11:00:00`. Open a new entry.
-2. Set the minute to `2026-10-06T11:00`. Confirm the differences use 80 kg, including weight `78.5` showing `↓ 1.5`. Set weight to `77.0` and copy weight. Confirm it becomes `80.0` and the difference becomes `0.0`.
-3. Set the minute to `2026-10-06T11:30`. Confirm the differences switch to the 78.5 kg row. Copy all. Confirm all eight numbers match that row and the note and minute are unchanged.
-4. Clear the minute, or set it after the one-day ceiling. Confirm the differences and copy controls disappear and Add measurement still submits a valid entry after the minute is corrected.
-5. Open Edit on a saved row. Confirm there is no preview and no copy control.
+2. Set the minute to `2026-10-06T11:00`. Confirm the differences use 80 kg, including weight `78.5` showing `↓ 1.5`.
+3. Set the minute to `2026-10-06T11:30`. Confirm the differences switch to the 78.5 kg row.
+4. Clear the minute, or set it after the one-day ceiling. Confirm the differences disappear and Add measurement still submits a valid entry after the minute is corrected.
+5. Open Edit on a saved row. Confirm there is no preview.
 
 ## Performance Considerations
 
@@ -264,22 +223,11 @@ No schema change. Existing rows stay as they are. The lookup uses the unique `(t
 
 #### Automated
 
-- [x] 2.1 `npm test` formats 78.5 against a previous 80 as ↓ 1.5, 80.3 against 80.1 as ↑ 0.2, and equal numbers as 0.0.
-- [x] 2.2 `npm test` leaves a field blank when it is empty, has more than one decimal, or is outside that field's range, while a valid sibling field still shows a difference.
-- [x] 2.3 `npm run lint` passes.
+- [x] 2.1 `npm test` formats 78.5 against a previous 80 as ↓ 1.5, 80.3 against 80.1 as ↑ 0.2, and equal numbers as 0.0. — 2e1077b
+- [x] 2.2 `npm test` leaves a field blank when it is empty, has more than one decimal, or is outside that field's range, while a valid sibling field still shows a difference. — 2e1077b
+- [x] 2.3 `npm run lint` passes. — 2e1077b
 
 #### Manual
 
-- [x] 2.4 On a new entry, moving the minute switches the previous row, and a valid keystroke updates that field's difference without a new request.
-- [x] 2.5 Edit measurement shows no preview, and an unacceptable minute or a failed lookup leaves Add measurement usable with no differences.
-
-### Phase 3: Copy
-
-#### Automated
-
-- [ ] 3.1 `npm test` replaces a typed weight of 77.0 with the previous weight 80.0, replaces all eight numbers on copy all, and leaves the note and the minute out of that result.
-- [ ] 3.2 `npm run lint` passes.
-
-#### Manual
-
-- [ ] 3.3 Copy weight replaces 77.0, copy all replaces the eight numbers and leaves the note and the date, and no copy control appears when there is no earlier row.
+- [x] 2.4 On a new entry, moving the minute switches the previous row, and a valid keystroke updates that field's difference without a new request. — 2e1077b
+- [x] 2.5 Edit measurement shows no preview, and an unacceptable minute or a failed lookup leaves Add measurement usable with no differences. — 2e1077b

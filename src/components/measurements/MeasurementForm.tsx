@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/auth/SubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDelta, previewAgainst } from "@/lib/measurement-deltas";
+import { previewAgainst } from "@/lib/measurement-deltas";
 import {
   createMeasurementInputSchema,
   measuredOnMax,
@@ -100,6 +100,16 @@ function accessibleDelta(label: string, unit: string, delta: FieldDelta): string
   return `${label} ${direction} ${delta.difference.toFixed(1)} ${unit}`;
 }
 
+function deltaArrow(delta: FieldDelta): string | null {
+  if (delta.direction === "up") {
+    return "↑";
+  }
+  if (delta.direction === "down") {
+    return "↓";
+  }
+  return null;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -119,7 +129,19 @@ function readMeasuredOn(value: unknown): string | null {
 }
 
 function previousMinuteLabel(measuredOn: string): string {
-  return toMeasuredOnLocalValue(measuredOn).replace("T", " ");
+  const local = toMeasuredOnLocalValue(measuredOn);
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(local);
+  if (match === null) {
+    return local.replace("T", " ");
+  }
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]));
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function readPreviousBody(value: unknown): PreviousRow | null {
@@ -306,7 +328,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
             <FieldError message={errors.measured_on} />
             {entry === null ? (
               <p
-                className="text-card-foreground mt-1 min-h-lh text-base font-semibold whitespace-nowrap"
+                className="text-card-foreground mt-1 min-h-lh text-sm font-semibold whitespace-nowrap"
                 aria-hidden={previousMinuteCaption ? undefined : true}
               >
                 {previousMinuteCaption ?? "\u00a0"}
@@ -316,6 +338,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
 
           {measurementFields.map((field) => {
             const delta = preview ? preview[field.field] : null;
+            const arrow = delta ? deltaArrow(delta) : null;
             return (
               <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0 [&_p]:block [&_p]:break-words">
                 <FormField
@@ -334,11 +357,27 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                 />
                 {entry === null ? (
                   <p
-                    className="text-card-foreground mt-1 min-h-lh text-base font-semibold"
+                    className="text-card-foreground relative mt-1 min-h-lh text-sm font-semibold"
                     aria-hidden={delta ? undefined : true}
                     aria-label={delta ? accessibleDelta(field.label, field.unit, delta) : undefined}
                   >
-                    {delta ? formatDelta(delta) : "\u00a0"}
+                    {delta ? (
+                      <>
+                        {arrow ? (
+                          <span
+                            aria-hidden
+                            className="absolute top-1/2 left-3 flex size-4 -translate-y-1/2 items-center justify-center"
+                          >
+                            {arrow}
+                          </span>
+                        ) : null}
+                        <span aria-hidden className="block pl-10">
+                          {delta.difference.toFixed(1)}
+                        </span>
+                      </>
+                    ) : (
+                      "\u00a0"
+                    )}
                   </p>
                 ) : null}
               </div>
