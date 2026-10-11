@@ -1,10 +1,10 @@
 ---
 change_id: handle-change-and-reset-pass
 title: Forgot password from sign-in and password change on Profile
-status: impl_reviewed
+status: archived
 created: 2026-10-10
 updated: 2026-10-11
-archived_at: null
+archived_at: 2026-10-11T06:36:04Z
 ---
 
 ## Notes
