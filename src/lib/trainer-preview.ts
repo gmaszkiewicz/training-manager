@@ -34,3 +34,19 @@ export function selectTrainerPreview(
 
   return { links: sorted, selected };
 }
+
+export function adjacentTrainerLinks(
+  links: readonly TrainerLink[],
+  traineeId: string,
+): { previous: TrainerLink | null; next: TrainerLink | null } {
+  const index = links.findIndex((link) => link.traineeId === traineeId);
+
+  if (index === -1) {
+    return { previous: null, next: null };
+  }
+
+  return {
+    previous: index > 0 ? links[index - 1] : null,
+    next: index < links.length - 1 ? links[index + 1] : null,
+  };
+}
