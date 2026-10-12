@@ -1,7 +1,7 @@
 ---
 change_id: visual-update-for-linked-trainee
 title: Style the linked trainee list like the month field
-status: implementing
+status: implemented
 created: 2026-10-12
 updated: 2026-10-12
 archived_at: null
