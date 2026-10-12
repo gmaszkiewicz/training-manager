@@ -337,8 +337,8 @@ No database migration. The measurement page payload gains `newestMeasuredOn`. Ex
 
 #### Automated
 
-- [ ] 1.1 `npm test` passes, including the week of Sunday 11 October 2026, the 28 September opening day, and the empty-month 1st
-- [ ] 1.2 `npm run lint` passes
+- [x] 1.1 `npm test` passes, including the week of Sunday 11 October 2026, the 28 September opening day, and the empty-month 1st
+- [x] 1.2 `npm run lint` passes
 
 ### Phase 2: Journal week strip
 
