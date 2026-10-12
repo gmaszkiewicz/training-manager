@@ -1,11 +1,23 @@
-import React, { useEffect, useState, useSyncExternalStore } from "react";
-import { CircleAlert, Plus, Ruler, Scale } from "lucide-react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  CircleAlert,
+  Plus,
+  Ruler,
+  Scale,
+} from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { ServerError } from "@/components/auth/ServerError";
 import { SubmitButton } from "@/components/auth/SubmitButton";
-import { Input } from "@/components/ui/input";
+import MonthGrid from "@/components/measurements/MonthGrid";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { monthGrid, monthLabel } from "@/lib/journal-calendar";
 import { previewAgainst } from "@/lib/measurement-deltas";
 import {
   createMeasurementInputSchema,
@@ -15,6 +27,7 @@ import {
   parseMeasurementField,
   toMeasuredOnLocalValue,
 } from "@/lib/measurement-input";
+import { cn } from "@/lib/utils";
 import type { FieldDelta, MeasurementEntry, MeasurementField } from "@/types";
 
 interface Props {
@@ -71,14 +84,34 @@ function emptyTodaySnapshot(): string {
   return "";
 }
 
-function laterDate(left: string, right: string): string {
-  if (left === "") {
-    return right;
+const MEASURED_MINUTE = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})$/;
+
+function measuredMinuteParts(value: string): { day: string; time: string } | null {
+  const match = MEASURED_MINUTE.exec(value);
+  if (match === null) {
+    return null;
   }
-  if (right === "") {
-    return left;
-  }
-  return left > right ? left : right;
+  return { day: match[1], time: match[2] };
+}
+
+function daysAfterCeiling(month: string, ceilingDate: string): ReadonlySet<string> {
+  return new Set(monthGrid(month).filter((day) => day > ceilingDate));
+}
+
+const HOURS = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, "0"));
+const MINUTES = Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, "0"));
+
+function shiftMonth(month: string, delta: number): string {
+  const year = Number(month.slice(0, 4));
+  const monthNumber = Number(month.slice(5, 7));
+  const shifted = new Date(Date.UTC(year, monthNumber - 1 + delta, 1));
+  const nextYear = String(shifted.getUTCFullYear());
+  const nextMonth = String(shifted.getUTCMonth() + 1).padStart(2, "0");
+  return `${nextYear}-${nextMonth}`;
+}
+
+function monthStartsAfterCeiling(month: string, ceilingDate: string): boolean {
+  return `${month}-01` > ceilingDate;
 }
 
 function isErrorField(value: PropertyKey): value is ErrorField {
@@ -221,6 +254,73 @@ function errorsFor(issues: { path: PropertyKey[]; message: string }[]): FormErro
   return next;
 }
 
+function CalendarMonth({
+  month,
+  ceilingDate,
+  onMonthChange,
+}: {
+  month: string;
+  ceilingDate: string;
+  onMonthChange: (month: string) => void;
+}) {
+  const previousMonth = shiftMonth(month, -1);
+  const nextMonth = shiftMonth(month, 1);
+  const previousYear = shiftMonth(month, -12);
+  const nextYear = shiftMonth(month, 12);
+
+  return (
+    <div className="flex items-center gap-2" role="group" aria-label="Calendar month">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label="Previous year"
+        onClick={() => {
+          onMonthChange(previousYear);
+        }}
+      >
+        <ChevronsLeft aria-hidden="true" />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label="Previous month"
+        onClick={() => {
+          onMonthChange(previousMonth);
+        }}
+      >
+        <ChevronLeft aria-hidden="true" />
+      </Button>
+      <span className="min-w-0 flex-1 text-center text-sm">{monthLabel(month)}</span>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label="Next month"
+        disabled={monthStartsAfterCeiling(nextMonth, ceilingDate)}
+        onClick={() => {
+          onMonthChange(nextMonth);
+        }}
+      >
+        <ChevronRight aria-hidden="true" />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label="Next year"
+        disabled={monthStartsAfterCeiling(nextYear, ceilingDate)}
+        onClick={() => {
+          onMonthChange(nextYear);
+        }}
+      >
+        <ChevronsRight aria-hidden="true" />
+      </Button>
+    </div>
+  );
+}
+
 function FieldError({ message }: { message?: string }) {
   if (!message) {
     return null;
@@ -243,7 +343,14 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [note, setNote] = useState(entry?.note ?? "");
   const [errors, setErrors] = useState<FormErrors>({});
   const [loadedPrevious, setLoadedPrevious] = useState<LoadedPrevious | null>(null);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [gridMonth, setGridMonth] = useState<string | null>(null);
+  const [timeListOpen, setTimeListOpen] = useState(false);
+  const dateFieldRef = useRef<HTMLDivElement>(null);
+  const hourListRef = useRef<HTMLDivElement>(null);
+  const minuteListRef = useRef<HTMLDivElement>(null);
   const dateValue = measuredOn ?? browserMinute;
+  const minuteParts = measuredMinuteParts(dateValue);
   const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date()) : null;
   const previousEntry = previousForMinute(loadedPrevious, previewMinute);
   const preview = previousEntry === null ? null : previewAgainst(previousEntry, parsedMeasurementFields(values));
@@ -251,8 +358,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     previousEntry !== null && measurementFields.some((field) => values[field.field].trim() !== "")
       ? `Against ${previousMinuteLabel(previousEntry.measured_on)}`
       : null;
-  const ceiling = measuredOnMax(new Date());
-  const dateMax = entryMinute ? laterDate(ceiling, entryMinute) : ceiling;
+  const ceilingDate = measuredOnMax(new Date()).slice(0, 10);
 
   useEffect(() => {
     if (previewMinute === null) {
@@ -270,6 +376,49 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       active = false;
     };
   }, [previewMinute]);
+
+  useEffect(() => {
+    if (!dateOpen) {
+      return;
+    }
+    function closeDatePopup() {
+      setDateOpen(false);
+      setTimeListOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeDatePopup();
+      }
+    }
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node) || dateFieldRef.current?.contains(target)) {
+        return;
+      }
+      closeDatePopup();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [dateOpen]);
+
+  useEffect(() => {
+    if (!timeListOpen) {
+      return;
+    }
+    function revealPressed(container: HTMLDivElement | null) {
+      const selected = container?.querySelector<HTMLElement>("[aria-pressed='true']");
+      if (container === null || selected === null) {
+        return;
+      }
+      container.scrollTop = selected.offsetTop - container.clientHeight / 2 + selected.clientHeight / 2;
+    }
+    revealPressed(hourListRef.current);
+    revealPressed(minuteListRef.current);
+  }, [timeListOpen]);
 
   function clearError(field: ErrorField) {
     if (errors[field]) {
@@ -307,24 +456,135 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     >
       <div className="space-y-4">
         <div className="flex flex-nowrap items-start gap-2">
-          <div className="w-56 max-w-56 min-w-56 shrink-0">
-            <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
-              Date and time
-            </Label>
-            <Input
-              id={`${idPrefix}measured_on`}
-              name="measured_on"
-              type="datetime-local"
-              step="60"
-              value={dateValue}
-              max={dateMax || undefined}
-              onChange={(event) => {
-                setMeasuredOn(event.target.value);
-                clearError("measured_on");
-              }}
-              aria-invalid={errors.measured_on ? true : undefined}
-              className="relative px-2 pr-7 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-1 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-            />
+          <div ref={dateFieldRef} className="w-56 max-w-56 min-w-56 shrink-0">
+            <div className="relative z-20">
+              <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
+                Date and time
+              </Label>
+              <div className="relative">
+                <Calendar
+                  aria-hidden
+                  className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+                />
+                <Button
+                  type="button"
+                  id={`${idPrefix}measured_on`}
+                  variant="outline"
+                  className={cn("w-full justify-start pl-10")}
+                  aria-expanded={dateOpen}
+                  aria-invalid={errors.measured_on ? true : undefined}
+                  onClick={() => {
+                    setDateOpen((open) => {
+                      if (open) {
+                        setTimeListOpen(false);
+                        return false;
+                      }
+                      if (minuteParts !== null) {
+                        setGridMonth(minuteParts.day.slice(0, 7));
+                      }
+                      return true;
+                    });
+                  }}
+                >
+                  {dateValue.replace("T", " ")}
+                </Button>
+              </div>
+              <input type="hidden" name="measured_on" value={dateValue} />
+              {dateOpen && minuteParts !== null ? (
+                <div
+                  className={cn(
+                    "bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-max flex-col gap-2 rounded-md border p-2 shadow-md",
+                  )}
+                >
+                  <CalendarMonth
+                    month={gridMonth ?? minuteParts.day.slice(0, 7)}
+                    ceilingDate={ceilingDate}
+                    onMonthChange={setGridMonth}
+                  />
+                  <MonthGrid
+                    month={gridMonth ?? minuteParts.day.slice(0, 7)}
+                    selectedDay={minuteParts.day}
+                    disabledDays={daysAfterCeiling(gridMonth ?? minuteParts.day.slice(0, 7), ceilingDate)}
+                    onDaySelect={(day) => {
+                      if (day > ceilingDate) {
+                        return;
+                      }
+                      setGridMonth(day.slice(0, 7));
+                      setMeasuredOn(`${day}T${minuteParts.time}`);
+                      clearError("measured_on");
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start"
+                    aria-expanded={timeListOpen}
+                    aria-label="Time"
+                    onClick={() => {
+                      setTimeListOpen((open) => !open);
+                    }}
+                  >
+                    {minuteParts.time}
+                  </Button>
+                  {timeListOpen ? (
+                    <div className="flex gap-2">
+                      <div
+                        ref={hourListRef}
+                        className="flex max-h-48 w-14 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto"
+                        role="group"
+                        aria-label="Hour"
+                      >
+                        {HOURS.map((hour) => {
+                          const pressed = hour === minuteParts.time.slice(0, 2);
+                          return (
+                            <Button
+                              key={hour}
+                              type="button"
+                              variant={pressed ? "default" : "outline"}
+                              className="w-full px-2"
+                              aria-pressed={pressed}
+                              aria-label={`Hour ${hour}`}
+                              onClick={() => {
+                                setMeasuredOn(`${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`);
+                                clearError("measured_on");
+                              }}
+                            >
+                              {hour}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <div
+                        ref={minuteListRef}
+                        className="flex max-h-48 w-14 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto"
+                        role="group"
+                        aria-label="Minute"
+                      >
+                        {MINUTES.map((minute) => {
+                          const pressed = minute === minuteParts.time.slice(3);
+                          return (
+                            <Button
+                              key={minute}
+                              type="button"
+                              variant={pressed ? "default" : "outline"}
+                              className="w-full px-2"
+                              aria-pressed={pressed}
+                              aria-label={`Minute ${minute}`}
+                              onClick={() => {
+                                setMeasuredOn(`${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`);
+                                clearError("measured_on");
+                              }}
+                            >
+                              {minute}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
             <FieldError message={errors.measured_on} />
             {entry === null ? (
               <p

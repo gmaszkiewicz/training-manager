@@ -183,7 +183,7 @@ Replace the month dropdown with a Month field on the shared measurement list. Ar
 
 ### Overview
 
-Replace the native date-time picker with one field. The popup shows `MonthGrid` and a time input. Choosing a day updates the date and leaves the popup open so the time stays visible. This popup is not the journal Month field.
+Replace the native date-time picker with one field. The popup shows `MonthGrid`, buttons that move by one month or one year, and a time list. Choosing a day updates the date and leaves the popup open so the time stays visible. This popup is not the journal Month field.
 
 ### Changes Required:
 
@@ -197,10 +197,10 @@ Replace the native date-time picker with one field. The popup shows `MonthGrid` 
 
 - The visible control is a button labelled by the existing `Date and time` label. Its text is the current `YYYY-MM-DDTHH:mm` value with `T` replaced by a space, matching the saved row's display text.
 - A form control named `measured_on` still submits `YYYY-MM-DDTHH:mm`. The existing schema, `step` of 60 seconds, `measuredOnMax`, client validation, edit value from `toMeasuredOnLocalValue`, and the local-minute default with the empty SSR snapshot all stay.
-- The popup contains `MonthGrid` for the field value's month and a time input with minute precision. Choosing a day replaces the date, keeps the current time, moves the grid when the day is in an adjacent month, and leaves the popup open. Changing the time leaves the popup open.
+- The popup contains `MonthGrid` for the visible month, previous and next buttons for one month and for one year, and a time button. The next month and next year buttons are disabled when that step would start after the calendar date in `measuredOnMax`. Choosing a day replaces the date, keeps the current time, moves the grid when the day is in an adjacent month, and leaves the popup open. Clicking the time opens hour and minute lists built from the same buttons as the day grid. Choosing an hour or a minute leaves the popup open.
 - Days after the calendar date in `measuredOnMax` are disabled. Months with no saved measurements remain reachable.
 - The popup closes when the field button is pressed again, on Escape, and on a pointer press outside the field and the popup.
-- The field has no Lucide icon. The metric inputs stay left-aligned.
+- The field shows a `Calendar` icon on the left, in the same `left-3` placement and `text-muted-foreground` colour as the metric icons. The metric inputs stay left-aligned. The date popup stacks above the journal Month field.
 
 ### Success Criteria:
 
@@ -334,16 +334,16 @@ No database migration. The measurement page payload is unchanged. Existing prefe
 
 #### Automated
 
-- [ ] 3.1 `npm test` passes, including the existing measured-on schema tests
-- [ ] 3.2 `npm run check:home-tokens` passes
-- [ ] 3.3 `npm run lint` passes
+- [x] 3.1 `npm test` passes, including the existing measured-on schema tests
+- [x] 3.2 `npm run check:home-tokens` passes
+- [x] 3.3 `npm run lint` passes
 
 #### Manual
 
-- [ ] 3.4 A new entry shows the browser's local minute. Opening the field shows the month grid and the time together
-- [ ] 3.5 Choosing a day keeps the popup open and keeps the time. Changing the time updates the field text
-- [ ] 3.6 A day after the existing ceiling cannot be chosen. Submitting still posts `measured_on` as `YYYY-MM-DDTHH:mm`
-- [ ] 3.7 Edit mode opens on the saved entry's minute
+- [x] 3.4 A new entry shows the browser's local minute. Opening the field shows the month grid and the time together
+- [x] 3.5 Choosing a day keeps the popup open and keeps the time. Changing the time updates the field text
+- [x] 3.6 A day after the existing ceiling cannot be chosen. Submitting still posts `measured_on` as `YYYY-MM-DDTHH:mm`
+- [x] 3.7 Edit mode opens on the saved entry's minute
 
 ### Phase 4: Saved values
 
