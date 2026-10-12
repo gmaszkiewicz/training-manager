@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-10-11
+updated: 2026-10-12
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -84,7 +84,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-24 | query-optimization | user can open the same calendar-month page as today, with the same rows, order, page size, and difference versus the previous entry, including when that previous entry sits outside the page, and a linked trainer sees that same page, while the list is built without walking the whole journal | S-23 | MS-16, FR-009 | done |
 | S-25 | handle-change-and-reset-pass | user can request a password reminder from sign-in, and a signed-in user can change their password from Profile in the menu between Measurements and Sign out | S-08, S-11 | MS-17 | done |
 | S-26 | preview-for-new-entry | user can see a preview of the difference versus the previous entry, chosen from the date typed for the new entry, while filling in that entry | S-02, S-13, S-22 | MS-18 | done |
-| S-27 | calendar-upgrade-and-visual-fixes | user can move through the journal on a week of day buttons, open the month grid from the month name, set date and time together in one field, and read each saved entry's values centered with the same icons as a new measurement | S-23, S-26 | MS-19 | planning |
+| S-27 | calendar-upgrade-and-visual-fixes | user can move through the journal on a week of day buttons, open the month grid from the month name, set date and time together in one field, and read each saved entry's values centered with the same icons as a new measurement | S-23, S-26 | MS-19 | in-progress |
 
 ## Streams
 
@@ -442,7 +442,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The linked trainer reads the same list, so a visual change on the trainee journal can change that preview. The difference versus the previous entry stays as it is.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Backlog Handoff
 
