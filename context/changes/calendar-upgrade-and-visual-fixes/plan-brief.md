@@ -45,7 +45,7 @@ The toolbar shows the week containing the marked day and a name such as `October
 
 ## Architecture / Approach
 
-Pure calendar functions in `src/lib/journal-calendar.ts` own the week, the grid, the opening day, and the month-change rule. A shared month grid renders those cells with `Button`. The journal calls the existing month reload only when the clicked day belongs to another known month. The paged payload adds `newestMeasuredOn` so a later focus page can still mark the newest day. The form submits the same `measured_on` string through the new popup.
+Pure calendar functions in `src/lib/journal-calendar.ts` own the week, the grid, the opening day, and the month-change rule. A shared month grid renders those cells with `Button`. The journal calls the existing month reload only when the clicked day belongs to another known month. The highlighted day stays a `YYYY-MM-DD`; that reload updates the loaded month and does not replace the highlight. The paged payload adds `newestMeasuredOn` so a later focus page can still mark the newest day. The form submits the same `measured_on` string through the new popup.
 
 ## Phases at a Glance
 
