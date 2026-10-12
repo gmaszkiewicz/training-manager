@@ -2,7 +2,7 @@
 
 ## Overview
 
-Replace the journal's `yyyy-mm` month dropdown with a Month field: the English month and year, a previous arrow, and a next arrow. Clicking the month and year opens a floating list of the current month plus every month that has entries. Replace the native date-time picker with one field whose popup shows the month grid and the time together. Center saved metric numbers and their deltas, with the same left icons used when adding a measurement.
+Replace the journal's `yyyy-mm` month dropdown with a Month field: the English month and year, a previous arrow, and a next arrow. The month button stays as wide as the longest month and year in the list. Clicking it opens a floating list of the current month plus every month that has entries. More than six months scrolls, showing six rows, and a click outside or Escape closes the list. Replace the native date-time picker with one field. Its popup shows the month grid, month and year arrows, and hour and minute steppers that can also be typed. A calendar icon sits on the left of that field, and the popup stacks above the Month field. Center each saved metric number, put `Scale` or `Ruler` on its left, and place the delta arrow under that icon with the delta number under the measurement number. The page switcher uses the same outline arrow buttons as the Month field.
 
 ## Current State Analysis
 
@@ -23,17 +23,17 @@ Saved metric boxes have no icon and no centering (`MeasurementBrowser.tsx:522-54
 
 ## Desired End State
 
-The journal toolbar shows a Month field above the saved entries. The field is a group labelled `Month`. It contains a previous arrow, the English month and year such as `October 2026`, and a next arrow. There are no day buttons. The left arrow loads the earlier month in `dates`. The right arrow loads the later month. An arrow at the end of that list is disabled. A month with no entries that is not the current month is not in the list, so the arrows skip it.
+The journal toolbar shows a Month field above the saved entries. The field is a group labelled `Month`. It contains a previous arrow, the English month and year such as `October 2026`, and a next arrow. There are no day buttons. The month button stays as wide as the longest month and year in `dates`, so `May 2026` does not shrink it when a longer label is in the list. The left arrow loads the earlier month in `dates`. The right arrow loads the later month. An arrow at the end of that list is disabled. A month with no entries that is not the current month is not in the list, so the arrows skip it.
 
-Clicking the month and year toggles a list of `dates`: the current month and year always, including when that month has no entries, and every month and year that has entries. The list floats over the entries. The entries stay where they are. When that list has more than six months, it scrolls and shows six rows. A second click of the month and year closes the list. A click outside the field and the list closes it, as does Escape. Choosing the loaded month closes the list and does not reload. Choosing another month closes the list, stores that `YYYY-MM` preference, resets to page 1, and reloads. The measurement list remains every saved row in the loaded month.
+Clicking the month and year toggles a list of `dates`: the current month and year always, including when that month has no entries, and every month and year that has entries. The list floats over the entries. The entries stay where they are. When that list has more than six months, it scrolls and shows six rows. Six or fewer months show the whole list with no scrollbar. A second click of the month and year closes the list. A click outside the field and the list closes it, as does Escape. Choosing the loaded month closes the list and does not reload. Choosing another month closes the list, stores that `YYYY-MM` preference, resets to page 1, and reloads. The measurement list remains every saved row in the loaded month.
 
-The date-and-time field is still one field and still submits `measured_on` as `YYYY-MM-DDTHH:mm`. Its popup shows the month grid and the time. Choosing a day updates the date and leaves the popup open. That grid is the form's popup. The journal Month field does not open it.
+The date-and-time field is still one field and still submits `measured_on` as `YYYY-MM-DDTHH:mm`. A `Calendar` icon sits on the left, in the same `left-3` placement as the metric icons. The button text is the current value with `T` replaced by a space. Its popup stacks above the journal Month field. The popup shows the month grid, previous and next buttons for one month and for one year, and hour and minute steppers. The next month and next year buttons are disabled when that step would start after the calendar date in `measuredOnMax`. Choosing a day updates the date, keeps the current time, moves the grid when the day is in an adjacent month, and leaves the popup open. Each stepper moves that part by one. The hour and the minute can also be typed. The hour accepts 0–23 and wraps at 24. The minute accepts 0–59 and wraps at 60. Days after the ceiling cannot be chosen. The popup closes on a second press of the field, on Escape, and on a pointer press outside the field and the popup. That grid is the form's popup. The journal Month field does not open it.
 
-Each saved metric box shows `Scale` or `Ruler` on the left. The number and the delta under it are centered. The date column has no icon. The add form stays left-aligned. The trainer preview shows the same Month field and the same saved boxes.
+Each saved metric box shows `Scale` for `kg` and `Ruler` for every other unit, on the left in the same `left-3` slot `FormField` uses. The number is centered in the `h-9` box. The delta arrow sits in that same `left-3` slot, under the icon, and the delta number is centered under the measurement number. The date column has no icon. The add form stays left-aligned. The page switcher still moves one page at a time. Its previous and next controls are the same outline icon buttons as the Month field, with `Page N of M` between them. The trainer preview shows the same Month field, the same pager, and the same saved boxes.
 
 ### Key Discoveries:
 
-- Page size, the previous/next pager, empty copy, and the month preference cookie stay on their current contracts.
+- Page size, empty copy, and the month preference cookie stay on their current contracts. The pager still moves by page. Its buttons match the Month field.
 - The shared browser means the trainer preview follows the same Month field as the trainee journal.
 - Kitchen sinks at `/kitchen-sink/journal` and `/kitchen-sink/trainer` render these same components.
 
@@ -53,7 +53,7 @@ Each saved metric box shows `Scale` or `Ruler` on the left. The number and the d
 
 ## Implementation Approach
 
-Calendar rules live in a pure module beside `src/lib/measurement-page.ts`, with Vitest coverage for the month grid the date field will use. The journal Month field uses `monthLabel` and the existing `dates` list. `MonthGrid` is for the date-and-time popup, not for the journal toolbar. The journal replaces the `<select>` and reuses the existing month reload when the chosen month is in `dates`. The form keeps the existing submit name, schema, and local-minute default. Saved boxes reuse the form's `kg` → `Scale`, otherwise `Ruler` choice, and center the number and delta inside the current column.
+Calendar rules live in a pure module beside `src/lib/measurement-page.ts`, with Vitest coverage for the month grid the date field will use. The journal Month field uses `monthLabel` and the existing `dates` list. Its button width is the widest of those labels. `MonthGrid` is for the date-and-time popup, not for the journal toolbar. The journal replaces the `<select>` and reuses the existing month reload when the chosen month is in `dates`. The form keeps the existing submit name, schema, and local-minute default. The popup adds month and year arrows plus typeable hour and minute steppers. Saved boxes reuse the form's `kg` → `Scale`, otherwise `Ruler` choice. The number is centered, the delta arrow lines up with the icon, and the delta number lines up with the measurement number.
 
 ## Critical Implementation Details
 
@@ -61,7 +61,7 @@ Calendar rules live in a pure module beside `src/lib/measurement-page.ts`, with 
 - **Loaded month only.** The field shows the loaded `YYYY-MM`. There is no highlighted day. Edit and delete focus still choose the month and page on the server. The field follows that month. The page payload does not gain `newestMeasuredOn`.
 - **Known months only.** `readMeasurementPage` substitutes the current month when the requested month is absent from `dates`. The arrows and the list move only inside `dates`. The earlier neighbor is the greatest `YYYY-MM` in `dates` that is less than the loaded month. The later neighbor is the least `YYYY-MM` that is greater. A missing neighbor disables that arrow.
 - **Floating list.** Pressing the month and year toggles the list. The list is taken out of flow, so the entries do not move down. More than six months makes the list scroll, showing six rows. A second press of the month and year closes it. A pointer press outside the field and the list closes it, as does Escape. Choosing the loaded month closes it and does not reload. Choosing another month closes it and uses the existing month-change path: store that `YYYY-MM`, reset to page 1, and reload.
-- **Form popup stays separate.** A form day click or time change leaves the date popup open. The form popup closes on a second press of the field, on Escape, and on a pointer press outside the field and the popup. The form disables days after the calendar date in `measuredOnMax`. The journal Month field has no day ceiling. The form may select a month that has no saved rows yet; it is not limited to `dates`.
+- **Form popup stays separate.** A form day click or time change leaves the date popup open. Hour and minute steppers, and typing either part, also leave it open. The form popup closes on a second press of the field, on Escape, and on a pointer press outside the field and the popup. The form disables days after the calendar date in `measuredOnMax`, and disables the next month or next year when that step would start after the same date. The journal Month field has no day ceiling. The form may select a month that has no saved rows yet; it is not limited to `dates`. The date popup's stacking context sits above the Month field, so the grid is not covered by the month list.
 
 ## Phase 1: Calendar rules
 
@@ -168,12 +168,12 @@ Replace the month dropdown with a Month field on the shared measurement list. Ar
 
 #### Manual Verification:
 
-- The Month field shows a previous arrow, the English month and year, and a next arrow. There are no day buttons. An arrow at either end of the month list is disabled
+- The Month field shows a previous arrow, the English month and year, and a next arrow. There are no day buttons. An arrow at either end of the month list is disabled. The month button stays as wide as the longest month and year in the list
 - The left arrow loads the earlier month from that list and resets to page 1. The right arrow loads the later month. A month with no entries that is not the current month is skipped
-- Clicking the month and year opens a floating list over the entries. The entries stay in place. A second click closes the list
+- Clicking the month and year opens a floating list over the entries. The entries stay in place. A second click closes the list. A click outside the field and the list closes it, as does Escape. More than six months scrolls and shows six rows
 - The list always includes the current month, even with no entries, and every month that has entries
 - Choosing another month from the list closes it, loads that month, and resets to page 1
-- The trainer preview shows the same Month field. Editing an earlier row in a past month still opens the page that contains that row
+- The trainer preview shows the same Month field. Editing an earlier row in a past month still opens the page that contains that row. Previous page and next page use the same outline arrow buttons as the Month field
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase. Phase blocks use plain bullets — the corresponding `- [ ]` checkboxes for these items live in the `## Progress` section at the bottom of the plan.
 
@@ -212,8 +212,8 @@ Replace the native date-time picker with one field. The popup shows `MonthGrid`,
 
 #### Manual Verification:
 
-- A new entry shows the browser's local minute. Opening the field shows the month grid and the time together
-- Choosing a day keeps the popup open and keeps the time. Changing the time updates the field text
+- A new entry shows the browser's local minute. The field has a calendar icon on the left. Opening it shows the month grid, month and year arrows, and the hour and minute together. The popup sits above the journal Month field
+- Choosing a day keeps the popup open and keeps the time. The arrows move the grid by one month or one year, and the next step is disabled past the ceiling. The steppers and typing both update the field text and leave the popup open
 - A day after the existing ceiling cannot be chosen. Submitting still posts `measured_on` as `YYYY-MM-DDTHH:mm`
 - Edit mode opens on the saved entry's minute
 
@@ -275,18 +275,18 @@ Add the add-form icons to saved metric boxes, and center each number and its del
 
 ### Manual Testing Steps:
 
-1. Open `/measurements` and confirm the Month field: previous arrow, English month and year, next arrow, and no day buttons. Confirm an arrow at either end of the list is disabled.
+1. Open `/measurements` and confirm the Month field: previous arrow, English month and year, next arrow, and no day buttons. Confirm an arrow at either end of the list is disabled. Confirm a short month name does not shrink the month button when a longer month is in the list.
 2. Use the arrows and confirm each step loads the neighboring month from the list, resets to page 1, and skips a month that has no entries and is not the current month.
-3. Open the month and year, confirm the list floats over the entries, and confirm a second click closes it without moving the entries.
+3. Open the month and year, confirm the list floats over the entries, and confirm a second click closes it without moving the entries. Click outside the field and press Escape, and confirm each closes the list. With more than six months, confirm the list shows six rows and scrolls.
 4. Confirm the list contains the current month even when it has no entries, plus every month that has entries.
 5. Choose another month from the list and confirm the list closes, that month loads, and the page resets to 1.
-6. Open the trainer preview and repeat the arrow and the list. Edit an earlier row in a past month and confirm that page still contains the row.
-7. On a new measurement, open Date and time, pick a day, set the time, and save. Confirm the popup stayed open until dismissed and the saved row shows the chosen minute.
-8. Confirm saved weight and circumference boxes, then confirm the add form is unchanged.
+6. Open the trainer preview and repeat the arrow and the list. Edit an earlier row in a past month and confirm that page still contains the row. Confirm previous page and next page are the same outline arrow buttons as the Month field.
+7. On a new measurement, open Date and time. Confirm the calendar icon, the month grid, the month and year arrows, and the hour and minute steppers. Confirm the popup sits above the Month field. Pick a day, step or type the time, and save. Confirm the popup stayed open until dismissed and the saved row shows the chosen minute. Confirm a day after the ceiling cannot be chosen.
+8. Confirm a saved weight shows Scale on the left, the number centered, the delta arrow under the icon, and the delta number under the measurement number. Confirm a circumference shows Ruler with the same alignment. Confirm the date column has no icon and the add form numbers stay left-aligned.
 
 ## Performance Considerations
 
-Opening the month list does not refetch. A month change uses the existing page request. The date popup's day grid is at most six weeks of buttons.
+Opening the month list does not refetch. A month change uses the existing page request. More than six months scrolls inside the list. The date popup's day grid is at most six weeks of buttons. Hour and minute changes stay on the open popup.
 
 ## Migration Notes
 
@@ -349,8 +349,8 @@ No database migration. The measurement page payload is unchanged. Existing prefe
 
 #### Automated
 
-- [x] 4.1 `npm run check:home-tokens` passes
-- [x] 4.2 `npm run lint` passes
+- [x] 4.1 `npm run check:home-tokens` passes — d78b155
+- [x] 4.2 `npm run lint` passes — d78b155
 
 #### Manual
 
