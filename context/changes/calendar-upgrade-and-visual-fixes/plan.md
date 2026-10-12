@@ -56,7 +56,7 @@ Calendar rules live in a new pure module beside `src/lib/measurement-page.ts`, w
 ## Critical Implementation Details
 
 - **Two clocks.** The strip's "today" is the UTC `today` prop already passed into the browser. The form's default minute stays the browser-local value from `useSyncExternalStore`, with the empty SSR snapshot. Do not derive one from the other.
-- **Opening day versus a click.** Use the opening rule when a month arrives without a pending day click, including edit and delete focus. A day click keeps the clicked day selected after the reload. Recomputing the opening day after that click would highlight the newest entry instead of the day the user pressed.
+- **Opening day versus a click.** The highlighted day is a `YYYY-MM-DD`, held apart from the loaded `YYYY-MM`. Use the opening rule when a month arrives without a pending day click, including edit and delete focus. A day click keeps that full date selected after the reload. `loadPage` currently assigns `setDay(body.month)` (`MeasurementBrowser.tsx:280`), and the non-paged hydrate assigns `viewOf`'s month string (`MeasurementBrowser.tsx:300-310`). Neither assignment may replace the highlighted day. Recomputing the opening day after a click would highlight the newest entry instead of the day the user pressed.
 - **Newest row on a later page.** Edit focus can open a page that does not contain the newest row. The paged payload must carry `newestMeasuredOn` for the loaded month so the strip can still mark that day. On the non-paged path, derive it from the full in-memory month.
 - **Unknown months.** `readMeasurementPage` substitutes the current month when the requested month is absent from `dates`. Days in those months stay visible, so the week and the grid stay complete, and they are disabled.
 - **Two dismissals for one grid.** A journal day click closes the expanded grid. A second press of the month name closes it too. A form day click or time change leaves the popup open. The form popup closes on a second press of the field, on Escape, and on a pointer press outside the field and the popup.
@@ -89,7 +89,7 @@ export function listMonthChange(currentMonth: string, day: string, knownMonths: 
 - `weekContaining` returns seven `YYYY-MM-DD` values, Monday through Sunday, containing `day`.
 - `monthGrid` returns every cell of the Monday-first grid that covers `YYYY-MM`, including leading and trailing days from the adjacent months.
 - `monthLabel` returns the English name and year, `October 2026` for `2026-10`. Use a fixed English list so server and client render the same word.
-- `openingDay` returns `today` when `today` falls in `month`. Otherwise it returns the calendar date of `newestMeasuredOn` when that value is present. Otherwise it returns the 1st of `month`.
+- `openingDay` returns `today` when `today` falls in `month`. Otherwise it returns the calendar date of `newestMeasuredOn` when that value is present. Otherwise it returns the 1st of `month`. The calendar date is the first ten characters after a space is replaced with `T`, the same normalization `measurementMonth` uses, so a `T` timestamp and a space-separated timestamp for the same minute return the same day.
 - `listMonthChange` returns the clicked day's month when that month differs from `currentMonth` and is included in `knownMonths`. It returns `null` for a same-month day and for a day whose month is absent from `knownMonths`.
 
 #### 2. Unit tests
@@ -106,6 +106,7 @@ export function listMonthChange(currentMonth: string, day: string, knownMonths: 
 - `monthLabel("2026-10")` is `October 2026`.
 - `openingDay("2026-10", "2026-10-11", null)` is `2026-10-11`.
 - `openingDay("2026-09", "2026-10-11", "2026-09-28T18:00:00")` is `2026-09-28`.
+- `openingDay("2026-09", "2026-10-11", "2026-09-28 18:00:00")` is `2026-09-28`.
 - `openingDay("2026-09", "2026-10-11", null)` is `2026-09-01`.
 - `listMonthChange("2026-10", "2026-10-07", ["2026-09", "2026-10"])` is `null`.
 - `listMonthChange("2026-10", "2026-09-28", ["2026-09", "2026-10"])` is `2026-09`.
@@ -172,7 +173,7 @@ Replace the month dropdown with the week strip and the expandable month grid on 
 - The month name is `monthLabel` of the selected day's month. Pressing it toggles an inline grid of `monthGrid` for that month. A day click closes the grid. A second press of the name closes it.
 - The selected day uses the pressed `Button` style already used for the active page size, with `aria-pressed`. Other enabled days use the outline style. A day whose month is absent from `dates` is disabled.
 - Day buttons show the day-of-month number. The name button exposes `aria-expanded`.
-- On a day click, the selected day becomes that day and the strip shows its week. When `listMonthChange` returns a month, call the existing month-change path: store that `YYYY-MM` preference, reset to page 1, and reload. When it returns `null` because the month is unchanged, do not reload. A disabled day does not change selection.
+- On a day click, the highlighted day becomes that `YYYY-MM-DD` and the strip shows its week. When `listMonthChange` returns a month, call the existing month-change path: store that `YYYY-MM` preference, reset to page 1, and reload. When it returns `null` because the month is unchanged, do not reload. A disabled day does not change selection. The reload updates the loaded month only. It must not write `body.month` over the highlighted day.
 - When a month load settles and there is no pending clicked day, the selected day is `openingDay(loadedMonth, today, newestMeasuredOn)`. Edit and delete focus still choose the month and page on the server. The strip does not jump to the focused row's day.
 - Page size, pager, empty copy, edit, and delete stay as they are. Use role tokens and `Button`. Do not add a dependency.
 
@@ -290,7 +291,7 @@ Add the add-form icons to saved metric boxes, and center each number and its del
 
 ### Unit Tests:
 
-- Phase 1 covers the Monday week of 11 October 2026, the October grid's leading and trailing days, `October 2026`, opening on today, opening on 28 September, opening on the 1st of an empty month, and the three `listMonthChange` results.
+- Phase 1 covers the Monday week of 11 October 2026, the October grid's leading and trailing days, `October 2026`, opening on today, opening on 28 September from both `2026-09-28T18:00:00` and `2026-09-28 18:00:00`, opening on the 1st of an empty month, and the three `listMonthChange` results.
 - Existing `measurement-input` tests continue to own the submitted timestamp shape and the future-day ceiling.
 - Existing `measurement-page` tests continue to own month parsing, page size, and the preference keys.
 
