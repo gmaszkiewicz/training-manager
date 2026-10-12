@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { monthLabel } from "@/lib/journal-calendar";
 import { formatDelta } from "@/lib/measurement-deltas";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
 import {
@@ -58,9 +60,6 @@ const pagerButtonClassName = cn(
   textActionClassName,
   "disabled:pointer-events-none disabled:no-underline disabled:opacity-50",
 );
-
-const selectClassName =
-  "border-input focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:ring-2 md:text-sm";
 
 function namedId(id: string | null): string | null {
   if (id === null || id === "") {
@@ -164,6 +163,26 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
+function earlierMonth(current: string, knownMonths: readonly string[]): string | null {
+  let earlier: string | null = null;
+  for (const candidate of knownMonths) {
+    if (candidate < current && (earlier === null || candidate > earlier)) {
+      earlier = candidate;
+    }
+  }
+  return earlier;
+}
+
+function laterMonth(current: string, knownMonths: readonly string[]): string | null {
+  let later: string | null = null;
+  for (const candidate of knownMonths) {
+    if (candidate > current && (later === null || candidate < later)) {
+      later = candidate;
+    }
+  }
+  return later;
+}
+
 function monthOfFocused(rows: readonly { id: string; measured_on: string }[], focusedId: string | null): string | null {
   if (focusedId === null) {
     return null;
@@ -236,7 +255,6 @@ export default function MeasurementBrowser({
   confirmingId = null,
   accountUserId = null,
   subjectTraineeId = null,
-  idPrefix = "",
   today,
   dates: datesProp,
   page: pageProp,
@@ -262,12 +280,14 @@ export default function MeasurementBrowser({
         focusedEntryId,
         savedDay: null,
       });
+  const initialMonth = localInitial?.day ?? serverMonth ?? focusedMonth ?? measurementMonth(todayValue);
   const [pageSize, setPageSize] = useState<PageSize>(isPageSize(pageSizeProp) ? pageSizeProp : defaultPageSize);
-  const [day, setDay] = useState(localInitial?.day ?? serverMonth ?? focusedMonth ?? measurementMonth(todayValue));
+  const [month, setMonth] = useState(initialMonth);
   const [page, setPage] = useState(localInitial?.page ?? pageProp ?? 1);
   const [remoteDates, setRemoteDates] = useState<string[]>(datesProp ?? []);
   const [remotePageCount, setRemotePageCount] = useState(pageCountProp ?? 1);
   const [remoteEntries, setRemoteEntries] = useState<MeasurementWithDeltas[]>(entries);
+  const [monthListOpen, setMonthListOpen] = useState(false);
   const requestSerial = useRef(0);
 
   const loadPage = useCallback((query: PageQuery): void => {
@@ -277,7 +297,7 @@ export default function MeasurementBrowser({
         return;
       }
       setRemoteDates(body.dates);
-      setDay(body.month);
+      setMonth(body.month);
       setPage(body.page);
       setPageSize(body.pageSize);
       setRemotePageCount(body.pageCount);
@@ -306,7 +326,7 @@ export default function MeasurementBrowser({
         savedDay: storedDay,
       });
       setPageSize(storedSize);
-      setDay(next.day);
+      setMonth(next.day);
       setPage(next.page);
       return;
     }
@@ -358,7 +378,7 @@ export default function MeasurementBrowser({
   ]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const monthRows = filterByMonth(entries, day);
+  const monthRows = filterByMonth(entries, month);
   const localPageCount = pageCountOf(monthRows.length, pageSize);
   const localPage = clampPage(page, localPageCount);
   const dates = paged
@@ -378,7 +398,8 @@ export default function MeasurementBrowser({
     ? remoteEntries.length === 0 && remotePageCount === 1 && remoteDates.length <= 1
     : entries.length === 0;
   const monthIsEmpty = paged ? remoteEntries.length === 0 : monthRows.length === 0;
-  const dayId = `${idPrefix}measurement-day`;
+  const previousMonth = earlierMonth(month, dates);
+  const nextMonth = laterMonth(month, dates);
   const cancelHref = measurementCancelHref(openEditingId);
 
   function traineeForRead(): string | null {
@@ -388,19 +409,22 @@ export default function MeasurementBrowser({
     return subjectId;
   }
 
-  function onDayChange(event: ChangeEvent<HTMLSelectElement>) {
-    const nextDay = event.target.value;
+  function chooseMonth(nextMonth: string) {
+    setMonthListOpen(false);
+    if (nextMonth === month || !dates.includes(nextMonth)) {
+      return;
+    }
     if (accountId !== null && subjectId !== null) {
-      writePreference(dayStorageKey(accountId, subjectId), nextDay);
+      writePreference(dayStorageKey(accountId, subjectId), nextMonth);
     }
     if (!paged) {
-      setDay(nextDay);
+      setMonth(nextMonth);
       setPage(1);
       return;
     }
-    const keepFocus = focusedEntryId !== null && focusedMonth === nextDay;
+    const keepFocus = focusedEntryId !== null && focusedMonth === nextMonth;
     loadPage({
-      month: nextDay,
+      month: nextMonth,
       page: 1,
       size: pageSize,
       focusId: keepFocus ? focusedEntryId : null,
@@ -419,15 +443,15 @@ export default function MeasurementBrowser({
         today: todayValue,
         pageSize: nextSize,
         focusedEntryId: focusedStillOnDay ? focusedEntryId : null,
-        savedDay: day,
+        savedDay: month,
       });
       setPageSize(nextSize);
       setPage(next.page);
       return;
     }
-    const keepFocus = focusedEntryId !== null && focusedMonth !== null && focusedMonth === day;
+    const keepFocus = focusedEntryId !== null && focusedMonth !== null && focusedMonth === month;
     loadPage({
-      month: day,
+      month,
       page: 1,
       size: nextSize,
       focusId: keepFocus ? focusedEntryId : null,
@@ -441,7 +465,7 @@ export default function MeasurementBrowser({
       return;
     }
     loadPage({
-      month: day,
+      month,
       page: nextPage,
       size: pageSize,
       focusId: null,
@@ -451,15 +475,68 @@ export default function MeasurementBrowser({
 
   return (
     <div className="w-full">
-      <div className="mt-6 flex w-full flex-wrap items-center gap-4">
-        <div className="w-40 shrink-0">
-          <select id={dayId} aria-label="Month" className={selectClassName} value={day} onChange={onDayChange}>
-            {dates.map((date) => (
-              <option key={date} value={date}>
-                {date}
-              </option>
-            ))}
-          </select>
+      <div className="mt-6 flex w-full flex-wrap items-start gap-4">
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Month">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Previous month"
+              disabled={previousMonth === null}
+              onClick={() => {
+                if (previousMonth !== null) {
+                  chooseMonth(previousMonth);
+                }
+              }}
+            >
+              <ChevronLeft aria-hidden="true" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              aria-expanded={monthListOpen}
+              onClick={() => {
+                setMonthListOpen((open) => !open);
+              }}
+            >
+              {monthLabel(month)}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Next month"
+              disabled={nextMonth === null}
+              onClick={() => {
+                if (nextMonth !== null) {
+                  chooseMonth(nextMonth);
+                }
+              }}
+            >
+              <ChevronRight aria-hidden="true" />
+            </Button>
+          </div>
+          {monthListOpen ? (
+            <div className="bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-full flex-col gap-2 rounded-md border p-2 shadow-md">
+              {dates.map((listedMonth) => {
+                const pressed = listedMonth === month;
+                return (
+                  <Button
+                    key={listedMonth}
+                    type="button"
+                    variant={pressed ? "default" : "outline"}
+                    aria-pressed={pressed}
+                    onClick={() => {
+                      chooseMonth(listedMonth);
+                    }}
+                  >
+                    {monthLabel(listedMonth)}
+                  </Button>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
         <div className="ml-auto shrink-0">
           <div className="flex gap-2" role="group" aria-label="Entries per page">
