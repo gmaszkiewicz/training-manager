@@ -86,7 +86,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-25 | handle-change-and-reset-pass | user can request a password reminder from sign-in, and a signed-in user can change their password from Profile in the menu between Measurements and Sign out | S-08, S-11 | MS-17 | done |
 | S-26 | preview-for-new-entry | user can see a preview of the difference versus the previous entry, chosen from the date typed for the new entry, while filling in that entry | S-02, S-13, S-22 | MS-18 | done |
 | S-27 | calendar-upgrade-and-visual-fixes | user can move through the journal on a week of day buttons, open the month grid from the month name, set date and time together in one field, and read each saved entry's values centered with the same icons as a new measurement | S-23, S-26 | MS-19 | done |
-| S-28 | visual-update-for-linked-trainee | user can open a centered email field under Body measurements, click it to list linked trainees, and move through that list with left and right arrows; when more than six trainees are linked, the list scrolls | S-12, S-13, S-27 | MS-20 | planning |
+| S-28 | visual-update-for-linked-trainee | user can open a centered email field under Body measurements, click it to list linked trainees, and move through that list with left and right arrows; when more than six trainees are linked, the list scrolls | S-12, S-13, S-27 | MS-20 | in-progress |
 
 ## Streams
 
@@ -456,7 +456,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Replacing the row of email links can hide a trainee or open the wrong journal when more than six are linked.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Backlog Handoff
 

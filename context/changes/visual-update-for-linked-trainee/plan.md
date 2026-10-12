@@ -219,8 +219,8 @@ No data migration. The change is presentation on top of the current trainer link
 
 #### Automated
 
-- [ ] 1.1 `npm test` passes, and `src/lib/trainer-preview.test.ts` covers `ada@example.com`, `bea@example.com`, `cyd@example.com` in that array order: `bea@` returns `ada@` then `cyd@`; `ada@` has no previous; `cyd@` has no next; one link returns both null; an absent id returns both null; a later `linkedAt` earlier in the array does not change the neighbor
-- [ ] 1.2 `npm run lint` passes
+- [x] 1.1 `npm test` passes, and `src/lib/trainer-preview.test.ts` covers `ada@example.com`, `bea@example.com`, `cyd@example.com` in that array order: `bea@` returns `ada@` then `cyd@`; `ada@` has no previous; `cyd@` has no next; one link returns both null; an absent id returns both null; a later `linkedAt` earlier in the array does not change the neighbor
+- [x] 1.2 `npm run lint` passes
 
 ### Phase 2: Centered linked-trainee field
 
