@@ -337,16 +337,16 @@ No database migration. The measurement page payload gains `newestMeasuredOn`. Ex
 
 #### Automated
 
-- [x] 1.1 `npm test` passes, including the week of Sunday 11 October 2026, the 28 September opening day, and the empty-month 1st
-- [x] 1.2 `npm run lint` passes
+- [x] 1.1 `npm test` passes, including the week of Sunday 11 October 2026, the 28 September opening day, and the empty-month 1st — f6863e5
+- [x] 1.2 `npm run lint` passes — f6863e5
 
 ### Phase 2: Journal week strip
 
 #### Automated
 
-- [ ] 2.1 `npm test` passes
-- [ ] 2.2 `npm run check:home-tokens` passes
-- [ ] 2.3 `npm run lint` passes
+- [x] 2.1 `npm test` passes
+- [x] 2.2 `npm run check:home-tokens` passes
+- [x] 2.3 `npm run lint` passes
 
 #### Manual
 
