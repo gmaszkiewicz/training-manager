@@ -351,8 +351,23 @@ function ClockPart({
   onChange: (next: string) => void;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const caretAtEnd = useRef(false);
   const limit = clockLimit(name);
   const shown = draft ?? value;
+
+  useEffect(() => {
+    if (!caretAtEnd.current) {
+      return;
+    }
+    caretAtEnd.current = false;
+    const input = inputRef.current;
+    if (input === null || document.activeElement !== input) {
+      return;
+    }
+    const end = input.value.length;
+    input.setSelectionRange(end, end);
+  });
 
   function commit(text: string) {
     const next = typedClock(text, limit);
@@ -377,25 +392,34 @@ function ClockPart({
         <ChevronUp aria-hidden="true" />
       </Button>
       <Input
+        ref={inputRef}
         aria-label={name === "hour" ? "Hour" : "Minute"}
         inputMode="numeric"
-        maxLength={2}
+        maxLength={3}
         value={shown}
         className="w-12 px-2 text-center"
         onFocus={(event) => {
           event.currentTarget.select();
         }}
         onChange={(event) => {
-          const text = event.target.value.replace(/\D/g, "").slice(0, 2);
-          const next = text.length === 2 ? typedClock(text, limit) : null;
-          if (next !== null) {
-            setDraft(null);
-            if (next !== value) {
-              onChange(next);
-            }
+          const digits = event.target.value.replace(/\D/g, "");
+          if (digits.length === 0) {
+            setDraft("");
             return;
           }
-          setDraft(text);
+          const entered = digits.length > 2 ? digits.slice(-2) : digits;
+          const next = typedClock(entered, limit);
+          if (next === null) {
+            setDraft(entered);
+            return;
+          }
+          if (entered.length === 1) {
+            caretAtEnd.current = true;
+          }
+          if (next !== value) {
+            onChange(next);
+          }
+          setDraft(next === value ? next : null);
         }}
         onBlur={() => {
           commit(shown);
