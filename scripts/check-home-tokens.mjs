@@ -28,6 +28,7 @@ const FILES = [
   "src/components/journal/TraineeJournal.astro",
   "src/components/measurements/MeasurementBrowser.tsx",
   "src/components/trainer/TrainerPanel.astro",
+  "src/components/trainer/LinkedTraineeField.tsx",
   "src/pages/kitchen-sink/home.astro",
   "src/pages/kitchen-sink/journal.astro",
   "src/pages/kitchen-sink/trainer.astro",
