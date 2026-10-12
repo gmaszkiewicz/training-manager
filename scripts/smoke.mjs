@@ -1,10 +1,49 @@
 // Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
 // Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
-// Catalog proof reads SUPABASE_URL and SUPABASE_KEY. A local run exports them from `supabase status -o env`.
+// Catalog proof reads SUPABASE_URL and SUPABASE_KEY. When those are unset, it uses API_URL and ANON_KEY from `supabase status -o env`.
 
+import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
+const root = join(import.meta.dirname, "..");
+
+function supabaseExecutable() {
+  if (process.platform === "win32") {
+    const exe = join(root, "node_modules", "@supabase", "cli-windows-x64", "bin", "supabase.exe");
+    if (existsSync(exe)) return exe;
+  }
+  return "supabase";
+}
+
+function unquoteEnvValue(raw) {
+  if (raw.length < 2 || !raw.startsWith('"') || !raw.endsWith('"')) return raw;
+  return raw.slice(1, -1);
+}
+
+function localCatalogEnv() {
+  const url = process.env.SUPABASE_URL ?? "";
+  const key = process.env.SUPABASE_KEY ?? "";
+  if (url !== "" && key !== "") return { url, key };
+  const status = spawnSync(supabaseExecutable(), ["status", "-o", "env"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (status.status !== 0) return { url, key };
+  const env = {};
+  for (const line of `${status.stdout ?? ""}\n${status.stderr ?? ""}`.split(/\r?\n/)) {
+    const separator = line.indexOf("=");
+    if (separator <= 0) continue;
+    env[line.slice(0, separator)] = unquoteEnvValue(line.slice(separator + 1));
+  }
+  return { url: env.API_URL ?? url, key: env.ANON_KEY ?? key };
+}
+
+const catalogEnv = localCatalogEnv();
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
-const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
-const SUPABASE_KEY = process.env.SUPABASE_KEY ?? "";
+const SUPABASE_URL = catalogEnv.url;
+const SUPABASE_KEY = catalogEnv.key;
 const email = `smoke-${Date.now()}@example.com`;
 const secondEmail = `smoke-second-${Date.now()}@example.com`;
 const unlinkedEmail = `smoke-unlinked-${Date.now()}@example.com`;
@@ -331,7 +370,7 @@ const steps = [
   [
     "measurements shows the weight delta",
     rememberTrainee(rememberMeasurement(() => request("/measurements"))),
-    { status: 200, body: "↓ 1.5" },
+    { status: 200, body: ["Weight down 1.5 kg", "↓"] },
   ],
   [
     "measurement note edit leaves the clock-order delta",
@@ -345,7 +384,7 @@ const steps = [
   [
     "measurements keeps the clock-order delta after a note edit",
     () => request("/measurements"),
-    { status: 200, body: "↓ 1.5" },
+    { status: 200, body: ["Weight down 1.5 kg", "↓"] },
   ],
   [
     "measurement edits the saved weight",
@@ -359,7 +398,7 @@ const steps = [
   [
     "measurements shows the saved weight delta",
     () => request("/measurements"),
-    { status: 200, body: "↑ 1.0", forbid: "↓ 1.5" },
+    { status: 200, body: ["Weight up 1.0 kg", "↑"], forbid: ["Weight down 1.5 kg", "↓"] },
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["measurements redirects after signout", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
