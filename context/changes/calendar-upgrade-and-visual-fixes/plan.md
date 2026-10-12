@@ -2,7 +2,7 @@
 
 ## Overview
 
-Replace the journal's `yyyy-mm` month dropdown with a Monday-first week strip and an expandable month grid, and replace the native date-time picker with one field whose popup shows that grid and the time together. Center saved metric numbers and their deltas, with the same left icons used when adding a measurement.
+Replace the journal's `yyyy-mm` month dropdown with a Month field: the English month and year, a previous arrow, and a next arrow. Clicking the month and year opens a floating list of the current month plus every month that has entries. Replace the native date-time picker with one field whose popup shows the month grid and the time together. Center saved metric numbers and their deltas, with the same left icons used when adding a measurement.
 
 ## Current State Analysis
 
@@ -14,53 +14,54 @@ Saved metric boxes have no icon and no centering (`MeasurementBrowser.tsx:522-54
 
 ### Key Discoveries:
 
-- The page request replaces a month that is not in `dates` with the current UTC month (`src/lib/services/measurements.ts:222-225`). A day click outside that list must not call the month change.
-- Rows are paged. When edit or delete focus opens a later page, the visible rows are not the newest rows in the month (`measurements.ts:228-250`). The opening day still needs that newest timestamp.
+- The page request replaces a month that is not in `dates` with the current UTC month (`src/lib/services/measurements.ts`). The Month field only offers months in `dates`, so an arrow or a list choice never asks for a month the server would replace.
+- `dates` is newest first and always includes the current UTC month, even when that month has no rows (`measurementMonths`).
+- Rows are paged. Edit and delete focus still choose the month and page on the server. The Month field shows that loaded month. It does not mark a day.
 - The journal's `today` is a UTC date (`src/lib/measurement-page.ts:33-35`). A new measurement defaults to the browser's local minute (`MeasurementForm.tsx:237-239`). Those clocks stay separate.
 - The preference cookie `tm.measurements.day` stores a month. `journalMonth` keeps only `YYYY-MM` (`measurement-page.ts:14-24`).
 - The loaded card floor `min-w-[calc(75rem+4px)]` still matches an older `w-36` date column. The date column is now `w-56`. This plan does not change column widths, so the floor stays.
 
 ## Desired End State
 
-The journal toolbar shows a week of day buttons, Monday through Sunday, and a month name such as `October 2026`. Clicking the name expands that month's grid. Clicking a day highlights it, shows the week that contains it, and closes the grid. The list remains every saved row in that day's month. Clicking 7 October while October is loaded leaves all October rows and highlights the 7th. Clicking 28 September, when September is in the month list, loads every September row, resets to page 1, and shows the week of 28 September.
+The journal toolbar shows a Month field above the saved entries. The field is a group labelled `Month`. It contains a previous arrow, the English month and year such as `October 2026`, and a next arrow. There are no day buttons. The left arrow loads the earlier month in `dates`. The right arrow loads the later month. An arrow at the end of that list is disabled. A month with no entries that is not the current month is not in the list, so the arrows skip it.
 
-On open, the marked day is the UTC `today` when that date falls in the loaded month. Otherwise it is the calendar day of the newest entry in that month. A month with no entries opens on the week of its 1st. Sunday 11 October 2026 belongs to Monday 5 October through Sunday 11 October.
+Clicking the month and year toggles a list of `dates`: the current month and year always, including when that month has no entries, and every month and year that has entries. The list floats over the entries. The entries stay where they are. A second click of the month and year closes the list. Choosing the loaded month closes the list and does not reload. Choosing another month closes the list, stores that `YYYY-MM` preference, resets to page 1, and reloads. The measurement list remains every saved row in the loaded month.
 
-The date-and-time field is still one field and still submits `measured_on` as `YYYY-MM-DDTHH:mm`. Its popup shows the month grid and the time. Choosing a day updates the date and leaves the popup open.
+The date-and-time field is still one field and still submits `measured_on` as `YYYY-MM-DDTHH:mm`. Its popup shows the month grid and the time. Choosing a day updates the date and leaves the popup open. That grid is the form's popup. The journal Month field does not open it.
 
-Each saved metric box shows `Scale` or `Ruler` on the left. The number and the delta under it are centered. The date column has no icon. The add form stays left-aligned. The trainer preview shows the same strip and the same saved boxes.
+Each saved metric box shows `Scale` or `Ruler` on the left. The number and the delta under it are centered. The date column has no icon. The add form stays left-aligned. The trainer preview shows the same Month field and the same saved boxes.
 
 ### Key Discoveries:
 
 - Page size, the previous/next pager, empty copy, and the month preference cookie stay on their current contracts.
-- The shared browser means the trainer preview follows the same day-click rule as the trainee journal.
+- The shared browser means the trainer preview follows the same Month field as the trainee journal.
 - Kitchen sinks at `/kitchen-sink/journal` and `/kitchen-sink/trainer` render these same components.
 
 ## What We're NOT Doing
 
 - Filtering the measurement list to a single day.
-- Adding previous/next week arrows. The week changes by choosing a day.
-- Persisting the highlighted day. The preference continues to store `YYYY-MM`.
-- Adding a date library, a shadcn calendar, or a popover dependency.
+- Day buttons on the journal toolbar, a highlighted day, or a week strip.
+- An inline month grid on the journal. The day grid belongs to the date-and-time popup.
+- Persisting anything finer than `YYYY-MM`. The preference continues to store a month.
+- Adding a date library, a shadcn calendar, or a popover dependency. The month list is positioned in the page.
 - Changing page sizes, the pager, empty copy, or delta colors.
 - Centering the add-form inputs, or adding an icon to the date column.
 - Changing the `75rem` card floor or the `w-56` / `w-28` columns.
-- Applying the form's future-day ceiling to the journal grid.
+- Applying the form's future-day ceiling to the journal Month field.
 - Unifying the journal's UTC today with the form's local minute.
-- Letting a day outside the known month list change which month loads.
+- Letting a month outside `dates` change which month loads.
 
 ## Implementation Approach
 
-Calendar rules live in a new pure module beside `src/lib/measurement-page.ts`, with Vitest coverage for the dates in the decisions above. The journal and the form share one month-grid component built from `Button` and role tokens. The journal replaces the `<select>` and reuses the existing month reload when the clicked day belongs to another known month. The form keeps the existing submit name, schema, and local-minute default. Saved boxes reuse the form's `kg` → `Scale`, otherwise `Ruler` choice, and center the number and delta inside the current column.
+Calendar rules live in a pure module beside `src/lib/measurement-page.ts`, with Vitest coverage for the month grid the date field will use. The journal Month field uses `monthLabel` and the existing `dates` list. `MonthGrid` is for the date-and-time popup, not for the journal toolbar. The journal replaces the `<select>` and reuses the existing month reload when the chosen month is in `dates`. The form keeps the existing submit name, schema, and local-minute default. Saved boxes reuse the form's `kg` → `Scale`, otherwise `Ruler` choice, and center the number and delta inside the current column.
 
 ## Critical Implementation Details
 
-- **Two clocks.** The strip's "today" is the UTC `today` prop already passed into the browser. The form's default minute stays the browser-local value from `useSyncExternalStore`, with the empty SSR snapshot. Do not derive one from the other.
-- **Opening day versus a click.** The highlighted day is a `YYYY-MM-DD`, held apart from the loaded `YYYY-MM`. Use the opening rule when a month arrives without a pending day click, including edit and delete focus. A day click keeps that full date selected after the reload. `loadPage` currently assigns `setDay(body.month)` (`MeasurementBrowser.tsx:280`), and the non-paged hydrate assigns `viewOf`'s month string (`MeasurementBrowser.tsx:300-310`). Neither assignment may replace the highlighted day. Recomputing the opening day after a click would highlight the newest entry instead of the day the user pressed.
-- **Newest row on a later page.** Edit focus can open a page that does not contain the newest row. The paged payload must carry `newestMeasuredOn` for the loaded month so the strip can still mark that day. On the non-paged path, derive it from the full in-memory month.
-- **Unknown months.** `readMeasurementPage` substitutes the current month when the requested month is absent from `dates`. Days in those months stay visible, so the week and the grid stay complete, and they are disabled.
-- **Two dismissals for one grid.** A journal day click closes the expanded grid. A second press of the month name closes it too. A form day click or time change leaves the popup open. The form popup closes on a second press of the field, on Escape, and on a pointer press outside the field and the popup.
-- **Form ceiling only.** The form disables days after the calendar date in `measuredOnMax`. The journal does not. The form may select a month that has no saved rows yet; it is not limited to `dates`.
+- **Two clocks.** The Month field's current month is the UTC `today` already included in `dates`. The form's default minute stays the browser-local value from `useSyncExternalStore`, with the empty SSR snapshot. Do not derive one from the other.
+- **Loaded month only.** The field shows the loaded `YYYY-MM`. There is no highlighted day. Edit and delete focus still choose the month and page on the server. The field follows that month. The page payload does not gain `newestMeasuredOn`.
+- **Known months only.** `readMeasurementPage` substitutes the current month when the requested month is absent from `dates`. The arrows and the list move only inside `dates`. The earlier neighbor is the greatest `YYYY-MM` in `dates` that is less than the loaded month. The later neighbor is the least `YYYY-MM` that is greater. A missing neighbor disables that arrow.
+- **Floating list.** Pressing the month and year toggles the list. The list is taken out of flow, so the entries do not move down. A second press of the month and year closes it. Choosing the loaded month closes it and does not reload. Choosing another month closes it and uses the existing month-change path: store that `YYYY-MM`, reset to page 1, and reload.
+- **Form popup stays separate.** A form day click or time change leaves the date popup open. The form popup closes on a second press of the field, on Escape, and on a pointer press outside the field and the popup. The form disables days after the calendar date in `measuredOnMax`. The journal Month field has no day ceiling. The form may select a month that has no saved rows yet; it is not limited to `dates`.
 
 ## Phase 1: Calendar rules
 
@@ -123,67 +124,39 @@ export function listMonthChange(currentMonth: string, day: string, knownMonths: 
 
 ---
 
-## Phase 2: Journal week strip
+## Phase 2: Month field
 
 ### Overview
 
-Replace the month dropdown with the week strip and the expandable month grid on the shared measurement list. A day click highlights that day and loads another month only when `listMonthChange` returns one.
+Replace the month dropdown with a Month field on the shared measurement list. Arrows move inside `dates`. Clicking the month and year opens a floating list of those months. The entries do not move down.
+
+`weekContaining`, `openingDay`, and `listMonthChange` stay tested from Phase 1. The Month field does not call them. `MonthGrid` is built here for the Phase 3 date popup. The journal does not render it.
 
 ### Changes Required:
 
-#### 1. Newest timestamp on the paged payload
-
-**File**: `src/lib/services/measurements.ts`
-
-**Intent**: Give the browser the newest saved timestamp in the loaded month, including when the visible page is a later page opened by edit or delete focus.
-
-**Contract**: `readMeasurementPage` adds `newestMeasuredOn: string | null` to its success result. It is the `measured_on` of the newest row in the loaded month, using the existing newest-first order, or `null` when that month has no rows. The loaded month, page, and page size stay as they are.
-
-**File**: `src/pages/api/measurements/index.ts`
-
-**Intent**: Send the new field with the page the browser already fetches.
-
-**Contract**: The JSON object at `index.ts:86-94` includes `newestMeasuredOn`. The query parameters `month`, `page`, `size`, `focus`, and `trainee` stay unchanged.
-
-**File**: `src/pages/measurements.astro`
-
-**Intent**: Pass the same field from the server render into both journal callers.
-
-**Contract**: The trainee and trainer props include `newestMeasuredOn` from the page read.
-
-**File**: `src/components/journal/TraineeJournal.astro`
-
-**File**: `src/components/trainer/TrainerPanel.astro`
-
-**Intent**: Thread the field into `MeasurementBrowser` on both callers.
-
-**Contract**: Each paged `MeasurementBrowser` receives `newestMeasuredOn`.
-
-#### 2. Week strip and month grid
+#### 1. Month field
 
 **File**: `src/components/measurements/MeasurementBrowser.tsx`
 
-**Intent**: Remove the month `<select>` and let the calendar drive the same month reload.
+**Intent**: Remove the month `<select>` and let the Month field drive the same month reload.
 
 **Contract**:
 
-- `readMeasurementPageBody` accepts `newestMeasuredOn` as a string or `null`.
-- The paged path uses that field. The non-paged path derives the newest `measured_on` from the in-memory rows of the loaded month.
-- The toolbar keeps the `Entries per page` group. In the select's place, render the month name and the seven day buttons for `weekContaining` of the selected day.
-- The month name is `monthLabel` of the selected day's month. Pressing it toggles an inline grid of `monthGrid` for that month. A day click closes the grid. A second press of the name closes it.
-- The selected day uses the pressed `Button` style already used for the active page size, with `aria-pressed`. Other enabled days use the outline style. A day whose month is absent from `dates` is disabled.
-- Day buttons show the day-of-month number. The name button exposes `aria-expanded`.
-- On a day click, the highlighted day becomes that `YYYY-MM-DD` and the strip shows its week. When `listMonthChange` returns a month, call the existing month-change path: store that `YYYY-MM` preference, reset to page 1, and reload. When it returns `null` because the month is unchanged, do not reload. A disabled day does not change selection. The reload updates the loaded month only. It must not write `body.month` over the highlighted day.
-- When a month load settles and there is no pending clicked day, the selected day is `openingDay(loadedMonth, today, newestMeasuredOn)`. Edit and delete focus still choose the month and page on the server. The strip does not jump to the focused row's day.
+- The page payload stays as it is. Do not add `newestMeasuredOn`.
+- The toolbar keeps the `Entries per page` group. In the select's place, render a group labelled `Month`: a previous arrow, `monthLabel` of the loaded month, and a next arrow. No day buttons.
+- The arrows use `ChevronLeft` and `ChevronRight`, `aria-hidden` on the icon, with button names `Previous month` and `Next month`. The earlier month is the greatest `YYYY-MM` in `dates` below the loaded month. The later month is the least `YYYY-MM` above it. A missing neighbor disables that arrow.
+- Pressing the month and year toggles a list of `dates`, newest first, the same order `measurementMonths` already uses. Each row is `monthLabel` of that month. The loaded month uses the pressed `Button` style, with `aria-pressed`. The name button exposes `aria-expanded`.
+- The list is positioned out of flow, under the field, so the saved entries stay where they are.
+- Choosing another month closes the list and calls the existing month-change path: store that `YYYY-MM` preference, reset to page 1, and reload. Choosing the loaded month closes the list and does not reload. A second press of the month and year closes the list.
 - Page size, pager, empty copy, edit, and delete stay as they are. Use role tokens and `Button`. Do not add a dependency.
 
-#### 3. Shared month grid
+#### 2. Shared month grid
 
 **File**: `src/components/measurements/MonthGrid.tsx`
 
-**Intent**: Give the journal and the later form popup one grid, with the caller deciding which days are disabled.
+**Intent**: Give the later form popup one day grid, with the caller deciding which days are disabled.
 
-**Contract**: The component renders `monthGrid` for one `YYYY-MM`, marks one selected day, and calls back with the clicked `YYYY-MM-DD`. The caller supplies the disabled set. The component does not read `dates` or the form ceiling itself.
+**Contract**: The component renders `monthGrid` for one `YYYY-MM`, marks one selected day, and calls back with the clicked `YYYY-MM-DD`. The caller supplies the disabled set. The component does not read `dates` or the form ceiling itself. The journal Month field does not render it.
 
 ### Success Criteria:
 
@@ -195,12 +168,12 @@ Replace the month dropdown with the week strip and the expandable month grid on 
 
 #### Manual Verification:
 
-- With today in October, the strip shows Monday 5 October through Sunday 11 October, 11 is pressed, and the name reads October 2026
-- Clicking 7 October moves the highlight and leaves the October rows unchanged
-- Opening the grid and clicking 28 September, when September is in the month list, closes the grid, shows the week of 28 September, and loads every September row on page 1
-- A day whose month is absent from the month list is visible and disabled
-- The trainer preview shows the same strip and follows the same click
-- Editing an earlier row in a past month keeps that row's page, and the strip marks the newest day in that month
+- The Month field shows a previous arrow, the English month and year, and a next arrow. There are no day buttons. An arrow at either end of the month list is disabled
+- The left arrow loads the earlier month from that list and resets to page 1. The right arrow loads the later month. A month with no entries that is not the current month is skipped
+- Clicking the month and year opens a floating list over the entries. The entries stay in place. A second click closes the list
+- The list always includes the current month, even with no entries, and every month that has entries
+- Choosing another month from the list closes it, loads that month, and resets to page 1
+- The trainer preview shows the same Month field. Editing an earlier row in a past month still opens the page that contains that row
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase. Phase blocks use plain bullets — the corresponding `- [ ]` checkboxes for these items live in the `## Progress` section at the bottom of the plan.
 
@@ -210,7 +183,7 @@ Replace the month dropdown with the week strip and the expandable month grid on 
 
 ### Overview
 
-Replace the native date-time picker with one field. The popup shows the shared month grid and a time input. Choosing a day updates the date and leaves the popup open so the time stays visible.
+Replace the native date-time picker with one field. The popup shows `MonthGrid` and a time input. Choosing a day updates the date and leaves the popup open so the time stays visible. This popup is not the journal Month field.
 
 ### Changes Required:
 
@@ -302,22 +275,22 @@ Add the add-form icons to saved metric boxes, and center each number and its del
 
 ### Manual Testing Steps:
 
-1. Open `/measurements` on a month that contains today and confirm the Monday-first week, the pressed today, and the English month name.
-2. Click another day in that week and confirm the rows stay the full month.
-3. Expand the grid, click a day in another known month, and confirm the list, the page reset, and the moved week.
-4. Confirm a day outside the known month list cannot be chosen.
-5. Open the trainer preview and repeat the day click.
-6. Edit an earlier row in a past month and confirm the page still contains that row while the strip marks the newest day.
+1. Open `/measurements` and confirm the Month field: previous arrow, English month and year, next arrow, and no day buttons. Confirm an arrow at either end of the list is disabled.
+2. Use the arrows and confirm each step loads the neighboring month from the list, resets to page 1, and skips a month that has no entries and is not the current month.
+3. Open the month and year, confirm the list floats over the entries, and confirm a second click closes it without moving the entries.
+4. Confirm the list contains the current month even when it has no entries, plus every month that has entries.
+5. Choose another month from the list and confirm the list closes, that month loads, and the page resets to 1.
+6. Open the trainer preview and repeat the arrow and the list. Edit an earlier row in a past month and confirm that page still contains the row.
 7. On a new measurement, open Date and time, pick a day, set the time, and save. Confirm the popup stayed open until dismissed and the saved row shows the chosen minute.
 8. Confirm saved weight and circumference boxes, then confirm the add form is unchanged.
 
 ## Performance Considerations
 
-A same-month day click does not refetch. A month change uses the existing page request. `newestMeasuredOn` travels on that response so edit focus does not need a second request for page 1. The grid is at most six weeks of buttons.
+Opening the month list does not refetch. A month change uses the existing page request. The date popup's day grid is at most six weeks of buttons.
 
 ## Migration Notes
 
-No database migration. The measurement page payload gains `newestMeasuredOn`. Existing preference cookies remain `YYYY-MM`. The submitted `measured_on` string stays `YYYY-MM-DDTHH:mm`.
+No database migration. The measurement page payload is unchanged. Existing preference cookies remain `YYYY-MM`. The submitted `measured_on` string stays `YYYY-MM-DDTHH:mm`.
 
 ## References
 
@@ -340,22 +313,22 @@ No database migration. The measurement page payload gains `newestMeasuredOn`. Ex
 - [x] 1.1 `npm test` passes, including the week of Sunday 11 October 2026, the 28 September opening day, and the empty-month 1st — f6863e5
 - [x] 1.2 `npm run lint` passes — f6863e5
 
-### Phase 2: Journal week strip
+### Phase 2: Month field
 
 #### Automated
 
-- [x] 2.1 `npm test` passes
-- [x] 2.2 `npm run check:home-tokens` passes
-- [x] 2.3 `npm run lint` passes
+- [x] 2.1 `npm test` passes — 3e858fd
+- [x] 2.2 `npm run check:home-tokens` passes — 3e858fd
+- [x] 2.3 `npm run lint` passes — 3e858fd
 
 #### Manual
 
-- [ ] 2.4 With today in October, the strip shows Monday 5 October through Sunday 11 October, 11 is pressed, and the name reads October 2026
-- [ ] 2.5 Clicking 7 October moves the highlight and leaves the October rows unchanged
-- [ ] 2.6 Opening the grid and clicking 28 September, when September is in the month list, closes the grid, shows the week of 28 September, and loads every September row on page 1
-- [ ] 2.7 A day whose month is absent from the month list is visible and disabled
-- [ ] 2.8 The trainer preview shows the same strip and follows the same click
-- [ ] 2.9 Editing an earlier row in a past month keeps that row's page, and the strip marks the newest day in that month
+- [x] 2.4 The Month field shows a previous arrow, the English month and year, and a next arrow. There are no day buttons. An arrow at either end of the month list is disabled — 3e858fd
+- [x] 2.5 The left arrow loads the earlier month from that list and resets to page 1. The right arrow loads the later month. A month with no entries that is not the current month is skipped — 3e858fd
+- [x] 2.6 Clicking the month and year opens a floating list over the entries. The entries stay in place. A second click closes the list — 3e858fd
+- [x] 2.7 The list always includes the current month, even with no entries, and every month that has entries — 3e858fd
+- [x] 2.8 Choosing another month from the list closes it, loads that month, and resets to page 1 — 3e858fd
+- [x] 2.9 The trainer preview shows the same Month field. Editing an earlier row in a past month still opens the page that contains that row — 3e858fd
 
 ### Phase 3: Date and time popup
 
