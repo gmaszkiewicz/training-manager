@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Ruler, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { monthLabel } from "@/lib/journal-calendar";
-import { formatDelta } from "@/lib/measurement-deltas";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
 import {
   dayStorageKey,
@@ -56,16 +55,17 @@ interface MeasurementPageBody {
 
 const textActionClassName = "text-primary focus-visible:ring-ring hover:underline focus-visible:ring-2";
 
-const pagerButtonClassName = cn(
-  textActionClassName,
-  "disabled:pointer-events-none disabled:no-underline disabled:opacity-50",
-);
-
 function namedId(id: string | null): string | null {
   if (id === null || id === "") {
     return null;
   }
   return id;
+}
+
+function monthButtonLabels(months: readonly string[], current: string): string[] {
+  const labels = new Set(months.map((listedMonth) => monthLabel(listedMonth)));
+  labels.add(monthLabel(current));
+  return [...labels];
 }
 
 function formatMeasurement(value: number): string {
@@ -79,6 +79,16 @@ function measuredOnDisplay(value: string): { text: string; dateTime: string } {
 
 function accessibleValue(label: string, value: number, unit: string): string {
   return `${label} ${formatMeasurement(value)} ${unit}`;
+}
+
+function deltaArrow(delta: FieldDelta): string | null {
+  if (delta.direction === "up") {
+    return "↑";
+  }
+  if (delta.direction === "down") {
+    return "↓";
+  }
+  return null;
 }
 
 function accessibleDelta(label: string, unit: string, delta: FieldDelta): string {
@@ -288,6 +298,8 @@ export default function MeasurementBrowser({
   const [remotePageCount, setRemotePageCount] = useState(pageCountProp ?? 1);
   const [remoteEntries, setRemoteEntries] = useState<MeasurementWithDeltas[]>(entries);
   const [monthListOpen, setMonthListOpen] = useState(false);
+  const monthFieldRef = useRef<HTMLDivElement>(null);
+  const monthListRef = useRef<HTMLDivElement>(null);
   const requestSerial = useRef(0);
 
   const loadPage = useCallback((query: PageQuery): void => {
@@ -400,6 +412,44 @@ export default function MeasurementBrowser({
   const monthIsEmpty = paged ? remoteEntries.length === 0 : monthRows.length === 0;
   const previousMonth = earlierMonth(month, dates);
   const nextMonth = laterMonth(month, dates);
+  const monthListScrolls = dates.length > 6;
+
+  useEffect(() => {
+    if (!monthListOpen) {
+      return;
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMonthListOpen(false);
+      }
+    }
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node) || monthFieldRef.current?.contains(target)) {
+        return;
+      }
+      setMonthListOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [monthListOpen]);
+
+  useEffect(() => {
+    if (!monthListOpen || !monthListScrolls) {
+      return;
+    }
+    const container = monthListRef.current;
+    const selected = container?.querySelector<HTMLElement>("[aria-pressed='true']");
+    if (container === null || selected === null || selected === undefined) {
+      return;
+    }
+    const nextTop = selected.offsetTop - container.clientHeight / 2 + selected.clientHeight / 2;
+    container.scrollTop = Math.max(0, nextTop);
+  }, [monthListOpen, monthListScrolls, month]);
   const cancelHref = measurementCancelHref(openEditingId);
 
   function traineeForRead(): string | null {
@@ -476,7 +526,7 @@ export default function MeasurementBrowser({
   return (
     <div className="w-full">
       <div className="mt-6 flex w-full flex-wrap items-start gap-4">
-        <div className="relative z-10">
+        <div ref={monthFieldRef} className="relative z-10">
           <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Month">
             <Button
               type="button"
@@ -495,12 +545,21 @@ export default function MeasurementBrowser({
             <Button
               type="button"
               variant="outline"
+              className="grid"
               aria-expanded={monthListOpen}
+              aria-label={monthLabel(month)}
               onClick={() => {
                 setMonthListOpen((open) => !open);
               }}
             >
-              {monthLabel(month)}
+              <span aria-hidden="true" className="invisible col-start-1 row-start-1 grid">
+                {monthButtonLabels(dates, month).map((label) => (
+                  <span key={label} className="col-start-1 row-start-1">
+                    {label}
+                  </span>
+                ))}
+              </span>
+              <span className="col-start-1 row-start-1 text-center">{monthLabel(month)}</span>
             </Button>
             <Button
               type="button"
@@ -518,7 +577,13 @@ export default function MeasurementBrowser({
             </Button>
           </div>
           {monthListOpen ? (
-            <div className="bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-full flex-col gap-2 rounded-md border p-2 shadow-md">
+            <div
+              ref={monthListRef}
+              className={cn(
+                "bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-full flex-col gap-2 rounded-md border p-2 shadow-md",
+                monthListScrolls && "max-h-68 overflow-x-hidden overflow-y-auto",
+              )}
+            >
               {dates.map((listedMonth) => {
                 const pressed = listedMonth === month;
                 return (
@@ -602,13 +667,20 @@ export default function MeasurementBrowser({
                           {field.label} {field.unit}
                         </div>
                         <div
-                          className="border-input flex h-9 items-center rounded-md border px-3 whitespace-nowrap"
+                          className="border-input relative flex h-9 items-center justify-center rounded-md border px-3 whitespace-nowrap"
                           aria-label={accessibleValue(field.label, entry[field.field], field.unit)}
                         >
+                          <span className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2">
+                            {field.unit === "kg" ? (
+                              <Scale aria-hidden="true" className="size-4" />
+                            ) : (
+                              <Ruler aria-hidden="true" className="size-4" />
+                            )}
+                          </span>
                           {formatMeasurement(entry[field.field])}
                         </div>
                         <p
-                          className="text-card-foreground mt-1 min-h-lh text-base font-semibold"
+                          className="text-card-foreground relative mt-1 flex min-h-lh items-center justify-center border border-transparent text-base font-semibold"
                           aria-hidden={entry.deltas ? undefined : true}
                           aria-label={
                             entry.deltas
@@ -616,7 +688,21 @@ export default function MeasurementBrowser({
                               : undefined
                           }
                         >
-                          {entry.deltas ? formatDelta(entry.deltas[field.field]) : "\u00a0"}
+                          {entry.deltas ? (
+                            <>
+                              {deltaArrow(entry.deltas[field.field]) ? (
+                                <span
+                                  aria-hidden
+                                  className="absolute top-1/2 left-3 flex size-4 -translate-y-1/2 items-center justify-center"
+                                >
+                                  {deltaArrow(entry.deltas[field.field])}
+                                </span>
+                              ) : null}
+                              <span aria-hidden>{entry.deltas[field.field].difference.toFixed(1)}</span>
+                            </>
+                          ) : (
+                            "\u00a0"
+                          )}
                         </p>
                       </div>
                     ))}
@@ -645,30 +731,34 @@ export default function MeasurementBrowser({
             })}
           </ul>
           {showPager ? (
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
-              <button
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-2 text-sm">
+              <Button
                 type="button"
-                className={pagerButtonClassName}
+                variant="outline"
+                size="icon"
+                aria-label="Previous page"
                 disabled={currentPage <= 1}
                 onClick={() => {
                   showPage(currentPage - 1);
                 }}
               >
-                Previous
-              </button>
+                <ChevronLeft aria-hidden="true" />
+              </Button>
               <p>
                 Page {currentPage} of {pageCount}
               </p>
-              <button
+              <Button
                 type="button"
-                className={pagerButtonClassName}
+                variant="outline"
+                size="icon"
+                aria-label="Next page"
                 disabled={currentPage >= pageCount}
                 onClick={() => {
                   showPage(currentPage + 1);
                 }}
               >
-                Next
-              </button>
+                <ChevronRight aria-hidden="true" />
+              </Button>
             </div>
           ) : null}
         </>

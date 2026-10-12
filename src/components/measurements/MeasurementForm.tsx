@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   Calendar,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   ChevronsLeft,
   ChevronsRight,
   CircleAlert,
@@ -15,6 +17,7 @@ import { ServerError } from "@/components/auth/ServerError";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import MonthGrid from "@/components/measurements/MonthGrid";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { monthGrid, monthLabel } from "@/lib/journal-calendar";
@@ -98,8 +101,10 @@ function daysAfterCeiling(month: string, ceilingDate: string): ReadonlySet<strin
   return new Set(monthGrid(month).filter((day) => day > ceilingDate));
 }
 
-const HOURS = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, "0"));
-const MINUTES = Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, "0"));
+function stepClock(value: string, delta: number, limit: number): string {
+  const next = (Number(value) + delta + limit) % limit;
+  return String(next).padStart(2, "0");
+}
 
 function shiftMonth(month: string, delta: number): string {
   const year = Number(month.slice(0, 4));
@@ -321,6 +326,97 @@ function CalendarMonth({
   );
 }
 
+function clockLimit(name: "hour" | "minute"): number {
+  return name === "hour" ? 24 : 60;
+}
+
+function typedClock(text: string, limit: number): string | null {
+  if (!/^\d{1,2}$/.test(text)) {
+    return null;
+  }
+  const number = Number(text);
+  if (number >= limit) {
+    return null;
+  }
+  return String(number).padStart(2, "0");
+}
+
+function ClockPart({
+  name,
+  value,
+  onChange,
+}: {
+  name: "hour" | "minute";
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const limit = clockLimit(name);
+  const shown = draft ?? value;
+
+  function commit(text: string) {
+    const next = typedClock(text, limit);
+    if (next !== null && next !== value) {
+      onChange(next);
+    }
+    setDraft(null);
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label={`Next ${name}`}
+        onClick={() => {
+          setDraft(null);
+          onChange(stepClock(value, 1, limit));
+        }}
+      >
+        <ChevronUp aria-hidden="true" />
+      </Button>
+      <Input
+        aria-label={name === "hour" ? "Hour" : "Minute"}
+        inputMode="numeric"
+        maxLength={2}
+        value={shown}
+        className="w-12 px-2 text-center"
+        onFocus={(event) => {
+          event.currentTarget.select();
+        }}
+        onChange={(event) => {
+          const text = event.target.value.replace(/\D/g, "").slice(0, 2);
+          const next = text.length === 2 ? typedClock(text, limit) : null;
+          if (next !== null) {
+            setDraft(null);
+            if (next !== value) {
+              onChange(next);
+            }
+            return;
+          }
+          setDraft(text);
+        }}
+        onBlur={() => {
+          commit(shown);
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label={`Previous ${name}`}
+        onClick={() => {
+          setDraft(null);
+          onChange(stepClock(value, -1, limit));
+        }}
+      >
+        <ChevronDown aria-hidden="true" />
+      </Button>
+    </div>
+  );
+}
+
 function FieldError({ message }: { message?: string }) {
   if (!message) {
     return null;
@@ -345,10 +441,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [loadedPrevious, setLoadedPrevious] = useState<LoadedPrevious | null>(null);
   const [dateOpen, setDateOpen] = useState(false);
   const [gridMonth, setGridMonth] = useState<string | null>(null);
-  const [timeListOpen, setTimeListOpen] = useState(false);
   const dateFieldRef = useRef<HTMLDivElement>(null);
-  const hourListRef = useRef<HTMLDivElement>(null);
-  const minuteListRef = useRef<HTMLDivElement>(null);
   const dateValue = measuredOn ?? browserMinute;
   const minuteParts = measuredMinuteParts(dateValue);
   const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date()) : null;
@@ -383,7 +476,6 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     }
     function closeDatePopup() {
       setDateOpen(false);
-      setTimeListOpen(false);
     }
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -404,21 +496,6 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       document.removeEventListener("pointerdown", onPointerDown);
     };
   }, [dateOpen]);
-
-  useEffect(() => {
-    if (!timeListOpen) {
-      return;
-    }
-    function revealPressed(container: HTMLDivElement | null) {
-      const selected = container?.querySelector<HTMLElement>("[aria-pressed='true']");
-      if (container === null || selected === null) {
-        return;
-      }
-      container.scrollTop = selected.offsetTop - container.clientHeight / 2 + selected.clientHeight / 2;
-    }
-    revealPressed(hourListRef.current);
-    revealPressed(minuteListRef.current);
-  }, [timeListOpen]);
 
   function clearError(field: ErrorField) {
     if (errors[field]) {
@@ -476,7 +553,6 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                   onClick={() => {
                     setDateOpen((open) => {
                       if (open) {
-                        setTimeListOpen(false);
                         return false;
                       }
                       if (minuteParts !== null) {
@@ -514,74 +590,27 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                       clearError("measured_on");
                     }}
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full justify-start"
-                    aria-expanded={timeListOpen}
-                    aria-label="Time"
-                    onClick={() => {
-                      setTimeListOpen((open) => !open);
-                    }}
-                  >
-                    {minuteParts.time}
-                  </Button>
-                  {timeListOpen ? (
-                    <div className="flex gap-2">
-                      <div
-                        ref={hourListRef}
-                        className="flex max-h-48 w-14 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto"
-                        role="group"
-                        aria-label="Hour"
-                      >
-                        {HOURS.map((hour) => {
-                          const pressed = hour === minuteParts.time.slice(0, 2);
-                          return (
-                            <Button
-                              key={hour}
-                              type="button"
-                              variant={pressed ? "default" : "outline"}
-                              className="w-full px-2"
-                              aria-pressed={pressed}
-                              aria-label={`Hour ${hour}`}
-                              onClick={() => {
-                                setMeasuredOn(`${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`);
-                                clearError("measured_on");
-                              }}
-                            >
-                              {hour}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      <div
-                        ref={minuteListRef}
-                        className="flex max-h-48 w-14 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto"
-                        role="group"
-                        aria-label="Minute"
-                      >
-                        {MINUTES.map((minute) => {
-                          const pressed = minute === minuteParts.time.slice(3);
-                          return (
-                            <Button
-                              key={minute}
-                              type="button"
-                              variant={pressed ? "default" : "outline"}
-                              className="w-full px-2"
-                              aria-pressed={pressed}
-                              aria-label={`Minute ${minute}`}
-                              onClick={() => {
-                                setMeasuredOn(`${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`);
-                                clearError("measured_on");
-                              }}
-                            >
-                              {minute}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
+                  <div className="flex items-center justify-center gap-2" role="group" aria-label="Time">
+                    <ClockPart
+                      name="hour"
+                      value={minuteParts.time.slice(0, 2)}
+                      onChange={(hour) => {
+                        setMeasuredOn(`${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`);
+                        clearError("measured_on");
+                      }}
+                    />
+                    <span aria-hidden className="text-sm font-medium">
+                      :
+                    </span>
+                    <ClockPart
+                      name="minute"
+                      value={minuteParts.time.slice(3)}
+                      onChange={(minute) => {
+                        setMeasuredOn(`${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`);
+                        clearError("measured_on");
+                      }}
+                    />
+                  </div>
                 </div>
               ) : null}
             </div>
