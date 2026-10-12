@@ -219,22 +219,22 @@ No data migration. The change is presentation on top of the current trainer link
 
 #### Automated
 
-- [x] 1.1 `npm test` passes, and `src/lib/trainer-preview.test.ts` covers `ada@example.com`, `bea@example.com`, `cyd@example.com` in that array order: `bea@` returns `ada@` then `cyd@`; `ada@` has no previous; `cyd@` has no next; one link returns both null; an absent id returns both null; a later `linkedAt` earlier in the array does not change the neighbor
-- [x] 1.2 `npm run lint` passes
+- [x] 1.1 `npm test` passes, and `src/lib/trainer-preview.test.ts` covers `ada@example.com`, `bea@example.com`, `cyd@example.com` in that array order: `bea@` returns `ada@` then `cyd@`; `ada@` has no previous; `cyd@` has no next; one link returns both null; an absent id returns both null; a later `linkedAt` earlier in the array does not change the neighbor — a48c4c5
+- [x] 1.2 `npm run lint` passes — a48c4c5
 
 ### Phase 2: Centered linked-trainee field
 
 #### Automated
 
-- [ ] 2.1 `npm run check:home-tokens` passes with `src/components/trainer/LinkedTraineeField.tsx` listed in `scripts/check-home-tokens.mjs`
-- [ ] 2.2 `npm test` passes
-- [ ] 2.3 `npm run lint` passes
-- [ ] 2.4 `npx astro check` passes
+- [x] 2.1 `npm run check:home-tokens` passes with `src/components/trainer/LinkedTraineeField.tsx` listed in `scripts/check-home-tokens.mjs`
+- [x] 2.2 `npm test` passes
+- [x] 2.3 `npm run lint` passes
+- [x] 2.4 `npx astro check` passes
 
 #### Manual
 
-- [ ] 2.5 Kitchen sink Default: the control is centered under `Body measurements`, the email text is centered in the middle button, the left arrow is disabled, the right arrow's href is the second trainee's `/measurements?trainee=` URL, the open list shows both emails with no scrollbar, and a second click, Escape, or a pointer down outside closes the list
-- [ ] 2.6 A one-trainee panel: both arrows are disabled, and the open list shows that one email with no scrollbar
-- [ ] 2.7 Kitchen sink Long list, with `trainee-d@example.com` selected: the open list has a vertical scrollbar, that row sits toward the vertical center, left links to `trainee-c` and right links to `trainee-e`, and the arrows disable only on `trainee-a` and `trainee-g`
-- [ ] 2.8 Zero links, "Could not load trainees", and the unavailable panel omit the field
-- [ ] 2.9 The link form and the `MeasurementBrowser` month field are unchanged, and the closed field includes the selected email in the initial HTML
+- [x] 2.5 Kitchen sink Default: the control is centered under `Body measurements`, the email text is centered in the middle button, the left arrow is disabled, the right arrow's href is the second trainee's `/measurements?trainee=` URL, the open list shows both emails with no scrollbar, and a second click, Escape, or a pointer down outside closes the list
+- [x] 2.6 A one-trainee panel: both arrows are disabled, and the open list shows that one email with no scrollbar
+- [x] 2.7 Kitchen sink Long list, with `trainee-d@example.com` selected: the open list has a vertical scrollbar, that row sits toward the vertical center, left links to `trainee-c` and right links to `trainee-e`, and the arrows disable only on `trainee-a` and `trainee-g`
+- [x] 2.8 Zero links, "Could not load trainees", and the unavailable panel omit the field
+- [x] 2.9 The link form and the `MeasurementBrowser` month field are unchanged, and the closed field includes the selected email in the initial HTML
