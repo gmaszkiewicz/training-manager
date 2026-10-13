@@ -17,6 +17,17 @@ const secondLink: TrainerLink = {
   linkedAt: "2026-09-16T12:00:00.000Z",
 };
 
+function longListLink(letter: string): TrainerLink {
+  return {
+    traineeId: `trainee-${letter}`,
+    email: `trainee-${letter}@example.com`,
+    linkedAt: "2026-09-15T12:00:00.000Z",
+  };
+}
+
+const longListLinks = ["a", "b", "c", "d", "e", "f", "g"].map((letter) => longListLink(letter));
+const longListSelected = longListLink("d");
+
 const fieldValues = Object.fromEntries(
   measurementFields.map((definition, index) => [definition.field, 50 + index * 5 + 0.5]),
 ) as Record<MeasurementField, number>;
@@ -60,9 +71,10 @@ const sampleEntry: MeasurementWithDeltas = {
           Default
         </h2>
         <p class="text-muted-foreground text-sm">
-          TrainerPanel in trainer mode with links loaded, two trainees in one row with the first selected, one sample
-          measurement entry, and no server error. <code class="text-foreground">today="2026-09-15"</code> keeps the
-          sample row on screen. The sample row has no Edit or Delete link. Form ids are unprefixed.
+          TrainerPanel in trainer mode with links loaded, two trainees in a centered email field, the first array item
+          selected, the left arrow disabled, the right arrow linking to the second trainee, one sample measurement
+          entry, and no server error. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on
+          screen. The sample row has no Edit or Delete link. Form ids are unprefixed.
         </p>
         <TrainerPanel
           mode="trainer"
@@ -83,8 +95,7 @@ const sampleEntry: MeasurementWithDeltas = {
         </h2>
         <p class="text-muted-foreground text-sm">
           In the Default panel above, Link trainee uses Button <code class="text-foreground">hover:bg-primary/90</code>.
-          Trainee links use <code class="text-foreground">hover:underline</code>. List rows are not controls, so row
-          hover is N/A.
+          The email button and list rows use Button outline and default hover.
         </p>
       </section>
 
@@ -93,8 +104,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Focus-visible
         </h2>
         <p class="text-muted-foreground text-sm">
-          Tab the email field, Link trainee, and the trainee link in the Default panel above. The ring is the shared{" "}
-          <code class="text-foreground">--ring</code>.
+          Tab reaches the email button and an enabled arrow in the Default panel above. The ring is the shared{" "}
+          <code class="text-foreground">--ring</code> from Button. A disabled arrow is not in the tab order.
         </p>
       </section>
 
@@ -103,8 +114,34 @@ const sampleEntry: MeasurementWithDeltas = {
           Disabled
         </h2>
         <p class="text-muted-foreground text-sm">
-          N/A because Link trainee is a full-page POST and this change adds no pending or disabled control.
+          Both arrows are disabled on the one-trainee panel in Empty, no measurements.
         </p>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-long-list">
+        <h2 id="state-long-list" class="border-border border-b pb-2 text-lg font-semibold">
+          Long list
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Seven trainees in array order from <code class="text-foreground">trainee-a@example.com</code> through{" "}
+          <code class="text-foreground">trainee-g@example.com</code>, with{" "}
+          <code class="text-foreground">trainee-d@example.com</code> selected. The open list scrolls and the current row
+          moves toward the vertical center. The left arrow links to <code class="text-foreground">trainee-c</code> and
+          the right arrow links to <code class="text-foreground">trainee-e</code>. Same sample entry and{" "}
+          <code class="text-foreground">today="2026-09-15"</code> as Default, so the wide card renders. Form ids use{" "}
+          <code class="text-foreground">idPrefix="long-list-"</code>.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          serverError={null}
+          trainerLinksLoaded={true}
+          trainerLinks={longListLinks}
+          selectedLink={longListSelected}
+          trainerMeasurementsLoaded={true}
+          entries={[sampleEntry]}
+          idPrefix="long-list-"
+          today="2026-09-15"
+        />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-empty-links">
