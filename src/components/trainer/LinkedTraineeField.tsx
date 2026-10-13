@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { adjacentTrainerLinks, type TrainerLink } from "@/lib/trainer-preview";
 import { cn } from "@/lib/utils";
@@ -93,7 +93,11 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
               </span>
             ))}
           </span>
-          <span className="col-start-1 row-start-1 text-center">{selected.email}</span>
+          <span className="col-start-1 row-start-1 flex items-center gap-2">
+            <ChevronDown className="invisible shrink-0" aria-hidden="true" />
+            <span className="flex-1 text-center">{selected.email}</span>
+            <ChevronDown className={cn("shrink-0", open && "rotate-180")} aria-hidden="true" />
+          </span>
         </Button>
         {next === null ? (
           <Button type="button" variant="outline" size="icon" aria-label="Next trainee" disabled>
