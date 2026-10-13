@@ -88,8 +88,10 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
         >
           <span aria-hidden="true" className="invisible col-start-1 row-start-1 grid">
             {links.map((link) => (
-              <span key={link.traineeId} className="col-start-1 row-start-1">
-                {link.email}
+              <span key={link.traineeId} className="col-start-1 row-start-1 flex items-center gap-2">
+                <ChevronDown className="shrink-0" aria-hidden="true" />
+                <span className="text-center">{link.email}</span>
+                <ChevronDown className="shrink-0" aria-hidden="true" />
               </span>
             ))}
           </span>

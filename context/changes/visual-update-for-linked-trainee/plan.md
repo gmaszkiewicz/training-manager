@@ -211,6 +211,10 @@ No data migration. The change is presentation on top of the current trainer link
 - Selection and sort: `src/lib/trainer-preview.ts:11-35`
 - Token gate: `scripts/check-home-tokens.mjs:29-39`
 
+## Addendum
+
+After Phase 2, commit `52bf305` marks both center buttons as dropdowns. The month control in `MeasurementBrowser.tsx` and the email control in `LinkedTraineeField.tsx` each show a `ChevronDown` beside the centered label. The icon is `aria-hidden`, rotates 180 degrees while the list is open, and does not change stepping, dismiss, scroll, or which trainee is selected. The month list still uses `aria-pressed`. The email list still uses `aria-current="page"`. This replaces the Phase 2 statement that the `MeasurementBrowser` month field is unchanged, for the center label only.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
