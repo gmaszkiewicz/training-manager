@@ -1,6 +1,7 @@
 ---
 import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
+import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { PageSize } from "@/lib/measurement-page";
@@ -70,25 +71,10 @@ const {
             {trainerLinks.length > 0 ? (
               <>
                 <h2 class="mt-6 mb-4 text-center text-2xl font-bold text-card-foreground">Body measurements</h2>
-                <div class="min-w-0 text-sm">
-                  <ul class="flex flex-wrap items-start gap-4">
-                    {trainerLinks.map((link) => (
-                      <li>
-                        <a
-                          href={`/measurements?trainee=${encodeURIComponent(link.traineeId)}`}
-                          aria-current={selectedLink?.traineeId === link.traineeId ? "page" : undefined}
-                          class:list={[
-                            "whitespace-nowrap hover:underline focus-visible:ring-2 focus-visible:ring-ring",
-                            selectedLink?.traineeId === link.traineeId
-                              ? "font-semibold text-card-foreground"
-                              : "text-muted-foreground",
-                          ]}
-                        >
-                          {link.email}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                <div class="flex justify-center">
+                  {selectedLink ? (
+                    <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />
+                  ) : null}
                 </div>
                 {selectedLink ? (
                   trainerMeasurementsLoaded ? (
