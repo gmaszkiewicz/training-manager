@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Ruler, Scale } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Ruler, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { monthLabel } from "@/lib/journal-calendar";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
@@ -554,12 +554,18 @@ export default function MeasurementBrowser({
             >
               <span aria-hidden="true" className="invisible col-start-1 row-start-1 grid">
                 {monthButtonLabels(dates, month).map((label) => (
-                  <span key={label} className="col-start-1 row-start-1">
-                    {label}
+                  <span key={label} className="col-start-1 row-start-1 flex items-center gap-2">
+                    <ChevronDown className="shrink-0" aria-hidden="true" />
+                    <span className="text-center">{label}</span>
+                    <ChevronDown className="shrink-0" aria-hidden="true" />
                   </span>
                 ))}
               </span>
-              <span className="col-start-1 row-start-1 text-center">{monthLabel(month)}</span>
+              <span className="col-start-1 row-start-1 flex items-center gap-2">
+                <ChevronDown className="invisible shrink-0" aria-hidden="true" />
+                <span className="flex-1 text-center">{monthLabel(month)}</span>
+                <ChevronDown className={cn("shrink-0", monthListOpen && "rotate-180")} aria-hidden="true" />
+              </span>
             </Button>
             <Button
               type="button"
