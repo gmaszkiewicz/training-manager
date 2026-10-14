@@ -235,12 +235,12 @@ The migration only adds a function. The previous Worker never calls it, so it ca
 
 #### Automated
 
-- [ ] 1.1 `npm test` passes
-- [ ] 1.2 `npm run lint` passes
+- [x] 1.1 `npm test` passes
+- [x] 1.2 `npm run lint` passes
 
 #### Manual
 
-- [ ] 1.3 Applied locally, the function returns at most 10 normalized trainee emails in alphabetical order and omits trainees already linked to the calling trainer
+- [x] 1.3 Applied locally, the function returns at most 10 normalized trainee emails in alphabetical order and omits trainees already linked to the calling trainer
 
 ### Phase 2: Search endpoint
 
