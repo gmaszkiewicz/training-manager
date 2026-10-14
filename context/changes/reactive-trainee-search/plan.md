@@ -122,13 +122,14 @@ Expose the function as JSON for the signed-in trainer, and prove it with the exi
 
 **Intent**: Prove the endpoint with the trainee the smoke run already creates, before and after that trainee is linked.
 
-**Contract**: While signed out, `GET /api/trainer-links?q=a` expects status `401`. After trainer signup and before `trainer link opens the trainee`, `GET /api/trainer-links?q=` with the smoke trainee email in uppercase and surrounded by spaces expects status `200` and a body that contains that email in normalized form. After that link step, the same `GET` expects status `200` and a body that does not contain that normalized email. Leave the existing `Find trainee by email` body check in place.
+**Contract**: While signed out, `GET /api/trainer-links?q=a` expects status `401`. After trainer signup and before `trainer link opens the trainee`, `GET /api/trainer-links?q=` with the smoke trainee email in uppercase and surrounded by spaces expects status `200` and a body that contains that email in normalized form. After that link step, the same `GET` expects status `200` and a body that does not contain that normalized email. Leave the existing `Find trainee by email` body check in place. After `trainee signs in to attempt a link`, `GET /api/trainer-links?q=a` expects status `403`. In that same session, POST the access token to `/rest/v1/rpc/search_unlinked_trainee_emails` with `p_query` of `a`, the same way `measurementMonthsRpc` calls `/rest/v1/rpc/measurement_months`, and expect a JSON array with no rows.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
 - `npm run smoke` against a running server: a signed-out `GET /api/trainer-links?q=a` returns 401; while the trainer is signed in and has not linked the smoke trainee, `GET /api/trainer-links?q=` with that email's uppercase form and surrounding spaces returns the normalized email; after the link, the same unique query omits that email
+- After `trainee signs in to attempt a link`, `GET /api/trainer-links?q=a` returns 403, and a POST of that session token to `/rest/v1/rpc/search_unlinked_trainee_emails` with `p_query` `a` returns an empty array
 
 #### Manual Verification:
 
@@ -153,7 +154,7 @@ Move the finder copy into the field and show the search results on the trainer c
 
 **Intent**: Search while the trainer types, and put a chosen email into the form field.
 
-**Contract**: Props are `idPrefix: string`. The island renders the existing `Input` with `id={`${idPrefix}email`}`, `name="email"`, `type="email"`, `required`, `aria-label="Email"`, and `placeholder="Find trainee by email"`. Fetch `GET /api/trainer-links?q=` with `cache: "no-store"`, the same style as `MeasurementForm`'s previous-measurement fetch. A query that is empty after trim shows no rows and does not leave a previous list on screen. A non-OK response or a thrown fetch shows no rows and no sentence. Render each returned email as a `type="button"` control using the shared `Button`, so the click does not submit the form. Choosing one sets the input to that email and closes the list. Escape and a pointer down outside the field close the list and leave the input value in place, following `LinkedTraineeField`. Use role tokens and shared components only.
+**Contract**: Props are `idPrefix: string`. The island renders the existing `Input` with `id={`${idPrefix}email`}`, `name="email"`, `type="email"`, `required`, `aria-label="Email"`, and `placeholder="Find trainee by email"`. Fetch `GET /api/trainer-links?q=` with `cache: "no-store"`, the same style as `MeasurementForm`'s previous-measurement fetch. A query that is empty after trim shows no rows and does not leave a previous list on screen. A non-OK response or a thrown fetch shows no rows and no sentence. Render each returned email as a `type="button"` control using the shared `Button`, so the click does not submit the form. Choosing one sets the input to that email and closes the list. That write does not fetch for the value just written, so the list stays closed. A later edit by the trainer searches again. Escape and a pointer down outside the field close the list and leave the input value in place, following `LinkedTraineeField`. Use role tokens and shared components only.
 
 #### 2. Trainer card heading and form
 
@@ -163,6 +164,14 @@ Move the finder copy into the field and show the search results on the trainer c
 
 **Contract**: The card `h1` is `Measurements` in trainer mode. The unavailable branch stays `Measurements` with `Could not open your journal`. Inside the trainer form, keep the hidden `trainee` input when `selectedLink` is set, render `TraineeEmailSearch` with `client:load` and the current `idPrefix`, and keep the full-width `Link trainee` submit. The `h2` `Body measurements` and `LinkedTraineeField` stay where they are. The kitchen sink already renders this panel, so the heading and placeholder show there without a new sink state.
 
+#### 3. Token check
+
+**File**: `scripts/check-home-tokens.mjs`
+
+**Intent**: Keep the new island inside the same token gate as the other trainer views.
+
+**Contract**: Add `src/components/trainer/TraineeEmailSearch.tsx` to `FILES`.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -170,6 +179,7 @@ Move the finder copy into the field and show the search results on the trainer c
 - `npm test` passes
 - `npm run lint` passes
 - `npm run smoke` trainer measurements step still finds `Find trainee by email` in the response body
+- `npm run check:home-tokens` passes with `src/components/trainer/TraineeEmailSearch.tsx` listed in `scripts/check-home-tokens.mjs`
 
 #### Manual Verification:
 
@@ -177,6 +187,7 @@ Move the finder copy into the field and show the search results on the trainer c
 - An empty field and a sequence that matches nobody show no rows and no new sentence
 - Choosing a shown email writes it into the field and leaves `Link trainee` to submit the existing link
 - `Body measurements` and the linked-trainee control stay as they are once a trainee is linked
+- After a choice the list stays closed until the trainer edits the field
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -190,14 +201,14 @@ Move the finder copy into the field and show the search results on the trainer c
 
 ### Integration Tests:
 
-- `npm run smoke` covers signed-out `401`, case and surrounding spaces before the link, and exclusion after the link. The existing trainer body check still finds `Find trainee by email` in the placeholder.
+- `npm run smoke` covers signed-out `401`, case and surrounding spaces before the link, exclusion after the link, and, once the trainee session is active, route `403` plus an empty RPC result. The existing trainer body check still finds `Find trainee by email` in the placeholder.
 
 ### Manual Testing Steps:
 
 1. Apply the migration locally and call the function as a trainer. Confirm an empty query returns no rows, ` Ann ` can match `ann@x.com`, and `%` matches a literal percent.
 2. With eleven unlinked trainee emails that contain one sequence, confirm the response is only the alphabetically first 10.
 3. Link one of those trainees on this trainer and confirm that email disappears. Confirm a trainee linked only to another trainer still appears.
-4. On `/measurements`, confirm the heading is `Measurements`, the placeholder is `Find trainee by email`, and choosing a row fills the field without navigating. Submit `Link trainee` and confirm the existing preview opens.
+4. On `/measurements`, confirm the heading is `Measurements`, the placeholder is `Find trainee by email`, and choosing a row fills the field without navigating. The list stays closed until the field is edited. Submit `Link trainee` and confirm the existing preview opens.
 5. Clear the field and type `zzzqqq`. Confirm no rows and no new sentence. Confirm the linked-trainee control under `Body measurements` still changes the preview.
 
 ## Performance Considerations
@@ -236,6 +247,7 @@ The migration only adds a function. The previous Worker never calls it, so it ca
 #### Automated
 
 - [ ] 2.1 `npm run smoke` against a running server: a signed-out `GET /api/trainer-links?q=a` returns 401; while the trainer is signed in and has not linked the smoke trainee, `GET /api/trainer-links?q=` with that email's uppercase form and surrounding spaces returns the normalized email; after the link, the same unique query omits that email
+- [ ] 2.4 After `trainee signs in to attempt a link`, `GET /api/trainer-links?q=a` returns 403, and a POST of that session token to `/rest/v1/rpc/search_unlinked_trainee_emails` with `p_query` `a` returns an empty array
 
 #### Manual
 
@@ -249,6 +261,7 @@ The migration only adds a function. The previous Worker never calls it, so it ca
 - [ ] 3.1 `npm test` passes
 - [ ] 3.2 `npm run lint` passes
 - [ ] 3.3 `npm run smoke` trainer measurements step still finds `Find trainee by email` in the response body
+- [ ] 3.9 `npm run check:home-tokens` passes with `src/components/trainer/TraineeEmailSearch.tsx` listed in `scripts/check-home-tokens.mjs`
 
 #### Manual
 
@@ -256,3 +269,4 @@ The migration only adds a function. The previous Worker never calls it, so it ca
 - [ ] 3.5 An empty field and a sequence that matches nobody show no rows and no new sentence
 - [ ] 3.6 Choosing a shown email writes it into the field and leaves `Link trainee` to submit the existing link
 - [ ] 3.7 `Body measurements` and the linked-trainee control stay as they are once a trainee is linked
+- [ ] 3.8 After a choice the list stays closed until the trainer edits the field

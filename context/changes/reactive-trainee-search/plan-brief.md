@@ -25,7 +25,7 @@ The card heading is `Measurements`. The placeholder is `Find trainee by email`. 
 | Case and surrounding spaces | `lower` and trim, same as the link function | ` Ann ` should find the address `ann@x.com` that the link would accept | Plan |
 | Already linked | Hide only this trainer's links | A trainee linked only to trainer B can still be found and linked by trainer A | Plan |
 | No matches | No rows and no new sentence | `zzzqqq` stays quiet, and `No trainee with that email` stays the failed-link message | Plan |
-| Choosing a row | Write the email into the field | The trainer can read the address, and `Link trainee` remains the commit | Plan |
+| Choosing a row | Write the email into the field and leave the list closed | The trainer can read the address, `Link trainee` remains the commit, and that write does not search the chosen value again | Plan |
 | Heading | `Measurements` | The finder words move to the placeholder, and `Body measurements` stays over the linked journal | Plan |
 
 ## Scope
@@ -33,7 +33,7 @@ The card heading is `Measurements`. The placeholder is `Find trainee by email`. 
 **In scope:**
 
 - A security-definer search function, a `GET /api/trainer-links?q=` JSON response, and an island on the existing email field
-- Smoke coverage for signed-out access, case and surrounding spaces, and exclusion after the link
+- Smoke coverage for signed-out access, case and surrounding spaces, exclusion after the link, and a trainee session that gets route 403 plus an empty RPC result
 
 **Out of scope:**
 
