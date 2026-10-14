@@ -235,24 +235,24 @@ The migration only adds a function. The previous Worker never calls it, so it ca
 
 #### Automated
 
-- [x] 1.1 `npm test` passes
-- [x] 1.2 `npm run lint` passes
+- [x] 1.1 `npm test` passes — 69c9f83
+- [x] 1.2 `npm run lint` passes — 69c9f83
 
 #### Manual
 
-- [x] 1.3 Applied locally, the function returns at most 10 normalized trainee emails in alphabetical order and omits trainees already linked to the calling trainer
+- [x] 1.3 Applied locally, the function returns at most 10 normalized trainee emails in alphabetical order and omits trainees already linked to the calling trainer — 69c9f83
 
 ### Phase 2: Search endpoint
 
 #### Automated
 
-- [ ] 2.1 `npm run smoke` against a running server: a signed-out `GET /api/trainer-links?q=a` returns 401; while the trainer is signed in and has not linked the smoke trainee, `GET /api/trainer-links?q=` with that email's uppercase form and surrounding spaces returns the normalized email; after the link, the same unique query omits that email
-- [ ] 2.4 After `trainee signs in to attempt a link`, `GET /api/trainer-links?q=a` returns 403, and a POST of that session token to `/rest/v1/rpc/search_unlinked_trainee_emails` with `p_query` `a` returns an empty array
+- [x] 2.1 `npm run smoke` against a running server: a signed-out `GET /api/trainer-links?q=a` returns 401; while the trainer is signed in and has not linked the smoke trainee, `GET /api/trainer-links?q=` with that email's uppercase form and surrounding spaces returns the normalized email; after the link, the same unique query omits that email
+- [x] 2.4 After `trainee signs in to attempt a link`, `GET /api/trainer-links?q=a` returns 403, and a POST of that session token to `/rest/v1/rpc/search_unlinked_trainee_emails` with `p_query` `a` returns an empty array
 
 #### Manual
 
-- [ ] 2.2 Eleven unlinked trainee emails contain the same sequence and the response lists only the alphabetically first 10
-- [ ] 2.3 A trainee linked only to another trainer is still returned for this trainer
+- [x] 2.2 Eleven unlinked trainee emails contain the same sequence and the response lists only the alphabetically first 10
+- [x] 2.3 A trainee linked only to another trainer is still returned for this trainer
 
 ### Phase 3: Finder field
 
