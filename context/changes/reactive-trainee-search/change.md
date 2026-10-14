@@ -1,7 +1,7 @@
 ---
 change_id: reactive-trainee-search
 title: Show matching unlinked trainee emails as the trainer types
-status: preparing
+status: planned
 created: 2026-10-14
 updated: 2026-10-14
 archived_at: null
