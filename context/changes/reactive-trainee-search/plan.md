@@ -246,27 +246,27 @@ The migration only adds a function. The previous Worker never calls it, so it ca
 
 #### Automated
 
-- [x] 2.1 `npm run smoke` against a running server: a signed-out `GET /api/trainer-links?q=a` returns 401; while the trainer is signed in and has not linked the smoke trainee, `GET /api/trainer-links?q=` with that email's uppercase form and surrounding spaces returns the normalized email; after the link, the same unique query omits that email
-- [x] 2.4 After `trainee signs in to attempt a link`, `GET /api/trainer-links?q=a` returns 403, and a POST of that session token to `/rest/v1/rpc/search_unlinked_trainee_emails` with `p_query` `a` returns an empty array
+- [x] 2.1 `npm run smoke` against a running server: a signed-out `GET /api/trainer-links?q=a` returns 401; while the trainer is signed in and has not linked the smoke trainee, `GET /api/trainer-links?q=` with that email's uppercase form and surrounding spaces returns the normalized email; after the link, the same unique query omits that email — 1fca7cf
+- [x] 2.4 After `trainee signs in to attempt a link`, `GET /api/trainer-links?q=a` returns 403, and a POST of that session token to `/rest/v1/rpc/search_unlinked_trainee_emails` with `p_query` `a` returns an empty array — 1fca7cf
 
 #### Manual
 
-- [x] 2.2 Eleven unlinked trainee emails contain the same sequence and the response lists only the alphabetically first 10
-- [x] 2.3 A trainee linked only to another trainer is still returned for this trainer
+- [x] 2.2 Eleven unlinked trainee emails contain the same sequence and the response lists only the alphabetically first 10 — 1fca7cf
+- [x] 2.3 A trainee linked only to another trainer is still returned for this trainer — 1fca7cf
 
 ### Phase 3: Finder field
 
 #### Automated
 
-- [ ] 3.1 `npm test` passes
-- [ ] 3.2 `npm run lint` passes
-- [ ] 3.3 `npm run smoke` trainer measurements step still finds `Find trainee by email` in the response body
-- [ ] 3.9 `npm run check:home-tokens` passes with `src/components/trainer/TraineeEmailSearch.tsx` listed in `scripts/check-home-tokens.mjs`
+- [x] 3.1 `npm test` passes
+- [x] 3.2 `npm run lint` passes
+- [x] 3.3 `npm run smoke` trainer measurements step still finds `Find trainee by email` in the response body
+- [x] 3.9 `npm run check:home-tokens` passes with `src/components/trainer/TraineeEmailSearch.tsx` listed in `scripts/check-home-tokens.mjs`
 
 #### Manual
 
-- [ ] 3.4 The trainer card heading is `Measurements`, the email placeholder is `Find trainee by email`, and the field's accessible name stays `Email`
-- [ ] 3.5 An empty field and a sequence that matches nobody show no rows and no new sentence
-- [ ] 3.6 Choosing a shown email writes it into the field and leaves `Link trainee` to submit the existing link
-- [ ] 3.7 `Body measurements` and the linked-trainee control stay as they are once a trainee is linked
-- [ ] 3.8 After a choice the list stays closed until the trainer edits the field
+- [x] 3.4 The trainer card heading is `Measurements`, the email placeholder is `Find trainee by email`, and the field's accessible name stays `Email`
+- [x] 3.5 An empty field and a sequence that matches nobody show no rows and no new sentence
+- [x] 3.6 Choosing a shown email writes it into the field and leaves `Link trainee` to submit the existing link
+- [x] 3.7 `Body measurements` and the linked-trainee control stay as they are once a trainee is linked
+- [x] 3.8 After a choice the list stays closed until the trainer edits the field
