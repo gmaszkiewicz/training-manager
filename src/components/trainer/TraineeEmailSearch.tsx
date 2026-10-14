@@ -118,11 +118,13 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
   }
 
   return (
-    <div ref={rootRef} className="relative z-20">
+    <div ref={rootRef} className="relative z-30 mb-2">
       <Input
         id={`${idPrefix}email`}
         name="email"
-        type="email"
+        type="text"
+        inputMode="email"
+        autoComplete="off"
         required
         aria-label="Email"
         placeholder="Find trainee by email"
