@@ -258,15 +258,15 @@ The migration only adds a function. The previous Worker never calls it, so it ca
 
 #### Automated
 
-- [x] 3.1 `npm test` passes
-- [x] 3.2 `npm run lint` passes
-- [x] 3.3 `npm run smoke` trainer measurements step still finds `Find trainee by email` in the response body
-- [x] 3.9 `npm run check:home-tokens` passes with `src/components/trainer/TraineeEmailSearch.tsx` listed in `scripts/check-home-tokens.mjs`
+- [x] 3.1 `npm test` passes — 348461f
+- [x] 3.2 `npm run lint` passes — 348461f
+- [x] 3.3 `npm run smoke` trainer measurements step still finds `Find trainee by email` in the response body — 348461f
+- [x] 3.9 `npm run check:home-tokens` passes with `src/components/trainer/TraineeEmailSearch.tsx` listed in `scripts/check-home-tokens.mjs` — 348461f
 
 #### Manual
 
-- [x] 3.4 The trainer card heading is `Measurements`, the email placeholder is `Find trainee by email`, and the field's accessible name stays `Email`
-- [x] 3.5 An empty field and a sequence that matches nobody show no rows and no new sentence
-- [x] 3.6 Choosing a shown email writes it into the field and leaves `Link trainee` to submit the existing link
-- [x] 3.7 `Body measurements` and the linked-trainee control stay as they are once a trainee is linked
-- [x] 3.8 After a choice the list stays closed until the trainer edits the field
+- [x] 3.4 The trainer card heading is `Measurements`, the email placeholder is `Find trainee by email`, and the field's accessible name stays `Email` — 348461f
+- [x] 3.5 An empty field and a sequence that matches nobody show no rows and no new sentence — 348461f
+- [x] 3.6 Choosing a shown email writes it into the field and leaves `Link trainee` to submit the existing link — 348461f
+- [x] 3.7 `Body measurements` and the linked-trainee control stay as they are once a trainee is linked — 348461f
+- [x] 3.8 After a choice the list stays closed until the trainer edits the field — 348461f
