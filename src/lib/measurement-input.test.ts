@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { createMeasurementInputSchema, parseMeasuredOn, parseMeasurementField } from "@/lib/measurement-input";
+import {
+  createMeasurementInputSchema,
+  firstMeasurementError,
+  measurementFieldMessage,
+  parseMeasuredOn,
+  parseMeasurementField,
+} from "@/lib/measurement-input";
 
 const now = new Date("2026-09-28T12:00:00.000Z");
 
@@ -251,5 +257,60 @@ describe("parseMeasurementField", () => {
     expect(parseMeasurementField("weight_kg", "78.55")).toBeNull();
     expect(parseMeasurementField("weight_kg", 19.9)).toBeNull();
     expect(parseMeasurementField("chest_cm", "60")).toBe(60);
+  });
+});
+
+describe("measurementFieldMessage", () => {
+  it("returns the required sentence for an empty weight", () => {
+    expect(measurementFieldMessage("weight_kg", "")).toBe("Weight is required");
+  });
+
+  it("returns null when the weight is in range", () => {
+    expect(measurementFieldMessage("weight_kg", 80)).toBeNull();
+    expect(measurementFieldMessage("weight_kg", "80")).toBeNull();
+  });
+
+  it("returns the range sentence below the weight minimum", () => {
+    expect(measurementFieldMessage("weight_kg", 8)).toBe("Weight must be between 20 and 400 kg");
+  });
+
+  it("returns the decimal sentence for more than one place or a trailing separator", () => {
+    expect(measurementFieldMessage("weight_kg", 12.34)).toBe("Weight must be a number with at most one decimal place");
+    expect(measurementFieldMessage("weight_kg", "12.34")).toBe(
+      "Weight must be a number with at most one decimal place",
+    );
+    expect(measurementFieldMessage("weight_kg", "80.")).toBe("Weight must be a number with at most one decimal place");
+  });
+});
+
+describe("firstMeasurementError", () => {
+  it("returns null when no messages are set", () => {
+    expect(firstMeasurementError({})).toBeNull();
+    expect(firstMeasurementError({ weight_kg: undefined, chest_cm: "" })).toBeNull();
+  });
+
+  it("returns the Weight message when Weight and Chest are both set", () => {
+    expect(
+      firstMeasurementError({
+        weight_kg: "Weight is required",
+        chest_cm: "Chest is required",
+      }),
+    ).toBe("Weight is required");
+  });
+
+  it("returns the Chest message when only Chest is set", () => {
+    expect(firstMeasurementError({ chest_cm: "Chest is required" })).toBe("Chest is required");
+    expect(
+      firstMeasurementError({
+        weight_kg: undefined,
+        chest_cm: "Chest must be between 10 and 300 cm",
+      }),
+    ).toBe("Chest must be between 10 and 300 cm");
+    expect(
+      firstMeasurementError({
+        weight_kg: "",
+        chest_cm: "Chest is required",
+      }),
+    ).toBe("Chest is required");
   });
 });

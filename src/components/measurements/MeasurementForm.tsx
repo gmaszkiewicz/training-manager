@@ -24,7 +24,9 @@ import { monthGrid, monthLabel } from "@/lib/journal-calendar";
 import { previewAgainst } from "@/lib/measurement-deltas";
 import {
   createMeasurementInputSchema,
+  firstMeasurementError,
   measuredOnMax,
+  measurementFieldMessage,
   measurementFields,
   parseMeasuredOn,
   parseMeasurementField,
@@ -476,6 +478,8 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       ? `Against ${previousMinuteLabel(previousEntry.measured_on)}`
       : null;
   const ceilingDate = measuredOnMax(new Date()).slice(0, 10);
+  const measurementErrorId = `${idPrefix}measurement-error`;
+  const measurementError = firstMeasurementError(errors);
 
   useEffect(() => {
     if (previewMinute === null) {
@@ -527,6 +531,17 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     }
   }
 
+  function setMeasurementError(field: MeasurementField, value: string) {
+    const message = measurementFieldMessage(field, value);
+    setErrors((current) => {
+      const next = message ?? undefined;
+      if (current[field] === next) {
+        return current;
+      }
+      return { ...current, [field]: next };
+    });
+  }
+
   function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     const parsed = createMeasurementInputSchema(new Date()).safeParse({
       measured_on: dateValue,
@@ -556,6 +571,20 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       noValidate
     >
       <div className="space-y-4">
+        <p
+          id={measurementErrorId}
+          className="text-destructive flex min-h-lh items-start gap-1 text-xs whitespace-nowrap"
+          aria-live="polite"
+        >
+          {measurementError ? (
+            <>
+              <CircleAlert className="mt-0.5 size-3 shrink-0" />
+              {measurementError}
+            </>
+          ) : (
+            "\u00a0"
+          )}
+        </p>
         <div className="flex flex-nowrap items-start gap-2">
           <div ref={dateFieldRef} className="w-56 max-w-56 min-w-56 shrink-0">
             <div className="relative z-20">
@@ -665,7 +694,13 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                     setValues((current) => ({ ...current, [field.field]: value }));
                     clearError(field.field);
                   }}
-                  error={errors[field.field]}
+                  onBlur={() => {
+                    setMeasurementError(field.field, values[field.field]);
+                  }}
+                  invalid={Boolean(errors[field.field])}
+                  describedBy={
+                    errors[field.field] && errors[field.field] === measurementError ? measurementErrorId : undefined
+                  }
                   icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
                 />
                 {entry === null ? (
