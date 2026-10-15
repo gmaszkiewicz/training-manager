@@ -150,6 +150,10 @@ export type Database = {
           measured_month: string;
         }[];
       };
+      search_unlinked_trainee_emails: {
+        Args: { p_query: string };
+        Returns: string[];
+      };
     };
     Enums: {
       [_ in never]: never;

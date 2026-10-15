@@ -2,8 +2,8 @@
 import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
+import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import type { PageSize } from "@/lib/measurement-page";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementWithDeltas } from "@/types";
@@ -53,9 +53,6 @@ const {
       selectedLink && trainerMeasurementsLoaded ? "w-max min-w-[calc(75rem+4px)]" : "w-max",
     ]}
   >
-    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
-      {mode === "trainer" ? "Find trainee by email" : "Measurements"}
-    </h1>
     {mode === "trainer" ? (
       <>
         {serverError ? <ServerError message={serverError} /> : null}
@@ -63,8 +60,8 @@ const {
           <>
             <form method="POST" action="/api/trainer-links" class="space-y-3">
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
-              <Input id={`${idPrefix}email`} name="email" type="email" required aria-label="Email" />
-              <Button type="submit" className="w-full">
+              <TraineeEmailSearch idPrefix={idPrefix} client:load />
+              <Button type="submit" variant="smoke" className="w-full">
                 Link trainee
               </Button>
             </form>
@@ -104,7 +101,10 @@ const {
         )}
       </>
     ) : (
-      <p class="text-muted-foreground">Could not open your journal</p>
+      <>
+        <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Measurements</h1>
+        <p class="text-muted-foreground">Could not open your journal</p>
+      </>
     )}
   </div>
 </div>

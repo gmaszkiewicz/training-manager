@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 
-import { linkTraineeByEmail } from "@/lib/services/trainer-links";
+import { readProfileRole } from "@/lib/services/ensure-profile";
+import { linkTraineeByEmail, searchUnlinkedTrainees } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 
 export const prerender = false;
@@ -20,6 +21,38 @@ function preservedTrainee(value: FormDataEntryValue | null): string | undefined 
 
   return undefined;
 }
+
+function json(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
+
+export const GET: APIRoute = async (context) => {
+  const user = context.locals.user;
+  if (!user) {
+    return json({ error: "Sign in required" }, 401);
+  }
+
+  const supabase = createClient(context.request.headers, context.cookies);
+  if (!supabase) {
+    return json({ error: "Supabase is not configured" }, 500);
+  }
+
+  const role = await readProfileRole(supabase, user.id);
+  if (role !== "trainer") {
+    return json({ error: "Could not search trainees" }, 403);
+  }
+
+  const query = new URL(context.request.url).searchParams.get("q") ?? "";
+  const searched = await searchUnlinkedTrainees(supabase, query);
+  if (!searched.ok) {
+    return json({ error: "Could not search trainees" }, 500);
+  }
+
+  return json({ emails: searched.emails }, 200);
+};
 
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;

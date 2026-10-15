@@ -55,6 +55,24 @@ export function dayStorageKey(accountUserId: string, subjectTraineeId: string): 
   return `tm.measurements.day.${accountUserId}.${subjectTraineeId}`;
 }
 
+export function selectedTraineeStorageKey(accountUserId: string): string {
+  return `tm.measurements.trainee.${accountUserId}`;
+}
+
+export function journalPageStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.page.${accountUserId}.${subjectTraineeId}`;
+}
+
+export function parseJournalPage(value: unknown): number {
+  if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 1_000_000) {
+    return value;
+  }
+  if (typeof value !== "string" || !/^[1-9]\d{0,5}$/.test(value)) {
+    return 1;
+  }
+  return Number(value);
+}
+
 export function filterByMonth<T extends { measured_on: string }>(entries: readonly T[], month: string): T[] {
   return entries.filter((entry) => measurementMonth(entry.measured_on) === month);
 }

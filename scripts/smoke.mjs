@@ -295,6 +295,27 @@ async function measurementMonthsRpc() {
   return { status: response.status, location: "", body };
 }
 
+async function searchUnlinkedTraineesRpc() {
+  if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
+    return { status: 0, location: "", body: "" };
+  }
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/search_unlinked_trainee_emails`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ p_query: "a" }),
+  });
+  const body = await response.text();
+  return { status: response.status, location: "", body };
+}
+
+function smokeTraineeSearchPath() {
+  return `/api/trainer-links?q=${encodeURIComponent(` ${email.toUpperCase()} `)}`;
+}
+
 function januaryCatalog() {
   return {
     dates: catalogDates(),
@@ -322,6 +343,7 @@ const steps = [
     () => request("/api/measurements", { method: "POST" }),
     { status: 302, location: "/auth/signin" },
   ],
+  ["signed-out trainer search is rejected", () => request("/api/trainer-links?q=a"), { status: 401 }],
   [
     "signup creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email, password, role: "trainee" } }),
@@ -437,11 +459,13 @@ const steps = [
     () => request("/api/measurements", { method: "POST", form: measurementForm("2026-01-01T07:00", "80.0") }),
     { status: 302, location: "/measurements?error=" },
   ],
+  ["trainer search finds the unlinked trainee", () => request(smokeTraineeSearchPath()), { status: 200, body: email }],
   [
     "trainer link opens the trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email } }),
     { status: 302, location: () => `/measurements?trainee=${traineeId}`, exactLocation: true },
   ],
+  ["trainer search omits the linked trainee", () => request(smokeTraineeSearchPath()), { status: 200, forbid: email }],
   [
     "trainer link repeats the same trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email } }),
@@ -478,6 +502,12 @@ const steps = [
     "trainee signs in to attempt a link",
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
     { status: 302, location: "/measurements" },
+  ],
+  ["trainee search is rejected", () => request("/api/trainer-links?q=a"), { status: 403 }],
+  [
+    "trainee search rpc returns no rows",
+    () => searchUnlinkedTraineesRpc(),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
   ],
   [
     "trainee link is rejected",
@@ -839,6 +869,12 @@ function jsonProblems(parsed, spec) {
     const length = Array.isArray(entries) ? entries.length : -1;
     if (length !== spec.entriesLength) {
       problems.push(`entries.length ${length} expected ${spec.entriesLength}`);
+    }
+  }
+  if (spec.arrayLength !== undefined) {
+    const length = Array.isArray(parsed) ? parsed.length : -1;
+    if (length !== spec.arrayLength) {
+      problems.push(`array length ${length} expected ${spec.arrayLength}`);
     }
   }
   if (spec.pageCount !== undefined && pageCount !== spec.pageCount) {
