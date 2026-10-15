@@ -2,7 +2,7 @@
 
 ## Overview
 
-On add and on edit, leaving a measurement field or clicking Add shows the first invalid measurement message in a one-line band between the heading and the labels. Date and Note stay under their controls and still appear on Add. Shared buttons gain a pressed ring and a muted disabled treatment from existing tokens, so other screens that use those states follow.
+On add and on edit, typing in a measurement field or leaving it shows that field's schema message in a bubble above its column. The bubble is visible while the column is hovered or focused. Clicking Add, when the form is invalid, shows every current measurement bubble for 3 seconds, then they hide again unless hovered or focused. Date and Note stay under their controls and still appear on Add. Shared buttons gain a pressed ring and a muted disabled treatment from existing tokens, so other screens that use those states follow.
 
 ## Current State Analysis
 
@@ -18,22 +18,21 @@ The horizontal-measurements plan left `FormField`'s error paragraph under the in
 
 ## Desired End State
 
-A trainee or trainer opening Add or Edit sees a one-line gap between the heading and Weight kg, Chest cm, and the rest. The gap stays empty until a measurement field is left with an invalid value, or until Add. The gap then shows one message, the first invalid measurement in field order, on one line, and the labels do not move. Date and Note messages still appear under those controls, and only on Add. An enabled pressed button shows a ring. A disabled button uses muted fill and muted text. Home and sign-in submits stay filled primary while they are enabled.
+A trainee or trainer opening Add or Edit sees each invalid measurement in its own bubble above that column. An untouched empty form shows no bubbles. Typing an invalid value, or leaving the field with one, sets that field's message. Hovering or focusing the column shows the bubble; leaving it hides the bubble. Add still refuses to save when any field is invalid, and for 3 seconds every measurement bubble is forced visible. Date and Note messages still appear under those controls, and only on Add. An enabled pressed button shows a ring. A disabled button uses muted fill and muted text. Home and sign-in submits stay filled primary while they are enabled.
 
 ### Key Discoveries:
 
-- Empty is already `required` in `readMeasurementNumber` (`src/lib/measurement-input.ts`). Blur must parse one field, not the whole form.
+- Empty is already `required` in `readMeasurementNumber` (`src/lib/measurement-input.ts`). Change and blur must parse one field, not the whole form.
 - `measurementFields` order is weight, chest, waist, arm, thigh, calf, hips, navel.
-- The band has to live inside `MeasurementForm`, because the error state is in the React island. The `h1` stays in `TraineeJournal.astro`.
+- The bubbles have to live inside `MeasurementForm`, because the error state is in the React island. The `h1` stays in `TraineeJournal.astro`.
 - Day, month, and page-size buttons already set `aria-pressed` (`MonthGrid.tsx`, `MeasurementBrowser.tsx`). The selected trainee link in `LinkedTraineeField.tsx` swaps variant and does not set `aria-pressed`.
 - A day cell can be both pressed and disabled.
 
 ## What We're NOT Doing
 
-- Showing errors on every keystroke, or on the untouched empty form.
-- Putting Date or Note in the band, or validating them on blur.
-- Stacking more than one measurement message, or wrapping a message inside the `w-28` column.
-- Changing measurement copy, ranges, column widths, delta colors, or page sizes.
+- Showing errors on the untouched empty form before the user types, blurs, or clicks Add.
+- Putting Date or Note in a measurement bubble, or validating them on blur.
+- Changing measurement ranges, column widths, delta colors, or page sizes. The only accepted copy addition is `${label} cannot be negative` for a leading minus.
 - Rewriting `FormField` so auth forms stop rendering `error` under the input.
 - Changing the `default` and `outline` fills.
 - Adding `aria-pressed` to the selected trainee link, or giving that link the pressed ring.
@@ -41,18 +40,20 @@ A trainee or trainer opening Add or Edit sees a one-line gap between the heading
 
 ## Implementation Approach
 
-Reuse the existing per-field schema for blur, and the existing full-form parse for Add. A pure helper picks the first non-empty measurement message in `measurementFields` order; the form renders that string in a reserved line and does not pass `error` into the measurement `FormField`. Pressed and disabled treatments go on the shared button base classes, using `ring`, `muted`, and `muted-foreground`, so call sites that already set `aria-pressed` or `disabled` pick them up.
+Reuse the existing per-field schema on change and on blur, and the existing full-form parse for Add. Each measurement message renders in a bubble above that column, using `border`, `popover`, and `destructive`. The form does not pass `error` into the measurement `FormField`. Pressed and disabled treatments go on the shared button base classes, using `ring`, `muted`, and `muted-foreground`, so call sites that already set `aria-pressed` or `disabled` pick them up.
 
 ## Critical Implementation Details
 
-- **State sequencing** — Blur validates only the field that was left. Running the full form schema on blur marks every empty measurement required, which the untouched-form decision forbids. `onChange` already clears that field's message, so the value is quiet again while the user is typing. Submit still replaces the whole error map from the full schema, which fills Date, Note, and every invalid measurement at once. The band then shows the first measurement message from that map.
-- **User experience spec** — A day cell can be pressed and disabled together. The pressed ring applies only while the button is enabled.
+- **State sequencing** — Change and blur validate only the field that was edited, through `measurementFieldMessage`. Running the full form schema there would mark every empty measurement required, which the untouched-form decision forbids. Submit still replaces the whole error map from the full schema, which fills Date, Note, and every invalid measurement at once, then reveals every measurement bubble for 3 seconds.
+- **User experience spec** — A measurement bubble is `invisible` unless its column is hovered, focused, or the 3-second reveal is active. A day cell can be pressed and disabled together. The pressed ring applies only while the button is enabled.
 
 ## Phase 1: Reserved measurement error line
 
+> Accepted in implementation review on 2026-10-15 (F1, Fix B): the reserved one-line band was replaced by per-field bubbles. Progress rows 1.5–1.10 were retitled in F3 to those bubble checks.
+
 ### Overview
 
-Leaving one of the eight measurement fields, or clicking Add, records that field's existing schema message. A one-line band above the labels always reserves its height and shows only the first of those messages. Date and Note stay on the submit path, under their controls. Edit uses the same band.
+Typing or leaving one of the eight measurement fields records that field's existing schema message. The message renders in a bubble above that column, visible on hover, on focus, and for 3 seconds after a rejected Add. Date and Note stay on the submit path, under their controls. Edit uses the same bubbles.
 
 ### Changes Required:
 
@@ -60,17 +61,17 @@ Leaving one of the eight measurement fields, or clicking Add, records that field
 
 **File**: `src/lib/measurement-input.ts`
 
-**Intent**: Expose the sentence the form should show for one measurement value, and which of several messages the band shows, without a second copy of the schema text.
+**Intent**: Expose the sentence the form should show for one measurement value, without a second copy of the schema text.
 
-**Contract**: `measurementFieldMessage(field, value)` returns `null` when that field's existing schema parses, and otherwise the same required, decimal, or range sentence `measurementNumber` already emits. `firstMeasurementError(errors)` returns the first non-empty string in `measurementFields` order, treating `undefined` and `""` as absent, or `null` when none are set. Do not change the sentences or the ranges.
+**Contract**: `measurementFieldMessage(field, value)` returns `null` when that field's existing schema parses, and otherwise the required, decimal, range, or negative sentence `measurementNumber` already emits. A leading minus returns `${label} cannot be negative`. Do not change the ranges or the other sentences. Do not add a helper that collapses several messages into one.
 
 #### 2. Helper tests
 
 **File**: `src/lib/measurement-input.test.ts`
 
-**Intent**: Lock the blur messages and the one-line band's choice so a second invalid field cannot take the line from an earlier one.
+**Intent**: Lock the change and blur messages for one field.
 
-**Contract**: Cover `Weight` empty → `Weight is required`; `80` → `null`; `8` → `Weight must be between 20 and 400 kg`; `12.34` and `80.` → `Weight must be a number with at most one decimal place`. Cover `firstMeasurementError` with no messages → `null`; Weight and Chest both set → the Weight message; only Chest set, including when Weight is `undefined` → the Chest message.
+**Contract**: Cover `Weight` empty → `Weight is required`; `80` → `null`; `8` → `Weight must be between 20 and 400 kg`; `-8` → `Weight cannot be negative`; `12.34` and `80.` → `Weight must be a number with at most one decimal place`.
 
 #### 3. Form field hooks
 
@@ -80,13 +81,13 @@ Leaving one of the eight measurement fields, or clicking Add, records that field
 
 **Contract**: Add optional `onBlur`, forwarded to the input. Add optional `invalid`. When `invalid` is true, set `aria-invalid` and do not render the error paragraph. The paragraph still renders only when `error` is a non-empty string, and that path still sets `aria-invalid`. Add optional `describedBy`, forwarded to the input's `aria-describedby`. Callers that omit the new props are unchanged.
 
-#### 4. Reserved band on the measurement form
+#### 4. Measurement bubbles on the form
 
 **File**: `src/components/measurements/MeasurementForm.tsx`
 
-**Intent**: Show the first measurement error on blur and on Add, in a line that is already present so the labels do not move. Keep Date and Note under their controls.
+**Intent**: Show each measurement error while typing and on blur, in a bubble above that column. Keep Date and Note under their controls.
 
-**Contract**: Render the band as the first child of the form's `space-y-4` stack, before the date and measurement row, on both add and edit. Always reserve one `text-xs` line (`min-h` of that line, `whitespace-nowrap`, `text-destructive`). Empty band is a non-breaking space, with no icon. A message uses the same alert icon as `FieldError` and does not wrap. The band id includes `idPrefix`. Give it `aria-live="polite"`. On measurement blur, set or clear only that field from `measurementFieldMessage`. On measurement `onChange`, keep clearing only that field. Do not pass `error` into the measurement `FormField`. Pass `invalid` when that field has a message, and `describedBy` only for the field whose message `firstMeasurementError` is showing. Leave the heading `mb-6` in `TraineeJournal.astro` as it is. `handleSubmit` still parses the full form and still prevents Add when any field is invalid. Date and Note still render through `FieldError` and are not candidates for the band.
+**Contract**: Do not render a reserved band. For each measurement column that has a message, render a bubble above the label, absolutely positioned, with the same alert icon as `FieldError`, `aria-live="polite"`, and an id that includes `idPrefix` and the field name. The bubble may wrap. It is visible when the column is hovered or focused, and when a rejected Add has set the 3-second reveal; otherwise it is `invisible`. On measurement change and on blur, set or clear only that field from `measurementFieldMessage`. Do not pass `error` into the measurement `FormField`. Pass `invalid` when that field has a message, and `describedBy` pointing at that field's bubble. Leave the heading `mb-6` in `TraineeJournal.astro` as it is. `handleSubmit` still parses the full form, still prevents Add when any field is invalid, and reveals the measurement bubbles for 3 seconds. Date and Note still render through `FieldError` and are not candidates for a bubble.
 
 ### Success Criteria:
 
@@ -99,12 +100,12 @@ Leaving one of the eight measurement fields, or clicking Add, records that field
 
 #### Manual Verification:
 
-- Untouched add form shows no measurement error and keeps the one-line gap
-- Leaving Weight at 8 shows the range message on one line and the labels do not move
-- Weight 12.34 and Chest abc show only the Weight message until Weight is valid
+- Untouched add form shows no measurement bubble
+- Typing Weight 8 shows the range message in that column's bubble while the field is focused
+- Weight 12.34 and Chest abc can show both bubbles; each bubble is visible while its column is hovered or focused
 - Date and Note errors stay under those controls and appear on Add
-- Edit measurement uses the same band after Weight is cleared and left
-- Add does not save while a hidden later measurement error remains
+- Edit measurement uses the same bubble after Weight is cleared
+- Add does not save when any measurement is invalid, and forces every current measurement bubble visible for 3 seconds
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -159,21 +160,20 @@ An enabled pressed button gains a ring from the existing ring token. A disabled 
 
 ### Unit Tests:
 
-- `measurementFieldMessage` for empty, in-range, below-min, and more than one decimal, including a trailing separator.
-- `firstMeasurementError` for none, Weight before Chest, and Chest alone when Weight is absent.
+- `measurementFieldMessage` for empty, in-range, below-min, a leading minus (`cannot be negative`), and more than one decimal, including a trailing separator.
 - `buttonVariants` for `default` and `outline` includes the pressed ring and `disabled:bg-muted`, and omits `disabled:opacity-50`.
 
 ### Integration Tests:
 
-- No new Playwright spec. Client blur and the reserved line have no browser harness today; the manual checks below cover them.
+- No new Playwright spec. Client blur and the measurement bubbles have no browser harness today; the manual checks below cover them.
 
 ### Manual Testing Steps:
 
-1. Open `/measurements` on Add. Confirm the gap above the labels is empty and the labels do not jump when a message appears.
-2. Type `8` in Weight and leave the field. Confirm one line reads `Weight must be between 20 and 400 kg`.
-3. Set Weight to `12.34` and Chest to `abc`, leaving each. Confirm only the Weight decimal message shows. Correct Weight and leave it. Confirm the Chest message replaces it.
-4. Set a date after tomorrow and a note longer than 1000 characters. Confirm those messages appear under the controls on Add, not in the band.
-5. Open Edit, clear Weight, and leave the field. Confirm the same band.
+1. Open `/measurements` on Add. Confirm no measurement bubble is showing.
+2. Type `8` in Weight. Confirm that column's bubble reads `Weight must be between 20 and 400 kg` while the field is focused, and hides when the field is left.
+3. Set Weight to `12.34` and Chest to `abc`. Confirm each column can show its own bubble while hovered or focused.
+4. Set a date after tomorrow and a note longer than 1000 characters. Confirm those messages appear under the controls on Add, not in a measurement bubble.
+5. Open Edit, clear Weight, and leave the field. Confirm the same bubble. Click Add and confirm every current measurement bubble is forced visible, then hides after 3 seconds.
 6. On the journal, compare a selected day, month, and page size with their outline peers, then a disabled Next month and a disabled day. Confirm the home and sign-in primary buttons are unchanged while enabled.
 
 ## Performance Considerations
@@ -209,12 +209,12 @@ No schema or data migration. Deploy is the usual Worker release. Button disabled
 
 #### Manual
 
-- [x] 1.5 Untouched add form shows no measurement error and keeps the one-line gap — 763878f
-- [x] 1.6 Leaving Weight at 8 shows the range message on one line and the labels do not move — 763878f
-- [x] 1.7 Weight 12.34 and Chest abc show only the Weight message until Weight is valid — 763878f
+- [x] 1.5 Untouched add form shows no measurement bubble — 763878f
+- [x] 1.6 Typing Weight 8 shows the range message in that column's bubble while the field is focused — 763878f
+- [x] 1.7 Weight 12.34 and Chest abc can show both bubbles; each bubble is visible while its column is hovered or focused — 763878f
 - [x] 1.8 Date and Note errors stay under those controls and appear on Add — 763878f
-- [x] 1.9 Edit measurement uses the same band after Weight is cleared and left — 763878f
-- [x] 1.10 Add does not save while a hidden later measurement error remains — 763878f
+- [x] 1.9 Edit measurement uses the same bubble after Weight is cleared — 763878f
+- [x] 1.10 Add does not save when any measurement is invalid, and forces every current measurement bubble visible for 3 seconds — 763878f
 
 ### Phase 2: Shared button contrast
 
