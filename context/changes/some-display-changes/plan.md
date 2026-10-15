@@ -220,15 +220,15 @@ No schema or data migration. Deploy is the usual Worker release. Button disabled
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Token check passes: `npm run check:home-tokens`
-- [x] 2.4 Type check passes: `npx astro check`
+- [x] 2.1 Unit tests pass: `npm test` — 0a62abb
+- [x] 2.2 Lint passes: `npm run lint` — 0a62abb
+- [x] 2.3 Token check passes: `npm run check:home-tokens` — 0a62abb
+- [x] 2.4 Type check passes: `npx astro check` — 0a62abb
 
 #### Manual
 
-- [x] 2.5 Selected day, month, and page size show the ring; unselected peers do not
-- [x] 2.6 Disabled Next month and a disabled day use muted fill and muted text
-- [x] 2.7 A disabled selected day does not keep the pressed ring
-- [x] 2.8 Enabled home and sign-in buttons stay filled primary
-- [x] 2.9 Pending Add and a disabled trainer arrow use the muted treatment
+- [x] 2.5 Selected day, month, and page size show the ring; unselected peers do not — 0a62abb
+- [x] 2.6 Disabled Next month and a disabled day use muted fill and muted text — 0a62abb
+- [x] 2.7 A disabled selected day does not keep the pressed ring — 0a62abb
+- [x] 2.8 Enabled home and sign-in buttons stay filled primary — 0a62abb
+- [x] 2.9 Pending Add and a disabled trainer arrow use the muted treatment — 0a62abb
