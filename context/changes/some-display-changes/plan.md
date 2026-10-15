@@ -209,26 +209,26 @@ No schema or data migration. Deploy is the usual Worker release. Button disabled
 
 #### Manual
 
-- [x] 1.5 Untouched add form shows no measurement error and keeps the one-line gap
-- [x] 1.6 Leaving Weight at 8 shows the range message on one line and the labels do not move
-- [x] 1.7 Weight 12.34 and Chest abc show only the Weight message until Weight is valid
-- [x] 1.8 Date and Note errors stay under those controls and appear on Add
-- [x] 1.9 Edit measurement uses the same band after Weight is cleared and left
-- [x] 1.10 Add does not save while a hidden later measurement error remains
+- [x] 1.5 Untouched add form shows no measurement error and keeps the one-line gap — 763878f
+- [x] 1.6 Leaving Weight at 8 shows the range message on one line and the labels do not move — 763878f
+- [x] 1.7 Weight 12.34 and Chest abc show only the Weight message until Weight is valid — 763878f
+- [x] 1.8 Date and Note errors stay under those controls and appear on Add — 763878f
+- [x] 1.9 Edit measurement uses the same band after Weight is cleared and left — 763878f
+- [x] 1.10 Add does not save while a hidden later measurement error remains — 763878f
 
 ### Phase 2: Shared button contrast
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Token check passes: `npm run check:home-tokens`
-- [ ] 2.4 Type check passes: `npx astro check`
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Token check passes: `npm run check:home-tokens`
+- [x] 2.4 Type check passes: `npx astro check`
 
 #### Manual
 
-- [ ] 2.5 Selected day, month, and page size show the ring; unselected peers do not
-- [ ] 2.6 Disabled Next month and a disabled day use muted fill and muted text
-- [ ] 2.7 A disabled selected day does not keep the pressed ring
-- [ ] 2.8 Enabled home and sign-in buttons stay filled primary
-- [ ] 2.9 Pending Add and a disabled trainer arrow use the muted treatment
+- [x] 2.5 Selected day, month, and page size show the ring; unselected peers do not
+- [x] 2.6 Disabled Next month and a disabled day use muted fill and muted text
+- [x] 2.7 A disabled selected day does not keep the pressed ring
+- [x] 2.8 Enabled home and sign-in buttons stay filled primary
+- [x] 2.9 Pending Add and a disabled trainer arrow use the muted treatment
