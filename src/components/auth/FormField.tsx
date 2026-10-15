@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { FocusEventHandler, ReactNode } from "react";
 import { CircleAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,11 @@ interface FormFieldProps {
   type?: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: FocusEventHandler<HTMLInputElement>;
   placeholder?: string;
   error?: string;
+  invalid?: boolean;
+  describedBy?: string;
   hint?: ReactNode;
   icon: ReactNode;
   endContent?: ReactNode;
@@ -26,13 +29,18 @@ export function FormField({
   type = "text",
   value,
   onChange,
+  onBlur,
   placeholder,
   error,
+  invalid,
+  describedBy,
   hint,
   icon,
   endContent,
   step,
 }: FormFieldProps) {
+  const showError = !invalid && Boolean(error);
+
   return (
     <div>
       <Label htmlFor={id} className="text-muted-foreground mb-1">
@@ -48,14 +56,16 @@ export function FormField({
           onChange={(e) => {
             onChange(e.target.value);
           }}
+          onBlur={onBlur}
           placeholder={placeholder}
           step={step}
-          aria-invalid={error ? true : undefined}
+          aria-invalid={invalid || error ? true : undefined}
+          aria-describedby={describedBy}
           className={cn("pl-10", endContent && "pr-14")}
         />
         {endContent}
       </div>
-      {error ? (
+      {showError ? (
         <p className="text-destructive mt-1 flex items-center gap-1 text-xs">
           <CircleAlert className="size-3" />
           {error}

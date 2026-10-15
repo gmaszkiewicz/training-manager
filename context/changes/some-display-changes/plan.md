@@ -202,10 +202,10 @@ No schema or data migration. Deploy is the usual Worker release. Button disabled
 
 #### Automated
 
-- [ ] 1.1 Unit tests pass: `npm test`
-- [ ] 1.2 Lint passes: `npm run lint`
-- [ ] 1.3 Token check passes: `npm run check:home-tokens`
-- [ ] 1.4 Type check passes: `npx astro check`
+- [x] 1.1 Unit tests pass: `npm test`
+- [x] 1.2 Lint passes: `npm run lint`
+- [x] 1.3 Token check passes: `npm run check:home-tokens`
+- [x] 1.4 Type check passes: `npx astro check`
 
 #### Manual
 

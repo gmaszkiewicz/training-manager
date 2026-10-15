@@ -93,6 +93,24 @@ export function parseMeasurementField(field: MeasurementField, value: unknown): 
   return parsed.data;
 }
 
+export function measurementFieldMessage(field: MeasurementField, value: unknown): string | null {
+  const parsed = measurementFieldNumbers[field].safeParse(value);
+  if (parsed.success) {
+    return null;
+  }
+  return parsed.error.issues[0]?.message ?? null;
+}
+
+export function firstMeasurementError(errors: Partial<Record<MeasurementField, string | undefined>>): string | null {
+  for (const definition of measurementFields) {
+    const message = errors[definition.field];
+    if (message !== undefined && message !== "") {
+      return message;
+    }
+  }
+  return null;
+}
+
 function formatUtcDate(year: number, month: number, day: number): string {
   const paddedMonth = String(month).padStart(2, "0");
   const paddedDay = String(day).padStart(2, "0");
