@@ -1,7 +1,7 @@
 ---
 change_id: some-display-changes
 title: Show inline measurement errors and clearer button states
-status: new
+status: planned
 created: 2026-10-15
 updated: 2026-10-15
 archived_at: null
