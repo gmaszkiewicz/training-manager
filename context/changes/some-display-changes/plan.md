@@ -202,19 +202,19 @@ No schema or data migration. Deploy is the usual Worker release. Button disabled
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Token check passes: `npm run check:home-tokens`
-- [x] 1.4 Type check passes: `npx astro check`
+- [x] 1.1 Unit tests pass: `npm test` — adbecef
+- [x] 1.2 Lint passes: `npm run lint` — adbecef
+- [x] 1.3 Token check passes: `npm run check:home-tokens` — adbecef
+- [x] 1.4 Type check passes: `npx astro check` — adbecef
 
 #### Manual
 
-- [ ] 1.5 Untouched add form shows no measurement error and keeps the one-line gap
-- [ ] 1.6 Leaving Weight at 8 shows the range message on one line and the labels do not move
-- [ ] 1.7 Weight 12.34 and Chest abc show only the Weight message until Weight is valid
-- [ ] 1.8 Date and Note errors stay under those controls and appear on Add
-- [ ] 1.9 Edit measurement uses the same band after Weight is cleared and left
-- [ ] 1.10 Add does not save while a hidden later measurement error remains
+- [x] 1.5 Untouched add form shows no measurement error and keeps the one-line gap
+- [x] 1.6 Leaving Weight at 8 shows the range message on one line and the labels do not move
+- [x] 1.7 Weight 12.34 and Chest abc show only the Weight message until Weight is valid
+- [x] 1.8 Date and Note errors stay under those controls and appear on Add
+- [x] 1.9 Edit measurement uses the same band after Weight is cleared and left
+- [x] 1.10 Add does not save while a hidden later measurement error remains
 
 ### Phase 2: Shared button contrast
 
