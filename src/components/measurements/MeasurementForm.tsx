@@ -24,7 +24,6 @@ import { monthGrid, monthLabel } from "@/lib/journal-calendar";
 import { previewAgainst } from "@/lib/measurement-deltas";
 import {
   createMeasurementInputSchema,
-  firstMeasurementError,
   measuredOnMax,
   measurementFieldMessage,
   measurementFields,
@@ -456,6 +455,26 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
+function FieldBubble({ id, message, revealed }: { id: string; message: string; revealed: boolean }) {
+  return (
+    <div
+      id={id}
+      className={cn(
+        "border-border bg-popover text-destructive absolute bottom-full left-0 z-30 mb-2 flex w-max max-w-56 items-start gap-1 rounded-md border px-2 py-1 text-xs shadow-md",
+        revealed ? "visible" : "invisible group-focus-within:visible group-hover:visible",
+      )}
+      aria-live="polite"
+    >
+      <CircleAlert className="mt-0.5 size-3 shrink-0" />
+      <span className="min-w-0 break-words">{message}</span>
+      <span
+        aria-hidden
+        className="border-border bg-popover absolute top-full left-3 size-2 -translate-y-1/2 rotate-45 border-r border-b"
+      />
+    </div>
+  );
+}
+
 export default function MeasurementForm({ serverError, idPrefix = "", entry = null }: Props) {
   // SSR runs in UTC. A new entry defaults to the browser's local minute.
   const browserMinute = useSyncExternalStore(subscribeToNothing, localMinuteSnapshot, emptyTodaySnapshot);
@@ -467,7 +486,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [loadedPrevious, setLoadedPrevious] = useState<LoadedPrevious | null>(null);
   const [dateOpen, setDateOpen] = useState(false);
   const [gridMonth, setGridMonth] = useState<string | null>(null);
+  const [errorsRevealed, setErrorsRevealed] = useState(false);
   const dateFieldRef = useRef<HTMLDivElement>(null);
+  const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dateValue = measuredOn ?? browserMinute;
   const minuteParts = measuredMinuteParts(dateValue);
   const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date()) : null;
@@ -478,8 +499,6 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       ? `Against ${previousMinuteLabel(previousEntry.measured_on)}`
       : null;
   const ceilingDate = measuredOnMax(new Date()).slice(0, 10);
-  const measurementErrorId = `${idPrefix}measurement-error`;
-  const measurementError = firstMeasurementError(errors);
 
   useEffect(() => {
     if (previewMinute === null) {
@@ -525,6 +544,25 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     };
   }, [dateOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (revealTimer.current !== null) {
+        clearTimeout(revealTimer.current);
+      }
+    };
+  }, []);
+
+  function revealErrorsBriefly() {
+    setErrorsRevealed(true);
+    if (revealTimer.current !== null) {
+      clearTimeout(revealTimer.current);
+    }
+    revealTimer.current = setTimeout(() => {
+      setErrorsRevealed(false);
+      revealTimer.current = null;
+    }, 3000);
+  }
+
   function clearError(field: ErrorField) {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -559,6 +597,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     if (!parsed.success) {
       event.preventDefault();
       setErrors(errorsFor(parsed.error.issues));
+      revealErrorsBriefly();
     }
   }
 
@@ -571,20 +610,6 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       noValidate
     >
       <div className="space-y-4">
-        <p
-          id={measurementErrorId}
-          className="text-destructive flex min-h-lh items-start gap-1 text-xs whitespace-nowrap"
-          aria-live="polite"
-        >
-          {measurementError ? (
-            <>
-              <CircleAlert className="mt-0.5 size-3 shrink-0" />
-              {measurementError}
-            </>
-          ) : (
-            "\u00a0"
-          )}
-        </p>
         <div className="flex flex-nowrap items-start gap-2">
           <div ref={dateFieldRef} className="w-56 max-w-56 min-w-56 shrink-0">
             <div className="relative z-20">
@@ -681,8 +706,17 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
           {measurementFields.map((field) => {
             const delta = preview ? preview[field.field] : null;
             const arrow = delta ? deltaArrow(delta) : null;
+            const message = errors[field.field];
+            const bubbleId = `${idPrefix}${field.field}-error`;
             return (
-              <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0 [&_p]:block [&_p]:break-words">
+              <div
+                key={field.field}
+                className={cn(
+                  "group relative w-28 max-w-28 min-w-28 shrink-0 focus-within:z-40 hover:z-40 [&_p]:block [&_p]:break-words",
+                  errorsRevealed && "z-40",
+                )}
+              >
+                {message ? <FieldBubble id={bubbleId} message={message} revealed={errorsRevealed} /> : null}
                 <FormField
                   id={`${idPrefix}${field.field}`}
                   name={field.field}
@@ -692,15 +726,13 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                   value={values[field.field]}
                   onChange={(value) => {
                     setValues((current) => ({ ...current, [field.field]: value }));
-                    clearError(field.field);
+                    setMeasurementError(field.field, value);
                   }}
-                  onBlur={() => {
-                    setMeasurementError(field.field, values[field.field]);
+                  onBlur={(event) => {
+                    setMeasurementError(field.field, event.currentTarget.value);
                   }}
-                  invalid={Boolean(errors[field.field])}
-                  describedBy={
-                    errors[field.field] && errors[field.field] === measurementError ? measurementErrorId : undefined
-                  }
+                  invalid={Boolean(message)}
+                  describedBy={message ? bubbleId : undefined}
                   icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
                 />
                 {entry === null ? (

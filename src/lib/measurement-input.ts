@@ -40,11 +40,21 @@ function reject(ctx: z.RefinementCtx, message: string): never {
   return z.NEVER;
 }
 
+function isNegativeMeasurement(value: unknown): boolean {
+  if (typeof value === "number") {
+    return value < 0;
+  }
+  return typeof value === "string" && value.trimStart().startsWith("-");
+}
+
 function readMeasurementNumber(
   value: unknown,
-): { ok: true; value: number } | { ok: false; reason: "required" | "invalid" } {
+): { ok: true; value: number } | { ok: false; reason: "required" | "negative" | "invalid" } {
   if (value === undefined || value === null || value === "") {
     return { ok: false, reason: "required" };
+  }
+  if (isNegativeMeasurement(value)) {
+    return { ok: false, reason: "negative" };
   }
   if (typeof value === "number") {
     if (!Number.isFinite(value) || !ONE_DECIMAL_NUMBER.test(value.toString())) {
@@ -64,6 +74,9 @@ function measurementNumber(definition: MeasurementFieldDefinition, min: number, 
     if (!parsed.ok) {
       if (parsed.reason === "required") {
         return reject(ctx, `${definition.label} is required`);
+      }
+      if (parsed.reason === "negative") {
+        return reject(ctx, `${definition.label} cannot be negative`);
       }
       return reject(ctx, `${definition.label} must be a number with at most one decimal place`);
     }
@@ -99,16 +112,6 @@ export function measurementFieldMessage(field: MeasurementField, value: unknown)
     return null;
   }
   return parsed.error.issues[0]?.message ?? null;
-}
-
-export function firstMeasurementError(errors: Partial<Record<MeasurementField, string | undefined>>): string | null {
-  for (const definition of measurementFields) {
-    const message = errors[definition.field];
-    if (message !== undefined && message !== "") {
-      return message;
-    }
-  }
-  return null;
 }
 
 function formatUtcDate(year: number, month: number, day: number): string {
