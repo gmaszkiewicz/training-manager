@@ -16,7 +16,7 @@ Unlinked emails are not readable under the current policies. `trainer_links_sele
 
 ## Desired End State
 
-On `/measurements`, the trainer card heading is `Measurements`. The email field placeholder is `Find trainee by email`, and its accessible name stays `Email`. `Link trainee` still posts the field to `/api/trainer-links`.
+On `/measurements`, trainer mode has no card heading. The unavailable branch stays `Measurements` with `Could not open your journal`. The email field placeholder is `Find trainee by email`, and its accessible name stays `Email`. `Link trainee` still posts the field to `/api/trainer-links`.
 
 Typing `nn` shows unlinked trainee emails that contain those characters, such as `anna@x.com` and `nn@x.com`, ordered alphabetically by the normalized email, at most 10. ` Ann ` matches `ann@x.com`. A space in the middle stays, so `an n` does not match `ann@x.com`. An empty field, a whitespace-only field, and `zzzqqq` show no rows and no new sentence. `ada@x.com` linked only to another trainer still appears. An email this trainer already linked does not. Choosing a row writes that email into the field and does not submit. The linked-trainee list under `Body measurements` is unchanged.
 
@@ -49,7 +49,7 @@ Add a security-definer function next to `link_trainee_by_email`. It is granted t
 
 ### Timing and lifecycle
 
-A slower response for an earlier sequence must not replace the list for a later sequence. Clearing the field removes the list immediately. Choosing a row writes the returned email and closes the list, and that write must not open the list again for the same value. A later edit by the trainer searches again.
+A slower response for an earlier sequence must not replace the list for a later sequence. Clearing the field removes the list immediately. Choosing a row writes the returned email and closes the list. That write does not itself fetch. A later focus or pointer down on the field searches that same value again and opens the list when there are rows. A later edit by the trainer searches again.
 
 ### Result order
 
@@ -136,6 +136,8 @@ Expose the function as JSON for the signed-in trainer, and prove it with the exi
 - Eleven unlinked trainee emails contain the same sequence and the response lists only the alphabetically first 10
 - A trainee linked only to another trainer is still returned for this trainer
 
+Note: Progress steps 2.2 and 2.3 keep their original titles. The migration encodes the cap, the order, and the other-trainer rule. Smoke covers one trainee. These two checks have no fixture and need a re-check before archive.
+
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
 ---
@@ -154,7 +156,11 @@ Move the finder copy into the field and show the search results on the trainer c
 
 **Intent**: Search while the trainer types, and put a chosen email into the form field.
 
-**Contract**: Props are `idPrefix: string`. The island renders the existing `Input` with `id={`${idPrefix}email`}`, `name="email"`, `type="email"`, `required`, `aria-label="Email"`, and `placeholder="Find trainee by email"`. Fetch `GET /api/trainer-links?q=` with `cache: "no-store"`, the same style as `MeasurementForm`'s previous-measurement fetch. A query that is empty after trim shows no rows and does not leave a previous list on screen. A non-OK response or a thrown fetch shows no rows and no sentence. Render each returned email as a `type="button"` control using the shared `Button`, so the click does not submit the form. Choosing one sets the input to that email and closes the list. That write does not fetch for the value just written, so the list stays closed. A later edit by the trainer searches again. Escape and a pointer down outside the field close the list and leave the input value in place, following `LinkedTraineeField`. Use role tokens and shared components only.
+**Contract**: Props are `idPrefix: string`. The island renders the existing `Input` with `id={`${idPrefix}email`}`, `name="email"`, `type="text"`, `inputMode="email"`, `autoComplete="off"`, `required`, `aria-label="Email"`, and `placeholder="Find trainee by email"`.
+
+Note: The field is not `type="email"`. A partial sequence such as `nn` is not a valid email, and that type shows the browser warning while the trainer types. `a17fa31` made this change.
+
+Fetch `GET /api/trainer-links?q=` with `cache: "no-store"`, the same style as `MeasurementForm`'s previous-measurement fetch. A query that is empty after trim shows no rows and does not leave a previous list on screen. A non-OK response or a thrown fetch shows no rows and no sentence. Render each returned email as a `type="button"` control using the shared `Button`, so the click does not submit the form. Choosing one sets the input to that email and closes the list. That write does not fetch for the value just written. A later focus or pointer down on the field searches that same value again and opens the list when there are rows. A later edit by the trainer searches again. Escape and a pointer down outside the field close the list and leave the input value in place, following `LinkedTraineeField`. Use role tokens and shared components only.
 
 #### 2. Trainer card heading and form
 
@@ -162,7 +168,9 @@ Move the finder copy into the field and show the search results on the trainer c
 
 **Intent**: Show the search on the existing link form and use the card heading that remains after the finder words move into the placeholder.
 
-**Contract**: The card `h1` is `Measurements` in trainer mode. The unavailable branch stays `Measurements` with `Could not open your journal`. Inside the trainer form, keep the hidden `trainee` input when `selectedLink` is set, render `TraineeEmailSearch` with `client:load` and the current `idPrefix`, and keep the full-width `Link trainee` submit. The `h2` `Body measurements` and `LinkedTraineeField` stay where they are. The kitchen sink already renders this panel, so the heading and placeholder show there without a new sink state.
+**Contract**: Trainer mode has no card heading. The unavailable branch stays `Measurements` with `Could not open your journal`. Inside the trainer form, keep the hidden `trainee` input when `selectedLink` is set, render `TraineeEmailSearch` with `client:load` and the current `idPrefix`, and keep the full-width `Link trainee` submit. The `h2` `Body measurements` and `LinkedTraineeField` stay where they are. The kitchen sink already renders this panel, so the placeholder shows there without a new sink state.
+
+Note: Progress step 3.4 keeps its original title. `a17fa31` removed the trainer-mode heading after that step was checked.
 
 #### 3. Token check
 
@@ -189,6 +197,8 @@ Move the finder copy into the field and show the search results on the trainer c
 - `Body measurements` and the linked-trainee control stay as they are once a trainee is linked
 - After a choice the list stays closed until the trainer edits the field
 
+Note: Progress step 3.8 keeps its original title. `3ae8fd8` reopens the list on the next focus or pointer down inside the field, without requiring an edit.
+
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
 ---
@@ -208,7 +218,7 @@ Move the finder copy into the field and show the search results on the trainer c
 1. Apply the migration locally and call the function as a trainer. Confirm an empty query returns no rows, ` Ann ` can match `ann@x.com`, and `%` matches a literal percent.
 2. With eleven unlinked trainee emails that contain one sequence, confirm the response is only the alphabetically first 10.
 3. Link one of those trainees on this trainer and confirm that email disappears. Confirm a trainee linked only to another trainer still appears.
-4. On `/measurements`, confirm the heading is `Measurements`, the placeholder is `Find trainee by email`, and choosing a row fills the field without navigating. The list stays closed until the field is edited. Submit `Link trainee` and confirm the existing preview opens.
+4. On `/measurements`, confirm trainer mode has no card heading, the placeholder is `Find trainee by email`, and choosing a row fills the field without navigating. The next focus or pointer down inside the field can open the list again. Submit `Link trainee` and confirm the existing preview opens.
 5. Clear the field and type `zzzqqq`. Confirm no rows and no new sentence. Confirm the linked-trainee control under `Body measurements` still changes the preview.
 
 ## Performance Considerations
@@ -218,6 +228,16 @@ A one-character query can match many trainee emails. The function still returns 
 ## Migration Notes
 
 The migration only adds a function. The previous Worker never calls it, so it can reach hosted Supabase before the new Worker. No backfill and no drop. `npm run deploy` does not apply migrations; the production build on `main` does.
+
+## Addendum
+
+Accepted during implementation review. `3ae8fd8` remembers the trainer's selected trainee and the journal page. This was not part of the original search contract.
+
+- `preferredTraineeId` uses the `trainee` query when it is non-empty, otherwise the cookie `tm.measurements.trainee.<account>`.
+- That cookie is httpOnly, `SameSite=Lax`, path `/`, and lasts one year. It is written only when the query id is already this trainer's selected link.
+- The journal page is stored as `tm.measurements.page.<account>.<subject>`. A trainee's own journal and a trainer preview both open on that page instead of page 1.
+- The linked-list `localeCompare` order is unchanged.
+- `Link trainee` uses the `smoke` button variant. `--smoke` and `--smoke-foreground` live in `src/styles/global.css`, and the kitchen-sink note names `hover:bg-smoke/90`.
 
 ## References
 
