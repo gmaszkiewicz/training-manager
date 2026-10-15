@@ -61,7 +61,7 @@ const {
             <form method="POST" action="/api/trainer-links" class="space-y-3">
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
               <TraineeEmailSearch idPrefix={idPrefix} client:load />
-              <Button type="submit" className="w-full">
+              <Button type="submit" variant="smoke" className="w-full">
                 Link trainee
               </Button>
             </form>

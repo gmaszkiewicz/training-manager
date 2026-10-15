@@ -8,8 +8,10 @@ import {
   defaultPageSize,
   filterByMonth,
   journalMonth,
+  journalPageStorageKey,
   measurementMonth,
   pageSizeStorageKey,
+  parseJournalPage,
   pageSizes,
   pageSlice,
   parsePageSize,
@@ -302,20 +304,26 @@ export default function MeasurementBrowser({
   const monthListRef = useRef<HTMLDivElement>(null);
   const requestSerial = useRef(0);
 
-  const loadPage = useCallback((query: PageQuery): void => {
-    const serial = ++requestSerial.current;
-    void fetchMeasurementPage(query).then((body) => {
-      if (body === null || serial !== requestSerial.current) {
-        return;
-      }
-      setRemoteDates(body.dates);
-      setMonth(body.month);
-      setPage(body.page);
-      setPageSize(body.pageSize);
-      setRemotePageCount(body.pageCount);
-      setRemoteEntries(body.entries);
-    });
-  }, []);
+  const loadPage = useCallback(
+    (query: PageQuery): void => {
+      const serial = ++requestSerial.current;
+      void fetchMeasurementPage(query).then((body) => {
+        if (body === null || serial !== requestSerial.current) {
+          return;
+        }
+        setRemoteDates(body.dates);
+        setMonth(body.month);
+        setPage(body.page);
+        setPageSize(body.pageSize);
+        setRemotePageCount(body.pageCount);
+        setRemoteEntries(body.entries);
+        if (query.focusId === null && accountId !== null && subjectId !== null) {
+          writePreference(journalPageStorageKey(accountId, subjectId), String(body.page));
+        }
+      });
+    },
+    [accountId, subjectId],
+  );
 
   // The document request already applied the preference cookie. Storage is copied onto that cookie after hydration, and a page is requested only when the cookie was missing.
   /* eslint-disable react-hooks/set-state-in-effect -- storage is applied after the hydration render */
@@ -328,6 +336,11 @@ export default function MeasurementBrowser({
     const storedDay = subjectId === null ? null : readStored(dayStorageKey(accountId, subjectId));
     if (subjectId !== null && storedDay !== null) {
       writeCookie(dayStorageKey(accountId, subjectId), storedDay);
+    }
+    const storedPageValue = subjectId === null ? null : readStored(journalPageStorageKey(accountId, subjectId));
+    const storedPage = storedPageValue === null ? null : parseJournalPage(storedPageValue);
+    if (subjectId !== null && storedPage !== null) {
+      writeCookie(journalPageStorageKey(accountId, subjectId), String(storedPage));
     }
     if (!paged) {
       const next = viewOf({
@@ -364,12 +377,13 @@ export default function MeasurementBrowser({
     const savedMonth = storedMonth !== null && datesProp.includes(storedMonth) ? storedMonth : null;
     const sizeDiffers = storedSize !== serverSize;
     const monthDiffers = savedMonth !== null && savedMonth !== currentMonth;
-    if (!sizeDiffers && !monthDiffers) {
+    const pageDiffers = storedPage !== null && storedPage !== pageProp;
+    if (!sizeDiffers && !monthDiffers && !pageDiffers) {
       return;
     }
     loadPage({
       month: savedMonth ?? currentMonth,
-      page: 1,
+      page: storedPage ?? pageProp,
       size: storedSize,
       focusId: null,
       traineeId,
@@ -383,6 +397,7 @@ export default function MeasurementBrowser({
     focusedMonth,
     paged,
     pageSizeProp,
+    pageProp,
     datesProp,
     readOnly,
     loadPage,
@@ -466,6 +481,7 @@ export default function MeasurementBrowser({
     }
     if (accountId !== null && subjectId !== null) {
       writePreference(dayStorageKey(accountId, subjectId), nextMonth);
+      writePreference(journalPageStorageKey(accountId, subjectId), "1");
     }
     if (!paged) {
       setMonth(nextMonth);
@@ -497,9 +513,15 @@ export default function MeasurementBrowser({
       });
       setPageSize(nextSize);
       setPage(next.page);
+      if (accountId !== null && subjectId !== null) {
+        writePreference(journalPageStorageKey(accountId, subjectId), String(next.page));
+      }
       return;
     }
     const keepFocus = focusedEntryId !== null && focusedMonth !== null && focusedMonth === month;
+    if (!keepFocus && accountId !== null && subjectId !== null) {
+      writePreference(journalPageStorageKey(accountId, subjectId), "1");
+    }
     loadPage({
       month,
       page: 1,
@@ -510,6 +532,9 @@ export default function MeasurementBrowser({
   }
 
   function showPage(nextPage: number) {
+    if (accountId !== null && subjectId !== null) {
+      writePreference(journalPageStorageKey(accountId, subjectId), String(nextPage));
+    }
     if (!paged) {
       setPage(nextPage);
       return;

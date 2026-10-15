@@ -3,10 +3,13 @@ import { describe, expect, it } from "vitest";
 import { withDeltas } from "@/lib/measurement-deltas";
 import {
   dayStorageKey,
+  selectedTraineeStorageKey,
   defaultPageSize,
   deltasForVisiblePage,
   filterByMonth,
   journalMonth,
+  journalPageStorageKey,
+  parseJournalPage,
   measurementMonth,
   monthWindow,
   pageContaining,
@@ -68,6 +71,20 @@ describe("storage keys", () => {
   it("scopes page size to the account and the day to the account and trainee", () => {
     expect(pageSizeStorageKey("account-1")).toBe("tm.measurements.pageSize.account-1");
     expect(dayStorageKey("account-1", "trainee-2")).toBe("tm.measurements.day.account-1.trainee-2");
+    expect(selectedTraineeStorageKey("account-1")).toBe("tm.measurements.trainee.account-1");
+    expect(journalPageStorageKey("account-1", "trainee-2")).toBe("tm.measurements.page.account-1.trainee-2");
+  });
+});
+
+describe("parseJournalPage", () => {
+  it("keeps a positive page and falls back to 1", () => {
+    expect(parseJournalPage("2")).toBe(2);
+    expect(parseJournalPage(3)).toBe(3);
+    expect(parseJournalPage(null)).toBe(1);
+    expect(parseJournalPage("")).toBe(1);
+    expect(parseJournalPage("0")).toBe(1);
+    expect(parseJournalPage("2.5")).toBe(1);
+    expect(parseJournalPage("nope")).toBe(1);
   });
 });
 
