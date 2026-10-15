@@ -1,10 +1,31 @@
 import { describe, expect, it } from "vitest";
 
-import { adjacentTrainerLinks, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
+import {
+  adjacentTrainerLinks,
+  preferredTraineeId,
+  selectTrainerPreview,
+  type TrainerLink,
+} from "@/lib/trainer-preview";
 
 function link(partial: TrainerLink): TrainerLink {
   return partial;
 }
+
+describe("preferredTraineeId", () => {
+  it("keeps an explicit trainee query ahead of the remembered id", () => {
+    expect(preferredTraineeId("chosen", "remembered")).toBe("chosen");
+  });
+
+  it("uses the remembered id when the query is missing", () => {
+    expect(preferredTraineeId(null, "remembered")).toBe("remembered");
+    expect(preferredTraineeId("", "remembered")).toBe("remembered");
+  });
+
+  it("returns null when nothing was chosen", () => {
+    expect(preferredTraineeId(null, null)).toBeNull();
+    expect(preferredTraineeId("", "")).toBeNull();
+  });
+});
 
 describe("selectTrainerPreview", () => {
   const alpha = link({

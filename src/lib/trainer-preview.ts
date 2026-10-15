@@ -4,6 +4,16 @@ export interface TrainerLink {
   linkedAt: string;
 }
 
+export function preferredTraineeId(query: string | null, remembered: string | null): string | null {
+  if (query !== null && query.length > 0) {
+    return query;
+  }
+  if (remembered !== null && remembered.length > 0) {
+    return remembered;
+  }
+  return null;
+}
+
 export function selectTrainerPreview(
   links: TrainerLink[],
   traineeId?: string | null,

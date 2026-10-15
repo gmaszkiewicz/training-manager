@@ -42,3 +42,24 @@ export async function linkTraineeByEmail(
     return { ok: false };
   }
 }
+
+export async function searchUnlinkedTrainees(
+  supabase: SupabaseClient<Database>,
+  query: string,
+): Promise<{ ok: true; emails: string[] } | { ok: false }> {
+  if (query.trim() === "") {
+    return { ok: true, emails: [] };
+  }
+
+  try {
+    const { data, error } = await supabase.rpc("search_unlinked_trainee_emails", { p_query: query });
+
+    if (error || !Array.isArray(data) || data.some((email) => typeof email !== "string")) {
+      return { ok: false };
+    }
+
+    return { ok: true, emails: data };
+  } catch {
+    return { ok: false };
+  }
+}
