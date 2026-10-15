@@ -109,6 +109,20 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
     }
   }
 
+  function reopenList() {
+    if (email.trim() === "") {
+      return;
+    }
+    const serial = ++requestSerial.current;
+    void fetchTraineeEmails(email).then((rows) => {
+      if (serial !== requestSerial.current) {
+        return;
+      }
+      setEmails(rows);
+      setOpen(rows.length > 0);
+    });
+  }
+
   function choose(chosen: string) {
     chosenEmail.current = chosen;
     requestSerial.current += 1;
@@ -129,6 +143,8 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
         aria-label="Email"
         placeholder="Find trainee by email"
         value={email}
+        onFocus={reopenList}
+        onPointerDown={reopenList}
         onChange={(event) => {
           onEmailChange(event.currentTarget.value);
         }}
