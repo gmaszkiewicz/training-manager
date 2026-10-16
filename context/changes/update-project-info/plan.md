@@ -210,7 +210,7 @@ Every mapped issue stays `CLOSED`. `#101` and `#105` are not edited.
 
 - `#58` still has `**In scope:**` and `**Out of scope:**` after the Risk line.
 - `#49` still has its `**Test plan:**` line, and its Risk line is the S-14 risk from the roadmap.
-- `#101` is still titled "Current local minute is rejected as later than now" with no labels, and `#105` is still titled "Update the README and sync slice issues to the roadmap" with no labels.
+- `#101` is titled "DEFECT-1: Current local minute is rejected as later than now" with the `bug` label, and `#105` is titled "S-31: Update the README and sync slice issues to the roadmap" with the `slice` label.
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -288,6 +288,6 @@ Accepted during implementation review (F1, Fix A). `a09b8ac` and `83e1e01` add S
 
 #### Manual
 
-- [ ] 2.4 `#58` still has `**In scope:**` and `**Out of scope:**` after the Risk line.
-- [ ] 2.5 `#49` still has its `**Test plan:**` line, and its Risk line is the S-14 risk from the roadmap.
-- [ ] 2.6 `#101` is still titled "Current local minute is rejected as later than now" with no labels, and `#105` is still titled "Update the README and sync slice issues to the roadmap" with no labels.
+- [x] 2.4 `#58` still has `**In scope:**` and `**Out of scope:**` after the Risk line.
+- [x] 2.5 `#49` still has its `**Test plan:**` line, and its Risk line is the S-14 risk from the roadmap.
+- [x] 2.6 `#101` is titled "DEFECT-1: Current local minute is rejected as later than now" with the `bug` label, and `#105` is titled "S-31: Update the README and sync slice issues to the roadmap" with the `slice` label.
