@@ -17,7 +17,7 @@ import {
   type PageSize,
 } from "@/lib/measurement-page";
 import { ensureProfile } from "@/lib/services/ensure-profile";
-import { getMeasurement, readMeasurementPage, readOccupiedMinutes } from "@/lib/services/measurements";
+import { getMeasurement, readMeasurementPage } from "@/lib/services/measurements";
 import { listTrainerLinks } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 import { preferredTraineeId, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
@@ -50,7 +50,6 @@ let entries: MeasurementWithDeltas[] = [];
 let editingEntry: MeasurementEntry | null = null;
 let confirmingEntry: MeasurementEntry | null = null;
 let dates: string[] = [];
-let occupiedMinutes: string[] = [];
 let page = 1;
 let pageCount = 1;
 let pageSize: PageSize = defaultPageSize;
@@ -96,7 +95,6 @@ if (supabase && user) {
           focusId: deleteId ?? editId,
           now,
         });
-        const occupied = await readOccupiedMinutes(supabase, user.id);
         measurementsLoaded = listed.ok;
         if (listed.ok) {
           entries = listed.entries;
@@ -105,9 +103,6 @@ if (supabase && user) {
           pageCount = listed.pageCount;
           pageSize = listed.pageSize;
           month = listed.month;
-        }
-        if (occupied.ok) {
-          occupiedMinutes = occupied.minutes;
         }
         if (editId !== null) {
           const loaded = await getMeasurement(supabase, user.id, editId);
@@ -181,7 +176,6 @@ if (supabase && user) {
       subjectTraineeId={traineeAccountId}
       today={today}
       dates={dates}
-      occupiedMinutes={occupiedMinutes}
       page={page}
       pageCount={pageCount}
       pageSize={pageSize}

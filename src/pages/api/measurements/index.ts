@@ -110,12 +110,15 @@ export const GET: APIRoute = async (context) => {
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
   if (!user) {
+    if (wantsJson(context.request)) {
+      return json({ error: "Sign in required" }, 401);
+    }
     return context.redirect("/auth/signin");
   }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return measurementsError(context, "Supabase is not configured");
+    return saveResponse(context, "Supabase is not configured", 500);
   }
 
   const form = await context.request.formData();

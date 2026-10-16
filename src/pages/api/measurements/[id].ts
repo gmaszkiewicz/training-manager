@@ -35,6 +35,9 @@ function saveResponse(context: Parameters<APIRoute>[0], message: string, status:
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
   if (!user) {
+    if (wantsJson(context.request)) {
+      return json({ error: "Sign in required" }, 401);
+    }
     return context.redirect("/auth/signin");
   }
 

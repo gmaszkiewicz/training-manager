@@ -16,7 +16,6 @@ interface Props {
   subjectTraineeId?: string;
   today?: string;
   dates?: string[];
-  occupiedMinutes?: string[];
   page?: number;
   pageCount?: number;
   pageSize?: PageSize;
@@ -34,7 +33,6 @@ const {
   subjectTraineeId,
   today,
   dates,
-  occupiedMinutes = [],
   page,
   pageCount,
   pageSize,
@@ -55,13 +53,7 @@ const {
     </h1>
     {measurementsLoaded ? (
       <>
-        <MeasurementForm
-          serverError={serverError}
-          idPrefix={idPrefix}
-          entry={editingEntry}
-          occupiedMinutes={occupiedMinutes}
-          client:load
-        />
+        <MeasurementForm serverError={serverError} idPrefix={idPrefix} entry={editingEntry} client:load />
         <MeasurementBrowser
           entries={entries}
           readOnly={false}
