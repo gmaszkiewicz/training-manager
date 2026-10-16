@@ -5,8 +5,8 @@ import HomeActions from "@/components/home/HomeActions";
 const signedIn = Boolean(Astro.locals.user);
 ---
 
-<div class="bg-background text-foreground min-h-screen w-full">
-  <div class="p-4 sm:p-8">
+<div class="bg-background text-foreground flex w-full flex-1 flex-col">
+  <div class="px-4 pt-2 pb-4 sm:px-8 sm:pb-8">
     <Topbar />
 
     <div class="mx-auto flex max-w-4xl flex-col items-center justify-center px-4 py-24 text-center sm:py-32 lg:py-40">
