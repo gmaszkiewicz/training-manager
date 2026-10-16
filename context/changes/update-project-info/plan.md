@@ -282,12 +282,12 @@ Accepted during implementation review (F1, Fix A). `a09b8ac` and `83e1e01` add S
 
 #### Automated
 
-- [x] 2.1 For every row in the map, `gh issue view <n> --repo gmaszkiewicz/training-manager --json title,state,labels,body` shows state `CLOSED`, the Title cell, a `slice` label, and Outcome, Change ID, Slice, PRD refs, Prerequisites, and Risk matching that slice in `context/foundation/roadmap.md`, with Prerequisites `none` when the roadmap value is an em dash.
-- [x] 2.2 `#2` has the `north-star` label, and no other issue in the map has it.
-- [x] 2.3 `#99` still contains `## Notes`. `#85`'s Outcome is the S-26 sentence above and does not contain `copy`. `#49` Prerequisites is `S-04, S-05, S-06`. `#74` Prerequisites is `S-13, S-22`.
+- [x] 2.1 For every row in the map, `gh issue view <n> --repo gmaszkiewicz/training-manager --json title,state,labels,body` shows state `CLOSED`, the Title cell, a `slice` label, and Outcome, Change ID, Slice, PRD refs, Prerequisites, and Risk matching that slice in `context/foundation/roadmap.md`, with Prerequisites `none` when the roadmap value is an em dash. — d8e6048
+- [x] 2.2 `#2` has the `north-star` label, and no other issue in the map has it. — d8e6048
+- [x] 2.3 `#99` still contains `## Notes`. `#85`'s Outcome is the S-26 sentence above and does not contain `copy`. `#49` Prerequisites is `S-04, S-05, S-06`. `#74` Prerequisites is `S-13, S-22`. — d8e6048
 
 #### Manual
 
-- [x] 2.4 `#58` still has `**In scope:**` and `**Out of scope:**` after the Risk line.
-- [x] 2.5 `#49` still has its `**Test plan:**` line, and its Risk line is the S-14 risk from the roadmap.
-- [x] 2.6 `#101` is titled "DEFECT-1: Current local minute is rejected as later than now" with the `bug` label, and `#105` is titled "S-31: Update the README and sync slice issues to the roadmap" with the `slice` label.
+- [x] 2.4 `#58` still has `**In scope:**` and `**Out of scope:**` after the Risk line. — d8e6048
+- [x] 2.5 `#49` still has its `**Test plan:**` line, and its Risk line is the S-14 risk from the roadmap. — d8e6048
+- [x] 2.6 `#101` is titled "DEFECT-1: Current local minute is rejected as later than now" with the `bug` label, and `#105` is titled "S-31: Update the README and sync slice issues to the roadmap" with the `slice` label. — d8e6048
