@@ -1,10 +1,10 @@
 ---
 change_id: some-display-changes
 title: Show inline measurement errors and clearer button states
-status: impl_reviewed
+status: archived
 created: 2026-10-15
 updated: 2026-10-16
-archived_at: null
+archived_at: 2026-10-16T05:18:16Z
 ---
 
 ## Notes
