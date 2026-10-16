@@ -1,7 +1,7 @@
 ---
 change_id: update-project-info
 title: Update the README and sync slice issues to the roadmap
-status: new
+status: planned
 created: 2026-10-16
 updated: 2026-10-16
 archived_at: null
