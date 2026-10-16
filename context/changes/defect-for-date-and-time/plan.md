@@ -203,12 +203,12 @@ No migration. Existing rows stay the wall-clock minute that was stored. A row wh
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Type check passes: `npx astro check`
+- [x] 2.1 Unit tests pass: `npm test` — eba5bab
+- [x] 2.2 Lint passes: `npm run lint` — eba5bab
+- [x] 2.3 Type check passes: `npx astro check` — eba5bab
 
 #### Manual
 
-- [ ] 2.4 A signed-in trainee ahead of UTC can save a new measurement at the current local minute
-- [ ] 2.5 Editing that entry and saving without moving the minute still succeeds
-- [ ] 2.6 The current local minute still reports taken and still loads the previous entry
+- [x] 2.4 A signed-in trainee ahead of UTC can save a new measurement at the current local minute — eba5bab
+- [x] 2.5 Editing that entry and saving without moving the minute still succeeds — eba5bab
+- [x] 2.6 The current local minute still reports taken and still loads the previous entry — eba5bab
