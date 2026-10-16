@@ -1,7 +1,11 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 
-import { createMeasurementInputSchema, DUPLICATE_MEASUREMENT_MESSAGE } from "@/lib/measurement-input";
+import {
+  createMeasurementInputSchema,
+  DUPLICATE_MEASUREMENT_MESSAGE,
+  readUtcOffsetMinutes,
+} from "@/lib/measurement-input";
 import type { PageSize } from "@/lib/measurement-page";
 import { readProfileRole } from "@/lib/services/ensure-profile";
 import { addMeasurement, readMeasurementPage } from "@/lib/services/measurements";
@@ -122,7 +126,11 @@ export const POST: APIRoute = async (context) => {
   }
 
   const form = await context.request.formData();
-  const parsed = createMeasurementInputSchema(new Date()).safeParse({
+  const utcOffsetMinutes = readUtcOffsetMinutes(form.get("utc_offset_minutes"));
+  if (utcOffsetMinutes === null) {
+    return saveResponse(context, "Date and time must be a valid YYYY-MM-DDTHH:mm value.", 400);
+  }
+  const parsed = createMeasurementInputSchema(new Date(), utcOffsetMinutes).safeParse({
     measured_on: form.get("measured_on"),
     weight_kg: form.get("weight_kg"),
     chest_cm: form.get("chest_cm"),

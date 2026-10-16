@@ -237,10 +237,15 @@ function readPreviousBody(value: unknown): PreviousRow | null {
   return { measured_on, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm };
 }
 
+function browserUtcOffsetMinutes(): number {
+  return new Date().getTimezoneOffset();
+}
+
 async function fetchMinuteTaken(minute: string): Promise<boolean | null> {
   try {
     const params = new URLSearchParams();
     params.set("measured_on", minute);
+    params.set("utc_offset_minutes", String(browserUtcOffsetMinutes()));
     const response = await fetch(`/api/measurements/occupied?${params.toString()}`, { cache: "no-store" });
     if (!response.ok) {
       return null;
@@ -258,6 +263,7 @@ async function fetchMinuteTaken(minute: string): Promise<boolean | null> {
 function previousMeasurementUrl(minute: string): string {
   const params = new URLSearchParams();
   params.set("measured_on", minute);
+  params.set("utc_offset_minutes", String(browserUtcOffsetMinutes()));
   return `/api/measurements/previous?${params.toString()}`;
 }
 
@@ -555,7 +561,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const occupiedRequest = useRef(0);
   const dateValue = measuredOn ?? browserMinute;
   const minuteParts = measuredMinuteParts(dateValue);
-  const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date()) : null;
+  const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date(), browserUtcOffsetMinutes()) : null;
   const previousEntry = previousForMinute(loadedPrevious, previewMinute);
   const preview = previousEntry === null ? null : previewAgainst(previousEntry, parsedMeasurementFields(values));
   const previousMinuteCaption =
@@ -715,7 +721,8 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     const duplicate = duplicateMeasurementMessage(dateValue, confirmedTaken.current, entry?.measured_on ?? null);
     const futureDay =
       minuteParts !== null && !allowedMinute(dateValue, ceilingMinute, entryMinute) ? FUTURE_MEASURED_ON_MESSAGE : null;
-    const parsed = createMeasurementInputSchema(new Date()).safeParse({
+    const utcOffsetMinutes = browserUtcOffsetMinutes();
+    const parsed = createMeasurementInputSchema(new Date(), utcOffsetMinutes).safeParse({
       measured_on: dateValue,
       weight_kg: values.weight_kg,
       chest_cm: values.chest_cm,
@@ -749,6 +756,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     const action = event.currentTarget.action;
     const body = new FormData();
     body.set("measured_on", minute);
+    body.set("utc_offset_minutes", String(utcOffsetMinutes));
     for (const field of measurementFields) {
       body.set(field.field, values[field.field]);
     }

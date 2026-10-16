@@ -1,6 +1,10 @@
 import type { APIRoute } from "astro";
 
-import { createMeasurementInputSchema, DUPLICATE_MEASUREMENT_MESSAGE } from "@/lib/measurement-input";
+import {
+  createMeasurementInputSchema,
+  DUPLICATE_MEASUREMENT_MESSAGE,
+  readUtcOffsetMinutes,
+} from "@/lib/measurement-input";
 import { updateMeasurement } from "@/lib/services/measurements";
 import { createClient } from "@/lib/supabase";
 
@@ -53,7 +57,11 @@ export const POST: APIRoute = async (context) => {
   }
 
   const form = await context.request.formData();
-  const parsed = createMeasurementInputSchema(new Date()).safeParse({
+  const utcOffsetMinutes = readUtcOffsetMinutes(form.get("utc_offset_minutes"));
+  if (utcOffsetMinutes === null) {
+    return saveResponse(context, "Date and time must be a valid YYYY-MM-DDTHH:mm value.", 400, measurementId);
+  }
+  const parsed = createMeasurementInputSchema(new Date(), utcOffsetMinutes).safeParse({
     measured_on: form.get("measured_on"),
     weight_kg: form.get("weight_kg"),
     chest_cm: form.get("chest_cm"),
