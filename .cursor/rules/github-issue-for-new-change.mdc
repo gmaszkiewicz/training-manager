@@ -10,6 +10,7 @@ When `/10x-new` creates `context/changes/<change-id>/change.md`, open one issue 
 1. If an open or closed issue already names this Change ID, link that issue. Do not open a second one.
 2. Title:
    - Roadmap slice: `S-NN: <slice heading>`
+   - Defect: `DEFECT-N: <title from change.md>`. `N` is the next integer after the highest `DEFECT-N` already in the tracker. A defect is a change whose id starts with `defect-`, or that the user calls a defect. Do not add it to `context/foundation/roadmap.md`. Add the `bug` label. Do not add `slice` or `north-star`.
    - Test-plan rollout phase: `Test rollout Phase N: <phase name>`
    - Otherwise: the `title` from `change.md`
 3. Body, matching existing issues:
