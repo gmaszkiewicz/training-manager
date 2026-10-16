@@ -27,6 +27,7 @@ import {
   DUPLICATE_MEASUREMENT_MESSAGE,
   duplicateMeasurementMessage,
   measuredOnMax,
+  NOTE_MAX_LENGTH,
   measurementFieldMessage,
   measurementFields,
   parseMeasuredOn,
@@ -888,7 +889,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
             id={`${idPrefix}note`}
             name="note"
             value={note}
-            maxLength={1000}
+            maxLength={NOTE_MAX_LENGTH}
             rows={3}
             className="field-sizing-fixed"
             onChange={(event) => {
@@ -896,8 +897,16 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
               clearError("note");
             }}
             aria-invalid={errors.note ? true : undefined}
+            aria-describedby={`${idPrefix}note-count`}
           />
-          <FieldError message={errors.note} />
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <div className="min-w-0 flex-1 [&_p]:mt-0">
+              <FieldError message={errors.note} />
+            </div>
+            <p id={`${idPrefix}note-count`} className="text-muted-foreground shrink-0 text-xs tabular-nums">
+              {note.length}/{NOTE_MAX_LENGTH}
+            </p>
+          </div>
         </div>
 
         <ServerError message={submitError ?? (serverError === DUPLICATE_MEASUREMENT_MESSAGE ? null : serverError)} />
