@@ -137,6 +137,28 @@ function formatUtcMinute(date: Date): string {
   return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
+/** Same sign as `Date.getTimezoneOffset()`: minutes added to local time to get UTC. */
+const MIN_UTC_OFFSET_MINUTES = -14 * 60;
+const MAX_UTC_OFFSET_MINUTES = 12 * 60;
+
+export function readUtcOffsetMinutes(value: unknown): number | null {
+  if (value === undefined || value === null || value === "") {
+    return 0;
+  }
+  if (typeof value !== "string" || !/^-?\d+$/.test(value)) {
+    return null;
+  }
+  const offset = Number(value);
+  if (offset < MIN_UTC_OFFSET_MINUTES || offset > MAX_UTC_OFFSET_MINUTES) {
+    return null;
+  }
+  return offset;
+}
+
+function wallClockCeiling(now: Date, utcOffsetMinutes: number): string {
+  return formatUtcMinute(new Date(now.getTime() - utcOffsetMinutes * 60 * 1000));
+}
+
 export function measuredOnMax(now: Date): string {
   return `${latestMeasuredOn(now)}T23:59`;
 }
@@ -173,8 +195,8 @@ function isValidCalendarDate(value: string): boolean {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-function measuredOn(now: Date) {
-  const ceiling = formatUtcMinute(now);
+function measuredOn(now: Date, utcOffsetMinutes: number) {
+  const ceiling = wallClockCeiling(now, utcOffsetMinutes);
   return z.unknown().transform((value, ctx): string => {
     if (value === undefined || value === null || value === "") {
       return reject(ctx, "Date and time are required.");
@@ -202,8 +224,8 @@ function measuredOn(now: Date) {
   });
 }
 
-export function parseMeasuredOn(value: unknown, now: Date): string | null {
-  const parsed = measuredOn(now).safeParse(value);
+export function parseMeasuredOn(value: unknown, now: Date, utcOffsetMinutes = 0): string | null {
+  const parsed = measuredOn(now, utcOffsetMinutes).safeParse(value);
   if (!parsed.success) {
     return null;
   }
@@ -232,9 +254,9 @@ function note() {
     });
 }
 
-export function createMeasurementInputSchema(now: Date) {
+export function createMeasurementInputSchema(now: Date, utcOffsetMinutes = 0) {
   return z.object({
-    measured_on: measuredOn(now),
+    measured_on: measuredOn(now, utcOffsetMinutes),
     weight_kg: measurementFieldNumbers.weight_kg,
     chest_cm: measurementFieldNumbers.chest_cm,
     waist_cm: measurementFieldNumbers.waist_cm,
