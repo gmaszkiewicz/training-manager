@@ -258,23 +258,23 @@ The thirty slice issues are edited in place. None are opened, closed, or replace
 
 #### Automated
 
-- [x] 1.1 The H1 is `# Training Manager`, and the fourteen headings listed in the contract are present in that order.
-- [x] 1.2 `README.md` contains none of `10x Astro Starter`, `10x-astro-starter`, or `/dashboard`.
-- [x] 1.3 `README.md` contains `gmaszkiewicz/training-manager`, `/measurements`, `/profile`, `/auth/reset-password`, `npm run test`, and `npm run migration-check`.
-- [x] 1.4 `npx prettier --check README.md` exits 0.
+- [x] 1.1 The H1 is `# Training Manager`, and the fourteen headings listed in the contract are present in that order. — 83e1e01
+- [x] 1.2 `README.md` contains none of `10x Astro Starter`, `10x-astro-starter`, or `/dashboard`. — 83e1e01
+- [x] 1.3 `README.md` contains `gmaszkiewicz/training-manager`, `/measurements`, `/profile`, `/auth/reset-password`, `npm run test`, and `npm run migration-check`. — 83e1e01
+- [x] 1.4 `npx prettier --check README.md` exits 0. — 83e1e01
 
 #### Manual
 
-- [x] 1.5 Getting Started, the Supabase steps, Auth routes, Smoke test, and CI mention only commands and routes that exist in `package.json`, `.github/workflows/ci.yml`, `src/pages`, or `src/middleware.ts`.
-- [x] 1.6 The License section does not claim MIT.
+- [x] 1.5 Getting Started, the Supabase steps, Auth routes, Smoke test, and CI mention only commands and routes that exist in `package.json`, `.github/workflows/ci.yml`, `src/pages`, or `src/middleware.ts`. — 83e1e01
+- [x] 1.6 The License section does not claim MIT. — 83e1e01
 
 ### Phase 2: Slice issues
 
 #### Automated
 
-- [ ] 2.1 For every row in the map, `gh issue view <n> --repo gmaszkiewicz/training-manager --json title,state,labels,body` shows state `CLOSED`, the Title cell, a `slice` label, and Outcome, Change ID, Slice, PRD refs, Prerequisites, and Risk matching that slice in `context/foundation/roadmap.md`, with Prerequisites `none` when the roadmap value is an em dash.
-- [ ] 2.2 `#2` has the `north-star` label, and no other issue in the map has it.
-- [ ] 2.3 `#99` still contains `## Notes`. `#85`'s Outcome is the S-26 sentence above and does not contain `copy`. `#49` Prerequisites is `S-04, S-05, S-06`. `#74` Prerequisites is `S-13, S-22`.
+- [x] 2.1 For every row in the map, `gh issue view <n> --repo gmaszkiewicz/training-manager --json title,state,labels,body` shows state `CLOSED`, the Title cell, a `slice` label, and Outcome, Change ID, Slice, PRD refs, Prerequisites, and Risk matching that slice in `context/foundation/roadmap.md`, with Prerequisites `none` when the roadmap value is an em dash.
+- [x] 2.2 `#2` has the `north-star` label, and no other issue in the map has it.
+- [x] 2.3 `#99` still contains `## Notes`. `#85`'s Outcome is the S-26 sentence above and does not contain `copy`. `#49` Prerequisites is `S-04, S-05, S-06`. `#74` Prerequisites is `S-13, S-22`.
 
 #### Manual
 
