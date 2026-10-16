@@ -1,0 +1,12 @@
+---
+description: Write change.md Notes in English
+alwaysApply: true
+---
+
+# Change notes are English
+
+Write `## Notes` in `context/changes/<change-id>/change.md` and `context/archive/**/change.md` in English.
+
+When `/10x-new` (or any later edit) receives intent in another language, translate it into English for the Notes body. Keep the user's meaning, including constraints. Do not paste the original wording as the notes.
+
+Leave an issue URL in Notes as a bare link. The hint comment stays English when the intent is empty.
