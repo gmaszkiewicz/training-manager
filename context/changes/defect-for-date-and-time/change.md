@@ -1,7 +1,7 @@
 ---
 change_id: defect-for-date-and-time
 title: Current local minute is rejected as later than now
-status: implemented
+status: impl_reviewed
 created: 2026-10-16
 updated: 2026-10-16
 archived_at: null
