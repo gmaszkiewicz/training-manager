@@ -30,7 +30,7 @@ Each of S-01 through S-30 has its existing issue titled `S-NN: <roadmap heading>
 - No edits to `context/foundation/roadmap.md`, including the backlog handoff and its stale `#61` link for S-19.
 - No new README headings, and no new screenshot. The existing `./public/template.png` line stays.
 - No new GitHub issues, no closing or reopening, and no comments on issues.
-- No edits to `#101` (Change ID `defect-for-date-and-time`) or `#105` (this change).
+- `#101` is `DEFECT-1: Current local minute is rejected as later than now` with the `bug` label. `#105` is `S-31: Update the README and sync slice issues to the roadmap` with `slice` and `documentation`, and its Outcome is the S-31 sentence.
 - No `north-star` label on any issue except `#2`.
 - No relocation of extra sentences that live inside Outcome or Risk. `#85`'s copy-values sentence is removed because it is inside Outcome. It is not copied into Notes.
 - No leftover `**Roadmap:**` line once `**Slice:**` and `**PRD refs:**` carry those ids.
@@ -196,7 +196,7 @@ Known results of that rule:
 - `#85` Outcome becomes: `user can see a preview of the difference versus the previous entry, chosen from the date typed for the new entry, while filling in that entry`. The copy-values sentence is not in the body afterward.
 - `#99` still contains `## Notes` after the risk, including the footer note.
 
-Every mapped issue stays `CLOSED`. `#101` and `#105` are not edited.
+Every mapped issue stays `CLOSED`. `#101` keeps the DEFECT-1 title and the `bug` label. `#105` keeps the S-31 title, the `slice` and `documentation` labels, and the S-31 outcome.
 
 ### Success Criteria:
 
@@ -230,7 +230,7 @@ Every mapped issue stays `CLOSED`. `#101` and `#105` are not edited.
 
 1. Read the README from the H1 through License and confirm a clone path, the journal route, and the CI jobs match the repo.
 2. Open `#49`, `#74`, `#85`, `#99`, and `#58` and confirm the field block, the preserved sections, and the removed copy-values sentence.
-3. Confirm `#101` and `#105` were not edited, and that no mapped issue reopened.
+3. Confirm `#101` is titled "DEFECT-1: Current local minute is rejected as later than now" with the `bug` label, `#105` is titled "S-31: Update the README and sync slice issues to the roadmap" with the `slice` label, and no mapped issue reopened.
 
 ## Performance Considerations
 
@@ -238,7 +238,7 @@ README and issue text do not change runtime behavior.
 
 ## Migration Notes
 
-The thirty slice issues are edited in place. None are opened, closed, or replaced. `#101` and `#105` stay as they are.
+The thirty slice issues are edited in place. None are opened, closed, or replaced. `#101` keeps its DEFECT-1 title and `bug` label. `#105` keeps its S-31 title, `slice` and `documentation` labels, and the S-31 outcome.
 
 ## Addendum
 
