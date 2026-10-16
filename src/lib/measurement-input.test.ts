@@ -180,16 +180,19 @@ describe("createMeasurementInputSchema", () => {
     }
   });
 
-  it("accepts UTC today plus one day and rejects plus two days", () => {
+  it("accepts the current UTC minute and rejects a later minute", () => {
     const today = schema.safeParse(validInput({ measured_on: "2026-09-28T12:00" }));
-    const plusOne = schema.safeParse(validInput({ measured_on: "2026-09-29T23:59" }));
-    const plusTwo = schema.safeParse(validInput({ measured_on: "2026-09-30T00:00" }));
+    const nextMinute = schema.safeParse(validInput({ measured_on: "2026-09-28T12:01" }));
+    const tomorrow = schema.safeParse(validInput({ measured_on: "2026-09-29T23:59" }));
 
     expect(today.success).toBe(true);
-    expect(plusOne.success).toBe(true);
-    expect(plusTwo.success).toBe(false);
-    if (!plusTwo.success) {
-      expect(messageFor(plusTwo.error.issues, "measured_on")).toBe("Date must not be later than one day from today");
+    expect(nextMinute.success).toBe(false);
+    expect(tomorrow.success).toBe(false);
+    if (!nextMinute.success) {
+      expect(messageFor(nextMinute.error.issues, "measured_on")).toBe("Date and time must not be later than now");
+    }
+    if (!tomorrow.success) {
+      expect(messageFor(tomorrow.error.issues, "measured_on")).toBe("Date and time must not be later than now");
     }
   });
 
@@ -203,20 +206,20 @@ describe("createMeasurementInputSchema", () => {
     }
   });
 
-  it("accepts the ceiling minute, rejects the next date, and rejects a date-only string", () => {
+  it("accepts the ceiling minute, rejects the next minute, and rejects a date-only string", () => {
     const ceilingNow = new Date("2026-10-06T22:00:00.000Z");
     const ceilingSchema = createMeasurementInputSchema(ceilingNow);
-    const allowed = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-07T23:59" }));
-    const rejected = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-08T00:00" }));
+    const allowed = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-06T22:00" }));
+    const rejected = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-06T22:01" }));
     const dateOnly = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-06" }));
 
     expect(allowed.success).toBe(true);
     if (allowed.success) {
-      expect(allowed.data.measured_on).toBe("2026-10-07T23:59:00");
+      expect(allowed.data.measured_on).toBe("2026-10-06T22:00:00");
     }
     expect(rejected.success).toBe(false);
     if (!rejected.success) {
-      expect(messageFor(rejected.error.issues, "measured_on")).toBe("Date must not be later than one day from today");
+      expect(messageFor(rejected.error.issues, "measured_on")).toBe("Date and time must not be later than now");
     }
     expect(dateOnly.success).toBe(false);
     if (!dateOnly.success) {
@@ -245,7 +248,7 @@ describe("parseMeasuredOn", () => {
   it("returns the normalized minute", () => {
     expect(parseMeasuredOn("2026-10-06T07:30", ceilingNow)).toBe("2026-10-06T07:30:00");
     expect(parseMeasuredOn("2026-10-06T07:30:45", ceilingNow)).toBe("2026-10-06T07:30:00");
-    expect(parseMeasuredOn("2026-10-07T23:59", ceilingNow)).toBe("2026-10-07T23:59:00");
+    expect(parseMeasuredOn("2026-10-06T22:00", ceilingNow)).toBe("2026-10-06T22:00:00");
   });
 
   it("returns null when the minute is empty, malformed, or too late", () => {
@@ -253,6 +256,7 @@ describe("parseMeasuredOn", () => {
     expect(parseMeasuredOn(null, ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-10-06", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-02-29T00:00", ceilingNow)).toBeNull();
+    expect(parseMeasuredOn("2026-10-06T22:01", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-10-08T00:00", ceilingNow)).toBeNull();
   });
 });

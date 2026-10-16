@@ -15,8 +15,10 @@ archived_at: null
 4) Each invalid measurement shows in its own bubble above that column while the column is hovered or focused, and for 3 seconds after Add rejects the form. A leading minus reads "cannot be negative".
 5) A date and time that is already taken shows "A measurement at that date and time already exists." in a bubble above the date as soon as the day or clock changes. The check asks whether that one minute is taken. A 409 keeps the entered values. Only a 200 `{ ok: true }` that was not a redirect counts as saved.
 6) The note shows how many characters are used out of 1000.
+7) The calendar and the clock stop at the current minute. A later minute shows "Date and time must not be later than now". Create and update reject a minute later than the UTC minute of now with that same sentence.
+8) Every layout page shows a footer, "TM (v." plus the package version. Choosing it opens a dialog titled "training-manager" that lists dependency versions from `package.json`.
 
-**View:** the measurements journal on `/measurements`. Errors and the heading live in `src/components/measurements/MeasurementForm.tsx` and `src/components/journal/TraineeJournal.astro`. Pressed and disabled buttons on that same view live in `MonthGrid.tsx`, `MeasurementBrowser.tsx`, and the date popup in `MeasurementForm.tsx`, through `src/components/ui/button.tsx`. One view.
+**View:** the measurements journal on `/measurements`. Errors and the heading live in `src/components/measurements/MeasurementForm.tsx` and `src/components/journal/TraineeJournal.astro`. Pressed and disabled buttons on that same view live in `MonthGrid.tsx`, `MeasurementBrowser.tsx`, and the date popup in `MeasurementForm.tsx`, through `src/components/ui/button.tsx`. The footer lives in `src/components/Footer.astro` and is rendered by `src/layouts/Layout.astro`.
 
 **Token source:** existing design system. Values live in `src/styles/global.css` (`:root` / `.dark`, published through `@theme inline`). Shared components live in `src/components/ui`.
 
