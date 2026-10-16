@@ -128,6 +128,15 @@ function latestMeasuredOn(now: Date): string {
   return formatUtcDate(latest.getUTCFullYear(), latest.getUTCMonth() + 1, latest.getUTCDate());
 }
 
+function formatUtcMinute(date: Date): string {
+  const year = String(date.getUTCFullYear());
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
 export function measuredOnMax(now: Date): string {
   return `${latestMeasuredOn(now)}T23:59`;
 }
@@ -165,7 +174,7 @@ function isValidCalendarDate(value: string): boolean {
 }
 
 function measuredOn(now: Date) {
-  const latest = latestMeasuredOn(now);
+  const ceiling = formatUtcMinute(now);
   return z.unknown().transform((value, ctx): string => {
     if (value === undefined || value === null || value === "") {
       return reject(ctx, "Date and time are required.");
@@ -184,11 +193,11 @@ function measuredOn(now: Date) {
     if (!isValidCalendarDate(date) || hour > 23 || minute > 59 || second > 59) {
       return reject(ctx, "Date and time must be a valid YYYY-MM-DDTHH:mm value.");
     }
-    if (date > latest) {
-      return reject(ctx, "Date must not be later than one day from today");
-    }
     const hourText = match[4];
     const minuteText = match[5];
+    if (`${date}T${hourText}:${minuteText}` > ceiling) {
+      return reject(ctx, "Date and time must not be later than now");
+    }
     return `${date}T${hourText}:${minuteText}:00`;
   });
 }

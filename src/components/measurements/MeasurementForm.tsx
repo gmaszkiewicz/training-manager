@@ -714,9 +714,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     setDateOpen(false);
     const duplicate = duplicateMeasurementMessage(dateValue, confirmedTaken.current, entry?.measured_on ?? null);
     const futureDay =
-      minuteParts !== null && !allowedMinute(dateValue, ceilingMinute, entryMinute)
-        ? FUTURE_MEASURED_ON_MESSAGE
-        : null;
+      minuteParts !== null && !allowedMinute(dateValue, ceilingMinute, entryMinute) ? FUTURE_MEASURED_ON_MESSAGE : null;
     const parsed = createMeasurementInputSchema(new Date()).safeParse({
       measured_on: dateValue,
       weight_kg: values.weight_kg,
