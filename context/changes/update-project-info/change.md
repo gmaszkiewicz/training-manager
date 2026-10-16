@@ -12,4 +12,6 @@ archived_at: null
 1. Update readme.md with the project's current information, keeping the current structure.
 2. Update GitHub issues so each roadmap slice has the `slice` tag, and refresh each issue's information to match the current roadmap. Add `north-star` only when the roadmap marks that slice.
 
+**Slice:** S-31 · **MS-23**
+
 https://github.com/gmaszkiewicz/training-manager/issues/105
