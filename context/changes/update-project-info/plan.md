@@ -240,6 +240,16 @@ README and issue text do not change runtime behavior.
 
 The thirty slice issues are edited in place. None are opened, closed, or replaced. `#101` and `#105` stay as they are.
 
+## Addendum
+
+Accepted during implementation review (F1, Fix A). `a09b8ac` and `83e1e01` add S-31 to the open milestone so M-1 stays open until this change is done. That edit is allowed. The backlog handoff's stale `#61` link for S-19 stays as written.
+
+- MS-23, the S-31 slice row, Stream C `S-07 → S-17 → S-31`, the S-31 block, and the `#105` backlog row may stay in `context/foundation/roadmap.md`.
+- S-31 status may be `in-progress` while this change is open.
+- `context/changes/update-project-info/change.md` may name `**Slice:** S-31 · **MS-23**`.
+
+`ad8a2dc` adds a defect title template to `.cursor/rules/github-issue-for-new-change.mdc` (`DEFECT-N`, `bug` label, no `slice` or `north-star`, and no roadmap row). That commit is unrelated to this change and stays on the branch.
+
 ## References
 
 - Change notes: `context/changes/update-project-info/change.md`
