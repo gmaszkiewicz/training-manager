@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   createMeasurementInputSchema,
+  DUPLICATE_MEASUREMENT_MESSAGE,
+  duplicateMeasurementMessage,
   measurementFieldMessage,
   parseMeasuredOn,
   parseMeasurementField,
@@ -296,5 +298,22 @@ describe("measurementFieldMessage", () => {
       "Weight must be a number with at most one decimal place",
     );
     expect(measurementFieldMessage("weight_kg", "80.")).toBe("Weight must be a number with at most one decimal place");
+  });
+});
+
+describe("duplicateMeasurementMessage", () => {
+  const occupied = ["2026-10-16 04:27:00", "2026-10-13T15:35:00"];
+
+  it("returns the duplicate sentence when the selected minute is taken", () => {
+    expect(duplicateMeasurementMessage("2026-10-16T04:27", occupied)).toBe(DUPLICATE_MEASUREMENT_MESSAGE);
+    expect(duplicateMeasurementMessage("2026-10-13T15:35", occupied)).toBe(DUPLICATE_MEASUREMENT_MESSAGE);
+  });
+
+  it("returns null when the selected minute is free", () => {
+    expect(duplicateMeasurementMessage("2026-10-16T04:28", occupied)).toBeNull();
+  });
+
+  it("returns null when the taken minute belongs to the entry being edited", () => {
+    expect(duplicateMeasurementMessage("2026-10-16T04:27", occupied, "2026-10-16T04:27:00")).toBeNull();
   });
 });
