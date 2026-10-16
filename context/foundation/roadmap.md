@@ -92,7 +92,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-28 | visual-update-for-linked-trainee | user can open a centered email field under Body measurements, click it to list linked trainees, and move through that list with left and right arrows; when more than six trainees are linked, the list scrolls | S-12, S-13, S-27 | MS-20 | done |
 | S-29 | reactive-trainee-search | user can type a character sequence into the trainee search and see matching emails, at most the first 10, without trainees who are already linked, and read Find trainee by email as the field placeholder | S-04, S-13 | MS-21 | done |
 | S-30 | some-display-changes | user can see a field error above Weight kg, Chest cm, and the rest as soon as the value is invalid, with room so that line does not shift the form, and can tell active buttons from inactive ones | S-27 | MS-22 | done |
-| S-31 | update-project-info | a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks | — | MS-23 | in-progress |
+| S-31 | update-project-info | a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks | — | MS-23 | done |
 
 ## Streams
 
@@ -498,7 +498,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Rewriting the README can drop commands contributors still rely on, and retagging slice issues can mislabel work that is not a slice or drop a prerequisite this roadmap still lists.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -587,3 +587,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-28: user can open a centered email field under Body measurements, click it to list linked trainees, and move through that list with left and right arrows; when more than six trainees are linked, the list scrolls** — Archived 2026-10-13 → `context/archive/2026-10-12-visual-update-for-linked-trainee/`. Lesson: —.
 - **S-29: user can type a character sequence into the trainee search and see matching emails, at most the first 10, without trainees who are already linked, and read Find trainee by email as the field placeholder** — Archived 2026-10-15 → `context/archive/2026-10-14-reactive-trainee-search/`. Lesson: —.
 - **S-30: user can see a field error above Weight kg, Chest cm, and the rest as soon as the value is invalid, with room so that line does not shift the form, and can tell active buttons from inactive ones** — Archived 2026-10-16 → `context/archive/2026-10-15-some-display-changes/`. Lesson: —.
+- **S-31: a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks** — Archived 2026-10-16 → `context/archive/2026-10-16-update-project-info/`. Lesson: —.
