@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { MeasurementField } from "@/types";
 
-const NOTE_MAX_LENGTH = 1000;
+export const NOTE_MAX_LENGTH = 1000;
 
 export const DUPLICATE_MEASUREMENT_MESSAGE = "A measurement at that date and time already exists.";
 const ONE_DECIMAL_TEXT = /^\d+(?:[.,]\d)?$/;
