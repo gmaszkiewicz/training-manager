@@ -258,15 +258,15 @@ The thirty slice issues are edited in place. None are opened, closed, or replace
 
 #### Automated
 
-- [ ] 1.1 The H1 is `# Training Manager`, and the fourteen headings listed in the contract are present in that order.
-- [ ] 1.2 `README.md` contains none of `10x Astro Starter`, `10x-astro-starter`, or `/dashboard`.
-- [ ] 1.3 `README.md` contains `gmaszkiewicz/training-manager`, `/measurements`, `/profile`, `/auth/reset-password`, `npm run test`, and `npm run migration-check`.
-- [ ] 1.4 `npx prettier --check README.md` exits 0.
+- [x] 1.1 The H1 is `# Training Manager`, and the fourteen headings listed in the contract are present in that order.
+- [x] 1.2 `README.md` contains none of `10x Astro Starter`, `10x-astro-starter`, or `/dashboard`.
+- [x] 1.3 `README.md` contains `gmaszkiewicz/training-manager`, `/measurements`, `/profile`, `/auth/reset-password`, `npm run test`, and `npm run migration-check`.
+- [x] 1.4 `npx prettier --check README.md` exits 0.
 
 #### Manual
 
-- [ ] 1.5 Getting Started, the Supabase steps, Auth routes, Smoke test, and CI mention only commands and routes that exist in `package.json`, `.github/workflows/ci.yml`, `src/pages`, or `src/middleware.ts`.
-- [ ] 1.6 The License section does not claim MIT.
+- [x] 1.5 Getting Started, the Supabase steps, Auth routes, Smoke test, and CI mention only commands and routes that exist in `package.json`, `.github/workflows/ci.yml`, `src/pages`, or `src/middleware.ts`.
+- [x] 1.6 The License section does not claim MIT.
 
 ### Phase 2: Slice issues
 
