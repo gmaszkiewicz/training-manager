@@ -2,7 +2,9 @@ import { z } from "zod";
 
 import type { MeasurementField } from "@/types";
 
-const NOTE_MAX_LENGTH = 1000;
+export const NOTE_MAX_LENGTH = 1000;
+
+export const DUPLICATE_MEASUREMENT_MESSAGE = "A measurement at that date and time already exists.";
 const ONE_DECIMAL_TEXT = /^\d+(?:[.,]\d)?$/;
 const ONE_DECIMAL_NUMBER = /^\d+(?:\.\d)?$/;
 const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -40,11 +42,21 @@ function reject(ctx: z.RefinementCtx, message: string): never {
   return z.NEVER;
 }
 
+function isNegativeMeasurement(value: unknown): boolean {
+  if (typeof value === "number") {
+    return value < 0;
+  }
+  return typeof value === "string" && value.trimStart().startsWith("-");
+}
+
 function readMeasurementNumber(
   value: unknown,
-): { ok: true; value: number } | { ok: false; reason: "required" | "invalid" } {
+): { ok: true; value: number } | { ok: false; reason: "required" | "negative" | "invalid" } {
   if (value === undefined || value === null || value === "") {
     return { ok: false, reason: "required" };
+  }
+  if (isNegativeMeasurement(value)) {
+    return { ok: false, reason: "negative" };
   }
   if (typeof value === "number") {
     if (!Number.isFinite(value) || !ONE_DECIMAL_NUMBER.test(value.toString())) {
@@ -64,6 +76,9 @@ function measurementNumber(definition: MeasurementFieldDefinition, min: number, 
     if (!parsed.ok) {
       if (parsed.reason === "required") {
         return reject(ctx, `${definition.label} is required`);
+      }
+      if (parsed.reason === "negative") {
+        return reject(ctx, `${definition.label} cannot be negative`);
       }
       return reject(ctx, `${definition.label} must be a number with at most one decimal place`);
     }
@@ -93,6 +108,14 @@ export function parseMeasurementField(field: MeasurementField, value: unknown): 
   return parsed.data;
 }
 
+export function measurementFieldMessage(field: MeasurementField, value: unknown): string | null {
+  const parsed = measurementFieldNumbers[field].safeParse(value);
+  if (parsed.success) {
+    return null;
+  }
+  return parsed.error.issues[0]?.message ?? null;
+}
+
 function formatUtcDate(year: number, month: number, day: number): string {
   const paddedMonth = String(month).padStart(2, "0");
   const paddedDay = String(day).padStart(2, "0");
@@ -105,12 +128,34 @@ function latestMeasuredOn(now: Date): string {
   return formatUtcDate(latest.getUTCFullYear(), latest.getUTCMonth() + 1, latest.getUTCDate());
 }
 
+function formatUtcMinute(date: Date): string {
+  const year = String(date.getUTCFullYear());
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
 export function measuredOnMax(now: Date): string {
   return `${latestMeasuredOn(now)}T23:59`;
 }
 
 export function toMeasuredOnLocalValue(value: string): string {
   return value.replace(" ", "T").slice(0, 16);
+}
+
+export function duplicateMeasurementMessage(
+  minute: string,
+  occupiedMinutes: readonly string[],
+  editingMinute: string | null = null,
+): string | null {
+  const key = toMeasuredOnLocalValue(minute);
+  if (editingMinute !== null && toMeasuredOnLocalValue(editingMinute) === key) {
+    return null;
+  }
+  const taken = occupiedMinutes.some((value) => toMeasuredOnLocalValue(value) === key);
+  return taken ? DUPLICATE_MEASUREMENT_MESSAGE : null;
 }
 
 function isValidCalendarDate(value: string): boolean {
@@ -129,7 +174,7 @@ function isValidCalendarDate(value: string): boolean {
 }
 
 function measuredOn(now: Date) {
-  const latest = latestMeasuredOn(now);
+  const ceiling = formatUtcMinute(now);
   return z.unknown().transform((value, ctx): string => {
     if (value === undefined || value === null || value === "") {
       return reject(ctx, "Date and time are required.");
@@ -148,11 +193,11 @@ function measuredOn(now: Date) {
     if (!isValidCalendarDate(date) || hour > 23 || minute > 59 || second > 59) {
       return reject(ctx, "Date and time must be a valid YYYY-MM-DDTHH:mm value.");
     }
-    if (date > latest) {
-      return reject(ctx, "Date must not be later than one day from today");
-    }
     const hourText = match[4];
     const minuteText = match[5];
+    if (`${date}T${hourText}:${minuteText}` > ceiling) {
+      return reject(ctx, "Date and time must not be later than now");
+    }
     return `${date}T${hourText}:${minuteText}:00`;
   });
 }

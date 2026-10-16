@@ -24,7 +24,10 @@ import { monthGrid, monthLabel } from "@/lib/journal-calendar";
 import { previewAgainst } from "@/lib/measurement-deltas";
 import {
   createMeasurementInputSchema,
-  measuredOnMax,
+  DUPLICATE_MEASUREMENT_MESSAGE,
+  duplicateMeasurementMessage,
+  NOTE_MAX_LENGTH,
+  measurementFieldMessage,
   measurementFields,
   parseMeasuredOn,
   parseMeasurementField,
@@ -85,6 +88,29 @@ function localMinuteSnapshot(): string {
 
 function emptyTodaySnapshot(): string {
   return "";
+}
+
+const FUTURE_MEASURED_ON_MESSAGE = "Date and time must not be later than now";
+
+function formatUtcMinute(date: Date): string {
+  const year = String(date.getUTCFullYear());
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+function localCeilingSnapshot(): string {
+  return formatLocalMinute(new Date());
+}
+
+function utcCeilingSnapshot(): string {
+  return formatUtcMinute(new Date());
+}
+
+function allowedMinute(minute: string, ceilingMinute: string, editingMinute: string | null): boolean {
+  return minute <= ceilingMinute || minute === editingMinute;
 }
 
 const MEASURED_MINUTE = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})$/;
@@ -209,6 +235,24 @@ function readPreviousBody(value: unknown): PreviousRow | null {
     return null;
   }
   return { measured_on, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm };
+}
+
+async function fetchMinuteTaken(minute: string): Promise<boolean | null> {
+  try {
+    const params = new URLSearchParams();
+    params.set("measured_on", minute);
+    const response = await fetch(`/api/measurements/occupied?${params.toString()}`, { cache: "no-store" });
+    if (!response.ok) {
+      return null;
+    }
+    const payload: unknown = await response.json();
+    if (!isRecord(payload) || typeof payload.taken !== "boolean") {
+      return null;
+    }
+    return payload.taken;
+  } catch {
+    return null;
+  }
 }
 
 function previousMeasurementUrl(minute: string): string {
@@ -345,16 +389,20 @@ function ClockPart({
   name,
   value,
   onChange,
+  canStep,
 }: {
   name: "hour" | "minute";
   value: string;
   onChange: (next: string) => void;
+  canStep: (next: string) => boolean;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const caretAtEnd = useRef(false);
   const limit = clockLimit(name);
   const shown = draft ?? value;
+  const nextValue = stepClock(value, 1, limit);
+  const previousValue = stepClock(value, -1, limit);
 
   useEffect(() => {
     if (!caretAtEnd.current) {
@@ -369,10 +417,17 @@ function ClockPart({
     input.setSelectionRange(end, end);
   });
 
+  function apply(next: string) {
+    if (next === value || !canStep(next)) {
+      return;
+    }
+    onChange(next);
+  }
+
   function commit(text: string) {
     const next = typedClock(text, limit);
-    if (next !== null && next !== value) {
-      onChange(next);
+    if (next !== null) {
+      apply(next);
     }
     setDraft(null);
   }
@@ -384,9 +439,10 @@ function ClockPart({
         variant="outline"
         size="icon"
         aria-label={`Next ${name}`}
+        disabled={!canStep(nextValue)}
         onClick={() => {
           setDraft(null);
-          onChange(stepClock(value, 1, limit));
+          apply(nextValue);
         }}
       >
         <ChevronUp aria-hidden="true" />
@@ -416,9 +472,11 @@ function ClockPart({
           if (entered.length === 1) {
             caretAtEnd.current = true;
           }
-          if (next !== value) {
-            onChange(next);
+          if (!canStep(next)) {
+            setDraft(entered);
+            return;
           }
+          apply(next);
           setDraft(next === value ? next : null);
         }}
         onBlur={() => {
@@ -430,9 +488,10 @@ function ClockPart({
         variant="outline"
         size="icon"
         aria-label={`Previous ${name}`}
+        disabled={!canStep(previousValue)}
         onClick={() => {
           setDraft(null);
-          onChange(stepClock(value, -1, limit));
+          apply(previousValue);
         }}
       >
         <ChevronDown aria-hidden="true" />
@@ -454,6 +513,26 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
+function FieldBubble({ id, message, revealed }: { id: string; message: string; revealed: boolean }) {
+  return (
+    <div
+      id={id}
+      className={cn(
+        "border-border bg-popover text-destructive absolute bottom-full left-0 z-30 mb-2 flex w-max max-w-56 items-start gap-1 rounded-md border px-2 py-1 text-xs shadow-md",
+        revealed ? "visible" : "invisible group-focus-within:visible group-hover:visible",
+      )}
+      aria-live="polite"
+    >
+      <CircleAlert className="mt-0.5 size-3 shrink-0" />
+      <span className="min-w-0 break-words">{message}</span>
+      <span
+        aria-hidden
+        className="border-border bg-popover absolute top-full left-3 size-2 -translate-y-1/2 rotate-45 border-r border-b"
+      />
+    </div>
+  );
+}
+
 export default function MeasurementForm({ serverError, idPrefix = "", entry = null }: Props) {
   // SSR runs in UTC. A new entry defaults to the browser's local minute.
   const browserMinute = useSyncExternalStore(subscribeToNothing, localMinuteSnapshot, emptyTodaySnapshot);
@@ -462,10 +541,18 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [values, setValues] = useState(entry ? fieldValues(entry) : emptyValues);
   const [note, setNote] = useState(entry?.note ?? "");
   const [errors, setErrors] = useState<FormErrors>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [loadedPrevious, setLoadedPrevious] = useState<LoadedPrevious | null>(null);
   const [dateOpen, setDateOpen] = useState(false);
   const [gridMonth, setGridMonth] = useState<string | null>(null);
+  const [errorsRevealed, setErrorsRevealed] = useState(false);
+  const [saving, setSaving] = useState(false);
   const dateFieldRef = useRef<HTMLDivElement>(null);
+  const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savingRef = useRef(false);
+  const duplicateMinute = useRef<string | null>(null);
+  const confirmedTaken = useRef<string[]>([]);
+  const occupiedRequest = useRef(0);
   const dateValue = measuredOn ?? browserMinute;
   const minuteParts = measuredMinuteParts(dateValue);
   const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date()) : null;
@@ -475,7 +562,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     previousEntry !== null && measurementFields.some((field) => values[field.field].trim() !== "")
       ? `Against ${previousMinuteLabel(previousEntry.measured_on)}`
       : null;
-  const ceilingDate = measuredOnMax(new Date()).slice(0, 10);
+  // The calendar stops at the browser's local minute. SSR uses the UTC minute so hydration matches.
+  const ceilingMinute = useSyncExternalStore(subscribeToNothing, localCeilingSnapshot, utcCeilingSnapshot);
+  const ceilingDate = ceilingMinute.slice(0, 10);
 
   useEffect(() => {
     if (previewMinute === null) {
@@ -521,13 +610,111 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     };
   }, [dateOpen]);
 
+  useEffect(() => {
+    if (duplicateMinute.current === null || duplicateMinute.current === dateValue) {
+      return;
+    }
+    duplicateMinute.current = null;
+    setErrors((current) =>
+      current.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? { ...current, measured_on: undefined } : current,
+    );
+  }, [dateValue]);
+
+  useEffect(() => {
+    return () => {
+      if (revealTimer.current !== null) {
+        clearTimeout(revealTimer.current);
+      }
+    };
+  }, []);
+
+  function revealErrorsBriefly() {
+    setErrorsRevealed(true);
+    if (revealTimer.current !== null) {
+      clearTimeout(revealTimer.current);
+    }
+    revealTimer.current = setTimeout(() => {
+      setErrorsRevealed(false);
+      revealTimer.current = null;
+    }, 3000);
+  }
+
   function clearError(field: ErrorField) {
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    setErrors((prev) => {
+      if (!prev[field]) {
+        return prev;
+      }
+      return { ...prev, [field]: undefined };
+    });
+  }
+
+  function rememberTaken(minute: string) {
+    const key = toMeasuredOnLocalValue(minute);
+    if (confirmedTaken.current.some((value) => toMeasuredOnLocalValue(value) === key)) {
+      return;
+    }
+    confirmedTaken.current = [...confirmedTaken.current, minute];
+  }
+
+  function showDuplicate(minute: string) {
+    const message = duplicateMeasurementMessage(minute, confirmedTaken.current, entry?.measured_on ?? null);
+    duplicateMinute.current = message === null ? null : minute;
+    setErrors((current) => {
+      if (message !== null) {
+        return current.measured_on === message ? current : { ...current, measured_on: message };
+      }
+      if (current.measured_on !== DUPLICATE_MEASUREMENT_MESSAGE) {
+        return current;
+      }
+      return { ...current, measured_on: undefined };
+    });
+  }
+
+  function applyDuplicate(minute: string) {
+    const request = occupiedRequest.current + 1;
+    occupiedRequest.current = request;
+    showDuplicate(minute);
+    void fetchMinuteTaken(minute).then((taken) => {
+      if (occupiedRequest.current !== request) {
+        return;
+      }
+      if (taken === true) {
+        rememberTaken(minute);
+      }
+      showDuplicate(minute);
+    });
+  }
+
+  function selectMeasuredOn(minute: string) {
+    applyDuplicate(minute);
+    setMeasuredOn(minute);
+    if (allowedMinute(minute, ceilingMinute, entryMinute)) {
+      setErrors((current) => {
+        if (current.measured_on !== FUTURE_MEASURED_ON_MESSAGE) {
+          return current;
+        }
+        return { ...current, measured_on: undefined };
+      });
     }
   }
 
+  function setMeasurementError(field: MeasurementField, value: string) {
+    const message = measurementFieldMessage(field, value);
+    setErrors((current) => {
+      const next = message ?? undefined;
+      if (current[field] === next) {
+        return current;
+      }
+      return { ...current, [field]: next };
+    });
+  }
+
   function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setDateOpen(false);
+    const duplicate = duplicateMeasurementMessage(dateValue, confirmedTaken.current, entry?.measured_on ?? null);
+    const futureDay =
+      minuteParts !== null && !allowedMinute(dateValue, ceilingMinute, entryMinute) ? FUTURE_MEASURED_ON_MESSAGE : null;
     const parsed = createMeasurementInputSchema(new Date()).safeParse({
       measured_on: dateValue,
       weight_kg: values.weight_kg,
@@ -541,10 +728,60 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       note,
     });
 
-    if (!parsed.success) {
-      event.preventDefault();
-      setErrors(errorsFor(parsed.error.issues));
+    if (!parsed.success || duplicate !== null || futureDay !== null) {
+      const next = parsed.success ? {} : errorsFor(parsed.error.issues);
+      if (futureDay !== null) {
+        next.measured_on = futureDay;
+      }
+      if (duplicate !== null) {
+        next.measured_on = duplicate;
+        duplicateMinute.current = dateValue;
+      }
+      setErrors(next);
+      revealErrorsBriefly();
+      return;
     }
+    if (savingRef.current) {
+      return;
+    }
+
+    const minute = dateValue;
+    const action = event.currentTarget.action;
+    const body = new FormData();
+    body.set("measured_on", minute);
+    for (const field of measurementFields) {
+      body.set(field.field, values[field.field]);
+    }
+    body.set("note", note);
+    savingRef.current = true;
+    setSaving(true);
+    setSubmitError(null);
+    void fetch(action, { method: "POST", body, headers: { Accept: "application/json" } })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as { ok?: unknown; error?: unknown } | null;
+        const error = typeof payload?.error === "string" ? payload.error : null;
+        if (response.status === 409 && error === DUPLICATE_MEASUREMENT_MESSAGE) {
+          duplicateMinute.current = minute;
+          rememberTaken(minute);
+          setErrors((current) => ({ ...current, measured_on: DUPLICATE_MEASUREMENT_MESSAGE }));
+          revealErrorsBriefly();
+          savingRef.current = false;
+          setSaving(false);
+          return;
+        }
+        if (response.ok && payload?.ok === true && !response.redirected) {
+          window.location.assign("/measurements");
+          return;
+        }
+        savingRef.current = false;
+        setSaving(false);
+        setSubmitError(error ?? "Could not save the measurement");
+      })
+      .catch(() => {
+        savingRef.current = false;
+        setSaving(false);
+        setSubmitError("Could not save the measurement");
+      });
   }
 
   return (
@@ -557,8 +794,22 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     >
       <div className="space-y-4">
         <div className="flex flex-nowrap items-start gap-2">
-          <div ref={dateFieldRef} className="w-56 max-w-56 min-w-56 shrink-0">
+          <div
+            ref={dateFieldRef}
+            className={cn(
+              "group relative w-56 max-w-56 min-w-56 shrink-0 focus-within:z-40 hover:z-40",
+              errorsRevealed && errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && "z-40",
+              dateOpen && errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && "z-40",
+            )}
+          >
             <div className="relative z-20">
+              {errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? (
+                <FieldBubble
+                  id={`${idPrefix}measured_on-error`}
+                  message={DUPLICATE_MEASUREMENT_MESSAGE}
+                  revealed={errorsRevealed || dateOpen}
+                />
+              ) : null}
               <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
                 Date and time
               </Label>
@@ -574,6 +825,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                   className={cn("w-full justify-start pl-10")}
                   aria-expanded={dateOpen}
                   aria-invalid={errors.measured_on ? true : undefined}
+                  aria-describedby={
+                    errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? `${idPrefix}measured_on-error` : undefined
+                  }
                   onClick={() => {
                     setDateOpen((open) => {
                       if (open) {
@@ -584,6 +838,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                       }
                       return true;
                     });
+                    applyDuplicate(dateValue);
                   }}
                 >
                   {dateValue.replace("T", " ")}
@@ -610,17 +865,23 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                         return;
                       }
                       setGridMonth(day.slice(0, 7));
-                      setMeasuredOn(`${day}T${minuteParts.time}`);
-                      clearError("measured_on");
+                      const kept = `${day}T${minuteParts.time}`;
+                      selectMeasuredOn(allowedMinute(kept, ceilingMinute, entryMinute) ? kept : ceilingMinute);
                     }}
                   />
                   <div className="flex items-center justify-center gap-2" role="group" aria-label="Time">
                     <ClockPart
                       name="hour"
                       value={minuteParts.time.slice(0, 2)}
+                      canStep={(hour) =>
+                        allowedMinute(
+                          `${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`,
+                          ceilingMinute,
+                          entryMinute,
+                        )
+                      }
                       onChange={(hour) => {
-                        setMeasuredOn(`${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`);
-                        clearError("measured_on");
+                        selectMeasuredOn(`${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`);
                       }}
                     />
                     <span aria-hidden className="text-sm font-medium">
@@ -629,16 +890,24 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                     <ClockPart
                       name="minute"
                       value={minuteParts.time.slice(3)}
+                      canStep={(minute) =>
+                        allowedMinute(
+                          `${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`,
+                          ceilingMinute,
+                          entryMinute,
+                        )
+                      }
                       onChange={(minute) => {
-                        setMeasuredOn(`${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`);
-                        clearError("measured_on");
+                        selectMeasuredOn(`${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`);
                       }}
                     />
                   </div>
                 </div>
               ) : null}
             </div>
-            <FieldError message={errors.measured_on} />
+            <FieldError
+              message={errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? undefined : errors.measured_on}
+            />
             {entry === null ? (
               <p
                 className="text-card-foreground mt-1 min-h-lh text-sm font-semibold whitespace-nowrap"
@@ -652,8 +921,17 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
           {measurementFields.map((field) => {
             const delta = preview ? preview[field.field] : null;
             const arrow = delta ? deltaArrow(delta) : null;
+            const message = errors[field.field];
+            const bubbleId = `${idPrefix}${field.field}-error`;
             return (
-              <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0 [&_p]:block [&_p]:break-words">
+              <div
+                key={field.field}
+                className={cn(
+                  "group relative w-28 max-w-28 min-w-28 shrink-0 focus-within:z-40 hover:z-40 [&_p]:block [&_p]:break-words",
+                  errorsRevealed && "z-40",
+                )}
+              >
+                {message ? <FieldBubble id={bubbleId} message={message} revealed={errorsRevealed} /> : null}
                 <FormField
                   id={`${idPrefix}${field.field}`}
                   name={field.field}
@@ -663,9 +941,13 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                   value={values[field.field]}
                   onChange={(value) => {
                     setValues((current) => ({ ...current, [field.field]: value }));
-                    clearError(field.field);
+                    setMeasurementError(field.field, value);
                   }}
-                  error={errors[field.field]}
+                  onBlur={(event) => {
+                    setMeasurementError(field.field, event.currentTarget.value);
+                  }}
+                  invalid={Boolean(message)}
+                  describedBy={message ? bubbleId : undefined}
                   icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
                 />
                 {entry === null ? (
@@ -706,7 +988,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
             id={`${idPrefix}note`}
             name="note"
             value={note}
-            maxLength={1000}
+            maxLength={NOTE_MAX_LENGTH}
             rows={3}
             className="field-sizing-fixed"
             onChange={(event) => {
@@ -714,15 +996,24 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
               clearError("note");
             }}
             aria-invalid={errors.note ? true : undefined}
+            aria-describedby={`${idPrefix}note-count`}
           />
-          <FieldError message={errors.note} />
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <div className="min-w-0 flex-1 [&_p]:mt-0">
+              <FieldError message={errors.note} />
+            </div>
+            <p id={`${idPrefix}note-count`} className="text-muted-foreground shrink-0 text-xs tabular-nums">
+              {note.length}/{NOTE_MAX_LENGTH}
+            </p>
+          </div>
         </div>
 
-        <ServerError message={serverError} />
+        <ServerError message={submitError ?? (serverError === DUPLICATE_MEASUREMENT_MESSAGE ? null : serverError)} />
 
         <SubmitButton
           pendingText={entry ? "Saving measurement..." : "Adding measurement..."}
           icon={<Plus className="size-4" />}
+          forcePending={saving}
         >
           {entry ? "Save measurement" : "Add measurement"}
         </SubmitButton>

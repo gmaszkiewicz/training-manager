@@ -102,10 +102,21 @@ function utcDatePlusDays(days) {
   return `${date.getUTCFullYear()}-${month}-${day}`;
 }
 
+function utcMinute(date) {
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${date.getUTCFullYear()}-${month}-${day}T${hour}:${minute}`;
+}
+
 const futureDate = utcDatePlusDays(2);
 const futureMeasuredOn = `${futureDate}T00:00`;
-const todayMorning = `${utcDatePlusDays(0)}T07:00`;
-const todayEvening = `${utcDatePlusDays(0)}T19:00`;
+const laterInstant = new Date();
+laterInstant.setUTCSeconds(0, 0);
+const earlierInstant = new Date(laterInstant.getTime() - 60 * 1000);
+const earlierMeasuredOn = utcMinute(earlierInstant);
+const laterMeasuredOn = utcMinute(laterInstant);
 const fixtureMonths = ["2024-01", "2024-06", "2026-03"];
 
 function utcCurrentMonth(now = new Date()) {
@@ -381,12 +392,12 @@ const steps = [
   ],
   [
     "measurement saves the first entry",
-    () => request("/api/measurements", { method: "POST", form: measurementForm(todayMorning, "80.0") }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm(earlierMeasuredOn, "80.0") }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
     "measurement saves the second entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm(todayEvening, "78.5", earlierNote) }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm(laterMeasuredOn, "78.5", earlierNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
@@ -399,7 +410,7 @@ const steps = [
     () =>
       request(`/api/measurements/${measurementId}`, {
         method: "POST",
-        form: measurementForm(todayEvening, "78.5", earlierNote),
+        form: measurementForm(laterMeasuredOn, "78.5", earlierNote),
       }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
@@ -413,7 +424,7 @@ const steps = [
     () =>
       request(`/api/measurements/${measurementId}`, {
         method: "POST",
-        form: measurementForm(todayEvening, "81.0", earlierNote),
+        form: measurementForm(laterMeasuredOn, "81.0", earlierNote),
       }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
@@ -532,12 +543,12 @@ const steps = [
   ],
   [
     "second trainee saves the first entry",
-    () => request("/api/measurements", { method: "POST", form: measurementForm(todayMorning, "90.0") }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm(earlierMeasuredOn, "90.0") }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [
     "second trainee saves the second entry with a note",
-    () => request("/api/measurements", { method: "POST", form: measurementForm(todayEvening, "88.0", laterNote) }),
+    () => request("/api/measurements", { method: "POST", form: measurementForm(laterMeasuredOn, "88.0", laterNote) }),
     { status: 302, location: "/measurements", exactLocation: true },
   ],
   [

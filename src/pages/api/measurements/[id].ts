@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-import { createMeasurementInputSchema } from "@/lib/measurement-input";
+import { createMeasurementInputSchema, DUPLICATE_MEASUREMENT_MESSAGE } from "@/lib/measurement-input";
 import { updateMeasurement } from "@/lib/services/measurements";
 import { createClient } from "@/lib/supabase";
 
@@ -14,9 +14,30 @@ function measurementsError(context: Parameters<APIRoute>[0], message: string, ed
   return context.redirect(`/measurements?${query}`);
 }
 
+function wantsJson(request: Request): boolean {
+  return request.headers.get("accept")?.includes("application/json") ?? false;
+}
+
+function json(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
+
+function saveResponse(context: Parameters<APIRoute>[0], message: string, status: number, editId?: string) {
+  if (wantsJson(context.request)) {
+    return json({ error: message }, status);
+  }
+  return measurementsError(context, message, editId);
+}
+
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
   if (!user) {
+    if (wantsJson(context.request)) {
+      return json({ error: "Sign in required" }, 401);
+    }
     return context.redirect("/auth/signin");
   }
 
@@ -24,11 +45,11 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return measurementsError(context, "Supabase is not configured", measurementId);
+    return saveResponse(context, "Supabase is not configured", 500, measurementId);
   }
 
   if (!UUID_PATTERN.test(measurementId)) {
-    return measurementsError(context, "Could not save the measurement");
+    return saveResponse(context, "Could not save the measurement", 400);
   }
 
   const form = await context.request.formData();
@@ -47,16 +68,19 @@ export const POST: APIRoute = async (context) => {
 
   if (!parsed.success) {
     const message = parsed.error.issues[0]?.message ?? "Could not save the measurement";
-    return measurementsError(context, message, measurementId);
+    return saveResponse(context, message, 400, measurementId);
   }
 
   const saved = await updateMeasurement(supabase, user.id, measurementId, parsed.data);
   if (!saved.ok) {
     if (saved.reason === "duplicate") {
-      return measurementsError(context, "A measurement at that date and time already exists.", measurementId);
+      return saveResponse(context, DUPLICATE_MEASUREMENT_MESSAGE, 409, measurementId);
     }
-    return measurementsError(context, "Could not save the measurement", measurementId);
+    return saveResponse(context, "Could not save the measurement", 500, measurementId);
   }
 
+  if (wantsJson(context.request)) {
+    return json({ ok: true }, 200);
+  }
   return context.redirect("/measurements");
 };

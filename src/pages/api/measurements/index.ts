@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 
-import { createMeasurementInputSchema } from "@/lib/measurement-input";
+import { createMeasurementInputSchema, DUPLICATE_MEASUREMENT_MESSAGE } from "@/lib/measurement-input";
 import type { PageSize } from "@/lib/measurement-page";
 import { readProfileRole } from "@/lib/services/ensure-profile";
 import { addMeasurement, readMeasurementPage } from "@/lib/services/measurements";
@@ -15,6 +15,17 @@ const PAGE = /^[1-9]\d{0,8}$/;
 
 function measurementsError(context: Parameters<APIRoute>[0], message: string) {
   return context.redirect(`/measurements?error=${encodeURIComponent(message)}`);
+}
+
+function wantsJson(request: Request): boolean {
+  return request.headers.get("accept")?.includes("application/json") ?? false;
+}
+
+function saveResponse(context: Parameters<APIRoute>[0], message: string, status: number) {
+  if (wantsJson(context.request)) {
+    return json({ error: message }, status);
+  }
+  return measurementsError(context, message);
 }
 
 function json(body: unknown, status: number): Response {
@@ -99,12 +110,15 @@ export const GET: APIRoute = async (context) => {
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
   if (!user) {
+    if (wantsJson(context.request)) {
+      return json({ error: "Sign in required" }, 401);
+    }
     return context.redirect("/auth/signin");
   }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return measurementsError(context, "Supabase is not configured");
+    return saveResponse(context, "Supabase is not configured", 500);
   }
 
   const form = await context.request.formData();
@@ -123,16 +137,19 @@ export const POST: APIRoute = async (context) => {
 
   if (!parsed.success) {
     const message = parsed.error.issues[0]?.message ?? "Could not save the measurement";
-    return measurementsError(context, message);
+    return saveResponse(context, message, 400);
   }
 
   const saved = await addMeasurement(supabase, user.id, parsed.data);
   if (!saved.ok) {
     if (saved.reason === "duplicate") {
-      return measurementsError(context, "A measurement at that date and time already exists.");
+      return saveResponse(context, DUPLICATE_MEASUREMENT_MESSAGE, 409);
     }
-    return measurementsError(context, "Could not save the measurement");
+    return saveResponse(context, "Could not save the measurement", 500);
   }
 
+  if (wantsJson(context.request)) {
+    return json({ ok: true }, 200);
+  }
   return context.redirect("/measurements");
 };
