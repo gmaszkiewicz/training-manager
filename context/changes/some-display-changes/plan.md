@@ -2,7 +2,7 @@
 
 ## Overview
 
-On add and on edit, typing in a measurement field or leaving it shows that field's schema message in a bubble above its column. The bubble is visible while the column is hovered or focused. Clicking Add, when the form is invalid, shows every current measurement bubble for 3 seconds, then they hide again unless hovered or focused. Date and Note stay under their controls and still appear on Add. Shared buttons gain a pressed ring and a muted disabled treatment from existing tokens, so other screens that use those states follow.
+On add and on edit, typing in a measurement field or leaving it shows that field's schema message in a bubble above its column. The bubble is visible while the column is hovered or focused. Clicking Add, when the form is invalid, shows every current measurement bubble for 3 seconds, then they hide again unless hovered or focused. Date and Note errors stay under their controls and appear on Add, except `A measurement at that date and time already exists.` That sentence uses a bubble above the date. It appears when the day or clock changes, stays visible while the picker is open, and is forced visible for 3 seconds after a rejected Add or a 409. Save uses `fetch` with `Accept: application/json`. A 409 keeps the entered values. A 200 `{ ok: true }` navigates to `/measurements`. Shared buttons gain a pressed ring and a muted disabled treatment from existing tokens, so other screens that use those states follow.
 
 ## Current State Analysis
 
@@ -18,7 +18,7 @@ The horizontal-measurements plan left `FormField`'s error paragraph under the in
 
 ## Desired End State
 
-A trainee or trainer opening Add or Edit sees each invalid measurement in its own bubble above that column. An untouched empty form shows no bubbles. Typing an invalid value, or leaving the field with one, sets that field's message. Hovering or focusing the column shows the bubble; leaving it hides the bubble. Add still refuses to save when any field is invalid, and for 3 seconds every measurement bubble is forced visible. Date and Note messages still appear under those controls, and only on Add. An enabled pressed button shows a ring. A disabled button uses muted fill and muted text. Home and sign-in submits stay filled primary while they are enabled.
+A trainee or trainer opening Add or Edit sees each invalid measurement in its own bubble above that column. An untouched empty form shows no bubbles. Typing an invalid value, or leaving the field with one, sets that field's message. Hovering or focusing the column shows the bubble; leaving it hides the bubble. Add still refuses to save when any field is invalid, and for 3 seconds every measurement bubble is forced visible. Date and Note messages still appear under those controls, and only on Add, except the duplicate sentence, which uses the date bubble described above. The note shows `{length}/1000`, and the textarea's `aria-describedby` points at that readout. The date check asks whether that one minute is already taken. An enabled pressed button shows a ring. A disabled button uses muted fill and muted text. Home and sign-in submits stay filled primary while they are enabled.
 
 ### Key Discoveries:
 
@@ -31,7 +31,7 @@ A trainee or trainer opening Add or Edit sees each invalid measurement in its ow
 ## What We're NOT Doing
 
 - Showing errors on the untouched empty form before the user types, blurs, or clicks Add.
-- Putting Date or Note in a measurement bubble, or validating them on blur.
+- Putting the note, or a date error other than the duplicate sentence, in a measurement bubble. Do not validate Date or Note on blur.
 - Changing measurement ranges, column widths, delta colors, or page sizes. The only accepted copy addition is `${label} cannot be negative` for a leading minus.
 - Rewriting `FormField` so auth forms stop rendering `error` under the input.
 - Changing the `default` and `outline` fills.
@@ -40,12 +40,12 @@ A trainee or trainer opening Add or Edit sees each invalid measurement in its ow
 
 ## Implementation Approach
 
-Reuse the existing per-field schema on change and on blur, and the existing full-form parse for Add. Each measurement message renders in a bubble above that column, using `border`, `popover`, and `destructive`. The form does not pass `error` into the measurement `FormField`. Pressed and disabled treatments go on the shared button base classes, using `ring`, `muted`, and `muted-foreground`, so call sites that already set `aria-pressed` or `disabled` pick them up.
+Reuse the existing per-field schema on change and on blur, and the existing full-form parse for Add. Each measurement message renders in a bubble above that column, using `border`, `popover`, and `destructive`. The duplicate date sentence uses that same bubble above the date. The form does not pass `error` into the measurement `FormField`. Save posts with `fetch` and `Accept: application/json`. Pressed and disabled treatments go on the shared button base classes, using `ring`, `muted`, and `muted-foreground`, so call sites that already set `aria-pressed` or `disabled` pick them up.
 
 ## Critical Implementation Details
 
 - **State sequencing** — Change and blur validate only the field that was edited, through `measurementFieldMessage`. Running the full form schema there would mark every empty measurement required, which the untouched-form decision forbids. Submit still replaces the whole error map from the full schema, which fills Date, Note, and every invalid measurement at once, then reveals every measurement bubble for 3 seconds.
-- **User experience spec** — A measurement bubble is `invisible` unless its column is hovered, focused, or the 3-second reveal is active. A day cell can be pressed and disabled together. The pressed ring applies only while the button is enabled.
+- **User experience spec** — A measurement bubble is `invisible` unless its column is hovered, focused, or the 3-second reveal is active. The duplicate date bubble is also visible while the picker is open. A day cell can be pressed and disabled together. The pressed ring applies only while the button is enabled.
 
 ## Phase 1: Reserved measurement error line
 
@@ -53,7 +53,9 @@ Reuse the existing per-field schema on change and on blur, and the existing full
 
 ### Overview
 
-Typing or leaving one of the eight measurement fields records that field's existing schema message. The message renders in a bubble above that column, visible on hover, on focus, and for 3 seconds after a rejected Add. Date and Note stay on the submit path, under their controls. Edit uses the same bubbles.
+Typing or leaving one of the eight measurement fields records that field's existing schema message. The message renders in a bubble above that column, visible on hover, on focus, and for 3 seconds after a rejected Add. Date and Note stay on the submit path, under their controls, except the duplicate sentence, which uses a bubble above the date as soon as the day or clock changes. Edit uses the same bubbles. A 409 keeps the entered values.
+
+> Accepted in implementation review on 2026-10-16 (F1, Fix A): the duplicate date sentence is a bubble and is checked before Add. Progress row 1.8 keeps its original title.
 
 ### Changes Required:
 
@@ -87,7 +89,7 @@ Typing or leaving one of the eight measurement fields records that field's exist
 
 **Intent**: Show each measurement error while typing and on blur, in a bubble above that column. Keep Date and Note under their controls.
 
-**Contract**: Do not render a reserved band. For each measurement column that has a message, render a bubble above the label, absolutely positioned, with the same alert icon as `FieldError`, `aria-live="polite"`, and an id that includes `idPrefix` and the field name. The bubble may wrap. It is visible when the column is hovered or focused, and when a rejected Add has set the 3-second reveal; otherwise it is `invisible`. On measurement change and on blur, set or clear only that field from `measurementFieldMessage`. Do not pass `error` into the measurement `FormField`. Pass `invalid` when that field has a message, and `describedBy` pointing at that field's bubble. Leave the heading `mb-6` in `TraineeJournal.astro` as it is. `handleSubmit` still parses the full form, still prevents Add when any field is invalid, and reveals the measurement bubbles for 3 seconds. Date and Note still render through `FieldError` and are not candidates for a bubble.
+**Contract**: Do not render a reserved band. For each measurement column that has a message, render a bubble above the label, absolutely positioned, with the same alert icon as `FieldError`, `aria-live="polite"`, and an id that includes `idPrefix` and the field name. The bubble may wrap. It is visible when the column is hovered or focused, and when a rejected Add has set the 3-second reveal; otherwise it is `invisible`. On measurement change and on blur, set or clear only that field from `measurementFieldMessage`. Do not pass `error` into the measurement `FormField`. Pass `invalid` when that field has a message, and `describedBy` pointing at that field's bubble. Leave the heading `mb-6` in `TraineeJournal.astro` as it is. `handleSubmit` still parses the full form, still prevents Add when any field is invalid, and reveals the measurement bubbles for 3 seconds. It also blocks Add when the minute is already occupied, reveals the date bubble, and posts with `fetch` and `Accept: application/json`. A 409 keeps the values and shows the same bubble. Date errors other than the duplicate sentence, and Note, still render through `FieldError`. The note shows `{length}/1000`, and the textarea's `aria-describedby` points at that readout.
 
 ### Success Criteria:
 
@@ -103,7 +105,7 @@ Typing or leaving one of the eight measurement fields records that field's exist
 - Untouched add form shows no measurement bubble
 - Typing Weight 8 shows the range message in that column's bubble while the field is focused
 - Weight 12.34 and Chest abc can show both bubbles; each bubble is visible while its column is hovered or focused
-- Date and Note errors stay under those controls and appear on Add
+- Date errors other than the duplicate sentence, and Note errors, stay under those controls and appear on Add. The duplicate sentence uses the date bubble as soon as the day or clock changes, and again for 3 seconds after a 409
 - Edit measurement uses the same bubble after Weight is cleared
 - Add does not save when any measurement is invalid, and forces every current measurement bubble visible for 3 seconds
 
@@ -172,7 +174,7 @@ An enabled pressed button gains a ring from the existing ring token. A disabled 
 1. Open `/measurements` on Add. Confirm no measurement bubble is showing.
 2. Type `8` in Weight. Confirm that column's bubble reads `Weight must be between 20 and 400 kg` while the field is focused, and hides when the field is left.
 3. Set Weight to `12.34` and Chest to `abc`. Confirm each column can show its own bubble while hovered or focused.
-4. Set a date after tomorrow and a note longer than 1000 characters. Confirm those messages appear under the controls on Add, not in a measurement bubble.
+4. Set a date after tomorrow and a note longer than 1000 characters. Confirm those messages appear under the controls on Add, not in a measurement bubble. Set the date to a minute that already has a measurement. Confirm `A measurement at that date and time already exists.` appears in a bubble above the date before Add, and that a 409 keeps the entered values.
 5. Open Edit, clear Weight, and leave the field. Confirm the same bubble. Click Add and confirm every current measurement bubble is forced visible, then hides after 3 seconds.
 6. On the journal, compare a selected day, month, and page size with their outline peers, then a disabled Next month and a disabled day. Confirm the home and sign-in primary buttons are unchanged while enabled.
 

@@ -41,7 +41,6 @@ interface Props {
   serverError?: string | null;
   idPrefix?: string;
   entry?: MeasurementEntry | null;
-  occupiedMinutes?: readonly string[];
 }
 
 type ErrorField = "measured_on" | MeasurementField | "note";
@@ -214,6 +213,24 @@ function readPreviousBody(value: unknown): PreviousRow | null {
     return null;
   }
   return { measured_on, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm };
+}
+
+async function fetchMinuteTaken(minute: string): Promise<boolean | null> {
+  try {
+    const params = new URLSearchParams();
+    params.set("measured_on", minute);
+    const response = await fetch(`/api/measurements/occupied?${params.toString()}`, { cache: "no-store" });
+    if (!response.ok) {
+      return null;
+    }
+    const payload: unknown = await response.json();
+    if (!isRecord(payload) || typeof payload.taken !== "boolean") {
+      return null;
+    }
+    return payload.taken;
+  } catch {
+    return null;
+  }
 }
 
 function previousMeasurementUrl(minute: string): string {
@@ -479,7 +496,7 @@ function FieldBubble({ id, message, revealed }: { id: string; message: string; r
   );
 }
 
-export default function MeasurementForm({ serverError, idPrefix = "", entry = null, occupiedMinutes = [] }: Props) {
+export default function MeasurementForm({ serverError, idPrefix = "", entry = null }: Props) {
   // SSR runs in UTC. A new entry defaults to the browser's local minute.
   const browserMinute = useSyncExternalStore(subscribeToNothing, localMinuteSnapshot, emptyTodaySnapshot);
   const entryMinute = entry ? toMeasuredOnLocalValue(entry.measured_on) : null;
@@ -493,11 +510,12 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [gridMonth, setGridMonth] = useState<string | null>(null);
   const [errorsRevealed, setErrorsRevealed] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [extraOccupied, setExtraOccupied] = useState<string[]>([]);
   const dateFieldRef = useRef<HTMLDivElement>(null);
   const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
   const duplicateMinute = useRef<string | null>(null);
+  const confirmedTaken = useRef<string[]>([]);
+  const occupiedRequest = useRef(0);
   const dateValue = measuredOn ?? browserMinute;
   const minuteParts = measuredMinuteParts(dateValue);
   const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date()) : null;
@@ -591,12 +609,16 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     });
   }
 
-  function applyDuplicate(minute: string) {
-    const message = duplicateMeasurementMessage(
-      minute,
-      [...occupiedMinutes, ...extraOccupied],
-      entry?.measured_on ?? null,
-    );
+  function rememberTaken(minute: string) {
+    const key = toMeasuredOnLocalValue(minute);
+    if (confirmedTaken.current.some((value) => toMeasuredOnLocalValue(value) === key)) {
+      return;
+    }
+    confirmedTaken.current = [...confirmedTaken.current, minute];
+  }
+
+  function showDuplicate(minute: string) {
+    const message = duplicateMeasurementMessage(minute, confirmedTaken.current, entry?.measured_on ?? null);
     duplicateMinute.current = message === null ? null : minute;
     setErrors((current) => {
       if (message !== null) {
@@ -606,6 +628,21 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
         return current;
       }
       return { ...current, measured_on: undefined };
+    });
+  }
+
+  function applyDuplicate(minute: string) {
+    const request = occupiedRequest.current + 1;
+    occupiedRequest.current = request;
+    showDuplicate(minute);
+    void fetchMinuteTaken(minute).then((taken) => {
+      if (occupiedRequest.current !== request) {
+        return;
+      }
+      if (taken === true) {
+        rememberTaken(minute);
+      }
+      showDuplicate(minute);
     });
   }
 
@@ -628,11 +665,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setDateOpen(false);
-    const duplicate = duplicateMeasurementMessage(
-      dateValue,
-      [...occupiedMinutes, ...extraOccupied],
-      entry?.measured_on ?? null,
-    );
+    const duplicate = duplicateMeasurementMessage(dateValue, confirmedTaken.current, entry?.measured_on ?? null);
     const parsed = createMeasurementInputSchema(new Date()).safeParse({
       measured_on: dateValue,
       weight_kg: values.weight_kg,
@@ -673,30 +706,29 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     setSubmitError(null);
     void fetch(action, { method: "POST", body, headers: { Accept: "application/json" } })
       .then(async (response) => {
-        const payload = (await response.json().catch(() => null)) as { error?: unknown } | null;
+        const payload = (await response.json().catch(() => null)) as { ok?: unknown; error?: unknown } | null;
         const error = typeof payload?.error === "string" ? payload.error : null;
         if (response.status === 409 && error === DUPLICATE_MEASUREMENT_MESSAGE) {
           duplicateMinute.current = minute;
-          setExtraOccupied((current) => (current.includes(minute) ? current : [...current, minute]));
+          rememberTaken(minute);
           setErrors((current) => ({ ...current, measured_on: DUPLICATE_MEASUREMENT_MESSAGE }));
           revealErrorsBriefly();
           savingRef.current = false;
           setSaving(false);
           return;
         }
-        if (response.ok) {
+        if (response.ok && payload?.ok === true && !response.redirected) {
           window.location.assign("/measurements");
           return;
         }
         savingRef.current = false;
         setSaving(false);
-        if (error) {
-          setSubmitError(error);
-        }
+        setSubmitError(error ?? "Could not save the measurement");
       })
       .catch(() => {
         savingRef.current = false;
         setSaving(false);
+        setSubmitError("Could not save the measurement");
       });
   }
 

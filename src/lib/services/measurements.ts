@@ -119,18 +119,24 @@ export async function readPreviousMeasurement(
   }
 }
 
-export async function readOccupiedMinutes(
+export async function readMinuteTaken(
   supabase: SupabaseClient<Database>,
   traineeId: string,
-): Promise<{ ok: true; minutes: string[] } | { ok: false }> {
+  measuredOn: string,
+): Promise<{ ok: true; taken: boolean } | { ok: false }> {
   try {
-    const { data, error } = await supabase.from("measurements").select("measured_on").eq("trainee_id", traineeId);
+    const { data, error } = await supabase
+      .from("measurements")
+      .select("id")
+      .eq("trainee_id", traineeId)
+      .eq("measured_on", measuredOn)
+      .maybeSingle();
 
     if (error) {
       return { ok: false };
     }
 
-    return { ok: true, minutes: data.map((row) => row.measured_on) };
+    return { ok: true, taken: data !== null };
   } catch {
     return { ok: false };
   }
