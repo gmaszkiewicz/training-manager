@@ -1,8 +1,8 @@
-# 10x Astro Starter
+# Training Manager
 
 ![](./public/template.png)
 
-A modern, opinionated starter template for building fast, accessible web applications.
+A trainee records body measurements and sees the difference versus the previous entry. A trainer can preview a linked trainee's list.
 
 ## Tech Stack
 
@@ -23,8 +23,8 @@ A modern, opinionated starter template for building fast, accessible web applica
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
+git clone https://github.com/gmaszkiewicz/training-manager.git
+cd training-manager
 ```
 
 2. Install dependencies:
@@ -51,11 +51,17 @@ npm run dev
 
 - `npm run dev` - Start development server (Cloudflare workerd runtime)
 - `npm run build` - Build for production
+- `npm run build:workers` - On `main`, push Supabase migrations, then build; otherwise build only
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint with type-checked rules
 - `npm run lint:fix` - Auto-fix ESLint issues
+- `npm run check:home-tokens` - Check views for literal colours, arbitrary sizes, or palette colours
 - `npm run format` - Run Prettier
 - `npm run smoke` - Smoke test the auth flow against a running server (`BASE_URL`, defaults to `http://localhost:4321`)
+- `npm run migration-check` - Check that the newest local migration leaves a known measurement row unchanged
+- `npm run test` - Run the Vitest suite
+- `npm run deploy` - Build and deploy to Cloudflare Workers
+- `npm run db:types` - Regenerate `src/db/database.types.ts` from local Supabase
 
 ## Project Structure
 
@@ -66,8 +72,12 @@ npm run dev
 │ ├── pages/ # Astro pages
 │ │ └── api/ # API endpoints
 │ ├── components/ # UI components (Astro & React)
+│ ├── lib/ # Shared helpers
 │ └── assets/ # Static assets
 ├── public/ # Public assets
+├── supabase/ # Supabase config and migrations
+├── scripts/ # Contributor scripts
+├── .github/workflows/ # GitHub Actions workflows
 ├── wrangler.jsonc # Cloudflare Workers config
 ```
 
@@ -85,26 +95,20 @@ Requires [Docker](https://www.docker.com/) and ~7 GB RAM.
 cp .env.example .env
 ```
 
-2. Initialize the local Supabase project (creates a `supabase/` config folder):
-
-```bash
-npx supabase init
-```
-
-3. Start the local stack (downloads Docker images on first run):
+2. Start the local stack from the `supabase/` folder already in the repo (downloads Docker images on first run):
 
 ```bash
 npx supabase start
 ```
 
-4. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
+3. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
 
 ```
 SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_KEY=<anon key from CLI output>
 ```
 
-5. To stop the stack when done:
+4. To stop the stack when done:
 
 ```bash
 npx supabase stop
@@ -132,18 +136,20 @@ Migrations reach the hosted project automatically: the Workers Builds build comm
 
 ### Email confirmation in local development
 
-Local Supabase reads `enable_confirmations` under `[auth.email]` in `supabase/config.toml`. It is `false`, so signup returns a session and opens `/dashboard`; smoke and CI rely on that. To test the confirmation flow, set it to `true` and restart with `npx supabase stop && npx supabase start` (the running stack does not reload `config.toml`). Confirmation emails land in Mailpit at `http://127.0.0.1:54324` and link back to `http://localhost:4321`. Set it back to `false` and restart again before running smoke.
+Local Supabase reads `enable_confirmations` under `[auth.email]` in `supabase/config.toml`. It is `false`, so signup returns a session and opens `/measurements`; smoke and CI rely on that. To test the confirmation flow, set it to `true` and restart with `npx supabase stop && npx supabase start` (the running stack does not reload `config.toml`). Confirmation emails land in Mailpit at `http://127.0.0.1:54324` and link back to `http://localhost:4321`. Set it back to `false` and restart again before running smoke.
 
-For a cloud project, the same switch is **Authentication → Email → Confirm email** in the Supabase dashboard. With it on, signup shows `/auth/confirm-email` and the first sign-in after confirming opens `/dashboard`.
+For a cloud project, the same switch is **Authentication → Email → Confirm email** in the Supabase dashboard. With it on, signup shows `/auth/confirm-email` and the first sign-in after confirming opens `/measurements`.
 
 ### Auth routes
 
-| Route                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | "Check your inbox" page, shown after signup when no session is returned |
-| `/dashboard`          | Trainee journal (redirects to `/auth/signin` if unauthenticated)        |
+| Route                  | Description                                                             |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `/auth/signin`         | Email/password sign-in form                                             |
+| `/auth/signup`         | Email/password sign-up form                                             |
+| `/auth/confirm-email`  | "Check your inbox" page, shown after signup when no session is returned |
+| `/auth/reset-password` | Request a reset email or set a new password                             |
+| `/measurements`        | Body measurements (redirects to `/auth/signin` if unauthenticated)      |
+| `/profile`             | Change password (redirects to `/auth/signin` if unauthenticated)        |
 
 Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
 
@@ -175,8 +181,6 @@ BASE_URL=http://localhost:4321 npm run smoke
 
 It needs a reachable Supabase instance (local or cloud) with email confirmation disabled.
 
-> **Note:** this script exists primarily to guard the development of the starter itself — it is a fast sanity check that dependency upgrades did not break the build, the Cloudflare adapter or the Supabase auth flow. It is **not** a substitute for a real test suite. Once you build your own product on top of this starter, add proper tests (unit, integration, end-to-end) suited to your application.
-
 ## CI
 
 GitHub Actions is a quality gate only. It does not deploy. On every push and PR to `main`:
@@ -184,9 +188,10 @@ GitHub Actions is a quality gate only. It does not deploy. On every push and PR 
 - **ci** — lint, `npm run check:home-tokens`, `npx astro check`, `npm test`, and `npm run build`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
 - **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No repository secrets.
 - **e2e** — starts the same local Supabase, creates a throwaway trainee, and runs `npx playwright test`. Playwright builds and serves the preview. The HTML report is uploaded as the `playwright-report` artifact. No repository secrets.
+- **migration-check** — starts local Supabase, then runs `npm run migration-check`.
 
 Production deploys run in Cloudflare Workers Builds when `main` is pushed.
 
 ## License
 
-MIT
+This repository does not declare a license.
