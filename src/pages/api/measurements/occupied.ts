@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-import { parseMeasuredOn } from "@/lib/measurement-input";
+import { parseMeasuredOn, readUtcOffsetMinutes } from "@/lib/measurement-input";
 import { readProfileRole } from "@/lib/services/ensure-profile";
 import { readMinuteTaken } from "@/lib/services/measurements";
 import { createClient } from "@/lib/supabase";
@@ -30,7 +30,12 @@ export const GET: APIRoute = async (context) => {
     return json({ error: "Could not open your journal" }, 403);
   }
 
-  const measuredOn = parseMeasuredOn(new URL(context.request.url).searchParams.get("measured_on"), new Date());
+  const url = new URL(context.request.url);
+  const utcOffsetMinutes = readUtcOffsetMinutes(url.searchParams.get("utc_offset_minutes"));
+  const measuredOn =
+    utcOffsetMinutes === null
+      ? null
+      : parseMeasuredOn(url.searchParams.get("measured_on"), new Date(), utcOffsetMinutes);
   if (measuredOn === null) {
     return json({ error: "Invalid date and time" }, 400);
   }
