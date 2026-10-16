@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { MeasurementField } from "@/types";
 
 const NOTE_MAX_LENGTH = 1000;
+
+export const DUPLICATE_MEASUREMENT_MESSAGE = "A measurement at that date and time already exists.";
 const ONE_DECIMAL_TEXT = /^\d+(?:[.,]\d)?$/;
 const ONE_DECIMAL_NUMBER = /^\d+(?:\.\d)?$/;
 const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -132,6 +134,19 @@ export function measuredOnMax(now: Date): string {
 
 export function toMeasuredOnLocalValue(value: string): string {
   return value.replace(" ", "T").slice(0, 16);
+}
+
+export function duplicateMeasurementMessage(
+  minute: string,
+  occupiedMinutes: readonly string[],
+  editingMinute: string | null = null,
+): string | null {
+  const key = toMeasuredOnLocalValue(minute);
+  if (editingMinute !== null && toMeasuredOnLocalValue(editingMinute) === key) {
+    return null;
+  }
+  const taken = occupiedMinutes.some((value) => toMeasuredOnLocalValue(value) === key);
+  return taken ? DUPLICATE_MEASUREMENT_MESSAGE : null;
 }
 
 function isValidCalendarDate(value: string): boolean {

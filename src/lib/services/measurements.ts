@@ -119,6 +119,23 @@ export async function readPreviousMeasurement(
   }
 }
 
+export async function readOccupiedMinutes(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+): Promise<{ ok: true; minutes: string[] } | { ok: false }> {
+  try {
+    const { data, error } = await supabase.from("measurements").select("measured_on").eq("trainee_id", traineeId);
+
+    if (error) {
+      return { ok: false };
+    }
+
+    return { ok: true, minutes: data.map((row) => row.measured_on) };
+  } catch {
+    return { ok: false };
+  }
+}
+
 async function countNewerInMonth(
   supabase: SupabaseClient<Database>,
   traineeId: string,
