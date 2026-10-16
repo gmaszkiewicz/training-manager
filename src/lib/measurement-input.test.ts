@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { createMeasurementInputSchema, parseMeasuredOn, parseMeasurementField } from "@/lib/measurement-input";
+import {
+  createMeasurementInputSchema,
+  DUPLICATE_MEASUREMENT_MESSAGE,
+  duplicateMeasurementMessage,
+  measurementFieldMessage,
+  parseMeasuredOn,
+  parseMeasurementField,
+} from "@/lib/measurement-input";
 
 const now = new Date("2026-09-28T12:00:00.000Z");
 
@@ -109,6 +116,16 @@ describe("createMeasurementInputSchema", () => {
     }
   });
 
+  it("rejects a negative value instead of treating the sign as a bad decimal", () => {
+    for (const weight of ["-8", -8, "-12.34"]) {
+      const result = schema.safeParse(validInput({ weight_kg: weight }));
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(messageFor(result.error.issues, "weight_kg")).toBe("Weight cannot be negative");
+      }
+    }
+  });
+
   it("rejects more than one decimal place instead of rounding", () => {
     for (const weight of ["80.25", 80.25]) {
       const result = schema.safeParse(validInput({ weight_kg: weight }));
@@ -163,16 +180,19 @@ describe("createMeasurementInputSchema", () => {
     }
   });
 
-  it("accepts UTC today plus one day and rejects plus two days", () => {
+  it("accepts the current UTC minute and rejects a later minute", () => {
     const today = schema.safeParse(validInput({ measured_on: "2026-09-28T12:00" }));
-    const plusOne = schema.safeParse(validInput({ measured_on: "2026-09-29T23:59" }));
-    const plusTwo = schema.safeParse(validInput({ measured_on: "2026-09-30T00:00" }));
+    const nextMinute = schema.safeParse(validInput({ measured_on: "2026-09-28T12:01" }));
+    const tomorrow = schema.safeParse(validInput({ measured_on: "2026-09-29T23:59" }));
 
     expect(today.success).toBe(true);
-    expect(plusOne.success).toBe(true);
-    expect(plusTwo.success).toBe(false);
-    if (!plusTwo.success) {
-      expect(messageFor(plusTwo.error.issues, "measured_on")).toBe("Date must not be later than one day from today");
+    expect(nextMinute.success).toBe(false);
+    expect(tomorrow.success).toBe(false);
+    if (!nextMinute.success) {
+      expect(messageFor(nextMinute.error.issues, "measured_on")).toBe("Date and time must not be later than now");
+    }
+    if (!tomorrow.success) {
+      expect(messageFor(tomorrow.error.issues, "measured_on")).toBe("Date and time must not be later than now");
     }
   });
 
@@ -186,20 +206,20 @@ describe("createMeasurementInputSchema", () => {
     }
   });
 
-  it("accepts the ceiling minute, rejects the next date, and rejects a date-only string", () => {
+  it("accepts the ceiling minute, rejects the next minute, and rejects a date-only string", () => {
     const ceilingNow = new Date("2026-10-06T22:00:00.000Z");
     const ceilingSchema = createMeasurementInputSchema(ceilingNow);
-    const allowed = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-07T23:59" }));
-    const rejected = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-08T00:00" }));
+    const allowed = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-06T22:00" }));
+    const rejected = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-06T22:01" }));
     const dateOnly = ceilingSchema.safeParse(validInput({ measured_on: "2026-10-06" }));
 
     expect(allowed.success).toBe(true);
     if (allowed.success) {
-      expect(allowed.data.measured_on).toBe("2026-10-07T23:59:00");
+      expect(allowed.data.measured_on).toBe("2026-10-06T22:00:00");
     }
     expect(rejected.success).toBe(false);
     if (!rejected.success) {
-      expect(messageFor(rejected.error.issues, "measured_on")).toBe("Date must not be later than one day from today");
+      expect(messageFor(rejected.error.issues, "measured_on")).toBe("Date and time must not be later than now");
     }
     expect(dateOnly.success).toBe(false);
     if (!dateOnly.success) {
@@ -228,7 +248,7 @@ describe("parseMeasuredOn", () => {
   it("returns the normalized minute", () => {
     expect(parseMeasuredOn("2026-10-06T07:30", ceilingNow)).toBe("2026-10-06T07:30:00");
     expect(parseMeasuredOn("2026-10-06T07:30:45", ceilingNow)).toBe("2026-10-06T07:30:00");
-    expect(parseMeasuredOn("2026-10-07T23:59", ceilingNow)).toBe("2026-10-07T23:59:00");
+    expect(parseMeasuredOn("2026-10-06T22:00", ceilingNow)).toBe("2026-10-06T22:00:00");
   });
 
   it("returns null when the minute is empty, malformed, or too late", () => {
@@ -236,6 +256,7 @@ describe("parseMeasuredOn", () => {
     expect(parseMeasuredOn(null, ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-10-06", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-02-29T00:00", ceilingNow)).toBeNull();
+    expect(parseMeasuredOn("2026-10-06T22:01", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-10-08T00:00", ceilingNow)).toBeNull();
   });
 });
@@ -251,5 +272,52 @@ describe("parseMeasurementField", () => {
     expect(parseMeasurementField("weight_kg", "78.55")).toBeNull();
     expect(parseMeasurementField("weight_kg", 19.9)).toBeNull();
     expect(parseMeasurementField("chest_cm", "60")).toBe(60);
+  });
+});
+
+describe("measurementFieldMessage", () => {
+  it("returns the required sentence for an empty weight", () => {
+    expect(measurementFieldMessage("weight_kg", "")).toBe("Weight is required");
+  });
+
+  it("returns null when the weight is in range", () => {
+    expect(measurementFieldMessage("weight_kg", 80)).toBeNull();
+    expect(measurementFieldMessage("weight_kg", "80")).toBeNull();
+  });
+
+  it("returns the range sentence below the weight minimum", () => {
+    expect(measurementFieldMessage("weight_kg", 8)).toBe("Weight must be between 20 and 400 kg");
+  });
+
+  it("returns the negative sentence for a signed weight", () => {
+    expect(measurementFieldMessage("weight_kg", "-8")).toBe("Weight cannot be negative");
+    expect(measurementFieldMessage("weight_kg", -8)).toBe("Weight cannot be negative");
+    expect(measurementFieldMessage("weight_kg", "-12.34")).toBe("Weight cannot be negative");
+    expect(measurementFieldMessage("chest_cm", "-1")).toBe("Chest cannot be negative");
+  });
+
+  it("returns the decimal sentence for more than one place or a trailing separator", () => {
+    expect(measurementFieldMessage("weight_kg", 12.34)).toBe("Weight must be a number with at most one decimal place");
+    expect(measurementFieldMessage("weight_kg", "12.34")).toBe(
+      "Weight must be a number with at most one decimal place",
+    );
+    expect(measurementFieldMessage("weight_kg", "80.")).toBe("Weight must be a number with at most one decimal place");
+  });
+});
+
+describe("duplicateMeasurementMessage", () => {
+  const occupied = ["2026-10-16 04:27:00", "2026-10-13T15:35:00"];
+
+  it("returns the duplicate sentence when the selected minute is taken", () => {
+    expect(duplicateMeasurementMessage("2026-10-16T04:27", occupied)).toBe(DUPLICATE_MEASUREMENT_MESSAGE);
+    expect(duplicateMeasurementMessage("2026-10-13T15:35", occupied)).toBe(DUPLICATE_MEASUREMENT_MESSAGE);
+  });
+
+  it("returns null when the selected minute is free", () => {
+    expect(duplicateMeasurementMessage("2026-10-16T04:28", occupied)).toBeNull();
+  });
+
+  it("returns null when the taken minute belongs to the entry being edited", () => {
+    expect(duplicateMeasurementMessage("2026-10-16T04:27", occupied, "2026-10-16T04:27:00")).toBeNull();
   });
 });

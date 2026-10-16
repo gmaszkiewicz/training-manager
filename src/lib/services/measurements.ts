@@ -119,6 +119,29 @@ export async function readPreviousMeasurement(
   }
 }
 
+export async function readMinuteTaken(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  measuredOn: string,
+): Promise<{ ok: true; taken: boolean } | { ok: false }> {
+  try {
+    const { data, error } = await supabase
+      .from("measurements")
+      .select("id")
+      .eq("trainee_id", traineeId)
+      .eq("measured_on", measuredOn)
+      .maybeSingle();
+
+    if (error) {
+      return { ok: false };
+    }
+
+    return { ok: true, taken: data !== null };
+  } catch {
+    return { ok: false };
+  }
+}
+
 async function countNewerInMonth(
   supabase: SupabaseClient<Database>,
   traineeId: string,
