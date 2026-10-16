@@ -26,7 +26,6 @@ import {
   createMeasurementInputSchema,
   DUPLICATE_MEASUREMENT_MESSAGE,
   duplicateMeasurementMessage,
-  measuredOnMax,
   NOTE_MAX_LENGTH,
   measurementFieldMessage,
   measurementFields,
@@ -89,6 +88,29 @@ function localMinuteSnapshot(): string {
 
 function emptyTodaySnapshot(): string {
   return "";
+}
+
+const FUTURE_MEASURED_ON_MESSAGE = "Date and time must not be later than now";
+
+function formatUtcMinute(date: Date): string {
+  const year = String(date.getUTCFullYear());
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+function localCeilingSnapshot(): string {
+  return formatLocalMinute(new Date());
+}
+
+function utcCeilingSnapshot(): string {
+  return formatUtcMinute(new Date());
+}
+
+function allowedMinute(minute: string, ceilingMinute: string, editingMinute: string | null): boolean {
+  return minute <= ceilingMinute || minute === editingMinute;
 }
 
 const MEASURED_MINUTE = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})$/;
@@ -367,16 +389,20 @@ function ClockPart({
   name,
   value,
   onChange,
+  canStep,
 }: {
   name: "hour" | "minute";
   value: string;
   onChange: (next: string) => void;
+  canStep: (next: string) => boolean;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const caretAtEnd = useRef(false);
   const limit = clockLimit(name);
   const shown = draft ?? value;
+  const nextValue = stepClock(value, 1, limit);
+  const previousValue = stepClock(value, -1, limit);
 
   useEffect(() => {
     if (!caretAtEnd.current) {
@@ -391,10 +417,17 @@ function ClockPart({
     input.setSelectionRange(end, end);
   });
 
+  function apply(next: string) {
+    if (next === value || !canStep(next)) {
+      return;
+    }
+    onChange(next);
+  }
+
   function commit(text: string) {
     const next = typedClock(text, limit);
-    if (next !== null && next !== value) {
-      onChange(next);
+    if (next !== null) {
+      apply(next);
     }
     setDraft(null);
   }
@@ -406,9 +439,10 @@ function ClockPart({
         variant="outline"
         size="icon"
         aria-label={`Next ${name}`}
+        disabled={!canStep(nextValue)}
         onClick={() => {
           setDraft(null);
-          onChange(stepClock(value, 1, limit));
+          apply(nextValue);
         }}
       >
         <ChevronUp aria-hidden="true" />
@@ -438,9 +472,11 @@ function ClockPart({
           if (entered.length === 1) {
             caretAtEnd.current = true;
           }
-          if (next !== value) {
-            onChange(next);
+          if (!canStep(next)) {
+            setDraft(entered);
+            return;
           }
+          apply(next);
           setDraft(next === value ? next : null);
         }}
         onBlur={() => {
@@ -452,9 +488,10 @@ function ClockPart({
         variant="outline"
         size="icon"
         aria-label={`Previous ${name}`}
+        disabled={!canStep(previousValue)}
         onClick={() => {
           setDraft(null);
-          onChange(stepClock(value, -1, limit));
+          apply(previousValue);
         }}
       >
         <ChevronDown aria-hidden="true" />
@@ -525,7 +562,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     previousEntry !== null && measurementFields.some((field) => values[field.field].trim() !== "")
       ? `Against ${previousMinuteLabel(previousEntry.measured_on)}`
       : null;
-  const ceilingDate = measuredOnMax(new Date()).slice(0, 10);
+  // The calendar stops at the browser's local minute. SSR uses the UTC minute so hydration matches.
+  const ceilingMinute = useSyncExternalStore(subscribeToNothing, localCeilingSnapshot, utcCeilingSnapshot);
+  const ceilingDate = ceilingMinute.slice(0, 10);
 
   useEffect(() => {
     if (previewMinute === null) {
@@ -649,6 +688,14 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   function selectMeasuredOn(minute: string) {
     applyDuplicate(minute);
     setMeasuredOn(minute);
+    if (allowedMinute(minute, ceilingMinute, entryMinute)) {
+      setErrors((current) => {
+        if (current.measured_on !== FUTURE_MEASURED_ON_MESSAGE) {
+          return current;
+        }
+        return { ...current, measured_on: undefined };
+      });
+    }
   }
 
   function setMeasurementError(field: MeasurementField, value: string) {
@@ -666,6 +713,10 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     event.preventDefault();
     setDateOpen(false);
     const duplicate = duplicateMeasurementMessage(dateValue, confirmedTaken.current, entry?.measured_on ?? null);
+    const futureDay =
+      minuteParts !== null && !allowedMinute(dateValue, ceilingMinute, entryMinute)
+        ? FUTURE_MEASURED_ON_MESSAGE
+        : null;
     const parsed = createMeasurementInputSchema(new Date()).safeParse({
       measured_on: dateValue,
       weight_kg: values.weight_kg,
@@ -679,8 +730,11 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       note,
     });
 
-    if (!parsed.success || duplicate !== null) {
+    if (!parsed.success || duplicate !== null || futureDay !== null) {
       const next = parsed.success ? {} : errorsFor(parsed.error.issues);
+      if (futureDay !== null) {
+        next.measured_on = futureDay;
+      }
       if (duplicate !== null) {
         next.measured_on = duplicate;
         duplicateMinute.current = dateValue;
@@ -813,13 +867,21 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                         return;
                       }
                       setGridMonth(day.slice(0, 7));
-                      selectMeasuredOn(`${day}T${minuteParts.time}`);
+                      const kept = `${day}T${minuteParts.time}`;
+                      selectMeasuredOn(allowedMinute(kept, ceilingMinute, entryMinute) ? kept : ceilingMinute);
                     }}
                   />
                   <div className="flex items-center justify-center gap-2" role="group" aria-label="Time">
                     <ClockPart
                       name="hour"
                       value={minuteParts.time.slice(0, 2)}
+                      canStep={(hour) =>
+                        allowedMinute(
+                          `${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`,
+                          ceilingMinute,
+                          entryMinute,
+                        )
+                      }
                       onChange={(hour) => {
                         selectMeasuredOn(`${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`);
                       }}
@@ -830,6 +892,13 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                     <ClockPart
                       name="minute"
                       value={minuteParts.time.slice(3)}
+                      canStep={(minute) =>
+                        allowedMinute(
+                          `${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`,
+                          ceilingMinute,
+                          entryMinute,
+                        )
+                      }
                       onChange={(minute) => {
                         selectMeasuredOn(`${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`);
                       }}
