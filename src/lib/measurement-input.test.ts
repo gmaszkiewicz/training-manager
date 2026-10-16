@@ -7,6 +7,7 @@ import {
   measurementFieldMessage,
   parseMeasuredOn,
   parseMeasurementField,
+  readUtcOffsetMinutes,
 } from "@/lib/measurement-input";
 
 const now = new Date("2026-09-28T12:00:00.000Z");
@@ -229,6 +230,75 @@ describe("createMeasurementInputSchema", () => {
     }
   });
 
+  it("accepts the current local minute when that clock is ahead of UTC", () => {
+    const utcNow = new Date("2026-10-16T05:24:00.000Z");
+    const schemaForPoland = createMeasurementInputSchema(utcNow, -120);
+    const current = schemaForPoland.safeParse(validInput({ measured_on: "2026-10-16T07:24" }));
+    const nextMinute = schemaForPoland.safeParse(validInput({ measured_on: "2026-10-16T07:25" }));
+
+    expect(current.success).toBe(true);
+    if (current.success) {
+      expect(current.data.measured_on).toBe("2026-10-16T07:24:00");
+    }
+    expect(nextMinute.success).toBe(false);
+    if (!nextMinute.success) {
+      expect(messageFor(nextMinute.error.issues, "measured_on")).toBe("Date and time must not be later than now");
+    }
+  });
+
+  it("accepts the local minute after UTC midnight", () => {
+    const utcNow = new Date("2026-10-16T23:30:00.000Z");
+    const schemaForPoland = createMeasurementInputSchema(utcNow, -120);
+    const current = schemaForPoland.safeParse(validInput({ measured_on: "2026-10-17T01:30" }));
+    const nextMinute = schemaForPoland.safeParse(validInput({ measured_on: "2026-10-17T01:31" }));
+
+    expect(current.success).toBe(true);
+    if (current.success) {
+      expect(current.data.measured_on).toBe("2026-10-17T01:30:00");
+    }
+    expect(nextMinute.success).toBe(false);
+    if (!nextMinute.success) {
+      expect(messageFor(nextMinute.error.issues, "measured_on")).toBe("Date and time must not be later than now");
+    }
+  });
+
+  it("accepts the current local minute when the zone is behind UTC", () => {
+    const utcNow = new Date("2026-10-16T15:00:00.000Z");
+    const behindUtc = createMeasurementInputSchema(utcNow, 300);
+    const current = behindUtc.safeParse(validInput({ measured_on: "2026-10-16T10:00" }));
+    const nextMinute = behindUtc.safeParse(validInput({ measured_on: "2026-10-16T10:01" }));
+    const utcMinute = behindUtc.safeParse(validInput({ measured_on: "2026-10-16T15:00" }));
+
+    expect(current.success).toBe(true);
+    if (current.success) {
+      expect(current.data.measured_on).toBe("2026-10-16T10:00:00");
+    }
+    expect(nextMinute.success).toBe(false);
+    if (!nextMinute.success) {
+      expect(messageFor(nextMinute.error.issues, "measured_on")).toBe("Date and time must not be later than now");
+    }
+    expect(utcMinute.success).toBe(false);
+    if (!utcMinute.success) {
+      expect(messageFor(utcMinute.error.issues, "measured_on")).toBe("Date and time must not be later than now");
+    }
+  });
+
+  it("keeps the UTC minute ceiling when the offset is omitted", () => {
+    const utcNow = new Date("2026-10-16T05:24:00.000Z");
+    const utcSchema = createMeasurementInputSchema(utcNow);
+    const current = utcSchema.safeParse(validInput({ measured_on: "2026-10-16T05:24" }));
+    const localAhead = utcSchema.safeParse(validInput({ measured_on: "2026-10-16T07:24" }));
+
+    expect(current.success).toBe(true);
+    if (current.success) {
+      expect(current.data.measured_on).toBe("2026-10-16T05:24:00");
+    }
+    expect(localAhead.success).toBe(false);
+    if (!localAhead.success) {
+      expect(messageFor(localAhead.error.issues, "measured_on")).toBe("Date and time must not be later than now");
+    }
+  });
+
   it("zeros seconds instead of rounding", () => {
     const ceilingNow = new Date("2026-10-06T22:00:00.000Z");
     const result = createMeasurementInputSchema(ceilingNow).safeParse(
@@ -251,6 +321,13 @@ describe("parseMeasuredOn", () => {
     expect(parseMeasuredOn("2026-10-06T22:00", ceilingNow)).toBe("2026-10-06T22:00:00");
   });
 
+  it("accepts the local wall clock of now", () => {
+    const utcNow = new Date("2026-10-16T05:24:00.000Z");
+    expect(parseMeasuredOn("2026-10-16T07:24", utcNow, -120)).toBe("2026-10-16T07:24:00");
+    expect(parseMeasuredOn("2026-10-16T07:25", utcNow, -120)).toBeNull();
+    expect(parseMeasuredOn("2026-10-16T05:24", utcNow, -120)).toBe("2026-10-16T05:24:00");
+  });
+
   it("returns null when the minute is empty, malformed, or too late", () => {
     expect(parseMeasuredOn("", ceilingNow)).toBeNull();
     expect(parseMeasuredOn(null, ceilingNow)).toBeNull();
@@ -258,6 +335,21 @@ describe("parseMeasuredOn", () => {
     expect(parseMeasuredOn("2026-02-29T00:00", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-10-06T22:01", ceilingNow)).toBeNull();
     expect(parseMeasuredOn("2026-10-08T00:00", ceilingNow)).toBeNull();
+  });
+});
+
+describe("readUtcOffsetMinutes", () => {
+  it("treats a missing offset as UTC and rejects a value outside a real zone", () => {
+    expect(readUtcOffsetMinutes(undefined)).toBe(0);
+    expect(readUtcOffsetMinutes(null)).toBe(0);
+    expect(readUtcOffsetMinutes("")).toBe(0);
+    expect(readUtcOffsetMinutes("-120")).toBe(-120);
+    expect(readUtcOffsetMinutes("720")).toBe(720);
+    expect(readUtcOffsetMinutes("-840")).toBe(-840);
+    expect(readUtcOffsetMinutes("-841")).toBeNull();
+    expect(readUtcOffsetMinutes("721")).toBeNull();
+    expect(readUtcOffsetMinutes("12.5")).toBeNull();
+    expect(readUtcOffsetMinutes("nope")).toBeNull();
   });
 });
 
