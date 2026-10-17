@@ -1,5 +1,5 @@
 ---
-change_id: unlink-funcation-for-trainer
+change_id: unlink-function-for-trainer
 title: Trainer and trainee profile actions, unlink list, and role labels
 status: new
 created: 2026-10-17

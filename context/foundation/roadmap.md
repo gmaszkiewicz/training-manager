@@ -94,7 +94,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-29 | reactive-trainee-search | user can type a character sequence into the trainee search and see matching emails, at most the first 10, without trainees who are already linked, and read Find trainee by email as the field placeholder | S-04, S-13 | MS-21 | done |
 | S-30 | some-display-changes | user can see a field error above Weight kg, Chest cm, and the rest as soon as the value is invalid, with room so that line does not shift the form, and can tell active buttons from inactive ones | S-27 | MS-22 | done |
 | S-31 | update-project-info | a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks | — | MS-23 | done |
-| S-32 | unlink-funcation-for-trainer | user can open Profile and see Change password as a button as a trainee or a trainer, a trainer can open Unlink trainees and unlink a linked trainee from a list paged 5, 10, or 15 in the home page style, and the header profile reads Trainee profile or Trainer profile | S-04, S-25 | MS-24 | ready |
+| S-32 | unlink-function-for-trainer | user can open Profile and see Change password as a button as a trainee or a trainer, a trainer can open Unlink trainees and unlink a linked trainee from a list paged 5, 10, or 15 in the home page style, and the header profile reads Trainee profile or Trainer profile | S-04, S-25 | MS-24 | ready |
 
 ## Streams
 
@@ -505,7 +505,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 ### S-32: Unlink trainees and label the profile by role
 
 - **Outcome:** user can open Profile and see Change password as a button as a trainee or a trainer, a trainer can open Unlink trainees and unlink a linked trainee from a list paged 5, 10, or 15 in the home page style, and the header profile reads Trainee profile or Trainer profile
-- **Change ID:** unlink-funcation-for-trainer
+- **Change ID:** unlink-function-for-trainer
 - **PRD refs:** MS-24
 - **Prerequisites:** S-04, S-25
 - **Parallel with:** —
@@ -549,7 +549,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-29       | reactive-trainee-search             | Trainer sees matching unlinked trainee emails while typing                 | yes                   | [#95](https://github.com/gmaszkiewicz/training-manager/issues/95). On MS-21. Change folder exists. Run `/10x-plan reactive-trainee-search`. |
 | S-30       | some-display-changes                | Inline measurement errors and clearer button states                        | yes                   | [#99](https://github.com/gmaszkiewicz/training-manager/issues/99). On MS-22. Change folder exists. Run `/10x-research some-display-changes`. |
 | S-31       | update-project-info                 | Update the README and sync slice issues to the roadmap                     | no                    | [#105](https://github.com/gmaszkiewicz/training-manager/issues/105). On MS-23. Plan exists. Run `/10x-implement update-project-info`. |
-| S-32       | unlink-funcation-for-trainer        | Unlink trainees and label the profile by role                              | yes                   | [#109](https://github.com/gmaszkiewicz/training-manager/issues/109). On MS-24. Change folder exists. Run `/10x-plan unlink-funcation-for-trainer`. |
+| S-32       | unlink-function-for-trainer        | Unlink trainees and label the profile by role                              | yes                   | [#109](https://github.com/gmaszkiewicz/training-manager/issues/109). On MS-24. Change folder exists. Run `/10x-plan unlink-function-for-trainer`. |
 
 ## Open Roadmap Questions
 
