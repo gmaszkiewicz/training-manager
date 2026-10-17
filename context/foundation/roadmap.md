@@ -94,7 +94,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-29 | reactive-trainee-search | user can type a character sequence into the trainee search and see matching emails, at most the first 10, without trainees who are already linked, and read Find trainee by email as the field placeholder | S-04, S-13 | MS-21 | done |
 | S-30 | some-display-changes | user can see a field error above Weight kg, Chest cm, and the rest as soon as the value is invalid, with room so that line does not shift the form, and can tell active buttons from inactive ones | S-27 | MS-22 | done |
 | S-31 | update-project-info | a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks | — | MS-23 | done |
-| S-32 | unlink-function-for-trainer | user can open Profile and see Change password as a button as a trainee or a trainer, a trainer can open Unlink trainees and unlink a linked trainee from a home-style list paged 5, 10, or 15, Profile and Change password show no pagination and no control for how many trainees appear on a page, those three screens show their data in one main div of the same size, and the header profile reads Trainee profile or Trainer profile | S-04, S-25 | MS-24 | ready |
+| S-32 | unlink-function-for-trainer | user can open Profile and see Change password as a button as a trainee or a trainer, a trainer can open Unlink trainees and unlink a linked trainee from a home-style list paged 5, 10, or 15, Profile and Change password show no pagination and no control for how many trainees appear on a page, those three screens show their data in one main div of the same size, and the header profile reads Trainee profile or Trainer profile | S-04, S-25 | MS-24 | in-progress |
 
 ## Streams
 
@@ -512,7 +512,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Unlinking removes a trainer-trainee link, and the header profile label is shared, so both roles see the new wording.
-- **Status:** ready
+- **Status:** in-progress
 
 ## Backlog Handoff
 
