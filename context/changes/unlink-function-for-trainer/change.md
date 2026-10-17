@@ -1,7 +1,7 @@
 ---
 change_id: unlink-function-for-trainer
 title: Trainer and trainee profile actions, unlink list, and role labels
-status: preparing
+status: implementing
 created: 2026-10-17
 updated: 2026-10-17
 archived_at: null

@@ -63,3 +63,20 @@ export async function searchUnlinkedTrainees(
     return { ok: false };
   }
 }
+
+export async function unlinkTrainee(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+): Promise<{ ok: true } | { ok: false }> {
+  try {
+    const { data, error } = await supabase.rpc("unlink_trainee", { p_trainee_id: traineeId });
+
+    if (error || !data) {
+      return { ok: false };
+    }
+
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}

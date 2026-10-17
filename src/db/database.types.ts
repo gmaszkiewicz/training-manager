@@ -154,6 +154,7 @@ export type Database = {
         Args: { p_query: string };
         Returns: string[];
       };
+      unlink_trainee: { Args: { p_trainee_id: string }; Returns: boolean };
     };
     Enums: {
       [_ in never]: never;

@@ -292,15 +292,15 @@ The migration only adds `unlink_trainee` and its execute grant. It is safe for t
 
 #### Automated
 
-- [ ] 1.1 `npm test` passes
-- [ ] 1.2 `npm run lint` passes
-- [ ] 1.3 `npm run migration-check` passes, and the preserved measurement row is unchanged
+- [x] 1.1 `npm test` passes
+- [x] 1.2 `npm run lint` passes
+- [x] 1.3 `npm run migration-check` passes, and the preserved measurement row is unchanged
 
 #### Manual
 
-- [ ] 1.4 A trainer unlinking a linked trainee removes that trainer's `trainer_links` row, and the trainee's measurement rows stay
-- [ ] 1.5 Unlinking the same trainee again returns success and deletes nothing
-- [ ] 1.6 A trainee, and a trainer who has no link to that trainee, cannot remove another trainer's link
+- [x] 1.4 A trainer unlinking a linked trainee removes that trainer's `trainer_links` row, and the trainee's measurement rows stay
+- [x] 1.5 Unlinking the same trainee again returns success and deletes nothing
+- [x] 1.6 A trainee, and a trainer who has no link to that trainee, cannot remove another trainer's link
 
 ### Phase 2: Shared profile card and role label
 
