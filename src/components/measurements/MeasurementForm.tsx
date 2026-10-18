@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import {
-  Calendar,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -9,8 +9,7 @@ import {
   ChevronsRight,
   CircleAlert,
   Plus,
-  Ruler,
-  Scale,
+  X,
 } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { ServerError } from "@/components/auth/ServerError";
@@ -28,6 +27,8 @@ import {
   duplicateMeasurementMessage,
   NOTE_MAX_LENGTH,
   measurementFieldMessage,
+  measurementFieldRange,
+  measuredOnPartRange,
   measurementFields,
   parseMeasuredOn,
   parseMeasurementField,
@@ -152,7 +153,7 @@ function isErrorField(value: PropertyKey): value is ErrorField {
   return measurementFields.some((field) => field.field === value);
 }
 
-type PreviousRow = Pick<MeasurementEntry, "measured_on" | MeasurementField>;
+type PreviousRow = Pick<MeasurementEntry, "id" | "measured_on" | MeasurementField>;
 
 interface LoadedPrevious {
   minute: string;
@@ -208,10 +209,25 @@ function previousMinuteLabel(measuredOn: string): string {
   }).format(date);
 }
 
+function formDeltaText(delta: FieldDelta | null): { text: string; muted: boolean } {
+  if (delta === null) {
+    return { text: "\u2014", muted: true };
+  }
+  if (delta.direction === "none") {
+    return { text: "0.0", muted: true };
+  }
+  const arrow = deltaArrow(delta);
+  return {
+    text: arrow === null ? delta.difference.toFixed(1) : `${arrow} ${delta.difference.toFixed(1)}`,
+    muted: false,
+  };
+}
+
 function readPreviousBody(value: unknown): PreviousRow | null {
   if (!isRecord(value) || !isRecord(value.entry)) {
     return null;
   }
+  const id = typeof value.entry.id === "string" && value.entry.id.length > 0 ? value.entry.id : null;
   const measured_on = readMeasuredOn(value.entry.measured_on);
   const weight_kg = readFiniteNumber(value.entry.weight_kg);
   const chest_cm = readFiniteNumber(value.entry.chest_cm);
@@ -222,6 +238,7 @@ function readPreviousBody(value: unknown): PreviousRow | null {
   const hips_cm = readFiniteNumber(value.entry.hips_cm);
   const navel_cm = readFiniteNumber(value.entry.navel_cm);
   if (
+    id === null ||
     measured_on === null ||
     weight_kg === null ||
     chest_cm === null ||
@@ -234,7 +251,7 @@ function readPreviousBody(value: unknown): PreviousRow | null {
   ) {
     return null;
   }
-  return { measured_on, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm };
+  return { id, measured_on, weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm };
 }
 
 function browserUtcOffsetMinutes(): number {
@@ -278,6 +295,18 @@ async function fetchPreviousMeasurement(minute: string): Promise<PreviousRow | n
   } catch {
     return null;
   }
+}
+
+async function fetchPreviewBaseline(minute: string, editingId: string | null): Promise<PreviousRow | null> {
+  const row = await fetchPreviousMeasurement(minute);
+  if (row === null || editingId === null || row.id !== editingId) {
+    return row;
+  }
+  const earlier = await fetchPreviousMeasurement(row.measured_on);
+  if (earlier === null || earlier.id === editingId) {
+    return null;
+  }
+  return earlier;
 }
 
 function previousForMinute(loaded: LoadedPrevious | null, minute: string | null): PreviousRow | null {
@@ -396,17 +425,21 @@ function ClockPart({
   value,
   onChange,
   canStep,
+  onInvalidDraft,
 }: {
   name: "hour" | "minute";
   value: string;
   onChange: (next: string) => void;
   canStep: (next: string) => boolean;
+  onInvalidDraft: (invalid: boolean) => void;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const caretAtEnd = useRef(false);
   const limit = clockLimit(name);
   const shown = draft ?? value;
+  const parsedDraft = draft === null || draft === "" ? null : typedClock(draft, limit);
+  const draftInvalid = draft !== null && draft !== "" && (parsedDraft === null || !canStep(parsedDraft));
   const nextValue = stepClock(value, 1, limit);
   const previousValue = stepClock(value, -1, limit);
 
@@ -436,6 +469,7 @@ function ClockPart({
       apply(next);
     }
     setDraft(null);
+    onInvalidDraft(false);
   }
 
   return (
@@ -448,6 +482,7 @@ function ClockPart({
         disabled={!canStep(nextValue)}
         onClick={() => {
           setDraft(null);
+          onInvalidDraft(false);
           apply(nextValue);
         }}
       >
@@ -459,6 +494,7 @@ function ClockPart({
         inputMode="numeric"
         maxLength={3}
         value={shown}
+        aria-invalid={draftInvalid || undefined}
         className="w-12 px-2 text-center"
         onFocus={(event) => {
           event.currentTarget.select();
@@ -467,23 +503,22 @@ function ClockPart({
           const digits = event.target.value.replace(/\D/g, "");
           if (digits.length === 0) {
             setDraft("");
+            onInvalidDraft(false);
             return;
           }
           const entered = digits.length > 2 ? digits.slice(-2) : digits;
           const next = typedClock(entered, limit);
-          if (next === null) {
+          if (next === null || !canStep(next)) {
             setDraft(entered);
+            onInvalidDraft(true);
             return;
           }
           if (entered.length === 1) {
             caretAtEnd.current = true;
           }
-          if (!canStep(next)) {
-            setDraft(entered);
-            return;
-          }
           apply(next);
           setDraft(next === value ? next : null);
+          onInvalidDraft(false);
         }}
         onBlur={() => {
           commit(shown);
@@ -497,6 +532,7 @@ function ClockPart({
         disabled={!canStep(previousValue)}
         onClick={() => {
           setDraft(null);
+          onInvalidDraft(false);
           apply(previousValue);
         }}
       >
@@ -519,23 +555,113 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-function FieldBubble({ id, message, revealed }: { id: string; message: string; revealed: boolean }) {
+const ERROR_TOAST_MS = 10000;
+
+function ErrorToastCountdown() {
+  const [secondsLeft, setSecondsLeft] = useState(ERROR_TOAST_MS / 1000);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setSecondsLeft((current) => (current <= 1 ? 1 : current - 1));
+    }, 1000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
   return (
-    <div
-      id={id}
-      className={cn(
-        "border-border bg-popover text-destructive absolute bottom-full left-0 z-30 mb-2 flex w-max max-w-56 items-start gap-1 rounded-md border px-2 py-1 text-xs shadow-md",
-        revealed ? "visible" : "invisible group-focus-within:visible group-hover:visible",
-      )}
-      aria-live="polite"
-    >
-      <CircleAlert className="mt-0.5 size-3 shrink-0" />
-      <span className="min-w-0 break-words">{message}</span>
-      <span
-        aria-hidden
-        className="border-border bg-popover absolute top-full left-3 size-2 -translate-y-1/2 rotate-45 border-r border-b"
-      />
-    </div>
+    <span className="text-muted-foreground text-xs tabular-nums" aria-hidden="true">
+      ({secondsLeft} s)
+    </span>
+  );
+}
+
+function FieldErrorToasts({
+  items,
+  onDismiss,
+}: {
+  items: { id: string; message: string }[];
+  onDismiss: (id: string) => void;
+}) {
+  const onClient = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
+  const timers = useRef(new Map<string, number>());
+  const onDismissRef = useRef(onDismiss);
+  const toastIds = items.map((item) => item.id).join("\n");
+
+  useEffect(() => {
+    onDismissRef.current = onDismiss;
+  }, [onDismiss]);
+
+  useEffect(() => {
+    const visible = new Set(toastIds.length === 0 ? [] : toastIds.split("\n"));
+    for (const [id, timer] of timers.current) {
+      if (!visible.has(id)) {
+        window.clearTimeout(timer);
+        timers.current.delete(id);
+      }
+    }
+    for (const id of visible) {
+      if (timers.current.has(id)) {
+        continue;
+      }
+      timers.current.set(
+        id,
+        window.setTimeout(() => {
+          timers.current.delete(id);
+          onDismissRef.current(id);
+        }, ERROR_TOAST_MS),
+      );
+    }
+  }, [toastIds]);
+
+  useEffect(() => {
+    const active = timers.current;
+    return () => {
+      for (const timer of active.values()) {
+        window.clearTimeout(timer);
+      }
+      active.clear();
+    };
+  }, []);
+
+  if (!onClient || items.length === 0) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed right-4 bottom-4 z-50 flex w-[min(24rem,calc(100%-2rem))] flex-col gap-2">
+      {items.map((item) => (
+        <div
+          key={item.id}
+          id={item.id}
+          role="status"
+          className="bg-background text-foreground border-border flex items-start gap-2 rounded-lg border p-4 shadow-lg"
+        >
+          <CircleAlert className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <p className="text-destructive min-w-0 flex-1 text-sm">{item.message}</p>
+          <div className="flex shrink-0 items-center gap-1">
+            <ErrorToastCountdown />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0"
+              aria-label="Dismiss error"
+              onClick={() => {
+                onDismiss(item.id);
+              }}
+            >
+              <X aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>,
+    document.body,
   );
 }
 
@@ -551,26 +677,45 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [loadedPrevious, setLoadedPrevious] = useState<LoadedPrevious | null>(null);
   const [dateOpen, setDateOpen] = useState(false);
   const [gridMonth, setGridMonth] = useState<string | null>(null);
-  const [errorsRevealed, setErrorsRevealed] = useState(false);
+  const [clockHint, setClockHint] = useState<"hour" | "minute" | null>(null);
+  const [dismissedErrors, setDismissedErrors] = useState<ReadonlySet<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const dateFieldRef = useRef<HTMLDivElement>(null);
-  const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
-  const duplicateMinute = useRef<string | null>(null);
   const confirmedTaken = useRef<string[]>([]);
   const occupiedRequest = useRef(0);
   const dateValue = measuredOn ?? browserMinute;
   const minuteParts = measuredMinuteParts(dateValue);
-  const previewMinute = entry === null ? parseMeasuredOn(dateValue, new Date(), browserUtcOffsetMinutes()) : null;
+  const editingId = entry?.id ?? null;
+  const previewMinute = parseMeasuredOn(dateValue, new Date(), browserUtcOffsetMinutes());
   const previousEntry = previousForMinute(loadedPrevious, previewMinute);
   const preview = previousEntry === null ? null : previewAgainst(previousEntry, parsedMeasurementFields(values));
   const previousMinuteCaption =
     previousEntry !== null && measurementFields.some((field) => values[field.field].trim() !== "")
       ? `Against ${previousMinuteLabel(previousEntry.measured_on)}`
       : null;
+  const errorToasts = measurementFields.flatMap((field) => {
+    const message = errors[field.field];
+    const id = `${idPrefix}${field.field}-error`;
+    if (message === undefined || dismissedErrors.has(id)) {
+      return [];
+    }
+    return [{ id, message }];
+  });
+  if (errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && !dismissedErrors.has(`${idPrefix}measured_on-error`)) {
+    errorToasts.unshift({ id: `${idPrefix}measured_on-error`, message: DUPLICATE_MEASUREMENT_MESSAGE });
+  }
   // The calendar stops at the browser's local minute. SSR uses the UTC minute so hydration matches.
   const ceilingMinute = useSyncExternalStore(subscribeToNothing, localCeilingSnapshot, utcCeilingSnapshot);
   const ceilingDate = ceilingMinute.slice(0, 10);
+  const dateRange =
+    clockHint !== null && minuteParts !== null
+      ? measuredOnPartRange(clockHint, minuteParts.day, minuteParts.time, ceilingMinute)
+      : null;
+  const dateSlotText = dateRange ?? previousMinuteCaption ?? "\u2014";
+  const dateSlotMuted = dateRange !== null || previousMinuteCaption === null;
+  const dateSlotLabel =
+    dateRange !== null && clockHint !== null ? `${clockHint === "hour" ? "Hour" : "Minute"} ${dateRange}` : undefined;
 
   useEffect(() => {
     if (previewMinute === null) {
@@ -578,7 +723,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     }
     const minute = previewMinute;
     let active = true;
-    void fetchPreviousMeasurement(minute).then((row) => {
+    void fetchPreviewBaseline(minute, editingId).then((row) => {
       if (!active) {
         return;
       }
@@ -587,7 +732,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     return () => {
       active = false;
     };
-  }, [previewMinute]);
+  }, [previewMinute, editingId]);
 
   useEffect(() => {
     if (!dateOpen) {
@@ -595,6 +740,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     }
     function closeDatePopup() {
       setDateOpen(false);
+      setClockHint(null);
     }
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -616,41 +762,47 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     };
   }, [dateOpen]);
 
-  useEffect(() => {
-    if (duplicateMinute.current === null || duplicateMinute.current === dateValue) {
-      return;
-    }
-    duplicateMinute.current = null;
-    setErrors((current) =>
-      current.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? { ...current, measured_on: undefined } : current,
-    );
-  }, [dateValue]);
-
-  useEffect(() => {
-    return () => {
-      if (revealTimer.current !== null) {
-        clearTimeout(revealTimer.current);
-      }
-    };
-  }, []);
-
-  function revealErrorsBriefly() {
-    setErrorsRevealed(true);
-    if (revealTimer.current !== null) {
-      clearTimeout(revealTimer.current);
-    }
-    revealTimer.current = setTimeout(() => {
-      setErrorsRevealed(false);
-      revealTimer.current = null;
-    }, 3000);
-  }
-
   function clearError(field: ErrorField) {
     setErrors((prev) => {
       if (!prev[field]) {
         return prev;
       }
       return { ...prev, [field]: undefined };
+    });
+  }
+
+  function errorFieldForToast(id: string): ErrorField | null {
+    const marker = "-error";
+    if (!id.startsWith(idPrefix) || !id.endsWith(marker)) {
+      return null;
+    }
+    const field = id.slice(idPrefix.length, id.length - marker.length);
+    return isErrorField(field) ? field : null;
+  }
+
+  function dismissErrorToast(id: string) {
+    setDismissedErrors((current) => {
+      if (current.has(id)) {
+        return current;
+      }
+      const next = new Set(current);
+      next.add(id);
+      return next;
+    });
+    const field = errorFieldForToast(id);
+    if (field !== null) {
+      clearError(field);
+    }
+  }
+
+  function releaseErrorToast(id: string) {
+    setDismissedErrors((current) => {
+      if (!current.has(id)) {
+        return current;
+      }
+      const next = new Set(current);
+      next.delete(id);
+      return next;
     });
   }
 
@@ -662,24 +814,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     confirmedTaken.current = [...confirmedTaken.current, minute];
   }
 
-  function showDuplicate(minute: string) {
-    const message = duplicateMeasurementMessage(minute, confirmedTaken.current, entry?.measured_on ?? null);
-    duplicateMinute.current = message === null ? null : minute;
-    setErrors((current) => {
-      if (message !== null) {
-        return current.measured_on === message ? current : { ...current, measured_on: message };
-      }
-      if (current.measured_on !== DUPLICATE_MEASUREMENT_MESSAGE) {
-        return current;
-      }
-      return { ...current, measured_on: undefined };
-    });
-  }
-
   function applyDuplicate(minute: string) {
     const request = occupiedRequest.current + 1;
     occupiedRequest.current = request;
-    showDuplicate(minute);
     void fetchMinuteTaken(minute).then((taken) => {
       if (occupiedRequest.current !== request) {
         return;
@@ -687,32 +824,16 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       if (taken === true) {
         rememberTaken(minute);
       }
-      showDuplicate(minute);
     });
   }
 
   function selectMeasuredOn(minute: string) {
     applyDuplicate(minute);
     setMeasuredOn(minute);
-    if (allowedMinute(minute, ceilingMinute, entryMinute)) {
-      setErrors((current) => {
-        if (current.measured_on !== FUTURE_MEASURED_ON_MESSAGE) {
-          return current;
-        }
-        return { ...current, measured_on: undefined };
-      });
+    if (minute !== dateValue) {
+      clearError("measured_on");
+      releaseErrorToast(`${idPrefix}measured_on-error`);
     }
-  }
-
-  function setMeasurementError(field: MeasurementField, value: string) {
-    const message = measurementFieldMessage(field, value);
-    setErrors((current) => {
-      const next = message ?? undefined;
-      if (current[field] === next) {
-        return current;
-      }
-      return { ...current, [field]: next };
-    });
   }
 
   function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
@@ -742,10 +863,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       }
       if (duplicate !== null) {
         next.measured_on = duplicate;
-        duplicateMinute.current = dateValue;
       }
       setErrors(next);
-      revealErrorsBriefly();
+      setDismissedErrors(new Set());
       return;
     }
     if (savingRef.current) {
@@ -769,10 +889,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
         const payload = (await response.json().catch(() => null)) as { ok?: unknown; error?: unknown } | null;
         const error = typeof payload?.error === "string" ? payload.error : null;
         if (response.status === 409 && error === DUPLICATE_MEASUREMENT_MESSAGE) {
-          duplicateMinute.current = minute;
           rememberTaken(minute);
           setErrors((current) => ({ ...current, measured_on: DUPLICATE_MEASUREMENT_MESSAGE }));
-          revealErrorsBriefly();
+          setDismissedErrors(new Set());
           savingRef.current = false;
           setSaving(false);
           return;
@@ -800,43 +919,33 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       onSubmit={handleSubmit}
       noValidate
     >
-      <div className="space-y-4">
-        <div className="measurement-row:flex-row measurement-row:flex-nowrap flex flex-col items-start gap-2">
+      <div className="w-full max-w-full min-w-0 space-y-3">
+        <div className="measurement-row:flex-row measurement-row:flex-nowrap measurement-row:gap-0 flex flex-col items-start gap-3">
           <div
             ref={dateFieldRef}
-            className={cn(
-              "group measurement-row:w-56 measurement-row:max-w-56 measurement-row:min-w-56 measurement-row:shrink-0 relative w-full min-w-0 focus-within:z-40 hover:z-40",
-              errorsRevealed && errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && "z-40",
-              dateOpen && errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && "z-40",
-            )}
+            className="group measurement-row:w-[9.75rem] measurement-row:max-w-[9.75rem] measurement-row:shrink-0 relative w-full min-w-0 focus-within:z-40 hover:z-40"
           >
             <div className="relative z-20">
-              {errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? (
-                <FieldBubble
-                  id={`${idPrefix}measured_on-error`}
-                  message={DUPLICATE_MEASUREMENT_MESSAGE}
-                  revealed={errorsRevealed || dateOpen}
-                />
-              ) : null}
               <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
                 Date and time
               </Label>
               <div className="relative">
-                <Calendar
-                  aria-hidden
-                  className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-                />
                 <Button
                   type="button"
                   id={`${idPrefix}measured_on`}
                   variant="outline"
-                  className={cn("w-full justify-start pl-10")}
+                  className="h-9 w-full justify-start px-3"
                   aria-expanded={dateOpen}
-                  aria-invalid={errors.measured_on ? true : undefined}
+                  aria-invalid={
+                    errors.measured_on && !dismissedErrors.has(`${idPrefix}measured_on-error`) ? true : undefined
+                  }
                   aria-describedby={
-                    errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? `${idPrefix}measured_on-error` : undefined
+                    errorToasts.some((item) => item.id === `${idPrefix}measured_on-error`)
+                      ? `${idPrefix}measured_on-error`
+                      : undefined
                   }
                   onClick={() => {
+                    setClockHint(null);
                     setDateOpen((open) => {
                       if (open) {
                         return false;
@@ -856,7 +965,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
               {dateOpen && minuteParts !== null ? (
                 <div
                   className={cn(
-                    "bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-max max-w-full flex-col gap-2 rounded-md border p-2 shadow-md",
+                    "bg-popover text-popover-foreground border-border measurement-row:max-w-none absolute top-full left-0 z-10 mt-2 flex w-max max-w-full flex-col gap-2 rounded-md border p-2 shadow-md",
                   )}
                 >
                   <CalendarMonth
@@ -891,6 +1000,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                       onChange={(hour) => {
                         selectMeasuredOn(`${minuteParts.day}T${hour}:${minuteParts.time.slice(3)}`);
                       }}
+                      onInvalidDraft={(invalid) => {
+                        setClockHint((current) => (invalid ? "hour" : current === "hour" ? null : current));
+                      }}
                     />
                     <span aria-hidden className="text-sm font-medium">
                       :
@@ -908,87 +1020,83 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                       onChange={(minute) => {
                         selectMeasuredOn(`${minuteParts.day}T${minuteParts.time.slice(0, 2)}:${minute}`);
                       }}
+                      onInvalidDraft={(invalid) => {
+                        setClockHint((current) => (invalid ? "minute" : current === "minute" ? null : current));
+                      }}
                     />
                   </div>
+                  {dateRange !== null ? (
+                    <p className="text-muted-foreground min-h-lh text-center text-xs" aria-label={dateSlotLabel}>
+                      {dateRange}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </div>
             <FieldError
               message={errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? undefined : errors.measured_on}
             />
-            {entry === null ? (
-              <p
-                className="text-card-foreground mt-1 min-h-lh text-sm font-semibold whitespace-nowrap"
-                aria-hidden={previousMinuteCaption ? undefined : true}
-              >
-                {previousMinuteCaption ?? "\u00a0"}
-              </p>
-            ) : null}
+            <p
+              className={cn(
+                "mt-1 min-h-lh text-center text-xs",
+                dateSlotMuted ? "text-muted-foreground" : "text-card-foreground",
+              )}
+              aria-label={dateSlotLabel}
+            >
+              {dateSlotText}
+            </p>
           </div>
 
-          {measurementFields.map((field) => {
-            const delta = preview ? preview[field.field] : null;
-            const arrow = delta ? deltaArrow(delta) : null;
-            const message = errors[field.field];
-            const bubbleId = `${idPrefix}${field.field}-error`;
-            return (
-              <div
-                key={field.field}
-                className={cn(
-                  "group measurement-row:w-28 measurement-row:max-w-28 measurement-row:min-w-28 measurement-row:shrink-0 relative w-full min-w-0 focus-within:z-40 hover:z-40 [&_p]:block [&_p]:break-words",
-                  errorsRevealed && "z-40",
-                )}
-              >
-                {message ? <FieldBubble id={bubbleId} message={message} revealed={errorsRevealed} /> : null}
-                <FormField
-                  id={`${idPrefix}${field.field}`}
-                  name={field.field}
-                  type="number"
-                  step="0.1"
-                  label={`${field.label} ${field.unit}`}
-                  value={values[field.field]}
-                  onChange={(value) => {
-                    setValues((current) => ({ ...current, [field.field]: value }));
-                    setMeasurementError(field.field, value);
-                  }}
-                  onBlur={(event) => {
-                    setMeasurementError(field.field, event.currentTarget.value);
-                  }}
-                  invalid={Boolean(message)}
-                  describedBy={message ? bubbleId : undefined}
-                  icon={field.unit === "kg" ? <Scale className="size-4" /> : <Ruler className="size-4" />}
-                />
-                {entry === null ? (
+          <div className="measurement-row:contents flex w-full min-w-0 gap-0 overflow-x-auto">
+            {measurementFields.map((field) => {
+              const delta = preview ? preview[field.field] : null;
+              const message = errors[field.field];
+              const toastId = `${idPrefix}${field.field}-error`;
+              const typed = values[field.field];
+              const showRange = typed.trim() !== "" && measurementFieldMessage(field.field, typed) !== null;
+              const slot = showRange ? { text: measurementFieldRange(field.field), muted: true } : formDeltaText(delta);
+              return (
+                <div
+                  key={field.field}
+                  className="group measurement-row:w-[5.5rem] measurement-row:max-w-[5.5rem] measurement-row:shrink-0 relative w-[5.5625rem] max-w-[5.5625rem] shrink-0 px-1 focus-within:z-40 hover:z-40"
+                >
+                  <FormField
+                    id={`${idPrefix}${field.field}`}
+                    name={field.field}
+                    type="number"
+                    step="0.1"
+                    label={`${field.label} ${field.unit}`}
+                    value={typed}
+                    onChange={(value) => {
+                      setValues((current) => ({ ...current, [field.field]: value }));
+                      clearError(field.field);
+                      releaseErrorToast(toastId);
+                    }}
+                    invalid={(Boolean(message) || showRange) && !dismissedErrors.has(toastId)}
+                    describedBy={message !== undefined && !dismissedErrors.has(toastId) ? toastId : undefined}
+                  />
                   <p
-                    className="text-card-foreground relative mt-1 min-h-lh text-sm font-semibold"
-                    aria-hidden={delta ? undefined : true}
-                    aria-label={delta ? accessibleDelta(field.label, field.unit, delta) : undefined}
-                  >
-                    {delta ? (
-                      <>
-                        {arrow ? (
-                          <span
-                            aria-hidden
-                            className="absolute top-1/2 left-3 flex size-4 -translate-y-1/2 items-center justify-center"
-                          >
-                            {arrow}
-                          </span>
-                        ) : null}
-                        <span aria-hidden className="block pl-10">
-                          {delta.difference.toFixed(1)}
-                        </span>
-                      </>
-                    ) : (
-                      "\u00a0"
+                    className={cn(
+                      "mt-1 min-h-lh text-center text-xs",
+                      slot.muted ? "text-muted-foreground" : "text-card-foreground",
                     )}
+                    aria-label={
+                      showRange
+                        ? `${field.label} ${measurementFieldRange(field.field)} ${field.unit}`
+                        : delta
+                          ? accessibleDelta(field.label, field.unit, delta)
+                          : undefined
+                    }
+                  >
+                    {slot.text}
                   </p>
-                ) : null}
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="w-0 min-w-full">
+        <div className="w-full max-w-full min-w-0">
           <Label htmlFor={`${idPrefix}note`} className="text-muted-foreground mb-1">
             Note
           </Label>
@@ -998,7 +1106,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
             value={note}
             maxLength={NOTE_MAX_LENGTH}
             rows={3}
-            className="field-sizing-fixed"
+            className="bg-background ![field-sizing:fixed] h-18 min-h-18 w-full max-w-full"
             onChange={(event) => {
               setNote(event.target.value);
               clearError("note");
@@ -1016,20 +1124,24 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
           </div>
         </div>
 
+        <FieldErrorToasts items={errorToasts} onDismiss={dismissErrorToast} />
         <ServerError message={submitError ?? (serverError === DUPLICATE_MEASUREMENT_MESSAGE ? null : serverError)} />
 
-        <SubmitButton
-          pendingText={entry ? "Saving measurement..." : "Adding measurement..."}
-          icon={<Plus className="size-4" />}
-          forcePending={saving}
-        >
-          {entry ? "Save measurement" : "Add measurement"}
-        </SubmitButton>
-        {entry ? (
-          <a href="/measurements" className="text-primary focus-visible:ring-ring hover:underline focus-visible:ring-2">
-            Cancel
-          </a>
-        ) : null}
+        <div className={entry ? "flex gap-2" : undefined}>
+          <SubmitButton
+            pendingText={entry ? "Saving measurement..." : "Adding measurement..."}
+            icon={<Plus className="size-4" />}
+            forcePending={saving}
+            className={entry ? "h-10 w-auto flex-1 rounded-lg" : "h-10 rounded-lg"}
+          >
+            {entry ? "Save measurement" : "Add measurement"}
+          </SubmitButton>
+          {entry ? (
+            <Button asChild className="h-10 flex-1 rounded-lg">
+              <a href="/measurements">Cancel</a>
+            </Button>
+          ) : null}
+        </div>
       </div>
     </form>
   );

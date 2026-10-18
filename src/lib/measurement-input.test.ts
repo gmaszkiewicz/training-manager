@@ -5,6 +5,8 @@ import {
   DUPLICATE_MEASUREMENT_MESSAGE,
   duplicateMeasurementMessage,
   measurementFieldMessage,
+  measurementFieldRange,
+  measuredOnPartRange,
   parseMeasuredOn,
   parseMeasurementField,
   readUtcOffsetMinutes,
@@ -364,6 +366,26 @@ describe("parseMeasurementField", () => {
     expect(parseMeasurementField("weight_kg", "78.55")).toBeNull();
     expect(parseMeasurementField("weight_kg", 19.9)).toBeNull();
     expect(parseMeasurementField("chest_cm", "60")).toBe(60);
+  });
+});
+
+describe("measurementFieldRange", () => {
+  it("prints the accepted min and max", () => {
+    expect(measurementFieldRange("weight_kg")).toBe("20\u2013400");
+    expect(measurementFieldRange("navel_cm")).toBe("10\u2013300");
+  });
+});
+
+describe("measuredOnPartRange", () => {
+  it("uses the full clock on an earlier day", () => {
+    expect(measuredOnPartRange("hour", "2026-10-17", "10:00", "2026-10-18T18:24")).toBe("0\u201323");
+    expect(measuredOnPartRange("minute", "2026-10-17", "10:00", "2026-10-18T18:24")).toBe("0\u201359");
+  });
+
+  it("stops at the current hour and minute on the ceiling day", () => {
+    expect(measuredOnPartRange("hour", "2026-10-18", "10:00", "2026-10-18T18:24")).toBe("0\u201318");
+    expect(measuredOnPartRange("minute", "2026-10-18", "10:00", "2026-10-18T18:24")).toBe("0\u201359");
+    expect(measuredOnPartRange("minute", "2026-10-18", "18:00", "2026-10-18T18:24")).toBe("0\u201324");
   });
 });
 

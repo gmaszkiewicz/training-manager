@@ -45,14 +45,8 @@ const {
 } = Astro.props;
 ---
 
-<div class="flex justify-center px-1 pb-8 measurement-row:px-4">
-  <!-- Same floor as TraineeJournal, so the empty-state line matches a measurement entry -->
-  <div
-    class:list={[
-      "w-full min-w-0 rounded-2xl border border-border bg-card px-1 py-8 text-card-foreground measurement-row:w-max measurement-row:shrink-0 measurement-row:p-8",
-      selectedLink && trainerMeasurementsLoaded && "measurement-row:min-w-[calc(75rem+4px)]",
-    ]}
-  >
+<div class="flex justify-center px-4 pb-4">
+  <div class="border-border bg-card w-full max-w-[74rem] min-w-0 rounded-xl border p-4">
     {mode === "trainer" ? (
       <>
         {serverError ? <ServerError message={serverError} /> : null}
@@ -67,7 +61,7 @@ const {
             </form>
             {trainerLinks.length > 0 ? (
               <>
-                <h2 class="mt-6 mb-4 text-center text-2xl font-bold text-card-foreground">Body measurements</h2>
+                <h2 class="mt-6 mb-3 text-xl font-bold text-foreground">Body measurements</h2>
                 <div class="flex justify-center">
                   {selectedLink ? (
                     <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />

@@ -15,19 +15,32 @@ const devDependencies = libraryEntries(packageJson.devDependencies);
     TM (v.{packageJson.version})
   </Button>
   <dialog
-    class="bg-card text-card-foreground border-border m-auto w-full max-w-lg rounded-xl border p-6 shadow-md"
+    class="bg-background text-foreground border-border fixed inset-0 z-50 m-auto hidden h-fit max-h-[min(32rem,calc(100%-2rem))] w-[min(24rem,calc(100%-2rem))] max-w-none flex-col gap-3 rounded-lg border p-4 shadow-lg open:flex"
     data-app-libraries-dialog
     aria-labelledby="app-libraries-title"
   >
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex items-start justify-between gap-3">
       <div>
-        <h2 id="app-libraries-title" class="text-xl font-bold">
+        <h2 id="app-libraries-title" class="text-sm font-semibold">
           {packageJson.name}
         </h2>
-        <p class="text-muted-foreground text-sm">v.{packageJson.version}</p>
+        <p class="text-muted-foreground text-xs">v.{packageJson.version}</p>
       </div>
-      <Button type="button" variant="ghost" data-close>
-        Close
+      <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0" data-close aria-label="Close">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-4"
+          aria-hidden="true"
+        >
+          <path d="M18 6 6 18"></path>
+          <path d="m6 6 12 12"></path>
+        </svg>
       </Button>
     </div>
     <div class="mt-4 max-h-96 overflow-y-auto">
@@ -63,16 +76,7 @@ const devDependencies = libraryEntries(packageJson.devDependencies);
     }
   });
 
-  dialog?.addEventListener("click", (event) => {
-    if (!(dialog instanceof HTMLDialogElement)) {
-      return;
-    }
-    if (event.target === dialog) {
-      dialog.close();
-    }
-  });
-
-  dialog?.querySelector("[data-close]")?.addEventListener("click", () => {
+  dialog?.addEventListener("click", () => {
     if (dialog instanceof HTMLDialogElement) {
       dialog.close();
     }
@@ -81,7 +85,6 @@ const devDependencies = libraryEntries(packageJson.devDependencies);
 
 <style>
   dialog::backdrop {
-    background: var(--foreground);
-    opacity: 0.2;
+    background: transparent;
   }
 </style>
