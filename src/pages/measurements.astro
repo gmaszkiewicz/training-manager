@@ -4,7 +4,9 @@ import TrainerPanel from "@/components/trainer/TrainerPanel.astro";
 import Topbar from "@/components/Topbar.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
+  addFormStorageKey,
   dayStorageKey,
+  parseAddFormOpen,
   defaultPageSize,
   journalMonth,
   journalPageStorageKey,
@@ -76,6 +78,10 @@ function preferredMonth(accountUserId: string, subjectTraineeId: string): string
 
 function preferredJournalPage(accountUserId: string, subjectTraineeId: string): number {
   return parseJournalPage(cookieValue(journalPageStorageKey(accountUserId, subjectTraineeId)));
+}
+
+function preferredAddForm(accountUserId: string): boolean | null {
+  return parseAddFormOpen(cookieValue(addFormStorageKey(accountUserId)));
 }
 
 if (supabase && user) {
@@ -161,9 +167,11 @@ if (supabase && user) {
 }
 ---
 
-<Layout title="Measurements">
-  <div class="px-4 pt-2 pb-4 sm:px-8 sm:pb-8">
-    <Topbar />
+<Layout title="Measurements" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-[74rem]">
+      <Topbar />
+    </div>
   </div>
   {role === "trainee" ? (
     <TraineeJournal
@@ -174,6 +182,7 @@ if (supabase && user) {
       confirmingEntry={confirmingEntry}
       accountUserId={traineeAccountId}
       subjectTraineeId={traineeAccountId}
+      addFormOpen={traineeAccountId ? preferredAddForm(traineeAccountId) : null}
       today={today}
       dates={dates}
       page={page}

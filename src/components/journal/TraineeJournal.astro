@@ -2,7 +2,7 @@
 import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import MeasurementForm from "@/components/measurements/MeasurementForm";
-import type { PageSize } from "@/lib/measurement-page";
+import { addFormStorageKey, type PageSize } from "@/lib/measurement-page";
 import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
 
 interface Props {
@@ -20,6 +20,7 @@ interface Props {
   pageCount?: number;
   pageSize?: PageSize;
   month?: string;
+  addFormOpen?: boolean | null;
 }
 
 const {
@@ -37,23 +38,93 @@ const {
   pageCount,
   pageSize,
   month,
+  addFormOpen = null,
 } = Astro.props;
+
+const addFormStartsOpen = serverError !== null || (addFormOpen ?? entries.length === 0);
+const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
 ---
 
-<div class="flex justify-center px-1 pb-8 measurement-row:px-4">
-  <!-- date w-56 + 8×w-28 + gaps + list padding + card padding + both borders -->
-  <div
-    class:list={[
-      "w-full min-w-0 rounded-2xl border border-border bg-card px-1 py-8 text-card-foreground measurement-row:w-max measurement-row:shrink-0 measurement-row:p-8",
-      measurementsLoaded && "measurement-row:min-w-[calc(75rem+4px)]",
-    ]}
-  >
-    <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">
-      {editingEntry ? "Edit measurement" : "Add your next measurement"}
-    </h1>
+<div class="flex justify-center px-4 pb-4">
+  <div class="border-border bg-card w-full max-w-[74rem] min-w-0 rounded-xl border p-4">
     {measurementsLoaded ? (
       <>
-        <MeasurementForm serverError={serverError} idPrefix={idPrefix} entry={editingEntry} client:load />
+        {editingEntry ? (
+          <>
+            <h1 class="mb-3 text-xl font-bold text-foreground">Edit measurement</h1>
+            <MeasurementForm serverError={serverError} idPrefix={idPrefix} entry={editingEntry} client:load />
+          </>
+        ) : (
+          <>
+            <details
+              class="group"
+              data-add-form
+              data-storage-key={addFormKey}
+              data-restore={serverError === null ? "true" : undefined}
+              open={addFormStartsOpen}
+            >
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+                <span>Add your next measurement</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-5 shrink-0 transition-transform group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </summary>
+              <div class="pt-3">
+                <MeasurementForm serverError={serverError} idPrefix={idPrefix} client:load />
+              </div>
+            </details>
+            <script is:inline>
+              (function () {
+                var script = document.currentScript;
+                var details = script && script.previousElementSibling;
+                if (!(details instanceof HTMLDetailsElement)) return;
+                var key = details.getAttribute("data-storage-key");
+                if (!key) return;
+                function remember(value) {
+                  try {
+                    localStorage.setItem(key, value);
+                  } catch (error) {
+                    // Storage can be blocked; the cookie still keeps the next visit.
+                  }
+                  try {
+                    document.cookie =
+                      encodeURIComponent(key) +
+                      "=" +
+                      encodeURIComponent(value) +
+                      "; Path=/; Max-Age=31536000; SameSite=Lax";
+                  } catch (error) {
+                    // The choice still stays for this visit.
+                  }
+                }
+                details.addEventListener("toggle", function () {
+                  remember(details.open ? "open" : "closed");
+                });
+                if (details.getAttribute("data-restore") === "true") {
+                  var stored = null;
+                  try {
+                    stored = localStorage.getItem(key);
+                  } catch (error) {
+                    stored = null;
+                  }
+                  if (stored === "open" || stored === "closed") {
+                    details.open = stored === "open";
+                    remember(stored);
+                  }
+                }
+              })();
+            </script>
+          </>
+        )}
         <MeasurementBrowser
           entries={entries}
           readOnly={false}
@@ -72,7 +143,10 @@ const {
         />
       </>
     ) : (
-      <ServerError message="Could not load your measurements" />
+      <>
+        <h1 class="mb-3 text-xl font-bold text-foreground">Add your next measurement</h1>
+        <ServerError message="Could not load your measurements" />
+      </>
     )}
   </div>
 </div>

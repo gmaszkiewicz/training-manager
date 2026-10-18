@@ -8,7 +8,9 @@ import {
   deltasForVisiblePage,
   filterByMonth,
   journalMonth,
+  addFormStorageKey,
   journalPageStorageKey,
+  parseAddFormOpen,
   parseJournalPage,
   measurementMonth,
   monthWindow,
@@ -73,6 +75,17 @@ describe("storage keys", () => {
     expect(dayStorageKey("account-1", "trainee-2")).toBe("tm.measurements.day.account-1.trainee-2");
     expect(selectedTraineeStorageKey("account-1")).toBe("tm.measurements.trainee.account-1");
     expect(journalPageStorageKey("account-1", "trainee-2")).toBe("tm.measurements.page.account-1.trainee-2");
+    expect(addFormStorageKey("account-1")).toBe("tm.measurements.addForm.account-1");
+  });
+});
+
+describe("parseAddFormOpen", () => {
+  it("keeps open and closed and ignores anything else", () => {
+    expect(parseAddFormOpen("open")).toBe(true);
+    expect(parseAddFormOpen("closed")).toBe(false);
+    expect(parseAddFormOpen(null)).toBeNull();
+    expect(parseAddFormOpen("")).toBeNull();
+    expect(parseAddFormOpen("true")).toBeNull();
   });
 });
 

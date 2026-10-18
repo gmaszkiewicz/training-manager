@@ -17,7 +17,7 @@ interface FormFieldProps {
   invalid?: boolean;
   describedBy?: string;
   hint?: ReactNode;
-  icon: ReactNode;
+  icon?: ReactNode;
   endContent?: ReactNode;
   step?: string;
 }
@@ -47,7 +47,9 @@ export function FormField({
         {label}
       </Label>
       <div className="relative">
-        <span className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2">{icon}</span>
+        {icon ? (
+          <span className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2">{icon}</span>
+        ) : null}
         <Input
           id={id}
           name={name ?? id}
@@ -61,7 +63,7 @@ export function FormField({
           step={step}
           aria-invalid={invalid || error ? true : undefined}
           aria-describedby={describedBy}
-          className={cn("pl-10", endContent && "pr-14")}
+          className={cn("bg-background", icon && "pl-10", endContent && "pr-14")}
         />
         {endContent}
       </div>

@@ -8,27 +8,31 @@ const error = Astro.url.searchParams.get("error");
 const notice = Astro.url.searchParams.get("notice");
 ---
 
-<Layout title="Sign in">
-  <div class="flex min-h-full flex-1 flex-col px-4 pt-2 pb-4 sm:px-8 sm:pb-8">
-    <Topbar />
-    <div class="flex flex-1 items-center justify-center">
-      <div class="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-card-foreground">
-        <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Sign in</h1>
+<Layout title="Sign in" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-[74rem]">
+      <Topbar />
+    </div>
+  </div>
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-[74rem] min-w-0 rounded-xl border p-4 text-card-foreground">
+      <div class="mx-auto max-w-sm">
+        <h1 class="mb-6 text-center text-xl font-bold text-foreground">Sign in</h1>
         {notice === "password-reset" ? (
-          <p class="mb-4 text-center text-sm text-muted-foreground">{PASSWORD_RESET_NOTICE}</p>
+          <p class="text-muted-foreground mb-4 text-center text-sm">{PASSWORD_RESET_NOTICE}</p>
         ) : null}
         <SignInForm serverError={error} client:load />
-        <p class="mt-4 text-center text-sm text-muted-foreground">
+        <p class="text-muted-foreground mt-4 text-center text-sm">
           <a
             href="/auth/reset-password"
-            class="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+            class="text-primary focus-visible:ring-ring hover:underline focus-visible:ring-2"
           >
             Forgot password?
           </a>
         </p>
-        <p class="mt-4 text-center text-sm text-muted-foreground">
+        <p class="text-muted-foreground mt-4 text-center text-sm">
           Don't have an account?{" "}
-          <a href="/auth/signup" class="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring">
+          <a href="/auth/signup" class="text-primary focus-visible:ring-ring hover:underline focus-visible:ring-2">
             Sign up
           </a>
         </p>
