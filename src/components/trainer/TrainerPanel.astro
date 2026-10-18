@@ -1,6 +1,7 @@
 ---
 import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
 import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
 import { Button } from "@/components/ui/button";
@@ -43,18 +44,32 @@ const {
   pageSize,
   month,
 } = Astro.props;
+
+const toastMessages: string[] = [];
+if (serverError === "No trainee with that email") {
+  toastMessages.push(serverError);
+}
+if (mode === "trainer" && !trainerLinksLoaded) {
+  toastMessages.push("Could not load trainees");
+}
+if (mode === "trainer" && trainerLinksLoaded && selectedLink !== null && !trainerMeasurementsLoaded) {
+  toastMessages.push("Could not load measurements");
+}
+const inlineServerError =
+  serverError === "No trainee with that email" || serverError === "Enter an email address" ? null : serverError;
 ---
 
 <div class="flex justify-center px-4 pb-4">
   <div class="border-border bg-card w-full max-w-[74rem] min-w-0 rounded-xl border p-4">
     {mode === "trainer" ? (
       <>
-        {serverError ? <ServerError message={serverError} /> : null}
+        {toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
+        {inlineServerError ? <ServerError message={inlineServerError} /> : null}
         {trainerLinksLoaded ? (
           <>
             <form method="POST" action="/api/trainer-links" class="space-y-3">
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
-              <TraineeEmailSearch idPrefix={idPrefix} client:load />
+              <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
               <Button type="submit" variant="smoke" className="w-full">
                 Link trainee
               </Button>
@@ -83,16 +98,12 @@ const {
                       month={month}
                       client:load
                     />
-                  ) : (
-                    <ServerError message="Could not load measurements" />
-                  )
+                  ) : null
                 ) : null}
               </>
             ) : null}
           </>
-        ) : (
-          <ServerError message="Could not load trainees" />
-        )}
+        ) : null}
       </>
     ) : (
       <>

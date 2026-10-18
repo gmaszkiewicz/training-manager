@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const EMPTY_EMAIL_MESSAGE = "Enter an email address";
+
 interface Props {
   idPrefix: string;
+  serverError?: string | null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -40,10 +44,13 @@ async function fetchTraineeEmails(query: string): Promise<string[]> {
   }
 }
 
-export default function TraineeEmailSearch({ idPrefix }: Props) {
+export default function TraineeEmailSearch({ idPrefix, serverError = null }: Props) {
+  const arrivedEmpty = serverError === EMPTY_EMAIL_MESSAGE;
   const [email, setEmail] = useState("");
   const [emails, setEmails] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [invalid, setInvalid] = useState(arrivedEmpty);
+  const [emptyToast, setEmptyToast] = useState(arrivedEmpty);
   const rootRef = useRef<HTMLDivElement>(null);
   const requestSerial = useRef(0);
   // The address written by choosing a row. That write must not search again.
@@ -99,6 +106,11 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
     };
   }, [open]);
 
+  function clearEmptyError() {
+    setInvalid(false);
+    setEmptyToast(false);
+  }
+
   function onEmailChange(next: string) {
     chosenEmail.current = null;
     requestSerial.current += 1;
@@ -106,8 +118,29 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
     if (next.trim() === "") {
       setEmails([]);
       setOpen(false);
+      return;
     }
+    clearEmptyError();
   }
+
+  useEffect(() => {
+    const form = rootRef.current?.closest("form");
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+    function onSubmit(event: SubmitEvent) {
+      if (email.trim() !== "") {
+        return;
+      }
+      event.preventDefault();
+      setInvalid(true);
+      setEmptyToast(true);
+    }
+    form.addEventListener("submit", onSubmit);
+    return () => {
+      form.removeEventListener("submit", onSubmit);
+    };
+  }, [email]);
 
   function reopenList() {
     if (email.trim() === "") {
@@ -139,8 +172,8 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
         type="text"
         inputMode="email"
         autoComplete="off"
-        required
         aria-label="Email"
+        aria-invalid={invalid ? true : undefined}
         placeholder="Find trainee by email"
         value={email}
         onFocus={reopenList}
@@ -165,6 +198,14 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
             </Button>
           ))}
         </div>
+      ) : null}
+      {emptyToast ? (
+        <PageErrorToasts
+          messages={[EMPTY_EMAIL_MESSAGE]}
+          onDismiss={() => {
+            clearEmptyError();
+          }}
+        />
       ) : null}
     </div>
   );
