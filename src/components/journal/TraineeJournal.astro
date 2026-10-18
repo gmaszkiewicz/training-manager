@@ -40,12 +40,12 @@ const {
 } = Astro.props;
 ---
 
-<div class="flex justify-center px-4 pb-8">
-  <!-- date w-36 + 8×w-28 + gaps + list padding + card padding + both borders -->
+<div class="flex justify-center px-1 pb-8 measurement-row:px-4">
+  <!-- date w-56 + 8×w-28 + gaps + list padding + card padding + both borders -->
   <div
     class:list={[
-      "rounded-2xl border border-border bg-card p-8 text-card-foreground",
-      measurementsLoaded ? "w-max min-w-[calc(75rem+4px)]" : "w-max",
+      "w-full min-w-0 rounded-2xl border border-border bg-card px-1 py-8 text-card-foreground measurement-row:w-max measurement-row:shrink-0 measurement-row:p-8",
+      measurementsLoaded && "measurement-row:min-w-[calc(75rem+4px)]",
     ]}
   >
     <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">

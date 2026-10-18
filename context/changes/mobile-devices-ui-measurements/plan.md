@@ -205,9 +205,9 @@ No schema change and no data migration. The previous worker and the new worker r
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` passes
-- [ ] 1.2 `npx astro check` passes
-- [ ] 1.3 `npm test` passes
+- [x] 1.1 `npm run lint` passes
+- [x] 1.2 `npx astro check` passes
+- [x] 1.3 `npm test` passes
 
 #### Manual
 

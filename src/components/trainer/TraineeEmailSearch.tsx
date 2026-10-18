@@ -156,11 +156,12 @@ export default function TraineeEmailSearch({ idPrefix }: Props) {
               key={match}
               type="button"
               variant="outline"
+              className="w-full max-w-full min-w-0 shrink"
               onClick={() => {
                 choose(match);
               }}
             >
-              {match}
+              <span className="min-w-0 truncate">{match}</span>
             </Button>
           ))}
         </div>

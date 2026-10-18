@@ -63,7 +63,10 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
   }
 
   return (
-    <div ref={rootRef} className="relative z-20 w-max">
+    <div
+      ref={rootRef}
+      className="measurement-row:w-max measurement-row:max-w-none relative z-20 w-full max-w-full min-w-0"
+    >
       <div className="flex items-center gap-2" role="group" aria-label="Linked trainees">
         {previous === null ? (
           <Button type="button" variant="outline" size="icon" aria-label="Previous trainee" disabled>
@@ -79,14 +82,14 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
         <Button
           type="button"
           variant="outline"
-          className="grid"
+          className="measurement-row:max-w-none measurement-row:shrink-0 grid max-w-full min-w-0 shrink"
           aria-expanded={open}
           aria-label={selected.email}
           onClick={() => {
             setOpen((current) => !current);
           }}
         >
-          <span aria-hidden="true" className="invisible col-start-1 row-start-1 grid">
+          <span aria-hidden="true" className="measurement-row:static invisible absolute col-start-1 row-start-1 grid">
             {links.map((link) => (
               <span key={link.traineeId} className="col-start-1 row-start-1 flex items-center gap-2">
                 <ChevronDown className="shrink-0" aria-hidden="true" />
@@ -95,9 +98,9 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
               </span>
             ))}
           </span>
-          <span className="col-start-1 row-start-1 flex items-center gap-2">
+          <span className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
             <ChevronDown className="invisible shrink-0" aria-hidden="true" />
-            <span className="flex-1 text-center">{selected.email}</span>
+            <span className="min-w-0 flex-1 truncate text-center">{selected.email}</span>
             <ChevronDown className={cn("shrink-0", open && "rotate-180")} aria-hidden="true" />
           </span>
         </Button>
@@ -124,9 +127,14 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
           {links.map((link) => {
             const current = link.traineeId === selected.traineeId;
             return (
-              <Button key={link.traineeId} asChild variant={current ? "default" : "outline"}>
+              <Button
+                key={link.traineeId}
+                asChild
+                variant={current ? "default" : "outline"}
+                className="w-full max-w-full min-w-0 shrink"
+              >
                 <a href={traineeMeasurementsHref(link.traineeId)} aria-current={current ? "page" : undefined}>
-                  {link.email}
+                  <span className="min-w-0 truncate">{link.email}</span>
                 </a>
               </Button>
             );
