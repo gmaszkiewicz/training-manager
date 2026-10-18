@@ -1,7 +1,7 @@
 ---
-import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import MeasurementForm from "@/components/measurements/MeasurementForm";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import { addFormStorageKey, type PageSize } from "@/lib/measurement-page";
 import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
 
@@ -145,7 +145,7 @@ const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
     ) : (
       <>
         <h1 class="mb-3 text-xl font-bold text-foreground">Add your next measurement</h1>
-        <ServerError message="Could not load your measurements" />
+        <PageErrorToasts messages={["Could not load your measurements"]} client:load />
       </>
     )}
   </div>

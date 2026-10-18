@@ -9,11 +9,11 @@ import {
   ChevronsRight,
   CircleAlert,
   Plus,
-  X,
 } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
 import { ServerError } from "@/components/auth/ServerError";
 import { SubmitButton } from "@/components/auth/SubmitButton";
+import { ERROR_TOAST_MS, ErrorToastCard } from "@/components/measurements/ErrorToastCard";
 import MonthGrid from "@/components/measurements/MonthGrid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -555,27 +555,6 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-const ERROR_TOAST_MS = 10000;
-
-function ErrorToastCountdown() {
-  const [secondsLeft, setSecondsLeft] = useState(ERROR_TOAST_MS / 1000);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setSecondsLeft((current) => (current <= 1 ? 1 : current - 1));
-    }, 1000);
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, []);
-
-  return (
-    <span className="text-muted-foreground text-xs tabular-nums" aria-hidden="true">
-      ({secondsLeft} s)
-    </span>
-  );
-}
-
 function FieldErrorToasts({
   items,
   onDismiss,
@@ -635,29 +614,13 @@ function FieldErrorToasts({
   return createPortal(
     <div className="fixed right-4 bottom-4 z-50 flex w-[min(24rem,calc(100%-2rem))] flex-col gap-2">
       {items.map((item) => (
-        <div
-          key={item.id}
-          id={item.id}
-          role="status"
-          className="bg-background text-foreground border-border flex items-start gap-2 rounded-lg border p-4 shadow-lg"
-        >
-          <CircleAlert className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <p className="text-destructive min-w-0 flex-1 text-sm">{item.message}</p>
-          <div className="flex shrink-0 items-center gap-1">
-            <ErrorToastCountdown />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0"
-              aria-label="Dismiss error"
-              onClick={() => {
-                onDismiss(item.id);
-              }}
-            >
-              <X aria-hidden="true" />
-            </Button>
-          </div>
+        <div key={item.id} id={item.id}>
+          <ErrorToastCard
+            message={item.message}
+            onDismiss={() => {
+              onDismiss(item.id);
+            }}
+          />
         </div>
       ))}
     </div>,
