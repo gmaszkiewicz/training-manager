@@ -667,8 +667,8 @@ export default function MeasurementBrowser({
                   key={entry.id}
                   className="bg-muted text-card-foreground border-border rounded-lg border p-4 text-sm"
                 >
-                  <div className="flex flex-nowrap items-start gap-2">
-                    <div className="w-56 max-w-56 min-w-56 shrink-0">
+                  <div className="measurement-row:flex-row measurement-row:flex-nowrap flex flex-col items-start gap-2">
+                    <div className="measurement-row:w-56 measurement-row:max-w-56 measurement-row:min-w-56 measurement-row:shrink-0 w-full min-w-0">
                       <div className="text-muted-foreground mb-1">Date and time</div>
                       <time dateTime={display.dateTime} className="text-card-foreground font-semibold">
                         {display.text}
@@ -693,7 +693,10 @@ export default function MeasurementBrowser({
                       )}
                     </div>
                     {measurementFields.map((field) => (
-                      <div key={field.field} className="w-28 max-w-28 min-w-28 shrink-0">
+                      <div
+                        key={field.field}
+                        className="measurement-row:w-28 measurement-row:max-w-28 measurement-row:min-w-28 measurement-row:shrink-0 w-full min-w-0"
+                      >
                         <div className="text-muted-foreground mb-1">
                           {field.label} {field.unit}
                         </div>

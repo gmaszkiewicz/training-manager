@@ -801,11 +801,11 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       noValidate
     >
       <div className="space-y-4">
-        <div className="flex flex-nowrap items-start gap-2">
+        <div className="measurement-row:flex-row measurement-row:flex-nowrap flex flex-col items-start gap-2">
           <div
             ref={dateFieldRef}
             className={cn(
-              "group relative w-56 max-w-56 min-w-56 shrink-0 focus-within:z-40 hover:z-40",
+              "group measurement-row:w-56 measurement-row:max-w-56 measurement-row:min-w-56 measurement-row:shrink-0 relative w-full min-w-0 focus-within:z-40 hover:z-40",
               errorsRevealed && errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && "z-40",
               dateOpen && errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && "z-40",
             )}
@@ -856,7 +856,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
               {dateOpen && minuteParts !== null ? (
                 <div
                   className={cn(
-                    "bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-max flex-col gap-2 rounded-md border p-2 shadow-md",
+                    "bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-max max-w-full flex-col gap-2 rounded-md border p-2 shadow-md",
                   )}
                 >
                   <CalendarMonth
@@ -935,7 +935,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
               <div
                 key={field.field}
                 className={cn(
-                  "group relative w-28 max-w-28 min-w-28 shrink-0 focus-within:z-40 hover:z-40 [&_p]:block [&_p]:break-words",
+                  "group measurement-row:w-28 measurement-row:max-w-28 measurement-row:min-w-28 measurement-row:shrink-0 relative w-full min-w-0 focus-within:z-40 hover:z-40 [&_p]:block [&_p]:break-words",
                   errorsRevealed && "z-40",
                 )}
               >

@@ -79,6 +79,8 @@
 @theme inline {
   /* Wide enough for the measurement row on the journal and trainer review surfaces. */
   --max-width-kitchen-sink: 110rem;
+  /* Viewport that holds that row, including the scrollbar gutter. */
+  --breakpoint-measurement-row: calc(80rem + 4px + 15px);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
