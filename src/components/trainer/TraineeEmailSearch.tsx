@@ -165,7 +165,7 @@ export default function TraineeEmailSearch({ idPrefix, serverError = null }: Pro
   }
 
   return (
-    <div ref={rootRef} className="relative z-30 mb-2">
+    <div ref={rootRef} className="relative z-40 mb-2">
       <Input
         id={`${idPrefix}email`}
         name="email"

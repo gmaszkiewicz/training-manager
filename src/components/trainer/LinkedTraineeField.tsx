@@ -63,7 +63,7 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
   }
 
   return (
-    <div ref={rootRef} className="relative z-20 w-full max-w-full min-w-0">
+    <div ref={rootRef} className="relative z-30 w-full max-w-full min-w-0">
       <div className="flex w-full min-w-0 items-center gap-2" role="group" aria-label="Linked trainees">
         {previous === null ? (
           <Button type="button" variant="outline" size="icon" aria-label="Previous trainee" disabled>

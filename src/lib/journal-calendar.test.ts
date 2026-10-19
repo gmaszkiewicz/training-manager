@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { listMonthChange, monthGrid, monthLabel, openingDay, weekContaining } from "@/lib/journal-calendar";
+import {
+  listMonthChange,
+  monthGrid,
+  monthLabel,
+  openingDay,
+  weekContaining,
+  widestMonthLabel,
+} from "@/lib/journal-calendar";
 
 const weekOf11October = [
   "2026-10-05",
@@ -68,6 +75,13 @@ describe("monthGrid", () => {
 describe("monthLabel", () => {
   it("uses a fixed English month name", () => {
     expect(monthLabel("2026-10")).toBe("October 2026");
+  });
+});
+
+describe("widestMonthLabel", () => {
+  it("uses September and the year so the month control stays one width", () => {
+    expect(widestMonthLabel("2026-05")).toBe("September 2026");
+    expect(widestMonthLabel("2025-09")).toBe("September 2025");
   });
 });
 
