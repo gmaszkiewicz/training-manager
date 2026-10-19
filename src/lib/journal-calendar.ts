@@ -71,6 +71,10 @@ export function monthLabel(month: string): string {
   return `${ENGLISH_MONTHS[monthNumber - 1]} ${year}`;
 }
 
+export function widestMonthLabel(month: string): string {
+  return `September ${month.slice(0, 4)}`;
+}
+
 export function openingDay(month: string, today: string, newestMeasuredOn: string | null): string {
   if (calendarMonth(today) === month) {
     return today;

@@ -1,8 +1,25 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronLeft, ChevronRight, StickyNote, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Ellipsis,
+  Ruler,
+  Scale,
+  StickyNote,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { monthLabel } from "@/lib/journal-calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { monthLabel, widestMonthLabel } from "@/lib/journal-calendar";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
 import {
   dayStorageKey,
@@ -20,8 +37,9 @@ import {
   viewOf,
   type PageSize,
 } from "@/lib/measurement-page";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import type { FieldDelta, MeasurementWithDeltas } from "@/types";
+import type { FieldDelta, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   entries: MeasurementWithDeltas[];
@@ -63,12 +81,6 @@ function namedId(id: string | null): string | null {
     return null;
   }
   return id;
-}
-
-function monthButtonLabels(months: readonly string[], current: string): string[] {
-  const labels = new Set(months.map((listedMonth) => monthLabel(listedMonth)));
-  labels.add(monthLabel(current));
-  return [...labels];
 }
 
 function formatMeasurement(value: number): string {
@@ -132,21 +144,33 @@ function deltaCaption(delta: FieldDelta | undefined): { text: string; muted: boo
   };
 }
 
-function syncMetricScroll(event: { currentTarget: HTMLDivElement }): void {
-  const table = event.currentTarget.closest("[data-measurement-table]");
-  if (!(table instanceof HTMLElement)) {
-    return;
-  }
-  const left = event.currentTarget.scrollLeft;
-  for (const node of table.querySelectorAll<HTMLElement>("[data-metric-scroll]")) {
-    if (node !== event.currentTarget && node.scrollLeft !== left) {
-      node.scrollLeft = left;
-    }
-  }
-}
+const metricColumnClass = "w-[4.875rem] measurement-row:w-[5.5rem]";
+const dateColumnClass = "w-28 measurement-row:w-[9.75rem]";
+const measurementHeaderIcon: Record<MeasurementField, LucideIcon> = {
+  weight_kg: Scale,
+  chest_cm: Ruler,
+  waist_cm: Ruler,
+  arms_cm: Ruler,
+  thigh_cm: Ruler,
+  calf_cm: Ruler,
+  hips_cm: Ruler,
+  navel_cm: Ruler,
+};
+const stickyHeaderClass = "sticky z-10 bg-muted";
+const stickyBodyClass =
+  "sticky z-10 bg-background group-hover:bg-muted/50 group-data-[state=selected]:bg-muted group-data-[state=selected]:group-hover:bg-muted";
 
-const metricColumnClass = "w-[4.875rem] shrink-0 measurement-row:w-[5.5rem]";
-const dateColumnClass = "w-28 shrink-0 measurement-row:w-[9.75rem]";
+function MetricHeader({ field }: { field: (typeof measurementFields)[number] }) {
+  const Icon = measurementHeaderIcon[field.field];
+  return (
+    <span className="flex flex-col items-center gap-1">
+      <Icon aria-hidden="true" className="size-4" />
+      <span>
+        {field.label} {field.unit}
+      </span>
+    </span>
+  );
+}
 
 function subscribeToNothing(): () => void {
   return () => undefined;
@@ -207,92 +231,108 @@ function DeleteConfirmToast({
   );
 }
 
-const maxOpenNotes = 5;
-
-function NoteToastStack({ entries, onClose }: { entries: MeasurementWithDeltas[]; onClose: (id: string) => void }) {
-  const closeRef = useRef<HTMLButtonElement>(null);
+function NoteDialog({ entry, onClose }: { entry: MeasurementWithDeltas; onClose: () => void }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const onCloseRef = useRef(onClose);
   const onClient = useSyncExternalStore(
     subscribeToNothing,
     () => true,
     () => false,
   );
-  const newestId = entries.length === 0 ? null : entries[entries.length - 1].id;
 
   useEffect(() => {
-    if (!onClient || newestId === null) {
-      return;
-    }
-    closeRef.current?.focus();
-  }, [newestId, onClient]);
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
-    if (!onClient || newestId === null) {
+    const dialog = dialogRef.current;
+    if (!onClient || dialog === null) {
       return;
     }
-    const id = newestId;
+    if (!dialog.open) {
+      dialog.show();
+    }
+    const closeButton = dialog.querySelector("button");
+    closeButton?.focus();
+    function onDialogClose() {
+      onCloseRef.current();
+    }
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node) || dialog.contains(target)) {
+        return;
+      }
+      if (target instanceof Element && target.closest("[data-note-id]") !== null) {
+        return;
+      }
+      event.preventDefault();
+      dialog.close();
+    }
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        onClose(id);
+        dialog.close();
       }
     }
+    dialog.addEventListener("close", onDialogClose);
+    document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
     return () => {
+      dialog.removeEventListener("close", onDialogClose);
+      document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
+      if (dialog.open) {
+        dialog.close();
+      }
     };
-  }, [newestId, onClient, onClose]);
+  }, [onClient]);
 
-  if (!onClient || entries.length === 0) {
+  if (!onClient) {
     return null;
   }
 
+  const display = measuredOnDisplay(entry.measured_on);
+  const titleId = `measurement-note-${entry.id}`;
+
   return createPortal(
-    <div className="fixed right-4 bottom-4 z-50 flex w-[min(24rem,calc(100%-2rem))] flex-col gap-2">
-      {entries.map((entry) => {
-        const display = measuredOnDisplay(entry.measured_on);
-        const titleId = `measurement-note-toast-${entry.id}`;
-        return (
-          <div
-            key={entry.id}
-            role="dialog"
-            aria-labelledby={titleId}
-            className="bg-background text-foreground border-border flex flex-col gap-3 rounded-lg border p-4 shadow-lg"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p id={titleId} className="text-sm font-semibold">
-                  Note
-                </p>
-                <p className="text-muted-foreground text-xs">{display.text}</p>
-              </div>
-              <Button
-                ref={entry.id === newestId ? closeRef : undefined}
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-8 shrink-0"
-                aria-label={`Close note from ${display.text}`}
-                onClick={() => {
-                  onClose(entry.id);
-                }}
-              >
-                <X aria-hidden="true" />
-              </Button>
-            </div>
-            <p className="text-sm wrap-break-word whitespace-pre-wrap">{entry.note}</p>
-          </div>
-        );
-      })}
-    </div>,
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      className="bg-background text-foreground border-border fixed inset-0 z-50 m-auto hidden h-fit max-h-[min(32rem,calc(100%-2rem))] w-[min(24rem,calc(100%-2rem))] max-w-none flex-col gap-3 rounded-lg border p-4 shadow-lg backdrop:bg-transparent open:flex"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p id={titleId} className="text-sm font-semibold">
+            Note
+          </p>
+          <p className="text-muted-foreground text-xs">{display.text}</p>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-8 shrink-0"
+          aria-label={`Close note from ${display.text}`}
+          onClick={() => {
+            dialogRef.current?.close();
+          }}
+        >
+          <X aria-hidden="true" />
+        </Button>
+      </div>
+      <p className="min-h-0 overflow-y-auto text-sm wrap-break-word whitespace-pre-wrap">{entry.note}</p>
+    </dialog>,
     document.body,
   );
 }
 
 function NoteOpenButton({
+  noteId,
   label,
   expanded,
   className,
   onClick,
 }: {
+  noteId: string;
   label: string;
   expanded: boolean;
   className?: string;
@@ -303,31 +343,39 @@ function NoteOpenButton({
       type="button"
       variant="ghost"
       size="icon"
-      className={cn("size-8", className)}
+      className={cn("size-12", className)}
       aria-label={label}
       aria-expanded={expanded}
+      data-note-id={noteId}
       onClick={onClick}
     >
-      <StickyNote aria-hidden="true" />
+      <StickyNote className="size-4" aria-hidden="true" />
     </Button>
   );
 }
 
 function NoteIconSlot({
+  noteId,
   hasNote,
   label,
   expanded,
+  className,
   onClick,
 }: {
+  noteId: string;
   hasNote: boolean;
   label: string;
   expanded: boolean;
+  className?: string;
   onClick: () => void;
 }) {
   if (!hasNote) {
     return (
       <span
-        className="text-muted-foreground relative inline-flex size-8 shrink-0 items-center justify-center"
+        className={cn(
+          "text-muted-foreground relative inline-flex size-12 shrink-0 items-center justify-center",
+          className,
+        )}
         aria-hidden="true"
       >
         <StickyNote className="size-4" />
@@ -336,7 +384,41 @@ function NoteIconSlot({
     );
   }
 
-  return <NoteOpenButton label={label} expanded={expanded} onClick={onClick} />;
+  return <NoteOpenButton noteId={noteId} label={label} expanded={expanded} className={className} onClick={onClick} />;
+}
+
+function RowActions({
+  displayText,
+  editHref,
+  deleteHref,
+}: {
+  displayText: string;
+  editHref: string;
+  deleteHref: string;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-12"
+          aria-label={`Actions for measurement from ${displayText}`}
+        >
+          <Ellipsis aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <a href={editHref}>Edit</a>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a href={deleteHref}>Delete</a>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 function MeasurementEntry({
@@ -344,59 +426,59 @@ function MeasurementEntry({
   readOnly,
   openEditingId,
   noteOpen,
+  selected,
+  isLast,
   onOpenNote,
+  onSelectedChange,
 }: {
   entry: MeasurementWithDeltas;
   readOnly: boolean;
   openEditingId: string | null;
   noteOpen: boolean;
+  selected: boolean;
+  isLast: boolean;
   onOpenNote: () => void;
+  onSelectedChange: (selected: boolean) => void;
 }) {
   const display = measuredOnDisplay(entry.measured_on);
   const [dayText, timeText] = display.text.split(" ");
   const hasNote = entry.note !== null && entry.note !== "";
   const noteLabel = `Show note from ${display.text}`;
+  const selectedState = selected ? "selected" : undefined;
 
   return (
-    <div className="border-border w-full max-w-full min-w-0 border-b last:border-b-0">
-      <div className="flex items-stretch">
-        <div className={cn(dateColumnClass, "measurement-row:px-3 px-2 py-2")}>
+    <Fragment>
+      <TableRow data-state={selectedState} className={cn("group border-b-0", !isLast && "measurement-row:border-b")}>
+        <TableCell className={cn("w-10 px-0 text-center", stickyBodyClass, "left-0")}>
+          <Checkbox
+            checked={selected}
+            onCheckedChange={(checked) => {
+              onSelectedChange(checked === true);
+            }}
+            aria-label={`Select measurement from ${display.text}`}
+          />
+        </TableCell>
+        <TableCell className={cn(dateColumnClass, stickyBodyClass, "measurement-row:px-3 left-10 px-2")}>
           <time dateTime={display.dateTime} className="block">
             <span className="measurement-row:hidden block font-semibold">{dayText}</span>
             <span className="text-muted-foreground measurement-row:hidden block">{timeText}</span>
             <span className="measurement-row:inline hidden font-semibold whitespace-nowrap">{display.text}</span>
           </time>
           {readOnly ? null : (
-            <div className="measurement-row:hidden mt-1 flex gap-2">
-              <a
-                href={measurementEditHref(entry.id)}
-                aria-label={`Edit measurement from ${display.text}`}
-                className={textActionClassName}
-              >
-                Edit
-              </a>
-              <a
-                href={measurementDeleteHref(entry.id, openEditingId)}
-                aria-label={`Delete measurement from ${display.text}`}
-                className={textActionClassName}
-              >
-                Delete
-              </a>
+            <div className="measurement-row:hidden mt-1">
+              <RowActions
+                displayText={display.text}
+                editHref={measurementEditHref(entry.id)}
+                deleteHref={measurementDeleteHref(entry.id, openEditingId)}
+              />
             </div>
           )}
-        </div>
-        <div
-          data-metric-scroll
-          className="measurement-row:w-max measurement-row:flex-none measurement-row:overflow-visible flex min-w-0 flex-1 overflow-x-auto"
-          onScroll={syncMetricScroll}
-        >
-          {measurementFields.map((field) => {
-            const caption = deltaCaption(entry.deltas?.[field.field]);
-            return (
-              <div
-                key={field.field}
-                className={cn(metricColumnClass, "flex flex-col items-center justify-center py-2 text-center")}
-              >
+        </TableCell>
+        {measurementFields.map((field) => {
+          const caption = deltaCaption(entry.deltas?.[field.field]);
+          return (
+            <TableCell key={field.field} className={cn(metricColumnClass, "px-1 py-2 text-center")}>
+              <div className="flex flex-col items-center justify-center">
                 <div
                   className="font-semibold"
                   aria-label={accessibleValue(field.label, entry[field.field], field.unit)}
@@ -412,35 +494,54 @@ function MeasurementEntry({
                   {caption.text}
                 </p>
               </div>
-            );
-          })}
-        </div>
-        <div className="measurement-row:flex hidden min-w-0 flex-1 items-center overflow-hidden px-2.5 py-2">
-          <NoteIconSlot hasNote={hasNote} label={noteLabel} expanded={noteOpen} onClick={onOpenNote} />
-        </div>
+            </TableCell>
+          );
+        })}
+        <TableCell className="measurement-row:table-cell hidden p-0">
+          <NoteIconSlot
+            noteId={entry.id}
+            hasNote={hasNote}
+            label={noteLabel}
+            expanded={noteOpen}
+            className="h-full min-h-12 w-12"
+            onClick={onOpenNote}
+          />
+        </TableCell>
         {readOnly ? null : (
-          <div className="measurement-row:flex hidden w-[4.75rem] shrink-0 flex-col justify-center gap-1 px-2 py-2">
-            <a
-              href={measurementEditHref(entry.id)}
-              aria-label={`Edit measurement from ${display.text}`}
-              className={cn("w-fit", textActionClassName)}
-            >
-              Edit
-            </a>
-            <a
-              href={measurementDeleteHref(entry.id, openEditingId)}
-              aria-label={`Delete measurement from ${display.text}`}
-              className={cn("w-fit", textActionClassName)}
-            >
-              Delete
-            </a>
-          </div>
+          <TableCell className="measurement-row:table-cell hidden w-16 px-0">
+            <div className="flex items-center justify-center">
+              <RowActions
+                displayText={display.text}
+                editHref={measurementEditHref(entry.id)}
+                deleteHref={measurementDeleteHref(entry.id, openEditingId)}
+              />
+            </div>
+          </TableCell>
         )}
-      </div>
-      <div className="measurement-row:hidden px-2 pb-2">
-        <NoteIconSlot hasNote={hasNote} label={noteLabel} expanded={noteOpen} onClick={onOpenNote} />
-      </div>
-    </div>
+      </TableRow>
+      <TableRow data-state={selectedState} className="group measurement-row:hidden">
+        <TableCell
+          colSpan={readOnly ? 11 : 12}
+          className="bg-background group-data-[state=selected]:bg-muted px-0 py-2"
+        >
+          <div
+            className={cn(
+              "sticky left-0 z-10 flex w-10 justify-center",
+              "bg-background group-hover:bg-muted/50 group-data-[state=selected]:bg-muted group-data-[state=selected]:group-hover:bg-muted",
+            )}
+          >
+            <NoteIconSlot
+              noteId={entry.id}
+              hasNote={hasNote}
+              label={noteLabel}
+              expanded={noteOpen}
+              className="w-10"
+              onClick={onOpenNote}
+            />
+          </div>
+        </TableCell>
+      </TableRow>
+    </Fragment>
   );
 }
 
@@ -620,7 +721,8 @@ export default function MeasurementBrowser({
         savedDay: null,
       });
   const initialMonth = localInitial?.day ?? serverMonth ?? focusedMonth ?? measurementMonth(todayValue);
-  const [openNoteIds, setOpenNoteIds] = useState<string[]>([]);
+  const [openNoteId, setOpenNoteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [pageSize, setPageSize] = useState<PageSize>(isPageSize(pageSizeProp) ? pageSizeProp : defaultPageSize);
   const [month, setMonth] = useState(initialMonth);
   const [page, setPage] = useState(localInitial?.page ?? pageProp ?? 1);
@@ -748,6 +850,35 @@ export default function MeasurementBrowser({
   const pageCount = paged ? remotePageCount : localPageCount;
   const currentPage = paged ? page : localPage;
   const visibleEntries = paged ? remoteEntries : pageSlice(monthRows, localPage, pageSize);
+  const visibleSelectedCount = visibleEntries.filter((entry) => selectedIds.has(entry.id)).length;
+  const allVisibleSelected = visibleEntries.length > 0 && visibleSelectedCount === visibleEntries.length;
+  const headerChecked = allVisibleSelected ? true : visibleSelectedCount > 0 ? "indeterminate" : false;
+
+  function setVisibleSelected(selected: boolean): void {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      for (const entry of visibleEntries) {
+        if (selected) {
+          next.add(entry.id);
+        } else {
+          next.delete(entry.id);
+        }
+      }
+      return next;
+    });
+  }
+
+  function setEntrySelected(id: string, selected: boolean): void {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (selected) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
   const showPager = paged ? pageCount > 1 : monthRows.length > pageSize;
   const noMeasurementsYet = paged
     ? remoteEntries.length === 0 && remotePageCount === 1 && remoteDates.length <= 1
@@ -799,13 +930,8 @@ export default function MeasurementBrowser({
       ? null
       : ((paged ? remoteEntries : entries).find((entry) => entry.id === openConfirmingId) ?? null);
   const noteSource = paged ? remoteEntries : entries;
-  const noteEntries = openNoteIds.flatMap((id) => {
-    const entry = noteSource.find((item) => item.id === id);
-    return entry?.note ? [entry] : [];
-  });
-  const closeNote = useCallback((id: string) => {
-    setOpenNoteIds((current) => current.filter((item) => item !== id));
-  }, []);
+  const noteEntry = openNoteId === null ? null : (noteSource.find((item) => item.id === openNoteId) ?? null);
+  const visibleNote = noteEntry !== null && noteEntry.note !== null && noteEntry.note !== "" ? noteEntry : null;
 
   function traineeForRead(): string | null {
     if (!readOnly || subjectId === null) {
@@ -891,10 +1017,7 @@ export default function MeasurementBrowser({
   return (
     <div className="w-full">
       <div className="measurement-row:gap-4 mt-6 flex w-full flex-nowrap items-center gap-1">
-        <div
-          ref={monthFieldRef}
-          className="measurement-row:w-auto measurement-row:flex-none relative z-10 min-w-0 flex-1"
-        >
+        <div ref={monthFieldRef} className="relative z-20 w-auto min-w-0 flex-none">
           <div className="measurement-row:gap-2 flex min-w-0 items-center gap-1" role="group" aria-label="Month">
             <Button
               type="button"
@@ -914,24 +1037,17 @@ export default function MeasurementBrowser({
             <Button
               type="button"
               variant="outline"
-              className="measurement-row:w-auto measurement-row:max-w-none measurement-row:flex-none measurement-row:shrink-0 measurement-row:overflow-visible measurement-row:px-4 grid w-full max-w-full min-w-0 flex-1 shrink overflow-hidden px-2"
+              className="measurement-row:px-4 grid w-auto max-w-none min-w-0 flex-none shrink-0 overflow-visible px-2"
               aria-expanded={monthListOpen}
               aria-label={monthLabel(month)}
               onClick={() => {
                 setMonthListOpen((open) => !open);
               }}
             >
-              <span
-                aria-hidden="true"
-                className="measurement-row:static measurement-row:h-auto measurement-row:w-auto measurement-row:overflow-visible invisible absolute col-start-1 row-start-1 grid h-0 w-0 overflow-hidden"
-              >
-                {monthButtonLabels(dates, month).map((label) => (
-                  <span key={label} className="col-start-1 row-start-1 flex items-center gap-2">
-                    <ChevronDown className="shrink-0" aria-hidden="true" />
-                    <span className="text-center">{label}</span>
-                    <ChevronDown className="shrink-0" aria-hidden="true" />
-                  </span>
-                ))}
+              <span aria-hidden="true" className="invisible col-start-1 row-start-1 flex items-center gap-2">
+                <ChevronDown className="measurement-row:inline invisible hidden shrink-0" aria-hidden="true" />
+                <span className="text-center">{widestMonthLabel(month)}</span>
+                <ChevronDown className="measurement-row:inline invisible hidden shrink-0" aria-hidden="true" />
               </span>
               <span className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
                 <ChevronDown className="measurement-row:inline invisible hidden shrink-0" aria-hidden="true" />
@@ -1012,45 +1128,61 @@ export default function MeasurementBrowser({
         <>
           <div
             data-measurement-table
-            className="border-border bg-background mt-6 w-full max-w-full min-w-0 overflow-hidden rounded-[10px] border text-sm"
+            className="border-border bg-background mt-6 w-full max-w-full min-w-0 overflow-hidden rounded-md border"
           >
-            <div className="bg-muted text-muted-foreground flex items-center border-b text-xs">
-              <div className={cn(dateColumnClass, "measurement-row:px-3 px-2 py-2")}>
-                <span className="measurement-row:hidden">Date</span>
-                <span className="measurement-row:inline hidden">Date and time</span>
-              </div>
-              <div
-                data-metric-scroll
-                className="measurement-row:w-max measurement-row:flex-none measurement-row:overflow-visible flex min-w-0 flex-1 overflow-x-auto"
-                onScroll={syncMetricScroll}
-              >
-                {measurementFields.map((field) => (
-                  <div key={field.field} className={cn(metricColumnClass, "px-1 py-2 text-center")}>
-                    {field.label} {field.unit}
-                  </div>
+            <Table className="w-max min-w-full">
+              <TableHeader>
+                <TableRow className="bg-muted hover:bg-muted">
+                  <TableHead className={cn("w-10 px-0 text-center", stickyHeaderClass, "left-0")}>
+                    <Checkbox
+                      checked={headerChecked}
+                      onCheckedChange={(checked) => {
+                        setVisibleSelected(checked === true);
+                      }}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
+                  <TableHead className={cn(dateColumnClass, stickyHeaderClass, "measurement-row:px-3 left-10 px-2")}>
+                    <span className="measurement-row:hidden">Date</span>
+                    <span className="measurement-row:inline hidden">Date and time</span>
+                  </TableHead>
+                  {measurementFields.map((field) => (
+                    <TableHead
+                      key={field.field}
+                      className={cn(metricColumnClass, "h-auto px-1 py-2 text-center whitespace-normal")}
+                    >
+                      <MetricHeader field={field} />
+                    </TableHead>
+                  ))}
+                  <TableHead className="measurement-row:table-cell hidden h-auto px-0 py-2">
+                    <span className="flex w-12 flex-col items-center gap-1">
+                      <StickyNote aria-hidden="true" className="size-4" />
+                      <span>Note</span>
+                    </span>
+                  </TableHead>
+                  {readOnly ? null : <TableHead className="measurement-row:table-cell hidden w-16" />}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleEntries.map((entry, index) => (
+                  <MeasurementEntry
+                    key={entry.id}
+                    entry={entry}
+                    readOnly={readOnly}
+                    openEditingId={openEditingId}
+                    noteOpen={openNoteId === entry.id}
+                    selected={selectedIds.has(entry.id)}
+                    isLast={index === visibleEntries.length - 1}
+                    onOpenNote={() => {
+                      setOpenNoteId((current) => (current === entry.id ? null : entry.id));
+                    }}
+                    onSelectedChange={(selected) => {
+                      setEntrySelected(entry.id, selected);
+                    }}
+                  />
                 ))}
-              </div>
-              <div className="measurement-row:block hidden min-w-0 flex-1 overflow-hidden px-2.5">Note</div>
-              {readOnly ? null : <div className="measurement-row:block hidden w-[4.75rem] shrink-0" />}
-            </div>
-            {visibleEntries.map((entry) => (
-              <MeasurementEntry
-                key={entry.id}
-                entry={entry}
-                readOnly={readOnly}
-                openEditingId={openEditingId}
-                noteOpen={openNoteIds.includes(entry.id)}
-                onOpenNote={() => {
-                  setOpenNoteIds((current) => {
-                    if (current.includes(entry.id)) {
-                      return current.filter((id) => id !== entry.id);
-                    }
-                    const next = [...current, entry.id];
-                    return next.length > maxOpenNotes ? next.slice(next.length - maxOpenNotes) : next;
-                  });
-                }}
-              />
-            ))}
+              </TableBody>
+            </Table>
           </div>
           {showPager ? (
             <div className="mt-4 flex flex-wrap items-center justify-end gap-2 text-sm">
@@ -1088,7 +1220,14 @@ export default function MeasurementBrowser({
       {confirmingEntry === null ? null : (
         <DeleteConfirmToast entry={confirmingEntry} editingId={openEditingId} cancelHref={cancelHref} />
       )}
-      {noteEntries.length === 0 ? null : <NoteToastStack entries={noteEntries} onClose={closeNote} />}
+      {visibleNote === null ? null : (
+        <NoteDialog
+          entry={visibleNote}
+          onClose={() => {
+            setOpenNoteId(null);
+          }}
+        />
+      )}
     </div>
   );
 }

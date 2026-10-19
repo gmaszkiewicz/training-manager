@@ -50,7 +50,8 @@ const sampleEntry: MeasurementWithDeltas = {
         <p class="text-muted-foreground text-sm">
           TraineeJournal with measurements loaded, one sample entry (every field, note, and deltas), and no server
           error. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on screen. The sample row
-          shows Edit and Delete. Form ids are unprefixed.
+          shows selection checkboxes, metric and note headers with an icon, and a row actions menu with Edit
+          and Delete. Form ids are unprefixed.
         </p>
         <TraineeJournal measurementsLoaded={true} entries={[sampleEntry]} serverError={null} today="2026-09-15" />
       </section>
@@ -60,8 +61,9 @@ const sampleEntry: MeasurementWithDeltas = {
           Hover
         </h2>
         <p class="text-muted-foreground text-sm">
-          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. The Edit and Delete links in the
-          Default journal underline on hover. List row chrome has no hover.
+          Submit uses Button <code class="text-foreground">hover:bg-primary/90</code>. The row actions button in the
+          Default journal uses the ghost button hover, and its menu items use the shared accent hover. The measurement
+          row uses the data-table hover.
         </p>
       </section>
 
@@ -70,8 +72,9 @@ const sampleEntry: MeasurementWithDeltas = {
           Focus-visible
         </h2>
         <p class="text-muted-foreground text-sm">
-          Tab through the date field, one measurement field, the note, the submit button, and the Edit and Delete links
-          in the Default journal above. The ring is the shared <code class="text-foreground">--ring</code>.
+          Tab through the date field, one measurement field, the note, the submit button, the row selection checkbox,
+          and the row actions button in the Default journal above. The ring is the shared{" "}
+          <code class="text-foreground">--ring</code>.
         </p>
       </section>
 
@@ -92,8 +95,7 @@ const sampleEntry: MeasurementWithDeltas = {
         </h2>
         <p class="text-muted-foreground text-sm">
           TraineeJournal with measurements not loaded (toast "Could not load your measurements", form absent). FormField
-          with a field error; id is
-          sink-scoped so it does not collide with the Default form.
+          with a field error; id is sink-scoped so it does not collide with the Default form.
         </p>
         <TraineeJournal measurementsLoaded={false} entries={[]} serverError={null} />
         <JournalSinkStates client:load variant="error" />
