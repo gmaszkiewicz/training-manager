@@ -52,8 +52,6 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Auth kitchen sink: `/kitchen-sink/auth`.
 - Journal kitchen sink: `/kitchen-sink/journal`.
 - Trainer kitchen sink: `/kitchen-sink/trainer`.
-- Tokeny: src/styles/global.css (:root, .dark, @theme inline). Nowy kolor = nowy token, nigdy literał.
-- Komponenty: src/components/ui. Zanim napiszesz nowy, sprawdź ten katalog; brakujący dodaj z rejestru shadcn.
 
 ### Environment
 
