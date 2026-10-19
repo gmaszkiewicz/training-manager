@@ -142,14 +142,20 @@ At 360px the content box is 327px (viewport, minus the 15px scrollbar gutter, mi
 
 #### Manual Verification:
 
-Progress rows 1.4–1.9 keep their original titles. These checks are the accepted meaning:
+Progress rows 1.4–1.15 are the accepted checks:
 
-- At 360px the trainee can read and type the date, scroll the metric strip to each of the eight metrics, type the note, and submit. Weight is inside the viewport. The page does not clip the card.
-- The open calendar, including its day buttons, fits inside a 360px viewport
-- Each metric still shows the difference under the value on the add form and on a saved entry
-- At 1240px (`77.5rem`) or wider the date and eight metrics sit on one row, at `9.75rem` and `5.5rem`
-- At 360px a trainer can search, link, and move between linked trainees, and a long email truncates instead of pushing the arrows off screen
-- The journal and trainer kitchen sinks follow the same narrow strip and wide row
+- At 360px, open "Add your next measurement", type the date and the note, scroll the metric strip through all eight metrics, and submit. Weight stays inside the viewport. The card is not clipped.
+- The open calendar, including its day buttons, fits inside a 360px viewport.
+- Each metric shows the difference under the value on the add form and on a saved entry. No previous value shows an em dash. An unchanged value shows `0.0`. A value outside the field limit shows that limit instead of the difference.
+- At 1240px (`77.5rem`) or wider the date (`9.75rem`) and eight metrics (`5.5rem`) sit on one row, and the add-form strip does not scroll.
+- A saved entry is a table. Below `77.5rem` the checkbox and date stay put while the metrics scroll, the date is the day and the time on two lines, and Edit and Delete sit in the actions menu under the date. At `77.5rem` the date is one line and Edit and Delete are their own column. The note icon opens a dialog. A row with no note does not.
+- The add form remembers open or closed across a reload. With it closed, `/measurements?error=Could%20not%20save%20the%20measurement` leaves it open.
+- At 360px the month buttons and the entries-per-page buttons stay on one line.
+- At 360px a trainer can search, link, and move between linked trainees. A long email truncates and the arrows stay on screen. Submitting an empty email shows "Enter an email address".
+- Below `77.5rem` the top-bar links are inside Menu. At `77.5rem` they sit in the bar. Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password use the canvas background and a column no wider than `74rem`.
+- The journal with no measurements shows "Could not load your measurements" and no form. The trainer panel shows "Could not load trainees", "Could not load measurements", and "No trainee with that email" the same way. A later month or page fetch that fails leaves the current page in place with no toast.
+- The footer libraries dialog closes when the click is the dialog itself or Close. A click inside the dependency list leaves it open.
+- The journal and trainer kitchen sinks follow the same narrow strip and wide row.
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -187,7 +193,7 @@ Leave `tests/e2e/seed.spec.ts` unchanged.
 
 #### Manual Verification:
 
-Progress row 2.3 keeps its original title. The accepted check: the 360px run shows the date and Weight inside the viewport and Navel to the right of Weight, and the wide run shows the metrics on one row.
+Progress row 2.3: the 360px run shows the date and Weight inside the viewport and Navel to the right of Weight, and the wide run shows the metrics on one row.
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -205,10 +211,18 @@ Progress row 2.3 keeps its original title. The accepted check: the 360px run sho
 
 ### Manual Testing Steps:
 
-1. At 360px, as a trainee, type the date and the note, scroll the metric strip through each metric, open the calendar, and confirm the day buttons fit. Confirm a difference sits under each metric on the add form and on a saved entry.
-2. At 1240px (`77.5rem`) or wider, confirm the date and eight metrics are one row.
-3. At 360px, as a trainer, search, link, and use the previous and next arrows with a long email.
-4. Repeat the narrow and wide checks on `/kitchen-sink/journal` and `/kitchen-sink/trainer`.
+1. At 360px, as a trainee, open "Add your next measurement". Type the date and the note, scroll the metric strip through Weight, Chest, Waist, Arm, Thigh, Calf, Hips, and Navel, and submit. Weight stays inside the viewport and the card is not clipped. Close the disclosure, reload, and confirm it stays closed. Open it, reload, and confirm it stays open. Close it again, then open `/measurements?error=Could%20not%20save%20the%20measurement` and confirm the disclosure is open.
+2. At 360px, open the calendar and confirm the day buttons fit in the viewport.
+3. On the add form and on a saved entry, confirm the difference sits under each metric. A first entry shows an em dash. An unchanged value shows `0.0`. Type a weight outside 20–400 and confirm `20–400` replaces the difference.
+4. At 1240px (`77.5rem`) or wider, confirm the date (`9.75rem`) and eight metrics (`5.5rem`) are one row and the add-form strip does not scroll.
+5. At 360px, on a saved entry, scroll the table sideways. The checkbox and the date stay put. The date is the day and the time on two lines. Edit and Delete are in the actions menu under the date. The note icon opens a dialog with the note. A row with no note shows a crossed-out icon and does not open. Month buttons and the entries-per-page buttons stay on one line.
+6. At 1240px or wider, the saved date is one line and Edit and Delete are their own column.
+7. At 360px, as a trainer, search, link, and use previous and next with a long email. The email truncates and the arrows stay on screen. Submitting an empty email shows "Enter an email address".
+8. Repeat the narrow strip and the wide row on `/kitchen-sink/journal` and `/kitchen-sink/trainer`.
+9. Below `77.5rem` the top bar shows Menu and the links are inside it. At `77.5rem` the links sit in the bar. Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password use the canvas background and a column no wider than `74rem`.
+10. On `/kitchen-sink/journal`, the unloaded journal shows "Could not load your measurements" and no form. On `/kitchen-sink/trainer`, trainees not loaded shows "Could not load trainees", measurements not loaded shows "Could not load measurements", and "No trainee with that email" is a toast. A later month or page fetch that fails on `/measurements` leaves the current page up with no toast.
+11. The footer "TM (v.…)" control opens the libraries dialog. A click on the dialog backdrop or Close closes it. A click on a dependency name does not.
+12. The Playwright 360px run shows the date and Weight inside the viewport and Navel to the right of Weight. The wide run shows the metrics on one row.
 
 ## Performance Considerations
 
@@ -240,12 +254,20 @@ No schema change and no data migration. The previous worker and the new worker r
 
 #### Manual
 
-- [ ] 1.4 At 360px the trainee can read and type the date, all eight metrics, the note, and submit, with no field clipped
+Rewritten 2026-10-19 so these rows match the shipped screen.
+
+- [ ] 1.4 At 360px the trainee opens "Add your next measurement", types the date and the note, scrolls the metric strip through all eight metrics, and submits. Weight stays inside the viewport. The card is not clipped. Open or closed survives a reload.
 - [ ] 1.5 The open calendar, including its day buttons, fits inside a 360px viewport
-- [ ] 1.6 Each metric still shows the difference under the value on the add form and on a saved entry
-- [ ] 1.7 At 1299px or wider the date and eight metrics sit on one row, as they do today
-- [ ] 1.8 At 360px a trainer can search, link, and move between linked trainees, and a long email does not push the arrows off screen
-- [ ] 1.9 The journal and trainer kitchen sinks follow the same narrow and wide layouts
+- [ ] 1.6 Each metric shows the difference under the value on the add form and on a saved entry. No previous value shows an em dash. An unchanged value shows 0.0. A value outside the field limit shows that limit instead of the difference.
+- [ ] 1.7 At 1240px (77.5rem) or wider the date (9.75rem) and eight metrics (5.5rem) sit on one row, and the add-form strip does not scroll
+- [ ] 1.8 At 360px a trainer can search, link, and move between linked trainees. A long email truncates and the arrows stay on screen. An empty email search shows "Enter an email address".
+- [ ] 1.9 The journal and trainer kitchen sinks follow the same narrow strip and wide row
+- [ ] 1.10 A saved entry is a table. Below 77.5rem the checkbox and date stay put while the metrics scroll, the date is the day and the time on two lines, and Edit and Delete sit under the date. At 77.5rem the date is one line and Edit and Delete are their own column. The note icon opens a dialog. A row with no note does not.
+- [ ] 1.11 Below 77.5rem the top-bar links are inside Menu. At 77.5rem they sit in the bar. Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password use the canvas and a column no wider than 74rem.
+- [ ] 1.12 The journal with no measurements shows "Could not load your measurements" and no form. The trainer panel shows "Could not load trainees", "Could not load measurements", and "No trainee with that email". A later month or page fetch that fails leaves the current page with no toast.
+- [ ] 1.13 The footer libraries dialog closes on the backdrop or Close, and stays open when the click is inside the dependency list
+- [ ] 1.14 A server error leaves "Add your next measurement" open
+- [ ] 1.15 At 360px the month buttons and the entries-per-page buttons stay on one line
 
 ### Phase 2: Playwright lock
 
@@ -256,4 +278,4 @@ No schema change and no data migration. The previous worker and the new worker r
 
 #### Manual
 
-- [ ] 2.3 The 360px run shows every field inside the viewport, and the wide run shows the metrics on one row
+- [ ] 2.3 The 360px run shows the date and Weight inside the viewport and Navel to the right of Weight, and the wide run shows the metrics on one row
