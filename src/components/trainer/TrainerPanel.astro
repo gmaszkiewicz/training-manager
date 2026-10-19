@@ -1,5 +1,4 @@
 ---
-import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
@@ -46,7 +45,7 @@ const {
 } = Astro.props;
 
 const toastMessages: string[] = [];
-if (serverError === "No trainee with that email") {
+if (serverError !== null && serverError !== "Enter an email address") {
   toastMessages.push(serverError);
 }
 if (mode === "trainer" && !trainerLinksLoaded) {
@@ -55,16 +54,16 @@ if (mode === "trainer" && !trainerLinksLoaded) {
 if (mode === "trainer" && trainerLinksLoaded && selectedLink !== null && !trainerMeasurementsLoaded) {
   toastMessages.push("Could not load measurements");
 }
-const inlineServerError =
-  serverError === "No trainee with that email" || serverError === "Enter an email address" ? null : serverError;
+if (mode !== "trainer") {
+  toastMessages.push("Could not open your journal");
+}
 ---
 
 <div class="flex justify-center px-4 pb-4">
   <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
+    {toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
     {mode === "trainer" ? (
       <>
-        {toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
-        {inlineServerError ? <ServerError message={inlineServerError} /> : null}
         {trainerLinksLoaded ? (
           <>
             <form method="POST" action="/api/trainer-links" class="space-y-3">
@@ -108,7 +107,6 @@ const inlineServerError =
     ) : (
       <>
         <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Measurements</h1>
-        <p class="text-muted-foreground">Could not open your journal</p>
       </>
     )}
   </div>
