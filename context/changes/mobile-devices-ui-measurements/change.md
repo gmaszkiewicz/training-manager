@@ -3,7 +3,7 @@ change_id: mobile-devices-ui-measurements
 title: Adapt the measurements screen for mobile devices
 status: impl_reviewed
 created: 2026-10-18
-updated: 2026-10-18
+updated: 2026-10-19
 archived_at: null
 ---
 

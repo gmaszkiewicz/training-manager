@@ -1,8 +1,10 @@
 # Measurements Screen on a Phone Implementation Plan
 
+> **Accepted layout (2026-10-18).** Implementation review F1, Fix B. The original stack, the `calc(80rem + 4px + 15px)` cutoff, and the `w-56` / `w-28` columns are the history below. The Accepted layout section is the contract, and it replaces the success criteria it names.
+
 ## Overview
 
-A trainee and a linked trainer use the same `/measurements` screen from a 360px-wide viewport up through the current wide layout. Below the width of the existing one-line row, the date and the eight metrics stack in one column so every field, the difference under each value, and the trainer controls stay on screen. At and above that width, the current one-line row stays.
+A trainee and a linked trainer use the same `/measurements` screen from a 360px-wide viewport up through the wide layout. Below `77.5rem`, the date sits above a sideways metric strip that scrolls inside the card. The difference stays under each value, and the trainer controls stay on screen. At `77.5rem` and wider, the date and eight metrics sit on one row.
 
 ## Current State Analysis
 
@@ -14,7 +16,7 @@ The journal and trainer kitchen sinks render these same components. Playwright h
 
 ## Desired End State
 
-From 360px up to just under the wide row, a trainee can read and type the date, all eight metrics, and the note, and can open the calendar, with each field inside the viewport. The difference versus the previous entry still sits under each value. A trainer can search, link a trainee, and move through linked trainees on that same screen. At `calc(80rem + 4px + 15px)` (1299px) and wider, the date and eight metrics sit on one row again, with the same column widths as today.
+From 360px up to just under `77.5rem` (1240px), a trainee can read and type the date and the note, open the calendar, and reach all eight metrics by scrolling the metric strip. Weight stays inside the viewport. The difference versus the previous entry still sits under each value. A trainer can search, link a trainee, and move through linked trainees on that same screen. At `77.5rem` and wider, the date column is `9.75rem` and each metric column is `5.5rem`, on one row.
 
 ### Key Discoveries:
 
@@ -29,9 +31,9 @@ From 360px up to just under the wide row, a trainee can read and type the date, 
 
 - A separate mobile app, a second measurements route, or a second copy of the form and list.
 - Changing stored values, validation, delta math, who can edit, or the order of the fields.
-- A two-row metric grid, or a horizontal scrollbar on the measurement row.
-- Restyling the shared top bar, `Button`, `Input`, `ServerError`, or the auth screens.
-- Changing the wide row's column widths, or shrinking calendar day buttons below `min-w-9`.
+- A stacked column of eight full-width metrics, or a two-row metric grid.
+- Editing `src/components/ui/button.tsx` or `ServerError`. The shared input background, the top-bar width, and the auth card shell are in Accepted chrome.
+- Shrinking calendar day buttons below `min-w-9`.
 - Guaranteeing a viewport narrower than 360px.
 - A second Playwright project, or an automated check of the trainer controls, the open calendar, edit, or delete.
 
@@ -44,6 +46,31 @@ Use one named theme breakpoint, `measurement-row`, at `calc(80rem + 4px + 15px)`
 - **Breakpoint arithmetic.** The card that holds a saved entry is `calc(80rem + 4px)`. The viewport cutoff is that card plus the 15px scrollbar gutter, `calc(80rem + 4px + 15px)` (1299px). `xl` (1280px) is 19px short of it. The variant has to be that calc, and the wide classes have to start there, not at `xl`.
 - **Clipping.** `overflow-x: clip` on `html` hides anything wider than the viewport. The narrow card must be `w-full min-w-0` with the 1204px floor removed. Adding `overflow-x-auto` on the row does not meet this plan.
 - **Email sizer.** The invisible email grid in `LinkedTraineeField` sets the button to the longest address because it is in flow inside a `shrink-0 whitespace-nowrap` button. On the narrow layout, take that stack out of the width calculation (`absolute`, or omit it) and truncate the visible address in a button that may shrink (`min-w-0 max-w-full shrink`). `min-w-0` on the root alone does not cap the stack. The accessible name stays the full email. At `measurement-row:`, restore the in-flow sizer and `w-max`. The same min-content problem applies to search suggestion buttons because shared buttons are `whitespace-nowrap shrink-0`.
+
+## Accepted layout
+
+This section replaces the stack, the `calc(80rem + 4px + 15px)` cutoff, the `w-56` / `w-28` columns, the ban on `overflow-x-auto`, the loaded-card floor, and the wide-layout email sizer. The class lists under Phase 1 are the original plan. Do not put that stack back.
+
+- **Breakpoint.** `--breakpoint-measurement-row: 77.5rem` (1240px), inside `@theme inline` in `src/styles/global.css`. Wide classes use the `measurement-row:` variant. They do not use `xl` or `calc(80rem + 4px + 15px)`.
+- **Cards.** `TraineeJournal` and `TrainerPanel` use an outer `px-4 pb-4` and a card of `w-full max-w-[74rem] min-w-0 p-4` at every width. No `measurement-row:` padding switch, no `w-max`, and no `min-w-[calc(75rem+4px)]`.
+- **Add form, narrow.** The date is `w-full`. The eight metrics sit in one `overflow-x-auto` strip. Each metric is `w-[5.5625rem] max-w-[5.5625rem] shrink-0`. The difference, or an em dash when there is none, stays under the value.
+- **Add form, wide.** The date and the strip share one row. The date is `w-[9.75rem] max-w-[9.75rem]`. The strip is `measurement-row:contents`, so it does not scroll. Each metric is `w-[5.5rem] max-w-[5.5rem]`.
+- **Saved entries.** The date column is `w-28` and `measurement-row:w-[9.75rem]`. Each metric is `w-[4.875rem]` and `measurement-row:w-[5.5rem]`. The metric strip scrolls below the breakpoint and is `overflow-visible` at it. Edit and Delete sit under the date below the breakpoint, and in their own column at it. The note is an icon; its text opens in a toast. An entry with no delta still reserves the line under the value.
+- **Calendar.** The popover is `w-max max-w-full`, and `measurement-row:max-w-none` on the wide row. Day buttons stay `min-w-9`.
+- **Trainer controls.** `LinkedTraineeField` stays `w-full max-w-full min-w-0` at every width. The email truncates. `aria-label` remains the full email. The in-flow sizer is not restored. Search suggestion buttons truncate inside a `w-full` list.
+- **Month toolbar.** Month buttons may be `size-8` below the breakpoint and `size-9` at it. Page-size buttons may be `min-w-8` below the breakpoint and `min-w-9` at it.
+
+## Accepted chrome
+
+This section is implementation review F3, Fix B. It replaces the ban on restyling `Input`, the top bar, and the auth screens. `button.tsx` stays untouched.
+
+- **Canvas.** `--canvas` / `--color-canvas` in `src/styles/global.css`. `Layout` takes `measurementChrome`. That flag sets `bg-canvas` on the body and keeps the footer inside `max-w-[74rem]`.
+- **Where it applies.** Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password pass `measurementChrome`. Each of those except home wraps `Topbar` in `max-w-[74rem]`. The page body is a `max-w-[74rem]` card with `p-4`. Auth and profile keep the form in an inner `max-w-sm` column. Home uses the same card with `px-4 py-8`.
+- **Inputs.** The shared `Input` uses `bg-background`. `FormField` always adds that class, and its `icon` is optional. `SubmitButton` accepts a `className` merged onto `w-full`.
+- **Add form.** On the trainee journal the add form is a `details` element titled "Add your next measurement". Open or closed is stored with `addFormStorageKey` and `parseAddFormOpen` in `src/lib/measurement-page.ts`. A server error leaves it open.
+- **Range text.** `measurementFieldRange` and `measuredOnPartRange` in `src/lib/measurement-input.ts` print the existing limits. They do not change validation or delta math.
+- **Load toasts.** `PageErrorToasts` shows "Could not load your measurements" when the journal has no measurements. The trainer panel shows "Could not load trainees", "Could not load measurements", and "No trainee with that email" the same way. An empty trainer email search shows "Enter an email address". A later month or page fetch that fails still leaves the current page in place with no toast.
+- **Libraries dialog.** The footer control opens a small fixed dialog with a transparent backdrop. It closes when the click target is the dialog itself or the close control, not when the click is inside the dependency list.
 
 ## Phase 1: Narrow layout
 
@@ -115,12 +142,14 @@ At 360px the content box is 327px (viewport, minus the 15px scrollbar gutter, mi
 
 #### Manual Verification:
 
-- At 360px the trainee can read and type the date, all eight metrics, the note, and submit, with no field clipped
+Progress rows 1.4–1.9 keep their original titles. These checks are the accepted meaning:
+
+- At 360px the trainee can read and type the date, scroll the metric strip to each of the eight metrics, type the note, and submit. Weight is inside the viewport. The page does not clip the card.
 - The open calendar, including its day buttons, fits inside a 360px viewport
 - Each metric still shows the difference under the value on the add form and on a saved entry
-- At 1299px or wider the date and eight metrics sit on one row, as they do today
-- At 360px a trainer can search, link, and move between linked trainees, and a long email does not push the arrows off screen
-- The journal and trainer kitchen sinks follow the same narrow and wide layouts
+- At 1240px (`77.5rem`) or wider the date and eight metrics sit on one row, at `9.75rem` and `5.5rem`
+- At 360px a trainer can search, link, and move between linked trainees, and a long email truncates instead of pushing the arrows off screen
+- The journal and trainer kitchen sinks follow the same narrow strip and wide row
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -130,7 +159,7 @@ At 360px the content box is 327px (viewport, minus the 15px scrollbar gutter, mi
 
 ### Overview
 
-One signed-in test in the existing Chrome project fails if a later change clips a field at 360px or drops the wide row back into a stack.
+One signed-in test in the existing Chrome project fails if the date or Weight leaves a 360px viewport, if Navel is not to the right of Weight, or if the wide row stops sharing a vertical center. It does not require the other six metrics to start inside 360px.
 
 ### Changes Required:
 
@@ -144,7 +173,7 @@ One signed-in test in the existing Chrome project fails if a later change clips 
 
 Two cases:
 
-- Viewport `360×800`. The date control and the eight inputs (labels `Date and time`, `Weight kg`, `Chest cm`, `Waist cm`, `Arm cm`, `Thigh cm`, `Calf cm`, `Hips cm`, `Navel cm`) are visible. Each bounding box lies fully inside the viewport (`x >= 0` and `x + width <= 360`). Navel's box is below Weight's box.
+- Viewport `360×800`. The date control and Weight are visible, and each of those boxes lies fully inside the viewport (`x >= 0` and `x + width <= 360`). Navel is visible and sits to the right of Weight, with the two vertical centers overlapping. Chest, Waist, Arm, Thigh, Calf, and Hips are not required to start inside the viewport.
 - Viewport `1400×900`. Navel's box is to the right of Weight's box, and their vertical centers overlap on one row.
 
 Leave `tests/e2e/seed.spec.ts` unchanged.
@@ -158,7 +187,7 @@ Leave `tests/e2e/seed.spec.ts` unchanged.
 
 #### Manual Verification:
 
-- The 360px run shows every field inside the viewport, and the wide run shows the metrics on one row
+Progress row 2.3 keeps its original title. The accepted check: the 360px run shows the date and Weight inside the viewport and Navel to the right of Weight, and the wide run shows the metrics on one row.
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -172,12 +201,12 @@ Leave `tests/e2e/seed.spec.ts` unchanged.
 
 ### Integration Tests:
 
-- `npx playwright test` runs the new spec with the existing Chrome project and the existing signed-out redirect. Narrow: fields inside a 360px viewport and Navel below Weight. Wide (1400px): Navel to the right of Weight on the same row.
+- `npx playwright test` runs the new spec with the existing Chrome project and the existing signed-out redirect. Narrow: the date and Weight inside a 360px viewport, and Navel to the right of Weight. Wide (1400px): Navel to the right of Weight on the same row.
 
 ### Manual Testing Steps:
 
-1. At 360px, as a trainee, type each field, open the calendar, and confirm the day buttons fit. Confirm a difference sits under each metric on the add form and on a saved entry.
-2. At 1299px or wider, confirm the date and eight metrics are one row.
+1. At 360px, as a trainee, type the date and the note, scroll the metric strip through each metric, open the calendar, and confirm the day buttons fit. Confirm a difference sits under each metric on the add form and on a saved entry.
+2. At 1240px (`77.5rem`) or wider, confirm the date and eight metrics are one row.
 3. At 360px, as a trainer, search, link, and use the previous and next arrows with a long email.
 4. Repeat the narrow and wide checks on `/kitchen-sink/journal` and `/kitchen-sink/trainer`.
 
