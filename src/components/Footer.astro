@@ -76,7 +76,16 @@ const devDependencies = libraryEntries(packageJson.devDependencies);
     }
   });
 
-  dialog?.addEventListener("click", () => {
+  dialog?.addEventListener("click", (event) => {
+    if (!(dialog instanceof HTMLDialogElement)) {
+      return;
+    }
+    if (event.target === dialog) {
+      dialog.close();
+    }
+  });
+
+  dialog?.querySelector("[data-close]")?.addEventListener("click", () => {
     if (dialog instanceof HTMLDialogElement) {
       dialog.close();
     }
