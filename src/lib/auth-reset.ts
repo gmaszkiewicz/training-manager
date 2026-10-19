@@ -13,6 +13,7 @@ export const RESET_SIGNOUT_ERROR = "Your password was reset. We could not sign y
 export const PASSWORD_CHANGED_NOTICE = "Your password was changed.";
 export const CURRENT_PASSWORD_ERROR = "Current password is incorrect.";
 export const PASSWORD_UNCHANGED_ERROR = "Your password was not changed.";
+export const PASSWORD_UNAVAILABLE_ERROR = "We could not change the password. Try again later.";
 export const OTHER_SESSIONS_ERROR = "Your password was changed. We could not sign out your other sessions.";
 
 export function isExpiredRecoveryHash(hash: string): boolean {
@@ -93,8 +94,14 @@ export function profilePageError(code: string | null): string | null {
   if (code === "current-password") {
     return CURRENT_PASSWORD_ERROR;
   }
+  if (code === "password-same") {
+    return PASSWORD_SAME_ERROR;
+  }
   if (code === "password-unchanged") {
     return PASSWORD_UNCHANGED_ERROR;
+  }
+  if (code === "password-unavailable") {
+    return PASSWORD_UNAVAILABLE_ERROR;
   }
   if (code === "other-sessions") {
     return OTHER_SESSIONS_ERROR;

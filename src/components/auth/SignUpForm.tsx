@@ -1,11 +1,20 @@
-import React, { useState } from "react";
-import { CircleAlert, Mail, Lock, UserPlus } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Mail, Lock, UserPlus } from "lucide-react";
+import { FormErrorToasts, useFormErrors } from "@/components/auth/FormErrorToasts";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
-import { ServerError } from "@/components/auth/ServerError";
+import { submitAuthForm } from "@/lib/auth-form";
+import { cn } from "@/lib/utils";
 
 const MIN_PASSWORD_LENGTH = 6;
+
+const roleInputClassName = cn(
+  "peer border-input bg-background block size-4 appearance-none rounded-full border shadow-xs",
+  "checked:border-primary checked:bg-primary",
+  "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:outline-none",
+  "aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]",
+);
 
 interface Props {
   serverError?: string | null;
@@ -18,15 +27,14 @@ export default function SignUpForm({ serverError }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState<"" | "trainee" | "trainer">("");
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-    role?: string;
-  }>({});
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const { items, dismiss, clearField, showErrors, reportServerError, fieldInvalid, describedBy } = useFormErrors<
+    "email" | "password" | "confirmPassword" | "role"
+  >(serverError);
 
   function validate() {
-    const next: typeof errors = {};
+    const next: Partial<Record<"email" | "password" | "confirmPassword" | "role", string>> = {};
 
     if (!email.trim()) {
       next.email = "Email is required";
@@ -50,27 +58,28 @@ export default function SignUpForm({ serverError }: Props) {
       next.role = "Role is required";
     }
 
-    setErrors(next);
+    showErrors(next);
     return Object.keys(next).length === 0;
   }
 
-  function clearError(field: keyof typeof errors) {
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
-
-  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-    if (!validate()) {
-      e.preventDefault();
+  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!validate() || savingRef.current) {
+      return;
     }
+    const form = event.currentTarget;
+    savingRef.current = true;
+    setSaving(true);
+    void submitAuthForm(form, "Could not create the account").then((result) => {
+      if ("redirect" in result) {
+        window.location.assign(result.redirect);
+        return;
+      }
+      savingRef.current = false;
+      setSaving(false);
+      reportServerError(result.error);
+    });
   }
-
-  const passwordHint =
-    !errors.password && password.length > 0 && password.length < MIN_PASSWORD_LENGTH ? (
-      <p className="text-muted-foreground mt-1 text-xs">
-        {MIN_PASSWORD_LENGTH - password.length} more character
-        {MIN_PASSWORD_LENGTH - password.length !== 1 ? "s" : ""} needed
-      </p>
-    ) : undefined;
 
   return (
     <form method="POST" action="/api/auth/signup" className="space-y-4" onSubmit={handleSubmit} noValidate>
@@ -81,10 +90,11 @@ export default function SignUpForm({ serverError }: Props) {
         value={email}
         onChange={(v) => {
           setEmail(v);
-          clearError("email");
+          clearField("email");
         }}
         placeholder="you@example.com"
-        error={errors.email}
+        invalid={fieldInvalid("email")}
+        describedBy={describedBy("email")}
         icon={<Mail className="size-4" />}
       />
 
@@ -95,11 +105,11 @@ export default function SignUpForm({ serverError }: Props) {
         value={password}
         onChange={(v) => {
           setPassword(v);
-          clearError("password");
+          clearField("password");
         }}
         placeholder="Min. 6 characters"
-        error={errors.password}
-        hint={passwordHint}
+        invalid={fieldInvalid("password")}
+        describedBy={describedBy("password")}
         icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
@@ -119,10 +129,11 @@ export default function SignUpForm({ serverError }: Props) {
         value={confirmPassword}
         onChange={(v) => {
           setConfirmPassword(v);
-          clearError("confirmPassword");
+          clearField("confirmPassword");
         }}
         placeholder="Re-enter your password"
-        error={errors.confirmPassword}
+        invalid={fieldInvalid("confirmPassword")}
+        describedBy={describedBy("confirmPassword")}
         icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
@@ -134,53 +145,55 @@ export default function SignUpForm({ serverError }: Props) {
         }
       />
 
-      <fieldset>
+      <fieldset aria-invalid={fieldInvalid("role") ? true : undefined} aria-describedby={describedBy("role")}>
         <legend className="text-muted-foreground mb-1 block text-sm">Role</legend>
         <div className="flex gap-4">
           <label className="text-card-foreground flex items-center gap-2 text-sm">
-            <input
-              id="role-trainee"
-              type="radio"
-              name="role"
-              value="trainee"
-              required
-              checked={role === "trainee"}
-              onChange={() => {
-                setRole("trainee");
-                clearError("role");
-              }}
-              className="accent-primary focus-visible:ring-ring size-4 focus-visible:ring-2"
-            />
+            <span className="relative size-4">
+              <input
+                id="role-trainee"
+                type="radio"
+                name="role"
+                value="trainee"
+                required
+                checked={role === "trainee"}
+                onChange={() => {
+                  setRole("trainee");
+                  clearField("role");
+                }}
+                aria-invalid={fieldInvalid("role") ? true : undefined}
+                className={roleInputClassName}
+              />
+              <span className="bg-primary-foreground pointer-events-none absolute inset-1 hidden rounded-full peer-checked:block" />
+            </span>
             Trainee
           </label>
           <label className="text-card-foreground flex items-center gap-2 text-sm">
-            <input
-              id="role-trainer"
-              type="radio"
-              name="role"
-              value="trainer"
-              required
-              checked={role === "trainer"}
-              onChange={() => {
-                setRole("trainer");
-                clearError("role");
-              }}
-              className="accent-primary focus-visible:ring-ring size-4 focus-visible:ring-2"
-            />
+            <span className="relative size-4">
+              <input
+                id="role-trainer"
+                type="radio"
+                name="role"
+                value="trainer"
+                required
+                checked={role === "trainer"}
+                onChange={() => {
+                  setRole("trainer");
+                  clearField("role");
+                }}
+                aria-invalid={fieldInvalid("role") ? true : undefined}
+                className={roleInputClassName}
+              />
+              <span className="bg-primary-foreground pointer-events-none absolute inset-1 hidden rounded-full peer-checked:block" />
+            </span>
             Trainer
           </label>
         </div>
-        {errors.role ? (
-          <p className="text-destructive mt-1 flex items-center gap-1 text-xs">
-            <CircleAlert className="size-3" />
-            {errors.role}
-          </p>
-        ) : null}
       </fieldset>
 
-      <ServerError message={serverError} />
+      <FormErrorToasts items={items} onDismiss={dismiss} />
 
-      <SubmitButton pendingText="Creating account..." icon={<UserPlus className="size-4" />}>
+      <SubmitButton pendingText="Creating account..." icon={<UserPlus className="size-4" />} forcePending={saving}>
         Create account
       </SubmitButton>
     </form>

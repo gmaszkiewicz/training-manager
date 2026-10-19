@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Mail, Lock, LogIn } from "lucide-react";
+import { FormErrorToasts, useFormErrors } from "@/components/auth/FormErrorToasts";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
-import { ServerError } from "@/components/auth/ServerError";
+import { submitAuthForm } from "@/lib/auth-form";
 
 interface Props {
   serverError?: string | null;
@@ -13,10 +14,14 @@ export default function SignInForm({ serverError }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const { items, dismiss, clearField, showErrors, reportServerError, fieldInvalid, describedBy } = useFormErrors<
+    "email" | "password"
+  >(serverError);
 
   function validate() {
-    const next: typeof errors = {};
+    const next: Partial<Record<"email" | "password", string>> = {};
     if (!email.trim()) {
       next.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -25,18 +30,27 @@ export default function SignInForm({ serverError }: Props) {
     if (!password) {
       next.password = "Password is required";
     }
-    setErrors(next);
+    showErrors(next);
     return Object.keys(next).length === 0;
   }
 
-  function clearError(field: keyof typeof errors) {
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
-
-  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-    if (!validate()) {
-      e.preventDefault();
+  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!validate() || savingRef.current) {
+      return;
     }
+    const form = event.currentTarget;
+    savingRef.current = true;
+    setSaving(true);
+    void submitAuthForm(form, "Could not sign in").then((result) => {
+      if ("redirect" in result) {
+        window.location.assign(result.redirect);
+        return;
+      }
+      savingRef.current = false;
+      setSaving(false);
+      reportServerError(result.error);
+    });
   }
 
   return (
@@ -48,10 +62,11 @@ export default function SignInForm({ serverError }: Props) {
         value={email}
         onChange={(v) => {
           setEmail(v);
-          clearError("email");
+          clearField("email");
         }}
         placeholder="you@example.com"
-        error={errors.email}
+        invalid={fieldInvalid("email")}
+        describedBy={describedBy("email")}
         icon={<Mail className="size-4" />}
       />
 
@@ -62,10 +77,11 @@ export default function SignInForm({ serverError }: Props) {
         value={password}
         onChange={(v) => {
           setPassword(v);
-          clearError("password");
+          clearField("password");
         }}
         placeholder="Your password"
-        error={errors.password}
+        invalid={fieldInvalid("password")}
+        describedBy={describedBy("password")}
         icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
@@ -77,9 +93,9 @@ export default function SignInForm({ serverError }: Props) {
         }
       />
 
-      <ServerError message={serverError} />
+      <FormErrorToasts items={items} onDismiss={dismiss} />
 
-      <SubmitButton pendingText="Signing in..." icon={<LogIn className="size-4" />}>
+      <SubmitButton pendingText="Signing in..." icon={<LogIn className="size-4" />} forcePending={saving}>
         Sign in
       </SubmitButton>
     </form>

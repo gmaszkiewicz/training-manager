@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { resetRequestResult } from "@/lib/auth-reset";
+import { RESET_EMAIL_ERROR, resetRequestResult } from "@/lib/auth-reset";
+import { authPage } from "@/lib/auth-response";
 import { createCookieFreeClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
@@ -9,13 +10,13 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createCookieFreeClient();
   if (!supabase) {
-    return context.redirect("/auth/reset-password?error=reset-email");
+    return authPage(context, "/auth/reset-password?error=reset-email", RESET_EMAIL_ERROR);
   }
 
   const redirectTo = new URL("/auth/reset-password", context.url.origin).toString();
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (resetRequestResult(error) === "sent") {
-    return context.redirect("/auth/reset-password?notice=reset-sent");
+    return authPage(context, "/auth/reset-password?notice=reset-sent");
   }
-  return context.redirect("/auth/reset-password?error=reset-email");
+  return authPage(context, "/auth/reset-password?error=reset-email", RESET_EMAIL_ERROR);
 };

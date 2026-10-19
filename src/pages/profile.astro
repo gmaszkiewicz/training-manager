@@ -20,10 +20,11 @@ const serverError = profilePageError(error);
       <div class="mx-auto max-w-sm">
         <h1 class="mb-2 text-center text-xl font-bold text-foreground">Profile</h1>
         <h2 class="mb-6 text-center text-lg font-semibold text-card-foreground">Change password</h2>
-        {notice === "password-changed" ? (
-          <p class="text-muted-foreground mb-4 text-center text-sm">{PASSWORD_CHANGED_NOTICE}</p>
-        ) : null}
-        <ChangePasswordForm serverError={serverError} client:load />
+        <ChangePasswordForm
+          serverError={serverError}
+          notice={notice === "password-changed" ? PASSWORD_CHANGED_NOTICE : null}
+          client:load
+        />
       </div>
     </div>
   </div>

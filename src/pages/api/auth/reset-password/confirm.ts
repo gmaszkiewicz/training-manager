@@ -1,6 +1,14 @@
 import type { APIRoute } from "astro";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isRecoveryAccessToken } from "@/lib/auth-reset";
+import {
+  isRecoveryAccessToken,
+  PASSWORD_MISMATCH_ERROR,
+  PASSWORD_SAME_ERROR,
+  PASSWORD_SHORT_ERROR,
+  RESET_LINK_ERROR,
+  RESET_SIGNOUT_ERROR,
+} from "@/lib/auth-reset";
+import { authPage } from "@/lib/auth-response";
 import { createClient } from "@/lib/supabase";
 import type { Database } from "@/db/database.types";
 
@@ -27,16 +35,16 @@ function isSamePassword(error: { code?: string } | null): boolean {
 async function commitPassword(context: Parameters<APIRoute>[0], supabase: SupabaseClient<Database>, password: string) {
   const updated = await supabase.auth.updateUser({ password });
   if (isSamePassword(updated.error)) {
-    return context.redirect("/auth/reset-password?error=password-same");
+    return authPage(context, "/auth/reset-password?error=password-same", PASSWORD_SAME_ERROR);
   }
   const signedOut = await supabase.auth.signOut();
   if (updated.error) {
-    return context.redirect("/auth/reset-password?error=reset-link");
+    return authPage(context, "/auth/reset-password?error=reset-link", RESET_LINK_ERROR);
   }
   if (signedOut.error) {
-    return context.redirect("/auth/reset-password?error=sign-out");
+    return authPage(context, "/auth/reset-password?error=sign-out", RESET_SIGNOUT_ERROR);
   }
-  return context.redirect("/auth/signin?notice=password-reset");
+  return authPage(context, "/auth/signin?notice=password-reset");
 }
 
 async function updateRecoverySession(
@@ -47,13 +55,13 @@ async function updateRecoverySession(
 ) {
   const { data } = await supabase.auth.getSession();
   if (!isRecoveryAccessToken(data.session?.access_token ?? "")) {
-    return context.redirect("/auth/reset-password?error=reset-link");
+    return authPage(context, "/auth/reset-password?error=reset-link", RESET_LINK_ERROR);
   }
   if (password.length < MIN_PASSWORD_LENGTH) {
-    return context.redirect("/auth/reset-password?error=password-short");
+    return authPage(context, "/auth/reset-password?error=password-short", PASSWORD_SHORT_ERROR);
   }
   if (password !== confirmPassword) {
-    return context.redirect("/auth/reset-password?error=password-mismatch");
+    return authPage(context, "/auth/reset-password?error=password-mismatch", PASSWORD_MISMATCH_ERROR);
   }
   return commitPassword(context, supabase, password);
 }
@@ -67,7 +75,7 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return context.redirect("/auth/reset-password?error=reset-link");
+    return authPage(context, "/auth/reset-password?error=reset-link", RESET_LINK_ERROR);
   }
 
   if (tokenHash === "" || type !== "recovery") {
@@ -75,16 +83,16 @@ export const POST: APIRoute = async (context) => {
   }
 
   if (password.length < MIN_PASSWORD_LENGTH) {
-    return context.redirect(passwordRedirect(tokenHash, "password-short"));
+    return authPage(context, passwordRedirect(tokenHash, "password-short"), PASSWORD_SHORT_ERROR);
   }
 
   if (password !== confirmPassword) {
-    return context.redirect(passwordRedirect(tokenHash, "password-mismatch"));
+    return authPage(context, passwordRedirect(tokenHash, "password-mismatch"), PASSWORD_MISMATCH_ERROR);
   }
 
   const verified = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" });
   if (verified.error || !verified.data.session) {
-    return context.redirect("/auth/reset-password?error=reset-link");
+    return authPage(context, "/auth/reset-password?error=reset-link", RESET_LINK_ERROR);
   }
 
   return commitPassword(context, supabase, password);

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Mail, Send } from "lucide-react";
+import { FormErrorToasts, useFormErrors } from "@/components/auth/FormErrorToasts";
 import { FormField } from "@/components/auth/FormField";
 import { SubmitButton } from "@/components/auth/SubmitButton";
-import { ServerError } from "@/components/auth/ServerError";
+import { submitAuthForm } from "@/lib/auth-form";
 
 interface Props {
   serverError?: string | null;
@@ -10,27 +11,39 @@ interface Props {
 
 export default function ResetPasswordRequestForm({ serverError }: Props) {
   const [email, setEmail] = useState("");
-  const [errors, setErrors] = useState<{ email?: string }>({});
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const { items, dismiss, clearField, showErrors, reportServerError, fieldInvalid, describedBy } =
+    useFormErrors<"email">(serverError);
 
   function validate() {
-    const next: typeof errors = {};
+    const next: Partial<Record<"email", string>> = {};
     if (!email.trim()) {
       next.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       next.email = "Enter a valid email address";
     }
-    setErrors(next);
+    showErrors(next);
     return Object.keys(next).length === 0;
   }
 
-  function clearError(field: keyof typeof errors) {
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
-
-  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-    if (!validate()) {
-      e.preventDefault();
+  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!validate() || savingRef.current) {
+      return;
     }
+    const form = event.currentTarget;
+    savingRef.current = true;
+    setSaving(true);
+    void submitAuthForm(form, "Could not send the reset email").then((result) => {
+      if ("redirect" in result) {
+        window.location.assign(result.redirect);
+        return;
+      }
+      savingRef.current = false;
+      setSaving(false);
+      reportServerError(result.error);
+    });
   }
 
   return (
@@ -42,16 +55,17 @@ export default function ResetPasswordRequestForm({ serverError }: Props) {
         value={email}
         onChange={(v) => {
           setEmail(v);
-          clearError("email");
+          clearField("email");
         }}
         placeholder="you@example.com"
-        error={errors.email}
+        invalid={fieldInvalid("email")}
+        describedBy={describedBy("email")}
         icon={<Mail className="size-4" />}
       />
 
-      <ServerError message={serverError} />
+      <FormErrorToasts items={items} onDismiss={dismiss} />
 
-      <SubmitButton pendingText="Sending reset email..." icon={<Send className="size-4" />}>
+      <SubmitButton pendingText="Sending reset email..." icon={<Send className="size-4" />} forcePending={saving}>
         Send reset email
       </SubmitButton>
     </form>
