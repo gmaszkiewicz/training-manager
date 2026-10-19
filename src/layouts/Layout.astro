@@ -41,7 +41,7 @@ const { title = "10x Astro Starter", measurementChrome = false } = Astro.props;
     </div>
     <div class:list={[measurementChrome ? "flex justify-center px-4 pb-2" : "px-4 pb-2 sm:px-8"]}>
       {measurementChrome ? (
-        <div class="w-full max-w-[74rem]">
+        <div class="w-full max-w-measurement">
           <Footer />
         </div>
       ) : (

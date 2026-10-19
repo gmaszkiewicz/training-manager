@@ -81,6 +81,13 @@
 @theme inline {
   /* Wide enough for the measurement row on the journal and trainer review surfaces. */
   --max-width-kitchen-sink: 110rem;
+  /* Shared column for home, measurements, profile, auth, and the footer. */
+  --max-width-measurement: 74rem;
+  /* Wide row: date 9.75rem, each metric 5.5rem. The narrow strip is 5.5625rem. Saved metrics below the breakpoint are 4.875rem. */
+  --spacing-measurement-date: 9.75rem;
+  --spacing-measurement-metric: 5.5rem;
+  --spacing-measurement-metric-narrow: 5.5625rem;
+  --spacing-measurement-saved-metric: 4.875rem;
   /* Figma wide frame is 1240px. The one-line measurement row starts there. */
   --breakpoint-measurement-row: 77.5rem;
   --radius-sm: calc(var(--radius) - 4px);

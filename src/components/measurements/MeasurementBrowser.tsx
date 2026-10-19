@@ -144,8 +144,8 @@ function deltaCaption(delta: FieldDelta | undefined): { text: string; muted: boo
   };
 }
 
-const metricColumnClass = "w-[4.875rem] measurement-row:w-[5.5rem]";
-const dateColumnClass = "w-28 measurement-row:w-[9.75rem]";
+const metricColumnClass = "w-measurement-saved-metric measurement-row:w-measurement-metric";
+const dateColumnClass = "w-28 measurement-row:w-measurement-date";
 const measurementHeaderIcon: Record<MeasurementField, LucideIcon> = {
   weight_kg: Scale,
   chest_cm: Ruler,
