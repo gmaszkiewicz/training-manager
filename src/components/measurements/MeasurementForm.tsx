@@ -1,17 +1,7 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  ChevronsLeft,
-  ChevronsRight,
-  CircleAlert,
-  Plus,
-} from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsLeft, ChevronsRight, Plus } from "lucide-react";
 import { FormField } from "@/components/auth/FormField";
-import { ServerError } from "@/components/auth/ServerError";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ERROR_TOAST_MS, ErrorToastCard } from "@/components/measurements/ErrorToastCard";
 import MonthGrid from "@/components/measurements/MonthGrid";
@@ -542,17 +532,18 @@ function ClockPart({
   );
 }
 
-function FieldError({ message }: { message?: string }) {
-  if (!message) {
+function initialFormErrors(serverError: string | null | undefined): FormErrors {
+  if (serverError === DUPLICATE_MEASUREMENT_MESSAGE) {
+    return { measured_on: serverError };
+  }
+  return {};
+}
+
+function initialSubmitError(serverError: string | null | undefined): string | null {
+  if (serverError == null || serverError === DUPLICATE_MEASUREMENT_MESSAGE) {
     return null;
   }
-
-  return (
-    <p className="text-destructive mt-1 flex flex-wrap items-start gap-1 text-xs break-words">
-      <CircleAlert className="mt-0.5 size-3 shrink-0" />
-      {message}
-    </p>
-  );
+  return serverError;
 }
 
 function FieldErrorToasts({
@@ -635,8 +626,8 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const [measuredOn, setMeasuredOn] = useState<string | null>(entryMinute);
   const [values, setValues] = useState(entry ? fieldValues(entry) : emptyValues);
   const [note, setNote] = useState(entry?.note ?? "");
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FormErrors>(() => initialFormErrors(serverError));
+  const [submitError, setSubmitError] = useState<string | null>(() => initialSubmitError(serverError));
   const [loadedPrevious, setLoadedPrevious] = useState<LoadedPrevious | null>(null);
   const [dateOpen, setDateOpen] = useState(false);
   const [gridMonth, setGridMonth] = useState<string | null>(null);
@@ -665,8 +656,17 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     }
     return [{ id, message }];
   });
-  if (errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE && !dismissedErrors.has(`${idPrefix}measured_on-error`)) {
-    errorToasts.unshift({ id: `${idPrefix}measured_on-error`, message: DUPLICATE_MEASUREMENT_MESSAGE });
+  const measuredOnToastId = `${idPrefix}measured_on-error`;
+  if (errors.measured_on !== undefined && !dismissedErrors.has(measuredOnToastId)) {
+    errorToasts.unshift({ id: measuredOnToastId, message: errors.measured_on });
+  }
+  const noteToastId = `${idPrefix}note-error`;
+  if (errors.note !== undefined && !dismissedErrors.has(noteToastId)) {
+    errorToasts.push({ id: noteToastId, message: errors.note });
+  }
+  const saveToastId = `${idPrefix}save-error`;
+  if (submitError !== null && !dismissedErrors.has(saveToastId)) {
+    errorToasts.push({ id: saveToastId, message: submitError });
   }
   // The calendar stops at the browser's local minute. SSR uses the UTC minute so hydration matches.
   const ceilingMinute = useSyncExternalStore(subscribeToNothing, localCeilingSnapshot, utcCeilingSnapshot);
@@ -752,10 +752,19 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
       next.add(id);
       return next;
     });
+    if (id === `${idPrefix}save-error`) {
+      setSubmitError(null);
+      return;
+    }
     const field = errorFieldForToast(id);
     if (field !== null) {
       clearError(field);
     }
+  }
+
+  function reportSaveError(message: string) {
+    releaseErrorToast(`${idPrefix}save-error`);
+    setSubmitError(message);
   }
 
   function releaseErrorToast(id: string) {
@@ -865,12 +874,12 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
         }
         savingRef.current = false;
         setSaving(false);
-        setSubmitError(error ?? "Could not save the measurement");
+        reportSaveError(error ?? "Could not save the measurement");
       })
       .catch(() => {
         savingRef.current = false;
         setSaving(false);
-        setSubmitError("Could not save the measurement");
+        reportSaveError("Could not save the measurement");
       });
   }
 
@@ -996,9 +1005,6 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                 </div>
               ) : null}
             </div>
-            <FieldError
-              message={errors.measured_on === DUPLICATE_MEASUREMENT_MESSAGE ? undefined : errors.measured_on}
-            />
             <p
               className={cn(
                 "mt-1 min-h-lh text-center text-xs",
@@ -1073,14 +1079,16 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
             onChange={(event) => {
               setNote(event.target.value);
               clearError("note");
+              releaseErrorToast(`${idPrefix}note-error`);
             }}
-            aria-invalid={errors.note ? true : undefined}
-            aria-describedby={`${idPrefix}note-count`}
+            aria-invalid={errors.note !== undefined && !dismissedErrors.has(`${idPrefix}note-error`) ? true : undefined}
+            aria-describedby={
+              errors.note !== undefined && !dismissedErrors.has(`${idPrefix}note-error`)
+                ? `${idPrefix}note-error ${idPrefix}note-count`
+                : `${idPrefix}note-count`
+            }
           />
-          <div className="mt-1 flex items-end justify-between gap-2">
-            <div className="min-w-0 flex-1 [&_p]:mt-0">
-              <FieldError message={errors.note} />
-            </div>
+          <div className="mt-1 flex justify-end">
             <p id={`${idPrefix}note-count`} className="text-muted-foreground shrink-0 text-xs tabular-nums">
               {note.length}/{NOTE_MAX_LENGTH}
             </p>
@@ -1088,7 +1096,6 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
         </div>
 
         <FieldErrorToasts items={errorToasts} onDismiss={dismissErrorToast} />
-        <ServerError message={submitError ?? (serverError === DUPLICATE_MEASUREMENT_MESSAGE ? null : serverError)} />
 
         <div className={entry ? "flex gap-2" : undefined}>
           <SubmitButton
