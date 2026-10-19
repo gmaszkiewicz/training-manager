@@ -235,9 +235,24 @@ function editIdForNote(html, note) {
     const row = item.split("</li>")[0];
     if (!row.includes(note)) continue;
     const match = editId.exec(row);
-    return match ? match[1] : "";
+    if (match) return match[1];
   }
-  return "";
+  // The row is a table. The note and id travel in the island props; the edit link stays inside the closed menu.
+  const decoded = html
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">");
+  const marker = `"note":[0,${JSON.stringify(note)}]`;
+  const at = decoded.indexOf(marker);
+  if (at === -1) return "";
+  const ids = decoded
+    .slice(0, at)
+    .match(/"id":\[0,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/gi);
+  if (!ids) return "";
+  const last = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(ids[ids.length - 1]);
+  return last ? last[1] : "";
 }
 
 function rememberMeasurement(run) {
