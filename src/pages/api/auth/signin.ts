@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { authPage } from "@/lib/auth-response";
 import { createClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
@@ -8,13 +9,14 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return context.redirect(`/auth/signin?error=${encodeURIComponent("Supabase is not configured")}`);
+    const message = "Supabase is not configured";
+    return authPage(context, `/auth/signin?error=${encodeURIComponent(message)}`, message);
   }
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return context.redirect(`/auth/signin?error=${encodeURIComponent(error.message)}`);
+    return authPage(context, `/auth/signin?error=${encodeURIComponent(error.message)}`, error.message);
   }
 
-  return context.redirect("/measurements");
+  return authPage(context, "/measurements");
 };

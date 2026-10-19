@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { authPage } from "@/lib/auth-response";
 import { createClient } from "@/lib/supabase";
 
 export const POST: APIRoute = async (context) => {
@@ -8,12 +9,14 @@ export const POST: APIRoute = async (context) => {
   const submittedRole = form.get("role");
   const role = submittedRole === "trainee" || submittedRole === "trainer" ? submittedRole : null;
   if (!role) {
-    return context.redirect(`/auth/signup?error=${encodeURIComponent("Choose Trainee or Trainer")}`);
+    const message = "Choose Trainee or Trainer";
+    return authPage(context, `/auth/signup?error=${encodeURIComponent(message)}`, message);
   }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return context.redirect(`/auth/signup?error=${encodeURIComponent("Supabase is not configured")}`);
+    const message = "Supabase is not configured";
+    return authPage(context, `/auth/signup?error=${encodeURIComponent(message)}`, message);
   }
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -22,12 +25,12 @@ export const POST: APIRoute = async (context) => {
   });
 
   if (error) {
-    return context.redirect(`/auth/signup?error=${encodeURIComponent(error.message)}`);
+    return authPage(context, `/auth/signup?error=${encodeURIComponent(error.message)}`, error.message);
   }
 
   if (data.session) {
-    return context.redirect("/measurements");
+    return authPage(context, "/measurements");
   }
 
-  return context.redirect("/auth/confirm-email");
+  return authPage(context, "/auth/confirm-email");
 };

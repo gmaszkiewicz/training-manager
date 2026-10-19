@@ -1,31 +1,49 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { KeyRound, Lock } from "lucide-react";
+import { FormErrorToasts, useFormErrors } from "@/components/auth/FormErrorToasts";
 import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
-import { ServerError } from "@/components/auth/ServerError";
+import { submitAuthForm } from "@/lib/auth-form";
+import { CURRENT_PASSWORD_ERROR, PASSWORD_SAME_ERROR } from "@/lib/auth-reset";
 
 const MIN_PASSWORD_LENGTH = 6;
 
-interface Props {
-  serverError?: string | null;
+function fieldForServerError(message: string | null | undefined): "currentPassword" | "password" | null {
+  if (message === CURRENT_PASSWORD_ERROR) {
+    return "currentPassword";
+  }
+  if (message === PASSWORD_SAME_ERROR) {
+    return "password";
+  }
+  return null;
 }
 
-export default function ChangePasswordForm({ serverError }: Props) {
+interface Props {
+  serverError?: string | null;
+  notice?: string | null;
+}
+
+export default function ChangePasswordForm({ serverError, notice }: Props) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    currentPassword?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const linkedField = fieldForServerError(serverError);
+  const { items, dismiss, clearField, showErrors, reportServerError, fieldInvalid, describedBy } = useFormErrors<
+    "currentPassword" | "password" | "confirmPassword"
+  >(
+    linkedField ? null : serverError,
+    linkedField && serverError ? { [linkedField]: serverError } : undefined,
+    notice,
+  );
 
   function validate() {
-    const next: typeof errors = {};
+    const next: Partial<Record<"currentPassword" | "password" | "confirmPassword", string>> = {};
 
     if (!currentPassword) {
       next.currentPassword = "Current password is required";
@@ -43,27 +61,33 @@ export default function ChangePasswordForm({ serverError }: Props) {
       next.confirmPassword = "Passwords do not match";
     }
 
-    setErrors(next);
+    showErrors(next);
     return Object.keys(next).length === 0;
   }
 
-  function clearError(field: keyof typeof errors) {
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
-  }
-
-  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-    if (!validate()) {
-      e.preventDefault();
+  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!validate() || savingRef.current) {
+      return;
     }
+    const form = event.currentTarget;
+    savingRef.current = true;
+    setSaving(true);
+    void submitAuthForm(form, "Could not change the password").then((result) => {
+      if ("redirect" in result) {
+        window.location.assign(result.redirect);
+        return;
+      }
+      savingRef.current = false;
+      setSaving(false);
+      const field = fieldForServerError(result.error);
+      if (field) {
+        reportServerError(result.error, field);
+        return;
+      }
+      reportServerError(result.error);
+    });
   }
-
-  const passwordHint =
-    !errors.password && password.length > 0 && password.length < MIN_PASSWORD_LENGTH ? (
-      <p className="text-muted-foreground mt-1 text-xs">
-        {MIN_PASSWORD_LENGTH - password.length} more character
-        {MIN_PASSWORD_LENGTH - password.length !== 1 ? "s" : ""} needed
-      </p>
-    ) : undefined;
 
   return (
     <form method="POST" action="/api/auth/password" className="space-y-4" onSubmit={handleSubmit} noValidate>
@@ -74,10 +98,11 @@ export default function ChangePasswordForm({ serverError }: Props) {
         value={currentPassword}
         onChange={(v) => {
           setCurrentPassword(v);
-          clearError("currentPassword");
+          clearField("currentPassword");
         }}
         placeholder="Your password"
-        error={errors.currentPassword}
+        invalid={fieldInvalid("currentPassword")}
+        describedBy={describedBy("currentPassword")}
         icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
@@ -96,11 +121,11 @@ export default function ChangePasswordForm({ serverError }: Props) {
         value={password}
         onChange={(v) => {
           setPassword(v);
-          clearError("password");
+          clearField("password");
         }}
         placeholder="Min. 6 characters"
-        error={errors.password}
-        hint={passwordHint}
+        invalid={fieldInvalid("password")}
+        describedBy={describedBy("password")}
         icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
@@ -120,10 +145,11 @@ export default function ChangePasswordForm({ serverError }: Props) {
         value={confirmPassword}
         onChange={(v) => {
           setConfirmPassword(v);
-          clearError("confirmPassword");
+          clearField("confirmPassword");
         }}
         placeholder="Re-enter your password"
-        error={errors.confirmPassword}
+        invalid={fieldInvalid("confirmPassword")}
+        describedBy={describedBy("confirmPassword")}
         icon={<Lock className="size-4" />}
         endContent={
           <PasswordToggle
@@ -135,9 +161,9 @@ export default function ChangePasswordForm({ serverError }: Props) {
         }
       />
 
-      <ServerError message={serverError} />
+      <FormErrorToasts items={items} onDismiss={dismiss} />
 
-      <SubmitButton pendingText="Saving password..." icon={<KeyRound className="size-4" />}>
+      <SubmitButton pendingText="Saving password..." icon={<KeyRound className="size-4" />} forcePending={saving}>
         Save password
       </SubmitButton>
     </form>
