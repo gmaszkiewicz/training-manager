@@ -46,7 +46,7 @@ const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
 ---
 
 <div class="flex justify-center px-4 pb-4">
-  <div class="border-border bg-card w-full max-w-[74rem] min-w-0 rounded-xl border p-4">
+  <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
     {measurementsLoaded ? (
       <>
         {editingEntry ? (
@@ -63,7 +63,7 @@ const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
               data-restore={serverError === null ? "true" : undefined}
               open={addFormStartsOpen}
             >
-              <summary class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
                 <span>Add your next measurement</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

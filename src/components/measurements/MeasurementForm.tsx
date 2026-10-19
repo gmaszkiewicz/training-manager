@@ -886,7 +886,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
         <div className="measurement-row:flex-row measurement-row:flex-nowrap measurement-row:gap-0 flex flex-col items-start gap-3">
           <div
             ref={dateFieldRef}
-            className="group measurement-row:w-[9.75rem] measurement-row:max-w-[9.75rem] measurement-row:shrink-0 relative w-full min-w-0 focus-within:z-40 hover:z-40"
+            className="group measurement-row:w-measurement-date measurement-row:max-w-measurement-date measurement-row:shrink-0 relative w-full min-w-0 focus-within:z-40 hover:z-40"
           >
             <div className="relative z-20">
               <Label htmlFor={`${idPrefix}measured_on`} className="text-muted-foreground mb-1">
@@ -1021,7 +1021,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
               return (
                 <div
                   key={field.field}
-                  className="group measurement-row:w-[5.5rem] measurement-row:max-w-[5.5rem] measurement-row:shrink-0 relative w-[5.5625rem] max-w-[5.5625rem] shrink-0 px-1 focus-within:z-40 hover:z-40"
+                  className="group measurement-row:w-measurement-metric measurement-row:max-w-measurement-metric measurement-row:shrink-0 w-measurement-metric-narrow max-w-measurement-metric-narrow relative shrink-0 px-1 focus-within:z-40 hover:z-40"
                 >
                   <FormField
                     id={`${idPrefix}${field.field}`}

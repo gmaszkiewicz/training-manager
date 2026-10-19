@@ -60,7 +60,7 @@ const inlineServerError =
 ---
 
 <div class="flex justify-center px-4 pb-4">
-  <div class="border-border bg-card w-full max-w-[74rem] min-w-0 rounded-xl border p-4">
+  <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
     {mode === "trainer" ? (
       <>
         {toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
