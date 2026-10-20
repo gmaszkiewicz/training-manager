@@ -96,7 +96,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-30 | some-display-changes | user can see a field error above Weight kg, Chest cm, and the rest as soon as the value is invalid, with room so that line does not shift the form, and can tell active buttons from inactive ones | S-27 | MS-22 | done |
 | S-31 | update-project-info | a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks | — | MS-23 | done |
 | S-32 | mobile-devices-ui-measurements | user can open the measurements screen on a phone and still read and enter every field, the difference versus the previous entry, and the trainer controls on that screen | S-28, S-29, S-30 | MS-24 | done |
-| S-33 | default-values-changes | user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default | S-23, S-32 | MS-25 | in-progress |
+| S-33 | default-values-changes | user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default | S-23, S-32 | MS-25 | done |
 
 ## Streams
 
@@ -526,7 +526,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** A stored page size still overrides five, and an add form that starts open can cover the list the trainee or trainer came to read.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -619,3 +619,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-30: user can see a field error above Weight kg, Chest cm, and the rest as soon as the value is invalid, with room so that line does not shift the form, and can tell active buttons from inactive ones** — Archived 2026-10-16 → `context/archive/2026-10-15-some-display-changes/`. Lesson: —.
 - **S-31: a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks** — Archived 2026-10-16 → `context/archive/2026-10-16-update-project-info/`. Lesson: —.
 - **S-32: user can open the measurements screen on a phone and still read and enter every field, the difference versus the previous entry, and the trainer controls on that screen** — Archived 2026-10-20 → `context/archive/2026-10-18-mobile-devices-ui-measurements/`. Lesson: —.
+- **S-33: user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default** — Archived 2026-10-20 → `context/archive/2026-10-20-default-values-changes/`. Lesson: —.
