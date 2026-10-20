@@ -8,6 +8,7 @@ import {
   deltasForVisiblePage,
   filterByMonth,
   journalMonth,
+  addFormStartsOpen,
   addFormStorageKey,
   journalPageStorageKey,
   parseAddFormOpen,
@@ -86,6 +87,21 @@ describe("parseAddFormOpen", () => {
     expect(parseAddFormOpen(null)).toBeNull();
     expect(parseAddFormOpen("")).toBeNull();
     expect(parseAddFormOpen("true")).toBeNull();
+  });
+});
+
+describe("addFormStartsOpen", () => {
+  it("opens when nothing is stored, even for a journal that already has entries", () => {
+    expect(addFormStartsOpen(false, null)).toBe(true);
+  });
+
+  it("opens when a server error is present even if the stored preference is closed", () => {
+    expect(addFormStartsOpen(true, false)).toBe(true);
+  });
+
+  it("follows a stored preference when there is no server error", () => {
+    expect(addFormStartsOpen(false, false)).toBe(false);
+    expect(addFormStartsOpen(false, true)).toBe(true);
   });
 });
 
