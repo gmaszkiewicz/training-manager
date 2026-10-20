@@ -9,6 +9,8 @@ archived_at: null
 
 ## Notes
 
+S-34 / MS-26.
+
 1) Refresh the test plan
 2) Expand application tests
 3) Fix for Safari on iOS where the hamburger and actions menus cannot be clicked
