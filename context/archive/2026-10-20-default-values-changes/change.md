@@ -1,10 +1,10 @@
 ---
 change_id: default-values-changes
 title: Default values for the measurement accordion and entries per page
-status: impl_reviewed
+status: archived
 created: 2026-10-20
 updated: 2026-10-20
-archived_at: null
+archived_at: 2026-10-20T06:19:47Z
 ---
 
 ## Notes
