@@ -19,7 +19,7 @@ export function ErrorToastCountdown() {
 
   return (
     <span className="text-muted-foreground text-xs tabular-nums" aria-hidden="true">
-      ({secondsLeft} s)
+      (<span className="inline-block w-[2ch] text-right">{secondsLeft}</span> s)
     </span>
   );
 }

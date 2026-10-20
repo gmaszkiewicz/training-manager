@@ -13,7 +13,17 @@ function restackPageErrorToasts() {
   }
 }
 
-function PageErrorToast({ id, message, onDismiss }: { id: string; message: string; onDismiss: (id: string) => void }) {
+function PageErrorToast({
+  id,
+  message,
+  tone = "error",
+  onDismiss,
+}: {
+  id: string;
+  message: string;
+  tone?: "error" | "notice";
+  onDismiss: (id: string) => void;
+}) {
   const onDismissRef = useRef(onDismiss);
 
   useEffect(() => {
@@ -32,6 +42,7 @@ function PageErrorToast({ id, message, onDismiss }: { id: string; message: strin
   return (
     <ErrorToastCard
       message={message}
+      tone={tone}
       onDismiss={() => {
         onDismiss(id);
       }}
@@ -42,9 +53,13 @@ function PageErrorToast({ id, message, onDismiss }: { id: string; message: strin
 export default function PageErrorToasts({
   messages,
   onDismiss,
+  tone = "error",
+  clearParams,
 }: {
   messages: string[];
   onDismiss?: (message: string) => void;
+  tone?: "error" | "notice";
+  clearParams?: string[];
 }) {
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
   const onDismissRef = useRef(onDismiss);
@@ -57,6 +72,25 @@ export default function PageErrorToasts({
     return dismissed.has(id) ? [] : [{ id, message }];
   });
   const toastIds = items.map((item) => item.id).join("\n");
+
+  useEffect(() => {
+    if (clearParams === undefined || clearParams.length === 0) {
+      return;
+    }
+    const url = new URL(window.location.href);
+    let changed = false;
+    for (const name of clearParams) {
+      if (url.searchParams.has(name)) {
+        url.searchParams.delete(name);
+        changed = true;
+      }
+    }
+    if (!changed) {
+      return;
+    }
+    const query = url.searchParams.toString();
+    window.history.replaceState(null, "", `${url.pathname}${query.length > 0 ? `?${query}` : ""}${url.hash}`);
+  }, [clearParams]);
 
   useEffect(() => {
     restackPageErrorToasts();
@@ -79,6 +113,7 @@ export default function PageErrorToasts({
           key={item.id}
           id={item.id}
           message={item.message}
+          tone={tone}
           onDismiss={(id) => {
             const message = items.find((item) => item.id === id)?.message;
             setDismissed((current) => {

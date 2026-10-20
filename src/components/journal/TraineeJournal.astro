@@ -9,6 +9,7 @@ interface Props {
   measurementsLoaded: boolean;
   entries: MeasurementWithDeltas[];
   serverError: string | null;
+  notice?: string | null;
   editingEntry?: MeasurementEntry | null;
   confirmingEntry?: MeasurementEntry | null;
   idPrefix?: string;
@@ -27,6 +28,7 @@ const {
   measurementsLoaded,
   entries,
   serverError,
+  notice = null,
   editingEntry = null,
   confirmingEntry = null,
   idPrefix = "",
@@ -49,6 +51,9 @@ const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
   <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
     {measurementsLoaded ? (
       <>
+        {notice ? (
+          <PageErrorToasts messages={[notice]} tone="notice" clearParams={["notice", "measured_on"]} client:load />
+        ) : null}
         {editingEntry ? (
           <>
             <h1 class="mb-3 text-xl font-bold text-foreground">Edit measurement</h1>

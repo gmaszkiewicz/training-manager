@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import {
   ChevronDown,
@@ -216,6 +216,7 @@ function DeleteConfirmToast({
         <p id="delete-measurement-toast" className="text-sm">
           Delete measurement from {display.text}?
         </p>
+        <input type="hidden" name="measured_on" value={toMeasuredOnLocalValue(entry.measured_on)} />
         <div className="flex items-center gap-4">
           <Button ref={deleteRef} type="submit" size="sm">
             Delete
@@ -387,6 +388,86 @@ function NoteIconSlot({
   return <NoteOpenButton noteId={noteId} label={label} expanded={expanded} className={className} onClick={onClick} />;
 }
 
+function singleLineNote(note: string | null): string | null {
+  if (note === null || note === "" || /[\r\n]/.test(note)) {
+    return null;
+  }
+  return note;
+}
+
+function NoteRowCell({
+  note,
+  noteId,
+  label,
+  expanded,
+  onClick,
+}: {
+  note: string | null;
+  noteId: string;
+  label: string;
+  expanded: boolean;
+  onClick: () => void;
+}) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const probeRef = useRef<HTMLSpanElement>(null);
+  const singleLine = singleLineNote(note);
+  const [showText, setShowText] = useState(false);
+
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    const probe = probeRef.current;
+    if (box === null || probe === null || singleLine === null) {
+      setShowText(false);
+      return;
+    }
+
+    const update = () => {
+      const style = window.getComputedStyle(box);
+      const available = box.clientWidth - Number.parseFloat(style.paddingLeft) - Number.parseFloat(style.paddingRight);
+      const next = probe.scrollWidth <= available;
+      setShowText((current) => (current === next ? current : next));
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(box);
+    return () => {
+      observer.disconnect();
+    };
+  }, [singleLine]);
+
+  return (
+    <div ref={boxRef} className="relative flex h-full min-h-12 w-full items-center justify-center px-2">
+      {singleLine === null ? null : (
+        <span ref={probeRef} className="invisible absolute text-sm whitespace-nowrap" aria-hidden="true">
+          {singleLine}
+        </span>
+      )}
+      {showText && singleLine !== null ? (
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-auto px-0 font-normal"
+          aria-expanded={expanded}
+          data-note-id={noteId}
+          onClick={onClick}
+        >
+          {singleLine}
+        </Button>
+      ) : (
+        <NoteIconSlot
+          noteId={noteId}
+          hasNote={note !== null && note !== ""}
+          label={label}
+          expanded={expanded}
+          className="size-12"
+          onClick={onClick}
+        />
+      )}
+    </div>
+  );
+}
+
 function RowActions({
   displayText,
   editHref,
@@ -497,13 +578,12 @@ function MeasurementEntry({
             </TableCell>
           );
         })}
-        <TableCell className="measurement-row:table-cell hidden p-0">
-          <NoteIconSlot
+        <TableCell className="measurement-row:table-cell hidden h-px p-0">
+          <NoteRowCell
+            note={entry.note}
             noteId={entry.id}
-            hasNote={hasNote}
             label={noteLabel}
             expanded={noteOpen}
-            className="h-full min-h-12 w-12"
             onClick={onOpenNote}
           />
         </TableCell>
@@ -1130,7 +1210,7 @@ export default function MeasurementBrowser({
             data-measurement-table
             className="border-border bg-background mt-6 w-full max-w-full min-w-0 overflow-hidden rounded-md border"
           >
-            <Table className="w-max min-w-full">
+            <Table className="w-max min-w-full measurement-row:w-full measurement-row:table-fixed">
               <TableHeader>
                 <TableRow className="bg-muted hover:bg-muted">
                   <TableHead className={cn("w-10 px-0 text-center", stickyHeaderClass, "left-0")}>
@@ -1154,11 +1234,8 @@ export default function MeasurementBrowser({
                       <MetricHeader field={field} />
                     </TableHead>
                   ))}
-                  <TableHead className="measurement-row:table-cell hidden h-auto px-0 py-2">
-                    <span className="flex w-12 flex-col items-center gap-1">
-                      <StickyNote aria-hidden="true" className="size-4" />
-                      <span>Note</span>
-                    </span>
+                  <TableHead className="measurement-row:table-cell hidden h-auto px-0 py-2 text-center">
+                    <span className="inline-flex w-12 justify-center">Note</span>
                   </TableHead>
                   {readOnly ? null : <TableHead className="measurement-row:table-cell hidden w-16" />}
                 </TableRow>
