@@ -1220,9 +1220,7 @@ export default function MeasurementBrowser({
                       <MetricHeader field={field} />
                     </TableHead>
                   ))}
-                  <TableHead className="measurement-row:table-cell hidden h-auto px-2 py-2 text-center">
-                    Note
-                  </TableHead>
+                  <TableHead className="measurement-row:table-cell hidden h-auto px-2 py-2 text-center">Note</TableHead>
                   {readOnly ? null : <TableHead className="measurement-row:table-cell hidden w-16" />}
                 </TableRow>
               </TableHeader>
