@@ -52,20 +52,20 @@ describe("utcToday", () => {
 });
 
 describe("parsePageSize", () => {
-  it("exports 5, 10, and 15 with default 10", () => {
+  it("exports 5, 10, and 15 with default 5", () => {
     expect(pageSizes).toEqual([5, 10, 15]);
-    expect(defaultPageSize).toBe(10);
+    expect(defaultPageSize).toBe(5);
   });
 
-  it("accepts the stored page sizes and falls back to 10", () => {
+  it("accepts the stored page sizes and falls back to 5", () => {
     expect(parsePageSize("5")).toBe(5);
     expect(parsePageSize("10")).toBe(10);
     expect(parsePageSize("15")).toBe(15);
-    expect(parsePageSize("10.0")).toBe(10);
-    expect(parsePageSize(" 10")).toBe(10);
-    expect(parsePageSize(10)).toBe(10);
-    expect(parsePageSize("7")).toBe(10);
-    expect(parsePageSize(null)).toBe(10);
+    expect(parsePageSize("10.0")).toBe(5);
+    expect(parsePageSize(" 10")).toBe(5);
+    expect(parsePageSize(10)).toBe(5);
+    expect(parsePageSize("7")).toBe(5);
+    expect(parsePageSize(null)).toBe(5);
   });
 });
 
