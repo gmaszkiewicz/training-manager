@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import {
   ChevronDown,
@@ -409,53 +409,10 @@ function NoteRowCell({
   expanded: boolean;
   onClick: () => void;
 }) {
-  const boxRef = useRef<HTMLDivElement>(null);
-  const probeRef = useRef<HTMLSpanElement>(null);
   const singleLine = singleLineNote(note);
-  const [showText, setShowText] = useState(false);
-
-  useLayoutEffect(() => {
-    const box = boxRef.current;
-    const probe = probeRef.current;
-    if (box === null || probe === null || singleLine === null) {
-      setShowText(false);
-      return;
-    }
-
-    const update = () => {
-      const style = window.getComputedStyle(box);
-      const available = box.clientWidth - Number.parseFloat(style.paddingLeft) - Number.parseFloat(style.paddingRight);
-      const next = probe.scrollWidth <= available;
-      setShowText((current) => (current === next ? current : next));
-    };
-
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(box);
-    return () => {
-      observer.disconnect();
-    };
-  }, [singleLine]);
-
-  return (
-    <div ref={boxRef} className="relative flex h-full min-h-12 w-full items-center justify-center px-2">
-      {singleLine === null ? null : (
-        <span ref={probeRef} className="invisible absolute text-sm whitespace-nowrap" aria-hidden="true">
-          {singleLine}
-        </span>
-      )}
-      {showText && singleLine !== null ? (
-        <Button
-          type="button"
-          variant="ghost"
-          className="h-auto px-0 font-normal"
-          aria-expanded={expanded}
-          data-note-id={noteId}
-          onClick={onClick}
-        >
-          {singleLine}
-        </Button>
-      ) : (
+  if (singleLine === null) {
+    return (
+      <div className="flex h-full min-h-12 w-full items-center justify-center px-2">
         <NoteIconSlot
           noteId={noteId}
           hasNote={note !== null && note !== ""}
@@ -464,7 +421,26 @@ function NoteRowCell({
           className="size-12"
           onClick={onClick}
         />
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full min-h-12 w-full min-w-0 items-center px-2">
+      <Button
+        type="button"
+        variant="ghost"
+        className="note-fit font-normal whitespace-normal"
+        aria-label={label}
+        aria-expanded={expanded}
+        data-note-id={noteId}
+        onClick={onClick}
+      >
+        <span className="note-fit-icon" aria-hidden="true">
+          <StickyNote className="size-4" />
+        </span>
+        <span className="note-fit-text">{singleLine}</span>
+      </Button>
     </div>
   );
 }
@@ -579,7 +555,7 @@ function MeasurementEntry({
             </TableCell>
           );
         })}
-        <TableCell className="measurement-row:table-cell hidden h-px p-0">
+        <TableCell className="measurement-row:table-cell hidden h-px min-w-0 p-0">
           <NoteRowCell note={entry.note} noteId={entry.id} label={noteLabel} expanded={noteOpen} onClick={onOpenNote} />
         </TableCell>
         {readOnly ? null : (
@@ -1205,7 +1181,10 @@ export default function MeasurementBrowser({
             data-measurement-table
             className="border-border bg-background mt-6 w-full max-w-full min-w-0 overflow-hidden rounded-md border"
           >
-            <Table className="measurement-row:w-full measurement-row:table-fixed w-max min-w-full">
+            <Table
+              containerClassName="overflow-x-clip"
+              className="measurement-row:w-full measurement-row:table-fixed w-max min-w-full"
+            >
               <TableHeader>
                 <TableRow className="bg-muted hover:bg-muted">
                   <TableHead className={cn("w-10 px-0 text-center", stickyHeaderClass, "left-0")}>
