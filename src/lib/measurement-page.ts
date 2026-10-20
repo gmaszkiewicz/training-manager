@@ -77,6 +77,16 @@ export function parseAddFormOpen(value: unknown): boolean | null {
   return null;
 }
 
+export function addFormStartsOpen(hasServerError: boolean, preference: boolean | null): boolean {
+  if (hasServerError) {
+    return true;
+  }
+  if (preference === false) {
+    return false;
+  }
+  return true;
+}
+
 export function parseJournalPage(value: unknown): number {
   if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 1_000_000) {
     return value;
