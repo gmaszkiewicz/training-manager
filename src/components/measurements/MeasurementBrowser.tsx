@@ -579,13 +579,7 @@ function MeasurementEntry({
           );
         })}
         <TableCell className="measurement-row:table-cell hidden h-px p-0">
-          <NoteRowCell
-            note={entry.note}
-            noteId={entry.id}
-            label={noteLabel}
-            expanded={noteOpen}
-            onClick={onOpenNote}
-          />
+          <NoteRowCell note={entry.note} noteId={entry.id} label={noteLabel} expanded={noteOpen} onClick={onOpenNote} />
         </TableCell>
         {readOnly ? null : (
           <TableCell className="measurement-row:table-cell hidden w-16 px-0">
@@ -1210,7 +1204,7 @@ export default function MeasurementBrowser({
             data-measurement-table
             className="border-border bg-background mt-6 w-full max-w-full min-w-0 overflow-hidden rounded-md border"
           >
-            <Table className="w-max min-w-full measurement-row:w-full measurement-row:table-fixed">
+            <Table className="measurement-row:w-full measurement-row:table-fixed w-max min-w-full">
               <TableHeader>
                 <TableRow className="bg-muted hover:bg-muted">
                   <TableHead className={cn("w-10 px-0 text-center", stickyHeaderClass, "left-0")}>

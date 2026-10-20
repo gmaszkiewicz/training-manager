@@ -131,7 +131,7 @@ export function useFormErrors<Field extends string>(
   }
 
   function reportServerError(message: string, field?: Field | readonly Field[]) {
-    const fields = field === undefined ? [] : Array.isArray(field) ? [...field] : [field];
+    const fields: readonly Field[] = field === undefined ? [] : typeof field === "string" ? [field] : field;
     if (fields.length > 1) {
       setErrors({});
       setServerMessage(message);
