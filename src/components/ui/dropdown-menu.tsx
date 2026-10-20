@@ -3,16 +3,74 @@ import { cn } from "@/lib/utils";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
-function DropdownMenu({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
+interface DropdownMenuControl {
+  toggle: () => void;
+}
+
+const DropdownMenuControlContext = React.createContext<DropdownMenuControl | null>(null);
+
+function DropdownMenu({
+  open: openProp,
+  defaultOpen,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen ?? false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : uncontrolledOpen;
+
+  const handleOpenChange = React.useCallback(
+    (next: boolean) => {
+      if (!isControlled) {
+        setUncontrolledOpen(next);
+      }
+      onOpenChange?.(next);
+    },
+    [isControlled, onOpenChange],
+  );
+
+  const toggle = React.useCallback(() => {
+    handleOpenChange(!open);
+  }, [handleOpenChange, open]);
+
+  const control = React.useMemo(() => ({ toggle }), [toggle]);
+
+  return (
+    <DropdownMenuControlContext.Provider value={control}>
+      <DropdownMenuPrimitive.Root data-slot="dropdown-menu" open={open} onOpenChange={handleOpenChange} {...props} />
+    </DropdownMenuControlContext.Provider>
+  );
 }
 
 function DropdownMenuPortal({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
   return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
-function DropdownMenuTrigger({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
-  return <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
+function DropdownMenuTrigger({
+  onPointerDown,
+  onClick,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+  const control = React.useContext(DropdownMenuControlContext);
+
+  return (
+    <DropdownMenuPrimitive.Trigger
+      data-slot="dropdown-menu-trigger"
+      {...props}
+      onPointerDown={(event) => {
+        // Radix opens on pointerdown; on iOS Safari / some touch browsers that
+        // first tap is unreliable. Defer the toggle to click instead.
+        event.preventDefault();
+        onPointerDown?.(event);
+      }}
+      onClick={(event) => {
+        onClick?.(event);
+        if (!event.defaultPrevented) {
+          control?.toggle();
+        }
+      }}
+    />
+  );
 }
 
 function DropdownMenuContent({
