@@ -36,11 +36,7 @@ export default function ChangePasswordForm({ serverError, notice }: Props) {
   const linkedField = fieldForServerError(serverError);
   const { items, dismiss, clearField, showErrors, reportServerError, fieldInvalid, describedBy } = useFormErrors<
     "currentPassword" | "password" | "confirmPassword"
-  >(
-    linkedField ? null : serverError,
-    linkedField && serverError ? { [linkedField]: serverError } : undefined,
-    notice,
-  );
+  >(linkedField ? null : serverError, linkedField && serverError ? { [linkedField]: serverError } : undefined, notice);
 
   function validate() {
     const next: Partial<Record<"currentPassword" | "password" | "confirmPassword", string>> = {};
