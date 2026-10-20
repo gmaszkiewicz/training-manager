@@ -98,7 +98,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-31 | update-project-info | a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks | — | MS-23 | done |
 | S-32 | mobile-devices-ui-measurements | user can open the measurements screen on a phone and still read and enter every field, the difference versus the previous entry, and the trainer controls on that screen | S-28, S-29, S-30 | MS-24 | done |
 | S-33 | default-values-changes | user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default | S-23, S-32 | MS-25 | done |
-| S-34 | test-app-refresh-and-fixes | a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap | S-19, S-32 | MS-26 | ready |
+| S-34 | test-app-refresh-and-fixes | a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap | S-19, S-32 | MS-26 | done |
 
 ## Streams
 
@@ -540,7 +540,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Broader e2e or a Safari pointer workaround can add flaky browser runs or miss a device-only regression that desktop WebKit does not show.
-- **Status:** ready
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -579,7 +579,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-31       | update-project-info                 | Update the README and sync slice issues to the roadmap                     | no                    | [#105](https://github.com/gmaszkiewicz/training-manager/issues/105). On MS-23. Plan exists. Run `/10x-implement update-project-info`. |
 | S-32       | mobile-devices-ui-measurements      | Measurements screen on a phone                                             | yes                   | [#110](https://github.com/gmaszkiewicz/training-manager/issues/110). On MS-24. Change folder exists. Run `/10x-plan mobile-devices-ui-measurements`. |
 | S-33       | default-values-changes              | Default accordion and five entries per page                                | no                    | [#115](https://github.com/gmaszkiewicz/training-manager/issues/115). On MS-25. Change folder exists. Work is on `cursor/default-values-changes`. |
-| S-34       | test-app-refresh-and-fixes          | Refresh the test plan, expand app tests, and fix iOS Safari menus          | yes                   | [#118](https://github.com/gmaszkiewicz/training-manager/issues/118). On MS-26. Change folder exists. Run `/10x-plan test-app-refresh-and-fixes`. |
+| S-34       | test-app-refresh-and-fixes          | Refresh the test plan, expand app tests, and fix iOS Safari menus          | yes                   | [#118](https://github.com/gmaszkiewicz/training-manager/issues/118). On MS-26. Implemented: phone-width menu e2e + DropdownMenu click-open fix; test-plan refresh. Manual Safari/Firefox checklist remains. |
 
 ## Open Roadmap Questions
 
