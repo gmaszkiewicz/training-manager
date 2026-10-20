@@ -4,7 +4,9 @@ import TrainerPanel from "@/components/trainer/TrainerPanel.astro";
 import Topbar from "@/components/Topbar.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
+  addFormStorageKey,
   dayStorageKey,
+  parseAddFormOpen,
   defaultPageSize,
   journalMonth,
   journalPageStorageKey,
@@ -20,12 +22,17 @@ import { ensureProfile } from "@/lib/services/ensure-profile";
 import { getMeasurement, readMeasurementPage } from "@/lib/services/measurements";
 import { listTrainerLinks } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
+import { measurementNoticeMessage } from "@/lib/measurement-notice";
 import { preferredTraineeId, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementEntry, MeasurementWithDeltas, Profile } from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 const serverError = Astro.url.searchParams.get("error");
+const measurementNotice = measurementNoticeMessage(
+  Astro.url.searchParams.get("notice"),
+  Astro.url.searchParams.get("measured_on"),
+);
 const traineeParam = Astro.url.searchParams.get("trainee");
 
 type ProfileRole = Profile["role"];
@@ -76,6 +83,10 @@ function preferredMonth(accountUserId: string, subjectTraineeId: string): string
 
 function preferredJournalPage(accountUserId: string, subjectTraineeId: string): number {
   return parseJournalPage(cookieValue(journalPageStorageKey(accountUserId, subjectTraineeId)));
+}
+
+function preferredAddForm(accountUserId: string): boolean | null {
+  return parseAddFormOpen(cookieValue(addFormStorageKey(accountUserId)));
 }
 
 if (supabase && user) {
@@ -161,19 +172,23 @@ if (supabase && user) {
 }
 ---
 
-<Layout title="Measurements">
-  <div class="px-4 pt-2 pb-4 sm:px-8 sm:pb-8">
-    <Topbar />
+<Layout title="Measurements" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-measurement">
+      <Topbar />
+    </div>
   </div>
   {role === "trainee" ? (
     <TraineeJournal
       measurementsLoaded={measurementsLoaded}
       entries={entries}
       serverError={traineeServerError}
+      notice={measurementNotice}
       editingEntry={editingEntry}
       confirmingEntry={confirmingEntry}
       accountUserId={traineeAccountId}
       subjectTraineeId={traineeAccountId}
+      addFormOpen={traineeAccountId ? preferredAddForm(traineeAccountId) : null}
       today={today}
       dates={dates}
       page={page}

@@ -1,6 +1,6 @@
 ---
-import { ServerError } from "@/components/auth/ServerError";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
 import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
 import { Button } from "@/components/ui/button";
@@ -43,31 +43,39 @@ const {
   pageSize,
   month,
 } = Astro.props;
+
+const toastMessages: string[] = [];
+if (serverError !== null && serverError !== "Enter an email address") {
+  toastMessages.push(serverError);
+}
+if (mode === "trainer" && !trainerLinksLoaded) {
+  toastMessages.push("Could not load trainees");
+}
+if (mode === "trainer" && trainerLinksLoaded && selectedLink !== null && !trainerMeasurementsLoaded) {
+  toastMessages.push("Could not load measurements");
+}
+if (mode !== "trainer") {
+  toastMessages.push("Could not open your journal");
+}
 ---
 
-<div class="flex justify-center px-4 pb-8">
-  <!-- Same floor as TraineeJournal, so the empty-state line matches a measurement entry -->
-  <div
-    class:list={[
-      "rounded-2xl border border-border bg-card p-8 text-card-foreground",
-      selectedLink && trainerMeasurementsLoaded ? "w-max min-w-[calc(75rem+4px)]" : "w-max",
-    ]}
-  >
+<div class="flex justify-center px-4 pb-4">
+  <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
+    {toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
     {mode === "trainer" ? (
       <>
-        {serverError ? <ServerError message={serverError} /> : null}
         {trainerLinksLoaded ? (
           <>
             <form method="POST" action="/api/trainer-links" class="space-y-3">
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
-              <TraineeEmailSearch idPrefix={idPrefix} client:load />
+              <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
               <Button type="submit" variant="smoke" className="w-full">
                 Link trainee
               </Button>
             </form>
             {trainerLinks.length > 0 ? (
               <>
-                <h2 class="mt-6 mb-4 text-center text-2xl font-bold text-card-foreground">Body measurements</h2>
+                <h2 class="mt-6 mb-3 text-xl font-bold text-foreground">Body measurements</h2>
                 <div class="flex justify-center">
                   {selectedLink ? (
                     <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />
@@ -89,21 +97,16 @@ const {
                       month={month}
                       client:load
                     />
-                  ) : (
-                    <ServerError message="Could not load measurements" />
-                  )
+                  ) : null
                 ) : null}
               </>
             ) : null}
           </>
-        ) : (
-          <ServerError message="Could not load trainees" />
-        )}
+        ) : null}
       </>
     ) : (
       <>
         <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Measurements</h1>
-        <p class="text-muted-foreground">Could not open your journal</p>
       </>
     )}
   </div>

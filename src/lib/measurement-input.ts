@@ -89,16 +89,49 @@ function measurementNumber(definition: MeasurementFieldDefinition, min: number, 
   });
 }
 
+const measurementLimits = {
+  weight_kg: { min: 20, max: 400 },
+  chest_cm: { min: 10, max: 300 },
+  waist_cm: { min: 10, max: 300 },
+  arms_cm: { min: 10, max: 300 },
+  thigh_cm: { min: 10, max: 300 },
+  calf_cm: { min: 10, max: 300 },
+  hips_cm: { min: 10, max: 300 },
+  navel_cm: { min: 10, max: 300 },
+} as const satisfies Record<MeasurementField, { min: number; max: number }>;
+
 const measurementFieldNumbers = {
-  weight_kg: measurementNumber(weightField, 20, 400),
-  chest_cm: measurementNumber(chestField, 10, 300),
-  waist_cm: measurementNumber(waistField, 10, 300),
-  arms_cm: measurementNumber(armsField, 10, 300),
-  thigh_cm: measurementNumber(thighField, 10, 300),
-  calf_cm: measurementNumber(calfField, 10, 300),
-  hips_cm: measurementNumber(hipsField, 10, 300),
-  navel_cm: measurementNumber(navelField, 10, 300),
+  weight_kg: measurementNumber(weightField, measurementLimits.weight_kg.min, measurementLimits.weight_kg.max),
+  chest_cm: measurementNumber(chestField, measurementLimits.chest_cm.min, measurementLimits.chest_cm.max),
+  waist_cm: measurementNumber(waistField, measurementLimits.waist_cm.min, measurementLimits.waist_cm.max),
+  arms_cm: measurementNumber(armsField, measurementLimits.arms_cm.min, measurementLimits.arms_cm.max),
+  thigh_cm: measurementNumber(thighField, measurementLimits.thigh_cm.min, measurementLimits.thigh_cm.max),
+  calf_cm: measurementNumber(calfField, measurementLimits.calf_cm.min, measurementLimits.calf_cm.max),
+  hips_cm: measurementNumber(hipsField, measurementLimits.hips_cm.min, measurementLimits.hips_cm.max),
+  navel_cm: measurementNumber(navelField, measurementLimits.navel_cm.min, measurementLimits.navel_cm.max),
 };
+
+export function measurementFieldRange(field: MeasurementField): string {
+  const limits = measurementLimits[field];
+  return `${limits.min}\u2013${limits.max}`;
+}
+
+export function measuredOnPartRange(part: "hour" | "minute", day: string, time: string, ceilingMinute: string): string {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/.exec(ceilingMinute);
+  if (match === null || day < match[1]) {
+    return part === "hour" ? "0\u201323" : "0\u201359";
+  }
+  const ceilingHour = Number(match[2]);
+  const ceilingMinuteOfHour = Number(match[3]);
+  if (part === "hour") {
+    return `0\u2013${ceilingHour}`;
+  }
+  const hour = Number(time.slice(0, 2));
+  if (Number.isFinite(hour) && hour < ceilingHour) {
+    return "0\u201359";
+  }
+  return `0\u2013${ceilingMinuteOfHour}`;
+}
 
 export function parseMeasurementField(field: MeasurementField, value: unknown): number | null {
   const parsed = measurementFieldNumbers[field].safeParse(value);
