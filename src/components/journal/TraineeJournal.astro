@@ -111,7 +111,12 @@ const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
                     // The choice still stays for this visit.
                   }
                 }
+                var skipLoadToggle = details.getAttribute("data-restore") !== "true" && details.open;
                 details.addEventListener("toggle", function () {
+                  if (skipLoadToggle) {
+                    skipLoadToggle = false;
+                    return;
+                  }
                   remember(details.open ? "open" : "closed");
                 });
                 if (details.getAttribute("data-restore") === "true") {
