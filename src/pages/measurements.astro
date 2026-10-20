@@ -22,12 +22,17 @@ import { ensureProfile } from "@/lib/services/ensure-profile";
 import { getMeasurement, readMeasurementPage } from "@/lib/services/measurements";
 import { listTrainerLinks } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
+import { measurementNoticeMessage } from "@/lib/measurement-notice";
 import { preferredTraineeId, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementEntry, MeasurementWithDeltas, Profile } from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 const serverError = Astro.url.searchParams.get("error");
+const measurementNotice = measurementNoticeMessage(
+  Astro.url.searchParams.get("notice"),
+  Astro.url.searchParams.get("measured_on"),
+);
 const traineeParam = Astro.url.searchParams.get("trainee");
 
 type ProfileRole = Profile["role"];
@@ -178,6 +183,7 @@ if (supabase && user) {
       measurementsLoaded={measurementsLoaded}
       entries={entries}
       serverError={traineeServerError}
+      notice={measurementNotice}
       editingEntry={editingEntry}
       confirmingEntry={confirmingEntry}
       accountUserId={traineeAccountId}

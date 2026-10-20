@@ -6,6 +6,8 @@ import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { submitAuthForm } from "@/lib/auth-form";
 
+const INVALID_LOGIN_ERROR = "Invalid login credentials";
+
 interface Props {
   serverError?: string | null;
 }
@@ -18,7 +20,7 @@ export default function SignInForm({ serverError }: Props) {
   const savingRef = useRef(false);
   const { items, dismiss, clearField, showErrors, reportServerError, fieldInvalid, describedBy } = useFormErrors<
     "email" | "password"
-  >(serverError);
+  >(serverError, {}, undefined, serverError === INVALID_LOGIN_ERROR ? ["email", "password"] : undefined);
 
   function validate() {
     const next: Partial<Record<"email" | "password", string>> = {};
@@ -49,6 +51,10 @@ export default function SignInForm({ serverError }: Props) {
       }
       savingRef.current = false;
       setSaving(false);
+      if (result.error === INVALID_LOGIN_ERROR) {
+        reportServerError(result.error, ["email", "password"]);
+        return;
+      }
       reportServerError(result.error);
     });
   }

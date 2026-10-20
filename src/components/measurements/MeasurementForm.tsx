@@ -869,7 +869,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
           return;
         }
         if (response.ok && payload?.ok === true && !response.redirected) {
-          window.location.assign("/measurements");
+          const notice = entry ? "updated" : "added";
+          const params = new URLSearchParams({ notice, measured_on: minute });
+          window.location.assign(`/measurements?${params.toString()}`);
           return;
         }
         savingRef.current = false;

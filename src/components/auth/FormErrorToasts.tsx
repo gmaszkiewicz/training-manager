@@ -53,10 +53,12 @@ export function useFormErrors<Field extends string>(
   serverError?: string | null,
   initialErrors: Partial<Record<Field, string>> = {},
   notice?: string | null,
+  initialHighlighted: readonly Field[] = [],
 ) {
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>(initialErrors);
   const [serverMessage, setServerMessage] = useState<string | null>(serverError ?? null);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(notice ?? null);
+  const [highlighted, setHighlighted] = useState<ReadonlySet<Field>>(() => new Set(initialHighlighted));
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
   const items = formErrorItems(errors, dismissed, serverMessage, noticeMessage);
 
@@ -71,6 +73,7 @@ export function useFormErrors<Field extends string>(
     });
     if (id === "server-error") {
       setServerMessage(null);
+      setHighlighted(new Set());
       return;
     }
     if (id === "notice") {
@@ -102,10 +105,19 @@ export function useFormErrors<Field extends string>(
       next.delete(id);
       return next;
     });
+    setHighlighted((current) => {
+      if (!current.has(field)) {
+        return current;
+      }
+      const next = new Set(current);
+      next.delete(field);
+      return next;
+    });
   }
 
   function showErrors(next: Partial<Record<Field, string>>) {
     setErrors(next);
+    setHighlighted(new Set());
     setDismissed((current) => {
       const kept = new Set<string>();
       if (current.has("server-error")) {
@@ -118,13 +130,30 @@ export function useFormErrors<Field extends string>(
     });
   }
 
-  function reportServerError(message: string, field?: Field) {
-    if (field !== undefined) {
-      setErrors((current) => ({ ...current, [field]: message }));
+  function reportServerError(message: string, field?: Field | readonly Field[]) {
+    const fields = field === undefined ? [] : Array.isArray(field) ? [...field] : [field];
+    if (fields.length > 1) {
+      setErrors({});
+      setServerMessage(message);
+      setHighlighted(new Set(fields));
+      setDismissed((current) => {
+        const next = new Set(current);
+        next.delete("server-error");
+        for (const name of fields) {
+          next.delete(`${name}-error`);
+        }
+        return next;
+      });
+      return;
+    }
+    setHighlighted(new Set());
+    if (fields.length === 1) {
+      const only = fields[0];
+      setErrors((current) => ({ ...current, [only]: message }));
       setServerMessage(null);
       setDismissed((current) => {
         const next = new Set(current);
-        next.delete(`${field}-error`);
+        next.delete(`${only}-error`);
         next.add("server-error");
         return next;
       });
@@ -142,11 +171,20 @@ export function useFormErrors<Field extends string>(
   }
 
   function fieldInvalid(field: Field) {
-    return errors[field] !== undefined && !dismissed.has(`${field}-error`);
+    if (errors[field] !== undefined && !dismissed.has(`${field}-error`)) {
+      return true;
+    }
+    return highlighted.has(field) && serverMessage !== null && !dismissed.has("server-error");
   }
 
   function describedBy(field: Field) {
-    return fieldInvalid(field) ? `${field}-error` : undefined;
+    if (!fieldInvalid(field)) {
+      return undefined;
+    }
+    if (errors[field] !== undefined && !dismissed.has(`${field}-error`)) {
+      return `${field}-error`;
+    }
+    return "server-error";
   }
 
   return { errors, items, dismiss, clearField, showErrors, reportServerError, fieldInvalid, describedBy };
