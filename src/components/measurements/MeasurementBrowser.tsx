@@ -516,7 +516,13 @@ function MeasurementEntry({
             aria-label={`Select measurement from ${display.text}`}
           />
         </TableCell>
-        <TableCell className={cn(dateColumnClass, stickyBodyClass, "measurement-row:px-3 left-10 px-2")}>
+        <TableCell
+          className={cn(
+            dateColumnClass,
+            stickyBodyClass,
+            "measurement-row:px-3 measurement-row:text-center left-10 px-2",
+          )}
+        >
           <time dateTime={display.dateTime} className="block">
             <span className="measurement-row:hidden block font-semibold">{dayText}</span>
             <span className="text-muted-foreground measurement-row:hidden block">{timeText}</span>
@@ -1196,7 +1202,13 @@ export default function MeasurementBrowser({
                       aria-label="Select all"
                     />
                   </TableHead>
-                  <TableHead className={cn(dateColumnClass, stickyHeaderClass, "measurement-row:px-3 left-10 px-2")}>
+                  <TableHead
+                    className={cn(
+                      dateColumnClass,
+                      stickyHeaderClass,
+                      "measurement-row:px-3 measurement-row:text-center left-10 px-2",
+                    )}
+                  >
                     <span className="measurement-row:hidden">Date</span>
                     <span className="measurement-row:inline hidden">Date and time</span>
                   </TableHead>
@@ -1208,8 +1220,8 @@ export default function MeasurementBrowser({
                       <MetricHeader field={field} />
                     </TableHead>
                   ))}
-                  <TableHead className="measurement-row:table-cell hidden h-auto px-0 py-2 text-center">
-                    <span className="inline-flex w-12 justify-center">Note</span>
+                  <TableHead className="measurement-row:table-cell hidden h-auto px-2 py-2 text-center">
+                    Note
                   </TableHead>
                   {readOnly ? null : <TableHead className="measurement-row:table-cell hidden w-16" />}
                 </TableRow>
