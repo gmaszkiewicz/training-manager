@@ -32,7 +32,7 @@ From 360px up to just under `77.5rem` (1240px), a trainee can read and type the 
 - A separate mobile app, a second measurements route, or a second copy of the form and list.
 - Changing stored values, validation, delta math, who can edit, or the order of the fields.
 - A stacked column of eight full-width metrics, or a two-row metric grid.
-- Editing `src/components/ui/button.tsx` or `ServerError`. The shared input background, the top-bar width, and the auth card shell are in Accepted chrome.
+- Editing `src/components/ui/button.tsx`. `ServerError` is removed. Account errors and the save notices are in Accepted notices.
 - Shrinking calendar day buttons below `min-w-9`.
 - Guaranteeing a viewport narrower than 360px.
 - A second Playwright project, or an automated check of the trainer controls, the open calendar, edit, or delete.
@@ -55,7 +55,7 @@ This section replaces the stack, the `calc(80rem + 4px + 15px)` cutoff, the `w-5
 - **Cards.** `TraineeJournal` and `TrainerPanel` use an outer `px-4 pb-4` and a card of `w-full max-w-[74rem] min-w-0 p-4` at every width. No `measurement-row:` padding switch, no `w-max`, and no `min-w-[calc(75rem+4px)]`.
 - **Add form, narrow.** The date is `w-full`. The eight metrics sit in one `overflow-x-auto` strip. Each metric is `w-[5.5625rem] max-w-[5.5625rem] shrink-0`. The difference, or an em dash when there is none, stays under the value.
 - **Add form, wide.** The date and the strip share one row. The date is `w-[9.75rem] max-w-[9.75rem]`. The strip is `measurement-row:contents`, so it does not scroll. Each metric is `w-[5.5rem] max-w-[5.5rem]`.
-- **Saved entries.** The date column is `w-28` and `measurement-row:w-[9.75rem]`. Each metric is `w-[4.875rem]` and `measurement-row:w-[5.5rem]`. The metric strip scrolls below the breakpoint and is `overflow-visible` at it. Edit and Delete sit under the date below the breakpoint, and in their own column at it. The note is an icon; its text opens in a toast. An entry with no delta still reserves the line under the value.
+- **Saved entries.** The date column is `w-28` and `measurement-row:w-[9.75rem]`. Each metric is `w-[4.875rem]` and `measurement-row:w-[5.5rem]`. The metric strip scrolls below the breakpoint. At the breakpoint the saved table clips and does not scroll. Edit and Delete sit under the date below the breakpoint, and in their own column at it. Below the breakpoint the note is an icon. At the breakpoint a one-line note that fits the cell is shown as text; otherwise it stays an icon. A click opens a dialog. A row with no note does not open. An entry with no delta still reserves the line under the value.
 - **Calendar.** The popover is `w-max max-w-full`, and `measurement-row:max-w-none` on the wide row. Day buttons stay `min-w-9`.
 - **Trainer controls.** `LinkedTraineeField` stays `w-full max-w-full min-w-0` at every width. The email truncates. `aria-label` remains the full email. The in-flow sizer is not restored. Search suggestion buttons truncate inside a `w-full` list.
 - **Month toolbar.** Month buttons may be `size-8` below the breakpoint and `size-9` at it. Page-size buttons may be `min-w-8` below the breakpoint and `min-w-9` at it.
@@ -69,8 +69,16 @@ This section is implementation review F3, Fix B. It replaces the ban on restylin
 - **Inputs.** The shared `Input` uses `bg-background`. `FormField` always adds that class, and its `icon` is optional. `SubmitButton` accepts a `className` merged onto `w-full`.
 - **Add form.** On the trainee journal the add form is a `details` element titled "Add your next measurement". Open or closed is stored with `addFormStorageKey` and `parseAddFormOpen` in `src/lib/measurement-page.ts`. A server error leaves it open.
 - **Range text.** `measurementFieldRange` and `measuredOnPartRange` in `src/lib/measurement-input.ts` print the existing limits. They do not change validation or delta math.
-- **Load toasts.** `PageErrorToasts` shows "Could not load your measurements" when the journal has no measurements. The trainer panel shows "Could not load trainees", "Could not load measurements", and "No trainee with that email" the same way. An empty trainer email search shows "Enter an email address". A later month or page fetch that fails still leaves the current page in place with no toast.
+- **Load toasts.** `PageErrorToasts` shows "Could not load your measurements" when the journal has no measurements. The trainer panel shows "Could not load trainees" and "Could not load measurements". Any other trainer server error, including "No trainee with that email", is the same toast. When the panel is not in trainer mode it shows "Could not open your journal". An empty trainer email search shows "Enter an email address". A later month or page fetch that fails still leaves the current page in place with no toast.
 - **Libraries dialog.** The footer control opens a small fixed dialog with a transparent backdrop. It closes when the click target is the dialog itself or the close control, not when the click is inside the dependency list.
+
+## Accepted notices
+
+This section is implementation review F1, Fix A, on 2026-10-20. It replaces the ban on editing `ServerError`.
+
+- **Account errors.** `src/components/auth/ServerError.tsx` is gone. Sign-in, sign-up, reset-password request, reset-password confirm, and change-password show field and server errors through `FormErrorToasts`. The message is text.
+- **Account notices that stay inline.** "Password reset" on sign-in and "reset sent" on the reset page stay as a sentence in the card. "Password changed" on the profile form is a notice toast.
+- **Measurement notices.** After an add or update, the journal redirects with `notice=added` or `notice=updated` and the measured minute. After a delete, the redirect uses `notice=deleted`. `measurementNoticeMessage` turns that into "Measurement from YYYY-MM-DD HH:MM was added.", "was updated.", or "was deleted." The journal shows it with `PageErrorToasts` in the notice tone.
 
 ## Phase 1: Narrow layout
 
@@ -148,7 +156,7 @@ Progress rows 1.4–1.15 are the accepted checks:
 - The open calendar, including its day buttons, fits inside a 360px viewport.
 - Each metric shows the difference under the value on the add form and on a saved entry. No previous value shows an em dash. An unchanged value shows `0.0`. A value outside the field limit shows that limit instead of the difference.
 - At 1240px (`77.5rem`) or wider the date (`9.75rem`) and eight metrics (`5.5rem`) sit on one row, and the add-form strip does not scroll.
-- A saved entry is a table. Below `77.5rem` the checkbox and date stay put while the metrics scroll, the date is the day and the time on two lines, and Edit and Delete sit in the actions menu under the date. At `77.5rem` the date is one line and Edit and Delete are their own column. The note icon opens a dialog. A row with no note does not.
+- A saved entry is a table. Below `77.5rem` the checkbox and date stay put while the metrics scroll, the date is the day and the time on two lines, and Edit and Delete sit in the actions menu under the date. At `77.5rem` the date is one line and Edit and Delete are their own column. A note that fits that wide cell is text; otherwise it is an icon. A click opens a dialog. A row with no note does not.
 - The add form remembers open or closed across a reload. With it closed, `/measurements?error=Could%20not%20save%20the%20measurement` leaves it open.
 - At 360px the month buttons and the entries-per-page buttons stay on one line.
 - At 360px a trainer can search, link, and move between linked trainees. A long email truncates and the arrows stay on screen. Submitting an empty email shows "Enter an email address".
@@ -216,7 +224,7 @@ Progress row 2.3: the 360px run shows the date and Weight inside the viewport an
 3. On the add form and on a saved entry, confirm the difference sits under each metric. A first entry shows an em dash. An unchanged value shows `0.0`. Type a weight outside 20–400 and confirm `20–400` replaces the difference.
 4. At 1240px (`77.5rem`) or wider, confirm the date (`9.75rem`) and eight metrics (`5.5rem`) are one row and the add-form strip does not scroll.
 5. At 360px, on a saved entry, scroll the table sideways. The checkbox and the date stay put. The date is the day and the time on two lines. Edit and Delete are in the actions menu under the date. The note icon opens a dialog with the note. A row with no note shows a crossed-out icon and does not open. Month buttons and the entries-per-page buttons stay on one line.
-6. At 1240px or wider, the saved date is one line and Edit and Delete are their own column.
+6. At 1240px or wider, the saved date is one line and Edit and Delete are their own column. A note that fits the cell is text; a click still opens the dialog.
 7. At 360px, as a trainer, search, link, and use previous and next with a long email. The email truncates and the arrows stay on screen. Submitting an empty email shows "Enter an email address".
 8. Repeat the narrow strip and the wide row on `/kitchen-sink/journal` and `/kitchen-sink/trainer`.
 9. Below `77.5rem` the top bar shows Menu and the links are inside it. At `77.5rem` the links sit in the bar. Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password use the canvas background and a column no wider than `74rem`.
