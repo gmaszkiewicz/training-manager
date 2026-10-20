@@ -5,7 +5,7 @@ export const pageSizes = [5, 10, 15] as const;
 
 export type PageSize = (typeof pageSizes)[number];
 
-export const defaultPageSize: PageSize = 10;
+export const defaultPageSize: PageSize = 5;
 
 export function measurementMonth(measuredOn: string): string {
   return measuredOn.replace(" ", "T").slice(0, 7);

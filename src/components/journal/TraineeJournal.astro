@@ -43,7 +43,7 @@ const {
   addFormOpen = null,
 } = Astro.props;
 
-const addFormStartsOpen = serverError !== null || (addFormOpen ?? entries.length === 0);
+const addFormStartsOpen = serverError !== null || (addFormOpen ?? true);
 const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
 ---
 
