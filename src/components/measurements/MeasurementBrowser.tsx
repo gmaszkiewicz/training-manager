@@ -246,10 +246,11 @@ function NoteDialog({ entry, onClose }: { entry: MeasurementWithDeltas; onClose:
   }, [onClose]);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!onClient || dialog === null) {
+    const current = dialogRef.current;
+    if (!onClient || current === null) {
       return;
     }
+    const dialog: HTMLDialogElement = current;
     if (!dialog.open) {
       dialog.show();
     }
