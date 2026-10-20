@@ -197,10 +197,10 @@ There is no schema change. Do not rewrite stored `"10"` or `"15"` values to `"5"
 
 #### Automated
 
-- [x] 2.1 `npm test -- src/lib/measurement-page.test.ts` passes with `parsePageSize("10")` equal to 10, `parsePageSize("15")` equal to 15, and `parsePageSize(null)` equal to 5
-- [x] 2.2 The same run passes with `addFormStartsOpen(false, false)` false and `addFormStartsOpen(false, true)` true
+- [x] 2.1 `npm test -- src/lib/measurement-page.test.ts` passes with `parsePageSize("10")` equal to 10, `parsePageSize("15")` equal to 15, and `parsePageSize(null)` equal to 5 — 0aa2c7e
+- [x] 2.2 The same run passes with `addFormStartsOpen(false, false)` false and `addFormStartsOpen(false, true)` true — 0aa2c7e
 
 #### Manual
 
-- [x] 2.3 A trainee who chose 10 and collapsed the add form still sees 10 and a collapsed form after reload
-- [x] 2.4 A linked trainer who chose 15 still sees 15 after reload
+- [x] 2.3 A trainee who chose 10 and collapsed the add form still sees 10 and a collapsed form after reload — 0aa2c7e
+- [x] 2.4 A linked trainer who chose 15 still sees 15 after reload — 0aa2c7e
