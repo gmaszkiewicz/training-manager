@@ -185,13 +185,13 @@ There is no schema change. Do not rewrite stored `"10"` or `"15"` values to `"5"
 
 #### Automated
 
-- [x] 1.1 `npm test -- src/lib/measurement-page.test.ts` passes with `defaultPageSize` of 5 and `pageSizes` of 5, 10, and 15
-- [x] 1.2 The same run passes with `addFormStartsOpen(false, null)` true and `addFormStartsOpen(true, false)` true
+- [x] 1.1 `npm test -- src/lib/measurement-page.test.ts` passes with `defaultPageSize` of 5 and `pageSizes` of 5, 10, and 15 — 5675dc0
+- [x] 1.2 The same run passes with `addFormStartsOpen(false, null)` true and `addFormStartsOpen(true, false)` true — 5675dc0
 
 #### Manual
 
-- [ ] 1.3 A trainee whose journal already has an entry, and who has no saved add-form or page-size preference, sees the add form open and five entries per page
-- [ ] 1.4 A linked trainer with no saved page-size preference sees five entries per page and no add form
+- [x] 1.3 A trainee whose journal already has an entry, and who has no saved add-form or page-size preference, sees the add form open and five entries per page — 5675dc0
+- [x] 1.4 A linked trainer with no saved page-size preference sees five entries per page and no add form — 5675dc0
 
 ### Phase 2: Saved choices
 
