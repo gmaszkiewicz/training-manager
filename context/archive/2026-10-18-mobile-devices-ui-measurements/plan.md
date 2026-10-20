@@ -264,18 +264,18 @@ No schema change and no data migration. The previous worker and the new worker r
 
 Rewritten 2026-10-19 so these rows match the shipped screen.
 
-- [ ] 1.4 At 360px the trainee opens "Add your next measurement", types the date and the note, scrolls the metric strip through all eight metrics, and submits. Weight stays inside the viewport. The card is not clipped. Open or closed survives a reload.
-- [ ] 1.5 The open calendar, including its day buttons, fits inside a 360px viewport
-- [ ] 1.6 Each metric shows the difference under the value on the add form and on a saved entry. No previous value shows an em dash. An unchanged value shows 0.0. A value outside the field limit shows that limit instead of the difference.
-- [ ] 1.7 At 1240px (77.5rem) or wider the date (9.75rem) and eight metrics (5.5rem) sit on one row, and the add-form strip does not scroll
-- [ ] 1.8 At 360px a trainer can search, link, and move between linked trainees. A long email truncates and the arrows stay on screen. An empty email search shows "Enter an email address".
-- [ ] 1.9 The journal and trainer kitchen sinks follow the same narrow strip and wide row
-- [ ] 1.10 A saved entry is a table. Below 77.5rem the checkbox and date stay put while the metrics scroll, the date is the day and the time on two lines, and Edit and Delete sit under the date. At 77.5rem the date is one line and Edit and Delete are their own column. The note icon opens a dialog. A row with no note does not.
-- [ ] 1.11 Below 77.5rem the top-bar links are inside Menu. At 77.5rem they sit in the bar. Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password use the canvas and a column no wider than 74rem.
-- [ ] 1.12 The journal with no measurements shows "Could not load your measurements" and no form. The trainer panel shows "Could not load trainees", "Could not load measurements", and "No trainee with that email". A later month or page fetch that fails leaves the current page with no toast.
-- [ ] 1.13 The footer libraries dialog closes on the backdrop or Close, and stays open when the click is inside the dependency list
-- [ ] 1.14 A server error leaves "Add your next measurement" open
-- [ ] 1.15 At 360px the month buttons and the entries-per-page buttons stay on one line
+- [x] 1.4 At 360px the trainee opens "Add your next measurement", types the date and the note, scrolls the metric strip through all eight metrics, and submits. Weight stays inside the viewport. The card is not clipped. Open or closed survives a reload.
+- [x] 1.5 The open calendar, including its day buttons, fits inside a 360px viewport
+- [x] 1.6 Each metric shows the difference under the value on the add form and on a saved entry. No previous value shows an em dash. An unchanged value shows 0.0. A value outside the field limit shows that limit instead of the difference.
+- [x] 1.7 At 1240px (77.5rem) or wider the date (9.75rem) and eight metrics (5.5rem) sit on one row, and the add-form strip does not scroll
+- [x] 1.8 At 360px a trainer can search, link, and move between linked trainees. A long email truncates and the arrows stay on screen. An empty email search shows "Enter an email address".
+- [x] 1.9 The journal and trainer kitchen sinks follow the same narrow strip and wide row
+- [x] 1.10 A saved entry is a table. Below 77.5rem the checkbox and date stay put while the metrics scroll, the date is the day and the time on two lines, and Edit and Delete sit under the date. At 77.5rem the date is one line and Edit and Delete are their own column. The note icon opens a dialog. A row with no note does not.
+- [x] 1.11 Below 77.5rem the top-bar links are inside Menu. At 77.5rem they sit in the bar. Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password use the canvas and a column no wider than 74rem.
+- [x] 1.12 The journal with no measurements shows "Could not load your measurements" and no form. The trainer panel shows "Could not load trainees", "Could not load measurements", and "No trainee with that email". A later month or page fetch that fails leaves the current page with no toast.
+- [x] 1.13 The footer libraries dialog closes on the backdrop or Close, and stays open when the click is inside the dependency list
+- [x] 1.14 A server error leaves "Add your next measurement" open
+- [x] 1.15 At 360px the month buttons and the entries-per-page buttons stay on one line
 
 ### Phase 2: Playwright lock
 
@@ -286,4 +286,4 @@ Rewritten 2026-10-19 so these rows match the shipped screen.
 
 #### Manual
 
-- [ ] 2.3 The 360px run shows the date and Weight inside the viewport and Navel to the right of Weight, and the wide run shows the metrics on one row
+- [x] 2.3 The 360px run shows the date and Weight inside the viewport and Navel to the right of Weight, and the wide run shows the metrics on one row
