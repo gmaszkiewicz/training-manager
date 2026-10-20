@@ -1,10 +1,10 @@
 ---
 change_id: mobile-devices-ui-measurements
 title: Adapt the measurements screen for mobile devices
-status: impl_reviewed
+status: archived
 created: 2026-10-18
 updated: 2026-10-20
-archived_at: null
+archived_at: 2026-10-20T04:39:00Z
 ---
 
 ## Notes
