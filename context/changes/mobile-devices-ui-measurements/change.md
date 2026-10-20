@@ -3,7 +3,7 @@ change_id: mobile-devices-ui-measurements
 title: Adapt the measurements screen for mobile devices
 status: impl_reviewed
 created: 2026-10-18
-updated: 2026-10-19
+updated: 2026-10-20
 archived_at: null
 ---
 
@@ -25,3 +25,4 @@ The shipped screen is the Accepted layout and Accepted chrome in `plan.md`. The 
 - Home, measurements, profile, sign-in, sign-up, confirm-email, and reset-password use the canvas background and a `74rem` column. Below `77.5rem` the top-bar links sit in a Menu button.
 - The journal toasts "Could not load your measurements" when it has no measurements. The trainer panel toasts "Could not load trainees", "Could not load measurements", and "No trainee with that email". A later month or page fetch that fails leaves the current page in place with no toast.
 - The footer libraries control opens a dialog with a transparent backdrop. It closes on the dialog itself or Close, and stays open when the click is inside the list.
+- Commit `71d4e14` refreshes `package-lock.json` only. `package.json` is unchanged. The refresh is transitive and is not part of the screen contract.
