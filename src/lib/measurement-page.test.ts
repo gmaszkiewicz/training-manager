@@ -8,6 +8,7 @@ import {
   deltasForVisiblePage,
   filterByMonth,
   journalMonth,
+  addFormStartsOpen,
   addFormStorageKey,
   journalPageStorageKey,
   parseAddFormOpen,
@@ -52,20 +53,20 @@ describe("utcToday", () => {
 });
 
 describe("parsePageSize", () => {
-  it("exports 5, 10, and 15 with default 10", () => {
+  it("exports 5, 10, and 15 with default 5", () => {
     expect(pageSizes).toEqual([5, 10, 15]);
-    expect(defaultPageSize).toBe(10);
+    expect(defaultPageSize).toBe(5);
   });
 
-  it("accepts the stored page sizes and falls back to 10", () => {
+  it("accepts the stored page sizes and falls back to 5", () => {
     expect(parsePageSize("5")).toBe(5);
     expect(parsePageSize("10")).toBe(10);
     expect(parsePageSize("15")).toBe(15);
-    expect(parsePageSize("10.0")).toBe(10);
-    expect(parsePageSize(" 10")).toBe(10);
-    expect(parsePageSize(10)).toBe(10);
-    expect(parsePageSize("7")).toBe(10);
-    expect(parsePageSize(null)).toBe(10);
+    expect(parsePageSize("10.0")).toBe(5);
+    expect(parsePageSize(" 10")).toBe(5);
+    expect(parsePageSize(10)).toBe(5);
+    expect(parsePageSize("7")).toBe(5);
+    expect(parsePageSize(null)).toBe(5);
   });
 });
 
@@ -86,6 +87,21 @@ describe("parseAddFormOpen", () => {
     expect(parseAddFormOpen(null)).toBeNull();
     expect(parseAddFormOpen("")).toBeNull();
     expect(parseAddFormOpen("true")).toBeNull();
+  });
+});
+
+describe("addFormStartsOpen", () => {
+  it("opens when nothing is stored, even for a journal that already has entries", () => {
+    expect(addFormStartsOpen(false, null)).toBe(true);
+  });
+
+  it("opens when a server error is present even if the stored preference is closed", () => {
+    expect(addFormStartsOpen(true, false)).toBe(true);
+  });
+
+  it("follows a stored preference when there is no server error", () => {
+    expect(addFormStartsOpen(false, false)).toBe(false);
+    expect(addFormStartsOpen(false, true)).toBe(true);
   });
 });
 
