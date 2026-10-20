@@ -63,6 +63,20 @@ export function journalPageStorageKey(accountUserId: string, subjectTraineeId: s
   return `tm.measurements.page.${accountUserId}.${subjectTraineeId}`;
 }
 
+export function addFormStorageKey(accountUserId: string): string {
+  return `tm.measurements.addForm.${accountUserId}`;
+}
+
+export function parseAddFormOpen(value: unknown): boolean | null {
+  if (value === "open") {
+    return true;
+  }
+  if (value === "closed") {
+    return false;
+  }
+  return null;
+}
+
 export function parseJournalPage(value: unknown): number {
   if (typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 1_000_000) {
     return value;

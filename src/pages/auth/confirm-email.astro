@@ -1,18 +1,28 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
 ---
 
-<Layout title="Check your email">
-  <div class="flex min-h-full flex-1 items-center justify-center p-4">
-    <div class="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-center text-card-foreground">
-      <div class="mb-4 text-5xl">📧</div>
-      <h1 class="mb-3 text-2xl font-bold text-card-foreground">Check your email</h1>
-      <p class="mb-6 text-muted-foreground">
-        We've sent a confirmation link to your email address. Click it to activate your account.
-      </p>
-      <a href="/auth/signin" class="text-sm text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring">
-        Back to sign in
-      </a>
+<Layout title="Check your email" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-measurement">
+      <Topbar />
+    </div>
+  </div>
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4 text-center text-card-foreground">
+      <div class="mx-auto max-w-sm">
+        <h1 class="mb-3 text-xl font-bold text-foreground">Check your email</h1>
+        <p class="text-muted-foreground mb-6 text-sm">
+          We've sent a confirmation link to your email address. Click it to activate your account.
+        </p>
+        <a
+          href="/auth/signin"
+          class="text-primary focus-visible:ring-ring text-sm hover:underline focus-visible:ring-2"
+        >
+          Back to sign in
+        </a>
+      </div>
     </div>
   </div>
 </Layout>

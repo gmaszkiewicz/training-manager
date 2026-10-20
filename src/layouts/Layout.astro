@@ -6,9 +6,11 @@ import { missingConfigs } from "@/lib/config-status";
 
 interface Props {
   title?: string;
+  /** Gray canvas, with the menu, content, and footer in one column. */
+  measurementChrome?: boolean;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "10x Astro Starter", measurementChrome = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -19,7 +21,7 @@ const { title = "10x Astro Starter" } = Astro.props;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title}</title>
   </head>
-  <body class="flex min-h-screen flex-col">
+  <body class:list={["flex min-h-screen flex-col", measurementChrome && "bg-canvas"]}>
     {missingConfigs.map((cfg) => (
       <Banner variant="error">
         <strong>Uwaga:</strong> {cfg.message}
@@ -34,11 +36,17 @@ const { title = "10x Astro Starter" } = Astro.props;
         )}
       </Banner>
     ))}
-    <div class="flex flex-1 flex-col">
+    <div class:list={["flex flex-col", !measurementChrome && "flex-1"]}>
       <slot />
     </div>
-    <div class="px-4 pb-2 sm:px-8">
-      <Footer />
+    <div class:list={[measurementChrome ? "flex justify-center px-4 pb-2" : "px-4 pb-2 sm:px-8"]}>
+      {measurementChrome ? (
+        <div class="w-full max-w-measurement">
+          <Footer />
+        </div>
+      ) : (
+        <Footer />
+      )}
     </div>
   </body>
 </html>
