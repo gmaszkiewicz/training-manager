@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
-type DropdownMenuControl = {
+interface DropdownMenuControl {
   toggle: () => void;
-};
+}
 
 const DropdownMenuControlContext = React.createContext<DropdownMenuControl | null>(null);
 
@@ -37,12 +37,7 @@ function DropdownMenu({
 
   return (
     <DropdownMenuControlContext.Provider value={control}>
-      <DropdownMenuPrimitive.Root
-        data-slot="dropdown-menu"
-        open={open}
-        onOpenChange={handleOpenChange}
-        {...props}
-      />
+      <DropdownMenuPrimitive.Root data-slot="dropdown-menu" open={open} onOpenChange={handleOpenChange} {...props} />
     </DropdownMenuControlContext.Provider>
   );
 }
