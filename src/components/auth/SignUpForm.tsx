@@ -12,8 +12,8 @@ const MIN_PASSWORD_LENGTH = 6;
 const roleInputClassName = cn(
   "peer border-input bg-background block size-4 appearance-none rounded-full border shadow-xs",
   "checked:border-primary checked:bg-primary",
-  "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:outline-none",
-  "aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-[3px]",
+  "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+  "aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
 );
 
 interface Props {
