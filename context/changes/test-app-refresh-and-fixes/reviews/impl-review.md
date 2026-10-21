@@ -27,6 +27,6 @@
 - **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
 - **Dimension**: Scope Discipline
 - **Location**: tests/e2e/measurements-menus.spec.ts
-- **Detail**: Spec matches the planned Menu→Sign out and Actions→Edit/Delete contract, then also presses Escape and asserts Sign out is no longer visible. That close step is not in the plan contract. Benign; does not add browsers, kitchen-sink oracles, or Risk #8 coverage.
+- **Detail**: Spec matches the planned Menu→Sign out and Actions→Edit/Delete contract, then also presses Escape and asserts Sign out is no longer visible. That close step is not in the plan contract. Benign; does not add browsers, kitchen-sink oracles, or Risk #8 coverage. (Playwright `setup` project is auth state only, not a second browser — not flagged.)
 - **Fix**: Leave as-is (benign hardening of the open proof), or document the Escape close in a plan addendum if you want the contract to match the spec exactly.
-- **Decision**: FIXED — left Escape close assert in place (benign; no code or plan change)
+- **Decision**: FIXED — plan addendum: Escape close + Sign out dismissed documented in Phase 1 menu-spec contract

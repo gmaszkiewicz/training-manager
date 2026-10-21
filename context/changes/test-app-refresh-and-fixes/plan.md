@@ -71,7 +71,7 @@ Confirm the shared click-open path, the 360×800 menu spec, and the passed Safar
 
 **Intent**: Leave the live `/measurements` interaction as the Chromium proof of reachable Sign out, Edit, and Delete.
 
-**Contract**: Viewport 360×800. One test clicks the button named `Menu` and expects a `menuitem` named `Sign out`, then clicks the first button named `/^Actions for measurement from /` and expects `menuitem` names `Edit` and `Delete`. When that actions button is absent, the spec seeds the current UTC month with `POST /api/measurements`.
+**Contract**: Viewport 360×800. One test clicks the button named `Menu` and expects a `menuitem` named `Sign out`, presses Escape and asserts Sign out is gone, then clicks the first button named `/^Actions for measurement from /` and expects `menuitem` names `Edit` and `Delete`. When that actions button is absent, the spec seeds the current UTC month with `POST /api/measurements`.
 
 #### 3. Manual record (in this plan)
 
