@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-10-20
+updated: 2026-10-21
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -635,3 +635,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-31: a reader can follow the project's current information in the README under the current headings, and each roadmap slice issue carries the slice tag with information taken from this roadmap; the north-star label stays only on the slice this roadmap marks** — Archived 2026-10-16 → `context/archive/2026-10-16-update-project-info/`. Lesson: —.
 - **S-32: user can open the measurements screen on a phone and still read and enter every field, the difference versus the previous entry, and the trainer controls on that screen** — Archived 2026-10-20 → `context/archive/2026-10-18-mobile-devices-ui-measurements/`. Lesson: —.
 - **S-33: user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default** — Archived 2026-10-20 → `context/archive/2026-10-20-default-values-changes/`. Lesson: —.
+- **S-34: a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap** — Archived 2026-10-21 → `context/archive/2026-10-20-test-app-refresh-and-fixes/`. Lesson: —.
