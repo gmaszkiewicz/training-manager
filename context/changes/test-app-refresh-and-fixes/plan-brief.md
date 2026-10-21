@@ -30,7 +30,7 @@ The same behavior stays in place and is checked: one click on a phone-width meas
 
 **In scope:**
 
-- Confirm `src/components/ui/dropdown-menu.tsx`, `tests/e2e/measurements-menus.spec.ts`, and `manual-menus-checklist.md`
+- Confirm `src/components/ui/dropdown-menu.tsx`, `tests/e2e/measurements-menus.spec.ts`, and Phase 1 Manual Verification in `plan.md`
 - Confirm `measurement-page.test.ts` still passes and June smoke still expects weight up 8
 - Confirm `context/foundation/test-plan.md` still records risks #7–#8, phases 6–7, §4 counts, §6.6, and §7
 
@@ -59,12 +59,12 @@ Verification only, in shipped order. Phase 1 re-runs the menu spec and checks th
 
 ## Open Risks & Assumptions
 
-- The 2026-10-20 device pass stays the Safari iOS and Firefox proof unless the checklist file changes.
+- The 2026-10-20 device pass stays the Safari iOS and Firefox proof unless Phase 1 Manual Verification in `plan.md` changes.
 - Playwright's webServer build can fail for reasons outside this change (env, port 4321, Supabase).
 - Assumption: `change.md` staying `implemented` is correct because the product work landed before this plan.
 
 ## Success Criteria (Summary)
 
-- `npx playwright test tests/e2e/measurements-menus.spec.ts` passes, and the manual checklist still says Passed 2026-10-20.
+- `npx playwright test tests/e2e/measurements-menus.spec.ts` passes, and Phase 1 Manual Verification still says Passed 2026-10-20.
 - `npm test -- src/lib/measurement-page.test.ts` passes, and June smoke still expects weight up 8.
 - `test-plan.md` still records the S-34 risks, phases, counts, §6.6, and §7 exclusions.

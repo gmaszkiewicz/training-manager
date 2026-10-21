@@ -3,7 +3,7 @@ change_id: test-app-refresh-and-fixes
 title: Refresh the test plan, expand app tests, and fix iOS Safari menus
 status: implemented
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 archived_at: null
 ---
 
@@ -11,7 +11,7 @@ archived_at: null
 
 S-34 / MS-26. Reused this folder instead of opening a second `test-plan-refresh-2026-10-20`.
 
-Implemented 2026-10-20: shared DropdownMenu click-open fix; `tests/e2e/measurements-menus.spec.ts`; manual Safari iOS/Firefox checklist; `test-plan.md` refresh (risks #7–#8, phases 6–7, §4/§6.6/§7/§8). Risk #8 documented as already covered — no new delta tests. Manual Safari iOS + Firefox checklist passed 2026-10-20.
+Implemented 2026-10-20: shared DropdownMenu click-open fix; `tests/e2e/measurements-menus.spec.ts`; Safari iOS/Firefox manual record (now in `plan.md` Phase 1 Manual Verification); `test-plan.md` refresh (risks #7–#8, phases 6–7, §4/§6.6/§7/§8). Risk #8 documented as already covered — no new delta tests. Manual Safari iOS + Firefox checks passed 2026-10-20.
 
 Refresh `context/foundation/test-plan.md`. Do not edit that file until the plan's final sub-phase (and only with the accepted updates below). After research, follow the downstream continuation rule: next natural command is `/10x-plan`, then `/10x-implement`.
 
