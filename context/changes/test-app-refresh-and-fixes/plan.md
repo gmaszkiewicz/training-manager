@@ -12,7 +12,7 @@ Shipped and in force:
 
 - Shared DropdownMenu opens on click. `DropdownMenuTrigger` calls `preventDefault` on `pointerdown` and toggles on `click` (`src/components/ui/dropdown-menu.tsx`).
 - `tests/e2e/measurements-menus.spec.ts` uses a 360×800 viewport, clicks **Menu**, expects **Sign out**, then clicks the first row **Actions** button and expects **Edit** and **Delete**. Playwright projects stay Desktop Chromium only (`playwright.config.ts`).
-- `context/changes/test-app-refresh-and-fixes/manual-menus-checklist.md` records Passed 2026-10-20 for Safari iOS and Firefox.
+- Phase 1 Manual Verification below records Passed 2026-10-20 for Safari iOS and Firefox (no separate checklist file).
 - Off-page list deltas stay in `src/lib/measurement-page.test.ts` (`deltasForVisiblePage` matches full-journal `withDeltas` when the previous row is outside the page, including page 2). June smoke still expects `weightDelta` up 8 (`scripts/smoke.mjs`). No new Risk #8 test was added.
 - `context/foundation/test-plan.md` already has risks #7 and #8, rollout phases 6 and 7 (both complete), §4 counts, §6.6, §7 exclusions, and freshness 2026-10-20.
 
@@ -73,13 +73,13 @@ Confirm the shared click-open path, the 360×800 menu spec, and the passed Safar
 
 **Contract**: Viewport 360×800. One test clicks the button named `Menu` and expects a `menuitem` named `Sign out`, then clicks the first button named `/^Actions for measurement from /` and expects `menuitem` names `Edit` and `Delete`. When that actions button is absent, the spec seeds the current UTC month with `POST /api/measurements`.
 
-#### 3. Manual checklist
+#### 3. Manual record (in this plan)
 
-**File**: `context/changes/test-app-refresh-and-fixes/manual-menus-checklist.md`
+**File**: this `plan.md` — Manual Verification below
 
-**Intent**: Leave the real-device record in place. CI does not claim Safari iOS or Firefox.
+**Intent**: Keep the real-device record in the plan. CI does not claim Safari iOS or Firefox. Do not keep a separate `manual-menus-checklist.md`.
 
-**Contract**: The file states Passed 2026-10-20. Safari iOS and Firefox checks for Menu → Sign out and row Actions → Edit / Delete stay checked.
+**Contract**: Manual Verification states Passed 2026-10-20. Safari iOS and Firefox checks for Menu → Sign out and row Actions → Edit / Delete stay checked.
 
 ### Success Criteria:
 
@@ -90,7 +90,28 @@ Confirm the shared click-open path, the 360×800 menu spec, and the passed Safar
 
 #### Manual Verification:
 
-- Confirm `manual-menus-checklist.md` still records Passed 2026-10-20 for Safari iOS Menu and row Actions, and the same two Firefox checks
+CI proves these interactions on Desktop Chromium at 360×800 only. Complete this checklist on a real device or engine before treating Risk #7 as closed.
+
+**Passed:** 2026-10-20 (Safari iOS + Firefox).
+
+Setup:
+
+1. Sign in as a trainee with at least one measurement (or add one).
+2. Open `/measurements` at phone width (or a real phone).
+3. Confirm the top bar shows the hamburger (Menu), not the inline Sign out.
+
+Safari iOS:
+
+- [x] One tap on **Menu** opens the menu and shows **Sign out** (no second tap).
+- [x] One tap on a row’s **Actions** (⋯ under the date) opens the menu and shows **Edit** and **Delete**.
+- [x] Choosing **Edit** or **Delete** navigates as expected; **Sign out** signs out.
+
+Firefox (phone width or mobile):
+
+- [x] Same **Menu** → **Sign out** first-tap check.
+- [x] Same row **Actions** → **Edit** / **Delete** first-tap check.
+
+Out of scope for this checklist: kitchen-sink screens; screenshot or visual diffs; a full multi-browser matrix of every page.
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -169,8 +190,8 @@ Confirm the guide already records risks #7 and #8, rollout phases 6 and 7, the t
 
 ### Manual Testing Steps:
 
-1. Read `manual-menus-checklist.md` and confirm the 2026-10-20 Safari iOS and Firefox checks are still marked passed.
-2. Do not repeat the device pass unless that file no longer says Passed.
+1. Confirm Phase 1 Manual Verification still records Passed 2026-10-20 for Safari iOS and Firefox.
+2. Do not repeat the device pass unless that record no longer says Passed.
 
 ## Performance Considerations
 
@@ -184,7 +205,7 @@ None. No schema change.
 
 - Related research: `context/changes/test-app-refresh-and-fixes/research.md`
 - Change notes and accepted brief: `context/changes/test-app-refresh-and-fixes/change.md`
-- Manual checklist: `context/changes/test-app-refresh-and-fixes/manual-menus-checklist.md`
+- Manual Safari iOS / Firefox record: Phase 1 Manual Verification in this plan
 - Guide: `context/foundation/test-plan.md`
 - Issue: https://github.com/gmaszkiewicz/training-manager/issues/118
 - Similar implementation: `src/components/ui/dropdown-menu.tsx:49-73`
@@ -198,19 +219,19 @@ None. No schema change.
 
 #### Automated
 
-- [ ] 1.1 Phone-width menu spec passes: `npx playwright test tests/e2e/measurements-menus.spec.ts`
-- [ ] 1.2 Shared trigger still defers open to click: `node -e "const s=require('fs').readFileSync('src/components/ui/dropdown-menu.tsx','utf8'); if(!s.includes('event.preventDefault()')||!s.includes('control?.toggle()')) process.exit(1)"`
+- [x] 1.1 Phone-width menu spec passes: `npx playwright test tests/e2e/measurements-menus.spec.ts`
+- [x] 1.2 Shared trigger still defers open to click: `node -e "const s=require('fs').readFileSync('src/components/ui/dropdown-menu.tsx','utf8'); if(!s.includes('event.preventDefault()')||!s.includes('control?.toggle()')) process.exit(1)"`
 
 #### Manual
 
-- [ ] 1.3 Confirm `manual-menus-checklist.md` still records Passed 2026-10-20 for Safari iOS Menu and row Actions, and the same two Firefox checks
+- [x] 1.3 Confirm Phase 1 Manual Verification still records Passed 2026-10-20 for Safari iOS Menu and row Actions, and the same two Firefox checks
 
 ### Phase 2: Off-page previous-entry delta
 
 #### Automated
 
-- [ ] 2.1 Off-page page unit still passes: `npm test -- src/lib/measurement-page.test.ts`
-- [ ] 2.2 June smoke still expects weight up 8: `node -e "const s=require('fs').readFileSync('scripts/smoke.mjs','utf8'); const q=String.fromCharCode(34); const needle='weightDelta: { direction: '+q+'up'+q+', difference: 8 }'; if(!s.includes('function juneDifference')||!s.includes(needle)) process.exit(1)"`
+- [x] 2.1 Off-page page unit still passes: `npm test -- src/lib/measurement-page.test.ts`
+- [x] 2.2 June smoke still expects weight up 8: `node -e "const s=require('fs').readFileSync('scripts/smoke.mjs','utf8'); const q=String.fromCharCode(34); const needle='weightDelta: { direction: '+q+'up'+q+', difference: 8 }'; if(!s.includes('function juneDifference')||!s.includes(needle)) process.exit(1)"`
 
 ### Phase 3: Test-plan refresh
 
