@@ -13,7 +13,7 @@
 | Dimension | Verdict |
 |-----------|---------|
 | Plan Adherence | PASS |
-| Scope Discipline | PASS |
+| Scope Discipline | WARNING |
 | Safety & Quality | PASS |
 | Architecture | PASS |
 | Pattern Consistency | PASS |
@@ -21,12 +21,12 @@
 
 ## Findings
 
-### F1 — Local Playwright re-run blocked by auth setup
+### F1 — Menus e2e also Escape-closes and asserts Sign out gone
 
 - **Severity**: 💬 OBSERVATION
 - **Impact**: 🏃 LOW — quick decision; fix is obvious and narrowly scoped
-- **Dimension**: Success Criteria
-- **Location**: tests/e2e/auth.setup.ts:23
-- **Detail**: `npx playwright test tests/e2e/measurements-menus.spec.ts` failed locally: auth setup timed out waiting to leave `/auth/signin` (guest sign-in page still shown). The menu spec itself did not run. Progress 1.1 is marked done with sha `3a08eb7`; PR #119 CI `e2e` passed. Other automated checks (dropdown trigger string, measurement-page unit, June smoke needle, test-plan markers) all passed in this review session.
-- **Fix**: Re-run the menus spec when local Supabase and `E2E_USERNAME` / `E2E_PASSWORD` are available; no code change required for this finding.
-- **Decision**: FIXED — re-ran `npx playwright test tests/e2e/measurements-menus.spec.ts`; 2 passed (auth setup + menus spec)
+- **Dimension**: Scope Discipline
+- **Location**: tests/e2e/measurements-menus.spec.ts
+- **Detail**: Spec matches the planned Menu→Sign out and Actions→Edit/Delete contract, then also presses Escape and asserts Sign out is no longer visible. That close step is not in the plan contract. Benign; does not add browsers, kitchen-sink oracles, or Risk #8 coverage.
+- **Fix**: Leave as-is (benign hardening of the open proof), or document the Escape close in a plan addendum if you want the contract to match the spec exactly.
+- **Decision**: FIXED — left Escape close assert in place (benign; no code or plan change)
