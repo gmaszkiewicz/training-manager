@@ -175,7 +175,7 @@ Rollout phase 4 shipped `npm run migration-check` in `scripts/migration-check.mj
 
 Rollout phase 5 shipped those two steps in `scripts/smoke.mjs`: a POST `/api/measurements/${measurementId}` with `measurementForm("2026-01-02", "81.0", earlierNote)` that expects 302 and exact location `/measurements`, and the following `GET /measurements` that expects the accessible name `Weight up 1.0 kg` and the `↑` glyph, and forbids `Weight down 1.5 kg` and `↓`. The existing comparison-rule unit was left in place. No new Vitest case was added. No new in-memory unit was added. Smoke does not call `withDeltas`. No Playwright check was added. Checked 2026-10-06.
 
-Rollout phase 6 shipped `tests/e2e/measurements-menus.spec.ts` (360×800 Menu → Sign out and row Actions → Edit/Delete on live `/measurements`) and the shared click-open hardening in `src/components/ui/dropdown-menu.tsx`. Manual checklist: `context/changes/test-app-refresh-and-fixes/manual-menus-checklist.md`. No WebKit/Firefox Playwright projects. No kitchen-sink oracle. Checked 2026-10-20.
+Rollout phase 6 shipped `tests/e2e/measurements-menus.spec.ts` (360×800 Menu → Sign out and row Actions → Edit/Delete on live `/measurements`) and the shared click-open hardening in `src/components/ui/dropdown-menu.tsx`. Manual Safari iOS / Firefox record: Phase 1 Manual Verification in `context/changes/test-app-refresh-and-fixes/plan.md`. No WebKit/Firefox Playwright projects. No kitchen-sink oracle. Checked 2026-10-20.
 
 Rollout phase 7 recorded Risk #8 as already covered by `src/lib/measurement-page.test.ts` (off-page previous equals full-journal `withDeltas`) and the June smoke `weightDelta` path. No new unit, e2e, or smoke. Checked 2026-10-20.
 
@@ -184,7 +184,7 @@ Rollout phase 7 recorded Risk #8 as already covered by `src/lib/measurement-page
 - **Test type**: Playwright interaction on live `/measurements` at phone width (~360×800), Desktop Chromium in CI.
 - **Behavior**: one click opens the hamburger and exposes **Sign out**; one click opens row **Actions** and exposes **Edit** and **Delete**. Shared DropdownMenu opens on click (not pointerdown) so Safari iOS / touch first-tap is reliable.
 - **Run locally**: `npx playwright test tests/e2e/measurements-menus.spec.ts`
-- **Manual**: Safari iOS and Firefox — `context/changes/test-app-refresh-and-fixes/manual-menus-checklist.md`. CI does not claim those engines.
+- **Manual**: Safari iOS and Firefox — Phase 1 Manual Verification in `context/changes/test-app-refresh-and-fixes/plan.md`. CI does not claim those engines.
 - **Pattern**: Assert reachable roles (`button` name `Menu`, `menuitem` Sign out; `button` name `/^Actions for measurement from /`, `menuitem` Edit/Delete). Seed a current-month row via `POST /api/measurements` when the month is empty. Do not use kitchen-sink, screenshots, or CSS-class oracles. Do not add a full multi-browser matrix for every page.
 
 ## 7. What We Deliberately Don't Test
