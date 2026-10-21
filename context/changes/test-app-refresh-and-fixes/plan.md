@@ -219,12 +219,12 @@ None. No schema change.
 
 #### Automated
 
-- [x] 1.1 Phone-width menu spec passes: `npx playwright test tests/e2e/measurements-menus.spec.ts`
-- [x] 1.2 Shared trigger still defers open to click: `node -e "const s=require('fs').readFileSync('src/components/ui/dropdown-menu.tsx','utf8'); if(!s.includes('event.preventDefault()')||!s.includes('control?.toggle()')) process.exit(1)"`
+- [x] 1.1 Phone-width menu spec passes: `npx playwright test tests/e2e/measurements-menus.spec.ts` — 3a08eb7
+- [x] 1.2 Shared trigger still defers open to click: `node -e "const s=require('fs').readFileSync('src/components/ui/dropdown-menu.tsx','utf8'); if(!s.includes('event.preventDefault()')||!s.includes('control?.toggle()')) process.exit(1)"` — 3a08eb7
 
 #### Manual
 
-- [x] 1.3 Confirm Phase 1 Manual Verification still records Passed 2026-10-20 for Safari iOS Menu and row Actions, and the same two Firefox checks
+- [x] 1.3 Confirm Phase 1 Manual Verification still records Passed 2026-10-20 for Safari iOS Menu and row Actions, and the same two Firefox checks — 3a08eb7
 
 ### Phase 2: Off-page previous-entry delta
 
