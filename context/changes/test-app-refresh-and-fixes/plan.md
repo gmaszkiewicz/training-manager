@@ -230,11 +230,11 @@ None. No schema change.
 
 #### Automated
 
-- [x] 2.1 Off-page page unit still passes: `npm test -- src/lib/measurement-page.test.ts`
-- [x] 2.2 June smoke still expects weight up 8: `node -e "const s=require('fs').readFileSync('scripts/smoke.mjs','utf8'); const q=String.fromCharCode(34); const needle='weightDelta: { direction: '+q+'up'+q+', difference: 8 }'; if(!s.includes('function juneDifference')||!s.includes(needle)) process.exit(1)"`
+- [x] 2.1 Off-page page unit still passes: `npm test -- src/lib/measurement-page.test.ts` — 8837b79
+- [x] 2.2 June smoke still expects weight up 8: `node -e "const s=require('fs').readFileSync('scripts/smoke.mjs','utf8'); const q=String.fromCharCode(34); const needle='weightDelta: { direction: '+q+'up'+q+', difference: 8 }'; if(!s.includes('function juneDifference')||!s.includes(needle)) process.exit(1)"` — 8837b79
 
 ### Phase 3: Test-plan refresh
 
 #### Automated
 
-- [ ] 3.1 Guide still records the S-34 refresh: `node -e "const s=require('fs').readFileSync('context/foundation/test-plan.md','utf8'); const need=['Risk #7','Risk #8','measurements-menus.spec.ts','10** product Vitest','3** Playwright specs','Phone-width first-tap menus','Off-page previous-entry delta','### 6.6 Phone-width menus','No new unit, e2e, or smoke','Kitchen-sink screens and visual restyles','No broad browser or screenshot suite','2026-10-20']; const missing=need.filter(n=>!s.includes(n)); if(missing.length){console.error(missing); process.exit(1)}"`
+- [x] 3.1 Guide still records the S-34 refresh: `node -e "const s=require('fs').readFileSync('context/foundation/test-plan.md','utf8'); const need=['Risk #7','Risk #8','measurements-menus.spec.ts','10** product Vitest','3** Playwright specs','Phone-width first-tap menus','Off-page previous-entry delta','### 6.6 Phone-width menus','No new unit, e2e, or smoke','Kitchen-sink screens and visual restyles','No broad browser or screenshot suite','2026-10-20']; const missing=need.filter(n=>!s.includes(n)); if(missing.length){console.error(missing); process.exit(1)}"`
