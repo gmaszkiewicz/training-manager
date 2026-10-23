@@ -41,3 +41,7 @@ playwright/.cache/
 
 # cursor skills
 .cursor/**
+
+# agents skills
+.agents/**
+
