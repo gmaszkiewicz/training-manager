@@ -45,3 +45,5 @@ playwright/.cache/
 # agents skills
 .agents/**
 
+# 10x CLI local config
+.10x-cli.json
