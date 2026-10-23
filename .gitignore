@@ -38,3 +38,10 @@ playwright/.cache/
 
 # figma
 /figma.keys
+
+# cursor skills
+.cursor/**
+
+# agents skills
+.agents/**
+
