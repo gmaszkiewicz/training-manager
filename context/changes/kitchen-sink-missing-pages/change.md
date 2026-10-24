@@ -1,5 +1,5 @@
 ---
-change_id: kitchen-sink-profile
+change_id: kitchen-sink-missing-pages
 title: Kitchen sinks for profile, sign-up, and reset password
 status: new
 created: 2026-10-24
@@ -9,7 +9,7 @@ archived_at: null
 
 ## Notes
 
-Add public review surfaces for the product pages that still lack a kitchen sink: `/profile`, `/auth/signup`, and `/auth/reset-password`.
+S-35 on MS-27. Add public review surfaces for the product pages that still lack a kitchen sink: `/profile`, `/auth/signup`, and `/auth/reset-password`.
 
 - Profile: change-password card and Topbar; Cover ChangePasswordForm states (default, server error, success notice, loading/disabled). The home sink already shows only the Profile-marked Topbar preview.
 - Sign-up: SignUpForm shell and states; today auth sink only links to `/auth/signup`.
