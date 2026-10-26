@@ -286,7 +286,16 @@ function followRedirect() {
   return request(redirectPath);
 }
 
-async function requestWith(cookieJar, path, { method = "GET", form } = {}) {
+function multipartBody(fields) {
+  const body = new globalThis.FormData();
+  for (const [name, value] of Object.entries(fields)) {
+    body.append(name, value);
+  }
+  return body;
+}
+
+// `multipart` sends a FormData body; fetch sets its own multipart Content-Type with the boundary.
+async function requestWith(cookieJar, path, { method = "GET", form, multipart } = {}) {
   const response = await fetch(BASE_URL + path, {
     method,
     redirect: "manual",
@@ -295,7 +304,7 @@ async function requestWith(cookieJar, path, { method = "GET", form } = {}) {
       Origin: BASE_URL,
       ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
     },
-    body: form ? new URLSearchParams(form).toString() : undefined,
+    body: multipart ? multipartBody(multipart) : form ? new URLSearchParams(form).toString() : undefined,
   });
   storeCookiesInto(cookieJar, response);
   const body = await response.text();
@@ -356,6 +365,70 @@ async function traineeProfileRest() {
   return { status: response.status, location: "", body };
 }
 
+// A 1x1 transparent PNG, inline so the smoke stays dependency- and fixture-free.
+const avatarPngBase64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+let avatarPath = "";
+
+function avatarPngFile() {
+  return new globalThis.File([globalThis.Buffer.from(avatarPngBase64, "base64")], "avatar.png", { type: "image/png" });
+}
+
+function fakePngFile() {
+  return new globalThis.File(["this is not an image"], "avatar.png", { type: "image/png" });
+}
+
+// Reads the trainee's avatar_path through Supabase REST and remembers it for the public URL checks.
+async function traineeAvatarRest() {
+  if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
+    return { status: 0, location: "", body: "" };
+  }
+  const query = `id=eq.${encodeURIComponent(traineeId)}&select=avatar_path`;
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${query}`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken()}`,
+    },
+  });
+  const body = await response.text();
+  try {
+    const rows = JSON.parse(body);
+    const path = Array.isArray(rows) && rows.length === 1 ? rows[0].avatar_path : null;
+    if (typeof path === "string") avatarPath = path;
+  } catch {
+    // The json check reports the unreadable body.
+  }
+  return { status: response.status, location: "", body };
+}
+
+async function avatarPublicObject() {
+  if (SUPABASE_URL === "" || avatarPath === "") {
+    return { status: 0, location: "", body: "" };
+  }
+  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/public/avatars/${avatarPath}`);
+  await response.arrayBuffer();
+  return { status: response.status, location: "", body: "", contentType: response.headers.get("content-type") ?? "" };
+}
+
+// Tries to point the trainee's avatar at another user's folder straight through Supabase REST.
+async function foreignAvatarPathRest() {
+  if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
+    return { status: 0, location: "", body: "" };
+  }
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(traineeId)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken()}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({ avatar_path: `${secondTraineeId}/foreign.png` }),
+  });
+  const body = await response.text();
+  return { status: response.status, location: "", body };
+}
+
 function smokeTraineeSearchPath() {
   return `/api/trainer-links?q=${encodeURIComponent(` ${email.toUpperCase()} `)}`;
 }
@@ -391,6 +464,11 @@ const steps = [
   [
     "profile name save redirects anonymous user",
     () => request("/api/profile", { method: "POST", form: { firstName: "Anon", lastName: "User" } }),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
+  [
+    "avatar upload redirects anonymous user",
+    () => request("/api/profile/avatar", { method: "POST", multipart: { intent: "upload", avatar: avatarPngFile() } }),
     { status: 302, location: "/auth/signin", exactLocation: true },
   ],
   ["signed-out trainer search is rejected", () => request("/api/trainer-links?q=a"), { status: 401 }],
@@ -844,6 +922,30 @@ const steps = [
     { status: 200, forbid: [`value="${profileFirstName}"`, `value="${profileLastName}"`] },
   ],
   [
+    "avatar upload saves a PNG",
+    () => request("/api/profile/avatar", { method: "POST", multipart: { intent: "upload", avatar: avatarPngFile() } }),
+    { status: 302, location: "/profile/avatar?notice=avatar-saved", exactLocation: true },
+  ],
+  [
+    "avatar path is in the trainee's folder",
+    () => traineeAvatarRest(),
+    { status: 200, json: () => ({ avatarPathPrefix: `${traineeId}/` }) },
+  ],
+  ["avatar public URL serves the PNG", () => avatarPublicObject(), { status: 200, contentType: "image/png" }],
+  [
+    "avatar upload rejects a text file declared as PNG",
+    () => request("/api/profile/avatar", { method: "POST", multipart: { intent: "upload", avatar: fakePngFile() } }),
+    { status: 302, location: "/profile/avatar?error=avatar-type", exactLocation: true },
+  ],
+  ["avatar path rejects another user's folder", () => foreignAvatarPathRest(), { status: 400, body: "23514" }],
+  [
+    "avatar remove clears the avatar",
+    () => request("/api/profile/avatar", { method: "POST", multipart: { intent: "remove" } }),
+    { status: 302, location: "/profile/avatar?notice=avatar-removed", exactLocation: true },
+  ],
+  ["avatar path is cleared", () => traineeAvatarRest(), { status: 200, json: () => ({ avatarPathPrefix: null }) }],
+  ["avatar old public URL is gone", () => avatarPublicObject(), { status: [400, 404] }],
+  [
     "signin shows forgot password",
     () => request("/auth/signin"),
     { status: 200, body: ["Forgot password?", 'href="/auth/reset-password"'] },
@@ -1018,6 +1120,21 @@ function jsonProblems(parsed, spec) {
       problems.push(`profile row ${JSON.stringify(parsed)} expected ${JSON.stringify([spec.profileRow])}`);
     }
   }
+  if (spec.avatarPathPrefix !== undefined) {
+    const row = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : undefined;
+    const path = row && typeof row === "object" ? row.avatar_path : undefined;
+    const same =
+      spec.avatarPathPrefix === null
+        ? path === null
+        : typeof path === "string" &&
+          path.startsWith(spec.avatarPathPrefix) &&
+          path.length > spec.avatarPathPrefix.length;
+    if (!same) {
+      problems.push(
+        `avatar_path ${JSON.stringify(path ?? null)} expected ${spec.avatarPathPrefix === null ? "null" : `to start with ${JSON.stringify(spec.avatarPathPrefix)}`}`,
+      );
+    }
+  }
   if (spec.measuredMonths !== undefined && !monthSetEquals(parsed, spec.measuredMonths)) {
     problems.push(`measured_month set ${JSON.stringify(parsed)} expected ${JSON.stringify(spec.measuredMonths)}`);
   }
@@ -1056,14 +1173,13 @@ for (const [name, run, expected] of steps) {
   const measurementOk = actual.measurementMissing !== true;
   const jsonSpec = typeof expected.json === "function" ? expected.json() : expected.json;
   const jsonResult = jsonSpec === undefined ? { ok: true, detail: "" } : matchJson(actual.body, jsonSpec);
+  const statusOk = Array.isArray(expected.status)
+    ? expected.status.includes(actual.status)
+    : actual.status === expected.status;
+  const contentTypeOk =
+    expected.contentType === undefined || (actual.contentType ?? "").startsWith(expected.contentType);
   const ok =
-    actual.status === expected.status &&
-    locationOk &&
-    bodyOk &&
-    bodyAnyOk &&
-    forbidOk &&
-    measurementOk &&
-    jsonResult.ok;
+    statusOk && contentTypeOk && locationOk && bodyOk && bodyAnyOk && forbidOk && measurementOk && jsonResult.ok;
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
@@ -1079,8 +1195,13 @@ for (const [name, run, expected] of steps) {
       .filter(Boolean)
       .join(" ");
     const expectedMeasurement = actual.measurementMissing ? ` edit= id for ${JSON.stringify(earlierNote)}` : "";
+    const expectedContentType =
+      expected.contentType !== undefined
+        ? ` content-type ${JSON.stringify(expected.contentType)} (got ${JSON.stringify(actual.contentType ?? "")})`
+        : "";
+    const expectedStatus = Array.isArray(expected.status) ? expected.status.join("/") : expected.status;
     console.log(
-      `      expected ${expected.status} ${expectedLocation}${expectedBody}${expectedBodyAny}${expectedForbid}${expectedMeasurement}${jsonResult.detail}`,
+      `      expected ${expectedStatus} ${expectedLocation}${expectedBody}${expectedBodyAny}${expectedForbid}${expectedMeasurement}${expectedContentType}${jsonResult.detail}`,
     );
   }
 }

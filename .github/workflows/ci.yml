@@ -42,7 +42,7 @@ jobs:
       - run: npm ci
       - name: Start local Supabase
         run: |
-          exclude=studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
+          exclude=studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
           if ! supabase start -x "$exclude"; then
             supabase stop --no-backup || true
             supabase start -x "$exclude"
@@ -81,7 +81,7 @@ jobs:
       - run: npm ci
       - name: Start local Supabase
         run: |
-          exclude=studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
+          exclude=studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
           if ! supabase start -x "$exclude"; then
             supabase stop --no-backup || true
             supabase start -x "$exclude"
@@ -126,7 +126,7 @@ jobs:
       - run: npm ci
       - name: Start local Supabase
         run: |
-          exclude=studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
+          exclude=studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
           if ! supabase start -x "$exclude"; then
             supabase stop --no-backup || true
             supabase start -x "$exclude"

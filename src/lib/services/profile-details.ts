@@ -49,9 +49,10 @@ export async function updateProfileNames(
 export interface TopbarProfile {
   role: Profile["role"] | null;
   names: ProfileNames;
+  avatarPath: string | null;
 }
 
-// One read of the profile row for the top bar: role for the greeting, names for the avatar initials.
+// One read of the profile row for the top bar: role for the greeting, names for the avatar initials, the avatar image path.
 export async function readTopbarProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -59,7 +60,7 @@ export async function readTopbarProfile(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("role, first_name, last_name")
+      .select("role, first_name, last_name, avatar_path")
       .eq("id", userId)
       .maybeSingle();
 
@@ -68,7 +69,11 @@ export async function readTopbarProfile(
     }
 
     const role = data.role === "trainee" || data.role === "trainer" ? data.role : null;
-    return { role, names: { firstName: data.first_name, lastName: data.last_name } };
+    return {
+      role,
+      names: { firstName: data.first_name, lastName: data.last_name },
+      avatarPath: data.avatar_path,
+    };
   } catch {
     return null;
   }
