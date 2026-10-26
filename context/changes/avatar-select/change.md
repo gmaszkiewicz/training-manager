@@ -1,7 +1,7 @@
 ---
 change_id: avatar-select
 title: Avatar subpage in Profile for uploading a custom avatar
-status: implemented
+status: impl_reviewed
 created: 2026-10-26
 updated: 2026-10-26
 archived_at: null
