@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import AccountTabs from "@/components/account/AccountTabs";
 import ProfileDetailsForm from "@/components/profile/ProfileDetailsForm";
 import Topbar from "@/components/Topbar.astro";
+import { PROFILE_TABS } from "@/lib/profile-tabs";
 import { PROFILE_SAVED_NOTICE, PROFILE_UNAVAILABLE_ERROR, profilePageError } from "@/lib/profile-form";
 import { readProfileNames } from "@/lib/services/profile-details";
 import { createClient } from "@/lib/supabase";
@@ -35,7 +36,7 @@ const serverError = profilePageError(error) ?? (unavailable ? PROFILE_UNAVAILABL
   </div>
   <div class="flex justify-center px-4 pb-4">
     <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4 text-card-foreground">
-      <AccountTabs tab={{ value: "details", label: "Details" }}>
+      <AccountTabs tabs={PROFILE_TABS} current="details">
         <ProfileDetailsForm
           email={details.email}
           firstName={details.firstName}

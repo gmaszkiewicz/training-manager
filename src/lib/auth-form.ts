@@ -1,11 +1,12 @@
 export async function submitAuthForm(
   form: HTMLFormElement,
   fallback: string,
+  body: FormData = new FormData(form),
 ): Promise<{ error: string } | { redirect: string }> {
   try {
     const response = await fetch(form.action, {
       method: "POST",
-      body: new FormData(form),
+      body,
       headers: { Accept: "application/json" },
     });
     const payload = (await response.json().catch(() => null)) as {

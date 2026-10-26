@@ -44,7 +44,6 @@ playwright/.cache/
 
 # claude skills
 .claude/**
-CLAUDE.md
 
 # agents skills
 .agents/**

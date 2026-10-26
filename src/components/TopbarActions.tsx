@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,35 @@ function NavLink({ link }: { link: TopbarLink }) {
   );
 }
 
+// A plain img, not Radix AvatarImage: Radix renders the image only after hydration and its own
+// load check, so every page load flashes the initials first. This img is server-rendered over
+// the initials and hides itself when it fails, also when it failed before hydration.
+function AccountImage({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false);
+  const checkLoaded = useCallback((img: HTMLImageElement | null) => {
+    if (img?.complete && img.naturalWidth === 0) {
+      setFailed(true);
+    }
+  }, []);
+
+  if (failed) {
+    return null;
+  }
+
+  return (
+    <img
+      ref={checkLoaded}
+      src={src}
+      alt=""
+      data-slot="avatar-image"
+      className="absolute inset-0 size-full rounded-full object-cover"
+      onError={() => {
+        setFailed(true);
+      }}
+    />
+  );
+}
+
 function AccountMenu({ account }: { account: TopbarAccount }) {
   return (
     <DropdownMenu>
@@ -34,6 +64,7 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
         <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-full" aria-label={account.label}>
           <Avatar>
             <AvatarFallback className="text-card-foreground font-semibold">{account.initials}</AvatarFallback>
+            {account.imageUrl ? <AccountImage key={account.imageUrl} src={account.imageUrl} /> : null}
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -62,15 +93,15 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
   );
 }
 
-export default function TopbarActions({ greeting, email, links, account }: Props) {
+export default function TopbarActions({ greeting, name, links, account }: Props) {
   return (
     <div className="flex w-full items-center justify-between gap-3">
       <div className="min-w-0">
-        {greeting != null || email != null ? (
+        {greeting != null || name != null ? (
           <span className="block truncate">
             {greeting}
-            {greeting != null && email != null ? " " : null}
-            {email}
+            {greeting != null && name != null ? " " : null}
+            {name}
           </span>
         ) : null}
       </div>

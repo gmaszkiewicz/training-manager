@@ -6,6 +6,7 @@ export interface TopbarModelInput {
   role: "trainee" | "trainer" | null;
   firstName: string | null;
   lastName: string | null;
+  avatarUrl: string | null;
   pathname: string;
 }
 
@@ -25,26 +26,60 @@ export interface TopbarAccountItem {
 
 export interface TopbarAccount {
   initials: string;
+  imageUrl: string | null;
   label: string;
   items: TopbarAccountItem[];
 }
 
 export interface TopbarModel {
   greeting: "Hello, guest" | "Hello," | null;
-  email: string | null;
+  name: string | null;
   links: TopbarLink[];
   account: TopbarAccount | null;
 }
 
-function withCurrent<T extends { href: string }>(items: T[], pathname: string): (T & { current: boolean })[] {
-  return items.map((item) => ({ ...item, current: item.href === pathname }));
+function withCurrent<T extends { href: string }>(
+  items: T[],
+  pathname: string,
+  matchSubpaths = false,
+): (T & { current: boolean })[] {
+  return items.map((item) => ({
+    ...item,
+    current: item.href === pathname || (matchSubpaths && pathname.startsWith(`${item.href}/`)),
+  }));
 }
 
-export function topbarModel({ signedIn, email, role, firstName, lastName, pathname }: TopbarModelInput): TopbarModel {
+/** "A. Lovelace" with both names, the one saved name alone, otherwise the email. */
+export function topbarName({
+  firstName,
+  lastName,
+  email,
+}: {
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+}): string {
+  const first = firstName?.trim() ?? "";
+  const last = lastName?.trim() ?? "";
+  if (first !== "" && last !== "") {
+    return `${first.charAt(0).toUpperCase()}. ${last}`;
+  }
+  return last || first || email;
+}
+
+export function topbarModel({
+  signedIn,
+  email,
+  role,
+  firstName,
+  lastName,
+  avatarUrl,
+  pathname,
+}: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
       greeting: "Hello, guest",
-      email: null,
+      name: null,
       account: null,
       links: withCurrent<Omit<TopbarLink, "current">>(
         [
@@ -61,7 +96,7 @@ export function topbarModel({ signedIn, email, role, firstName, lastName, pathna
 
   return {
     greeting,
-    email,
+    name: topbarName({ firstName, lastName, email }),
     links: withCurrent<Omit<TopbarLink, "current">>(
       [
         { id: "home", label: "Home", href: "/" },
@@ -71,6 +106,7 @@ export function topbarModel({ signedIn, email, role, firstName, lastName, pathna
     ),
     account: {
       initials: avatarInitials({ firstName, lastName, email }),
+      imageUrl: avatarUrl,
       label: "Account menu",
       items: withCurrent<Omit<TopbarAccountItem, "current">>(
         [
@@ -78,6 +114,7 @@ export function topbarModel({ signedIn, email, role, firstName, lastName, pathna
           { id: "settings", label: "Settings", href: "/settings" },
         ],
         pathname,
+        true,
       ),
     },
   };
