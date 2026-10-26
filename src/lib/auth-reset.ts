@@ -1,10 +1,12 @@
 const MISSING_ACCOUNT_CODE = "user_not_found";
+const RATE_LIMIT_CODES = ["over_email_send_rate_limit", "over_request_rate_limit"];
 
-export type ResetRequestResult = "sent" | "email-failed";
+export type ResetRequestResult = "sent" | "rate-limited" | "email-failed";
 
 export const PASSWORD_RESET_NOTICE = "Your password was reset. Sign in with the new password.";
 export const RESET_SENT_NOTICE = "Check your email for a password reset link.";
 export const RESET_EMAIL_ERROR = "We could not send the reset email. Try again later.";
+export const RESET_LIMIT_ERROR = "Too many reset emails were sent. Try again in a few minutes.";
 export const RESET_LINK_ERROR = "This reset link is no longer valid.";
 export const PASSWORD_SHORT_ERROR = "Password must be at least 6 characters.";
 export const PASSWORD_MISMATCH_ERROR = "Passwords do not match.";
@@ -61,11 +63,36 @@ export function isRecoveryAccessToken(accessToken: string): boolean {
   }
 }
 
-export function resetRequestResult(error: { code?: string | null } | null): ResetRequestResult {
+export function resetRequestResult(
+  error: { code?: string | null; message?: string | null } | null,
+): ResetRequestResult {
   if (error === null || error.code === MISSING_ACCOUNT_CODE) {
     return "sent";
   }
+  if (typeof error.code === "string" && RATE_LIMIT_CODES.includes(error.code)) {
+    return "rate-limited";
+  }
   return "email-failed";
+}
+
+export function resetWaitSeconds(message: string | null | undefined): number | null {
+  const match = /after (\d+) seconds?/.exec(message ?? "");
+  return match ? positiveSeconds(match[1]) : null;
+}
+
+export function positiveSeconds(value: string | null | undefined): number | null {
+  if (!value || !/^\d+$/.test(value)) {
+    return null;
+  }
+  const seconds = Number(value);
+  return Number.isSafeInteger(seconds) && seconds > 0 ? seconds : null;
+}
+
+export function resetLimitError(wait: number | null): string {
+  if (wait === null) {
+    return RESET_LIMIT_ERROR;
+  }
+  return `Too many reset emails were requested. Wait ${String(wait)} ${wait === 1 ? "second" : "seconds"} and try again.`;
 }
 
 export function resetPageError(code: string | null): string | null {

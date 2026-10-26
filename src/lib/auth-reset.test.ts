@@ -4,7 +4,9 @@ import {
   isExpiredRecoveryHash,
   isRecoveryAccessToken,
   recoverySessionFromHash,
+  resetLimitError,
   resetRequestResult,
+  resetWaitSeconds,
 } from "@/lib/auth-reset";
 
 function accessToken(payload: unknown): string {
@@ -21,9 +23,36 @@ describe("resetRequestResult", () => {
     expect(resetRequestResult({ code: "user_not_found" })).toBe("sent");
   });
 
-  it("treats a rate limit or any other send failure as email-failed", () => {
-    expect(resetRequestResult({ code: "over_email_send_rate_limit" })).toBe("email-failed");
+  it("treats a send limit as rate-limited", () => {
+    expect(resetRequestResult({ code: "over_email_send_rate_limit" })).toBe("rate-limited");
+    expect(resetRequestResult({ code: "over_request_rate_limit" })).toBe("rate-limited");
+  });
+
+  it("treats any other send failure as email-failed", () => {
     expect(resetRequestResult({ code: "unexpected_failure" })).toBe("email-failed");
+  });
+});
+
+describe("resetWaitSeconds", () => {
+  it("reads the cooldown seconds from the Supabase message", () => {
+    expect(resetWaitSeconds("For security purposes, you can only request this after 52 seconds.")).toBe(52);
+    expect(resetWaitSeconds("For security purposes, you can only request this after 1 second.")).toBe(1);
+  });
+
+  it("returns null without a wait in the message", () => {
+    expect(resetWaitSeconds("Email rate limit exceeded")).toBe(null);
+    expect(resetWaitSeconds(null)).toBe(null);
+  });
+});
+
+describe("resetLimitError", () => {
+  it("names the wait when there is one", () => {
+    expect(resetLimitError(1)).toBe("Too many reset emails were requested. Wait 1 second and try again.");
+    expect(resetLimitError(52)).toBe("Too many reset emails were requested. Wait 52 seconds and try again.");
+  });
+
+  it("falls back to a few minutes without a wait", () => {
+    expect(resetLimitError(null)).toBe("Too many reset emails were sent. Try again in a few minutes.");
   });
 });
 
