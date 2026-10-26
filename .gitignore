@@ -42,8 +42,14 @@ playwright/.cache/
 # cursor skills
 .cursor/**
 
+# claude skills
+.claude/**
+CLAUDE.md
+
 # agents skills
 .agents/**
+AGENTS.md
 
-# 10x CLI local config
+# general agents config
 .10x-cli.json
+skills-lock.json
