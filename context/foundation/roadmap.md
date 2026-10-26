@@ -102,7 +102,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-33 | default-values-changes | user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default | S-23, S-32 | MS-25 | done |
 | S-34 | test-app-refresh-and-fixes | a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap | S-19, S-32 | MS-26 | done |
 | S-35 | user-profile-rework | user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings | S-25, S-32 | MS-27 | done |
-| S-36 | avatar-select | user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting | S-35 | MS-28 | in-progress |
+| S-36 | avatar-select | user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting | S-35 | MS-28 | done |
 
 ## Streams
 
@@ -568,7 +568,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The first use of file storage in this product: a wrong storage rule can let a user overwrite or delete another user's avatar, and a renamed non-image file can be stored as an avatar.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -667,3 +667,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-33: user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default** — Archived 2026-10-20 → `context/archive/2026-10-20-default-values-changes/`. Lesson: —.
 - **S-34: a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap** — Archived 2026-10-21 → `context/archive/2026-10-20-test-app-refresh-and-fixes/`. Lesson: —.
 - **S-35: user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings** — Archived 2026-10-26 → `context/archive/2026-10-26-user-profile-rework/`. Lesson: —.
+- **S-36: user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting** — Archived 2026-10-26 → `context/archive/2026-10-26-avatar-select/`. Lesson: —.
