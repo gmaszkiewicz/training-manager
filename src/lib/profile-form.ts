@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { ProfileNames } from "@/types";
+
 export const PROFILE_NAME_MAX_LENGTH = 50;
 
 export const FIRST_NAME_LONG_ERROR = "First name must be at most 50 characters.";
@@ -8,11 +10,6 @@ export const PROFILE_UNAVAILABLE_ERROR = "We could not save your details. Try ag
 export const PROFILE_SAVED_NOTICE = "Your details were saved.";
 
 export type ProfileNamesErrorCode = "first-name-long" | "last-name-long";
-
-export interface ProfileNames {
-  firstName: string | null;
-  lastName: string | null;
-}
 
 function nameField(longError: string) {
   return z

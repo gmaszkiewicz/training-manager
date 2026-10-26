@@ -24,3 +24,5 @@ export interface ProfileDetails {
   firstName: string | null;
   lastName: string | null;
 }
+
+export type ProfileNames = Pick<ProfileDetails, "firstName" | "lastName">;

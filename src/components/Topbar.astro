@@ -1,7 +1,6 @@
 ---
 import TopbarActions from "@/components/TopbarActions";
-import { readProfileRole } from "@/lib/services/ensure-profile";
-import { readProfileNames } from "@/lib/services/profile-details";
+import { readTopbarProfile } from "@/lib/services/profile-details";
 import { createClient } from "@/lib/supabase";
 import { topbarModel, type TopbarModelInput } from "@/lib/topbar";
 
@@ -26,13 +25,10 @@ if (preview) {
   if (user) {
     const supabase = createClient(Astro.request.headers, Astro.cookies);
     if (supabase) {
-      const [readRole, names] = await Promise.all([
-        readProfileRole(supabase, user.id),
-        readProfileNames(supabase, user.id),
-      ]);
-      role = readRole;
-      firstName = names?.firstName ?? null;
-      lastName = names?.lastName ?? null;
+      const profile = await readTopbarProfile(supabase, user.id);
+      role = profile?.role ?? null;
+      firstName = profile?.names.firstName ?? null;
+      lastName = profile?.names.lastName ?? null;
     }
   }
 

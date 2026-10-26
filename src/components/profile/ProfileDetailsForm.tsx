@@ -26,9 +26,10 @@ interface Props {
   lastName: string | null;
   serverError?: string | null;
   notice?: string | null;
+  unavailable?: boolean;
 }
 
-export default function ProfileDetailsForm({ email, firstName, lastName, serverError, notice }: Props) {
+export default function ProfileDetailsForm({ email, firstName, lastName, serverError, notice, unavailable }: Props) {
   const [first, setFirst] = useState(firstName ?? "");
   const [last, setLast] = useState(lastName ?? "");
   const [saving, setSaving] = useState(false);
@@ -57,7 +58,7 @@ export default function ProfileDetailsForm({ email, firstName, lastName, serverE
 
   function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!validate() || savingRef.current) {
+    if (unavailable || !validate() || savingRef.current) {
       return;
     }
     const form = event.currentTarget;
@@ -93,39 +94,43 @@ export default function ProfileDetailsForm({ email, firstName, lastName, serverE
         </div>
       </div>
 
-      <FormField
-        id="firstName"
-        label="First name"
-        value={first}
-        onChange={(v) => {
-          setFirst(v);
-          clearField("firstName");
-        }}
-        placeholder="Your first name"
-        invalid={fieldInvalid("firstName")}
-        describedBy={describedBy("firstName")}
-        icon={<User className="size-4" />}
-      />
+      <fieldset disabled={unavailable} className="space-y-4">
+        <FormField
+          id="firstName"
+          label="First name"
+          value={first}
+          onChange={(v) => {
+            setFirst(v);
+            clearField("firstName");
+          }}
+          placeholder="Your first name"
+          invalid={fieldInvalid("firstName")}
+          describedBy={describedBy("firstName")}
+          icon={<User className="size-4" />}
+        />
 
-      <FormField
-        id="lastName"
-        label="Last name"
-        value={last}
-        onChange={(v) => {
-          setLast(v);
-          clearField("lastName");
-        }}
-        placeholder="Your last name"
-        invalid={fieldInvalid("lastName")}
-        describedBy={describedBy("lastName")}
-        icon={<User className="size-4" />}
-      />
+        <FormField
+          id="lastName"
+          label="Last name"
+          value={last}
+          onChange={(v) => {
+            setLast(v);
+            clearField("lastName");
+          }}
+          placeholder="Your last name"
+          invalid={fieldInvalid("lastName")}
+          describedBy={describedBy("lastName")}
+          icon={<User className="size-4" />}
+        />
+      </fieldset>
 
       <FormErrorToasts items={items} onDismiss={dismiss} />
 
-      <SubmitButton pendingText="Saving details..." icon={<Save className="size-4" />} forcePending={saving}>
-        Save
-      </SubmitButton>
+      <fieldset disabled={unavailable}>
+        <SubmitButton pendingText="Saving details..." icon={<Save className="size-4" />} forcePending={saving}>
+          Save
+        </SubmitButton>
+      </fieldset>
     </form>
   );
 }
