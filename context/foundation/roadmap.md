@@ -100,7 +100,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-32 | mobile-devices-ui-measurements | user can open the measurements screen on a phone and still read and enter every field, the difference versus the previous entry, and the trainer controls on that screen | S-28, S-29, S-30 | MS-24 | done |
 | S-33 | default-values-changes | user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default | S-23, S-32 | MS-25 | done |
 | S-34 | test-app-refresh-and-fixes | a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap | S-19, S-32 | MS-26 | done |
-| S-35 | user-profile-rework | user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings | S-25, S-32 | MS-27 | in-progress |
+| S-35 | user-profile-rework | user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings | S-25, S-32 | MS-27 | done |
 
 ## Streams
 
@@ -554,7 +554,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Moving Sign out and the password form behind the avatar can strand a phone user without a way to sign out, and a name edit can update the wrong user, let the email change, or let a user rewrite their own role.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -651,3 +651,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-32: user can open the measurements screen on a phone and still read and enter every field, the difference versus the previous entry, and the trainer controls on that screen** — Archived 2026-10-20 → `context/archive/2026-10-18-mobile-devices-ui-measurements/`. Lesson: —.
 - **S-33: user can open the measurements screen with the add form already open and five entries per page, and a linked trainer sees that same default** — Archived 2026-10-20 → `context/archive/2026-10-20-default-values-changes/`. Lesson: —.
 - **S-34: a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap** — Archived 2026-10-21 → `context/archive/2026-10-20-test-app-refresh-and-fixes/`. Lesson: —.
+- **S-35: user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings** — Archived 2026-10-26 → `context/archive/2026-10-26-user-profile-rework/`. Lesson: —.
