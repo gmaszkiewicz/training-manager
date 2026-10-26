@@ -357,15 +357,15 @@ Additive only: nullable column, a check that holds for `null`, a grant, a bucket
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm test`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Type check passes: `npx astro check`
-- [x] 3.4 Home token check passes: `npm run check:home-tokens`
-- [x] 3.5 Build passes: `npm run build`
-- [x] 3.6 E2E passes including the new spec: `npx playwright test`
+- [x] 3.1 Unit tests pass: `npm test` — 54bdc5d
+- [x] 3.2 Lint passes: `npm run lint` — 54bdc5d
+- [x] 3.3 Type check passes: `npx astro check` — 54bdc5d
+- [x] 3.4 Home token check passes: `npm run check:home-tokens` — 54bdc5d
+- [x] 3.5 Build passes: `npm run build` — 54bdc5d
+- [x] 3.6 E2E passes including the new spec: `npx playwright test` — 54bdc5d
 
 #### Manual
 
-- [x] 3.7 After an upload, the image shows in the top bar on Home, Measurements, Profile and Settings, on desktop and at 360×800
-- [x] 3.8 A user without an avatar still sees initials
-- [x] 3.9 `/kitchen-sink/home` shows the image preview next to the initials previews
+- [x] 3.7 After an upload, the image shows in the top bar on Home, Measurements, Profile and Settings, on desktop and at 360×800 — 54bdc5d
+- [x] 3.8 A user without an avatar still sees initials — 54bdc5d
+- [x] 3.9 `/kitchen-sink/home` shows the image preview next to the initials previews — 54bdc5d
