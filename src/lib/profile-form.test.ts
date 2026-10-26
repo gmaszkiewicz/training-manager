@@ -5,6 +5,8 @@ import {
   FIRST_NAME_LONG_ERROR,
   LAST_NAME_LONG_ERROR,
   parseProfileNames,
+  PROFILE_UNAVAILABLE_ERROR,
+  profilePageError,
   profileNamesSchema,
 } from "@/lib/profile-form";
 
@@ -72,5 +74,18 @@ describe("avatarInitials", () => {
 
   it("uppercases lowercase input", () => {
     expect(avatarInitials({ firstName: "anna", lastName: "nowak", email: "x@example.com" })).toBe("AN");
+  });
+});
+
+describe("profilePageError", () => {
+  it("maps each profile error code to its copy", () => {
+    expect(profilePageError("first-name-long")).toBe(FIRST_NAME_LONG_ERROR);
+    expect(profilePageError("last-name-long")).toBe(LAST_NAME_LONG_ERROR);
+    expect(profilePageError("profile-unavailable")).toBe(PROFILE_UNAVAILABLE_ERROR);
+  });
+
+  it("ignores unknown and missing codes", () => {
+    expect(profilePageError("current-password")).toBeNull();
+    expect(profilePageError(null)).toBeNull();
   });
 });

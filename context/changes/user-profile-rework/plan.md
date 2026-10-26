@@ -322,32 +322,32 @@ Additive only: two nullable columns, one column-level grant, one policy. The pre
 
 #### Automated
 
-- [x] 1.1 Migration applies on local Supabase: `npx supabase db reset`
-- [x] 1.2 Existing measurement rows survive the migration: `npm run migration-check`
-- [x] 1.3 Unit tests pass, including `profile-form.test.ts`: `npm test`
-- [x] 1.4 Type checking passes: `npx astro check`
-- [x] 1.5 Linting passes: `npm run lint`
-- [x] 1.6 Smoke passes with the new profile name steps: `npm run smoke`
+- [x] 1.1 Migration applies on local Supabase: `npx supabase db reset` — 96f7837
+- [x] 1.2 Existing measurement rows survive the migration: `npm run migration-check` — 96f7837
+- [x] 1.3 Unit tests pass, including `profile-form.test.ts`: `npm test` — 96f7837
+- [x] 1.4 Type checking passes: `npx astro check` — 96f7837
+- [x] 1.5 Linting passes: `npm run lint` — 96f7837
+- [x] 1.6 Smoke passes with the new profile name steps: `npm run smoke` — 96f7837
 
 #### Manual
 
-- [x] 1.7 In Supabase Studio, an `authenticated` user's `update profiles set role = 'trainer'` is refused while updating `first_name` on their own row succeeds
+- [x] 1.7 In Supabase Studio, an `authenticated` user's `update profiles set role = 'trainer'` is refused while updating `first_name` on their own row succeeds — 96f7837
 
 ### Phase 2: Details and Settings pages
 
 #### Automated
 
-- [ ] 2.1 Token check passes with the new files listed: `npm run check:home-tokens`
-- [ ] 2.2 Unit tests pass: `npm test`
-- [ ] 2.3 Type checking passes: `npx astro check`
-- [ ] 2.4 Linting passes: `npm run lint`
-- [ ] 2.5 Production build succeeds: `npm run build`
-- [ ] 2.6 Smoke passes with the `/settings` password steps: `npm run smoke`
+- [x] 2.1 Token check passes with the new files listed: `npm run check:home-tokens`
+- [x] 2.2 Unit tests pass: `npm test`
+- [x] 2.3 Type checking passes: `npx astro check`
+- [x] 2.4 Linting passes: `npm run lint`
+- [x] 2.5 Production build succeeds: `npm run build`
+- [x] 2.6 Smoke passes with the `/settings` password steps: `npm run smoke`
 
 #### Manual
 
-- [ ] 2.7 `/profile` shows a centered tab menu with Details marked, read-only email, editable first and last name, and no page heading; saving shows the notice and the names stay after reload
-- [ ] 2.8 `/settings` shows a centered tab menu with Change password marked and the existing form, with no page heading; a password change works and shows its notice
+- [x] 2.7 `/profile` shows a centered tab menu with Details marked, read-only email, editable first and last name, and no page heading; saving shows the notice and the names stay after reload
+- [x] 2.8 `/settings` shows a centered tab menu with Change password marked and the existing form, with no page heading; a password change works and shows its notice
 
 ### Phase 3: Avatar menu in the top bar
 

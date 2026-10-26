@@ -35,6 +35,10 @@ const FILES = [
   "src/pages/kitchen-sink/trainer.astro",
   "src/pages/measurements.astro",
   "src/pages/profile.astro",
+  "src/pages/settings.astro",
+  "src/components/profile/ProfileDetailsForm.tsx",
+  "src/components/account/AccountTabs.tsx",
+  "src/components/ui/tabs.tsx",
 ];
 
 const PATTERN =

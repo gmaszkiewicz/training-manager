@@ -58,3 +58,16 @@ export function avatarInitials({
   const initials = firstLetter(firstName) + firstLetter(lastName);
   return initials !== "" ? initials : firstLetter(email);
 }
+
+export function profilePageError(code: string | null): string | null {
+  if (code === "first-name-long") {
+    return FIRST_NAME_LONG_ERROR;
+  }
+  if (code === "last-name-long") {
+    return LAST_NAME_LONG_ERROR;
+  }
+  if (code === "profile-unavailable") {
+    return PROFILE_UNAVAILABLE_ERROR;
+  }
+  return null;
+}

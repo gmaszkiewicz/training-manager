@@ -90,7 +90,7 @@ export function resetPageError(code: string | null): string | null {
   return null;
 }
 
-export function profilePageError(code: string | null): string | null {
+export function settingsPageError(code: string | null): string | null {
   if (code === "current-password") {
     return CURRENT_PASSWORD_ERROR;
   }
