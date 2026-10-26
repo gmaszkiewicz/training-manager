@@ -322,16 +322,16 @@ Additive only: two nullable columns, one column-level grant, one policy. The pre
 
 #### Automated
 
-- [ ] 1.1 Migration applies on local Supabase: `npx supabase db reset`
-- [ ] 1.2 Existing measurement rows survive the migration: `npm run migration-check`
-- [ ] 1.3 Unit tests pass, including `profile-form.test.ts`: `npm test`
-- [ ] 1.4 Type checking passes: `npx astro check`
-- [ ] 1.5 Linting passes: `npm run lint`
-- [ ] 1.6 Smoke passes with the new profile name steps: `npm run smoke`
+- [x] 1.1 Migration applies on local Supabase: `npx supabase db reset`
+- [x] 1.2 Existing measurement rows survive the migration: `npm run migration-check`
+- [x] 1.3 Unit tests pass, including `profile-form.test.ts`: `npm test`
+- [x] 1.4 Type checking passes: `npx astro check`
+- [x] 1.5 Linting passes: `npm run lint`
+- [x] 1.6 Smoke passes with the new profile name steps: `npm run smoke`
 
 #### Manual
 
-- [ ] 1.7 In Supabase Studio, an `authenticated` user's `update profiles set role = 'trainer'` is refused while updating `first_name` on their own row succeeds
+- [x] 1.7 In Supabase Studio, an `authenticated` user's `update profiles set role = 'trainer'` is refused while updating `first_name` on their own row succeeds
 
 ### Phase 2: Details and Settings pages
 

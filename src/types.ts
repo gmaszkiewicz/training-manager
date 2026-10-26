@@ -18,3 +18,9 @@ export interface FieldDelta {
 export type MeasurementWithDeltas = MeasurementEntry & {
   deltas: Record<MeasurementField, FieldDelta> | null;
 };
+
+export interface ProfileDetails {
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+}
