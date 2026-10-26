@@ -378,6 +378,13 @@ function fakePngFile() {
   return new globalThis.File(["this is not an image"], "avatar.png", { type: "image/png" });
 }
 
+// A 3 MB body that starts like a PNG, so only its size is wrong.
+function oversizedPngFile() {
+  const bytes = globalThis.Buffer.alloc(3 * 1024 * 1024);
+  globalThis.Buffer.from(avatarPngBase64, "base64").copy(bytes);
+  return new globalThis.File([bytes], "avatar.png", { type: "image/png" });
+}
+
 // Reads the trainee's avatar_path through Supabase REST and remembers it for the public URL checks.
 async function traineeAvatarRest() {
   if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
@@ -410,8 +417,8 @@ async function avatarPublicObject() {
   return { status: response.status, location: "", body: "", contentType: response.headers.get("content-type") ?? "" };
 }
 
-// Tries to point the trainee's avatar at another user's folder straight through Supabase REST.
-async function foreignAvatarPathRest() {
+// Tries to set the trainee's avatar_path straight through Supabase REST.
+async function foreignAvatarPathRest(path) {
   if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
     return { status: 0, location: "", body: "" };
   }
@@ -423,7 +430,7 @@ async function foreignAvatarPathRest() {
       "Content-Type": "application/json",
       Prefer: "return=minimal",
     },
-    body: JSON.stringify({ avatar_path: `${secondTraineeId}/foreign.png` }),
+    body: JSON.stringify({ avatar_path: path }),
   });
   const body = await response.text();
   return { status: response.status, location: "", body };
@@ -937,7 +944,22 @@ const steps = [
     () => request("/api/profile/avatar", { method: "POST", multipart: { intent: "upload", avatar: fakePngFile() } }),
     { status: 302, location: "/profile/avatar?error=avatar-type", exactLocation: true },
   ],
-  ["avatar path rejects another user's folder", () => foreignAvatarPathRest(), { status: 400, body: "23514" }],
+  [
+    "avatar upload rejects a body over the size limit",
+    () =>
+      request("/api/profile/avatar", { method: "POST", multipart: { intent: "upload", avatar: oversizedPngFile() } }),
+    { status: 302, location: "/profile/avatar?error=avatar-large", exactLocation: true },
+  ],
+  [
+    "avatar path rejects another user's folder",
+    () => foreignAvatarPathRest(`${secondTraineeId}/foreign.png`),
+    { status: 400, body: "23514" },
+  ],
+  [
+    "avatar path rejects a climb out of the own folder",
+    () => foreignAvatarPathRest(`${traineeId}/../${secondTraineeId}/foreign.png`),
+    { status: 400, body: "23514" },
+  ],
   [
     "avatar remove clears the avatar",
     () => request("/api/profile/avatar", { method: "POST", multipart: { intent: "remove" } }),

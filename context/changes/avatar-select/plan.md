@@ -69,6 +69,7 @@ Create the bucket, column and policies; add file validation and the Storage serv
 **Intent**: Add the avatar reference to `profiles` and an `avatars` bucket that only the owner can write to.
 
 **Contract**:
+
 - `profiles.avatar_path text null`, check constraint `avatar_path like id::text || '/%'` and length ≤ 200; `grant update (avatar_path) on public.profiles to authenticated` (the existing `profiles_update_own` policy already scopes rows).
 - `insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types) values ('avatars', 'avatars', true, 2097152, '{image/png,image/jpeg,image/webp}') on conflict (id) do nothing`.
 - Policies on `storage.objects` for `authenticated`, one per operation: `avatars_select_own`, `avatars_insert_own`, `avatars_update_own`, `avatars_delete_own`, each limited to the owner's folder in `avatars`.
@@ -88,6 +89,7 @@ Create the bucket, column and policies; add file validation and the Storage serv
 **Intent**: One place for the avatar rules, error copy and URL building, shared by the API, the Avatar form and the top bar.
 
 **Contract**:
+
 - Constants: `AVATAR_MAX_BYTES = 2 * 1024 * 1024`, `AVATAR_MIME_TYPES` (png, jpeg, webp → extension), `AVATAR_BUCKET = "avatars"`.
 - Error copy and codes: `avatar-missing` ("Choose an image to upload."), `avatar-type` ("Use a PNG, JPEG or WebP image."), `avatar-large` ("The image must be at most 2 MB."), `avatar-unavailable` ("We could not save your avatar. Try again later."); notices `avatar-saved` ("Your avatar was saved."), `avatar-removed` ("Your avatar was removed.").
 - `parseAvatarFile(file: unknown)` → `{ ok: true; file: File; extension } | { ok: false; code; error }`, checking presence, non-zero size, size limit and declared type (client-safe, used by the form).
@@ -103,6 +105,7 @@ Create the bucket, column and policies; add file validation and the Storage serv
 **Intent**: Read and change the user's avatar in Storage and `profiles`, never throwing, in the style of `profile-details.ts`.
 
 **Contract**:
+
 - `readAvatarPath(supabase, userId): Promise<{ path: string | null } | null>` (`null` = read failed).
 - `replaceAvatar(supabase, userId, file, extension): Promise<{ ok: true } | { ok: false }>`: upload to `<userId>/<crypto.randomUUID()>.<ext>` with the file's content type and `upsert: false`, update `avatar_path` (expect exactly one row), then remove the previous path if any. On a failed update, remove the just-uploaded file. A failed delete of the old file still returns `ok: true`.
 - `removeAvatar(supabase, userId): Promise<{ ok: true } | { ok: false }>`: read the path, set `avatar_path = null`, then remove the file. Removing when there is no avatar is `ok: true`.
@@ -313,6 +316,11 @@ Additive only: nullable column, a check that holds for `null`, a grant, a bucket
 - Tabs: `src/components/account/AccountTabs.tsx`
 - Top bar: `src/lib/topbar.ts:39-41`, `src/components/TopbarActions.tsx:31-38`
 - CI Supabase exclude list: `.github/workflows/ci.yml:45`
+
+## Plan addenda
+
+- **Phase 3 §2 (top-bar rendering):** `AccountMenu` renders `AccountImage`, a plain `<img>` absolutely positioned over `AvatarFallback`, instead of `AvatarImage`. The reason is that Radix `AvatarImage` only renders after hydration, so the initials would flash on every page load. The image hides itself when it fails to load, including a failure before hydration (`src/components/TopbarActions.tsx`).
+- **Greeting by name (2d4332a, outside the original scope):** after "Hello," the top bar shows the user's first initial and last name ("A. Lovelace"). If only one name is saved, it shows that name; if none is saved, it shows the email. The `topbarName` helper is in `src/lib/topbar.ts`, and the model field `email` became `name`. The rule is also recorded in `CLAUDE.md`.
 
 ## Progress
 

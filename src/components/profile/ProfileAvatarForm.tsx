@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { submitAuthForm } from "@/lib/auth-form";
 import {
   AVATAR_LARGE_ERROR,
   AVATAR_MISSING_ERROR,
@@ -24,38 +25,14 @@ function isFileError(message: string | null | undefined): message is string {
   return typeof message === "string" && FILE_ERRORS.includes(message);
 }
 
-// submitAuthForm builds FormData without the clicked button, which would drop `intent`.
-async function submitAvatarForm(
-  form: HTMLFormElement,
-  submitter: HTMLElement | null,
-  intent: Intent,
-): Promise<{ error: string } | { redirect: string }> {
-  try {
-    const body = new FormData(form, submitter);
-    body.set("intent", intent);
-    if (intent === "remove") {
-      body.delete("avatar");
-    }
-    const response = await fetch(form.action, {
-      method: "POST",
-      body,
-      headers: { Accept: "application/json" },
-    });
-    const payload = (await response.json().catch(() => null)) as {
-      ok?: unknown;
-      error?: unknown;
-      redirect?: unknown;
-    } | null;
-    if (typeof payload?.error === "string" && payload.error !== "") {
-      return { error: payload.error };
-    }
-    if (payload?.ok === true && typeof payload.redirect === "string") {
-      return { redirect: payload.redirect };
-    }
-    return { error: FALLBACK_ERROR };
-  } catch {
-    return { error: FALLBACK_ERROR };
+// The default FormData leaves out the clicked button, which would drop `intent`.
+function avatarFormData(form: HTMLFormElement, submitter: HTMLElement | null, intent: Intent): FormData {
+  const body = new FormData(form, submitter);
+  body.set("intent", intent);
+  if (intent === "remove") {
+    body.delete("avatar");
   }
+  return body;
 }
 
 interface Props {
@@ -118,7 +95,7 @@ export default function ProfileAvatarForm({ avatarUrl, initials, serverError, no
 
     pendingRef.current = true;
     setPending(intent);
-    void submitAvatarForm(form, submitter, intent).then((result) => {
+    void submitAuthForm(form, FALLBACK_ERROR, avatarFormData(form, submitter, intent)).then((result) => {
       if ("redirect" in result) {
         window.location.assign(result.redirect);
         return;

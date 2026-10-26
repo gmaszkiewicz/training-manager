@@ -1,4 +1,5 @@
 <!-- IMPL-REVIEW-REPORT -->
+
 # Implementation Review: Avatar tab in Profile
 
 - **Plan**: context/changes/avatar-select/plan.md
@@ -10,28 +11,28 @@
 
 ## Verdicts
 
-| Dimension | Verdict |
-|-----------|---------|
-| Plan Adherence | PASS (1 observation) |
-| Scope Discipline | WARNING |
-| Safety & Quality | WARNING |
-| Architecture | PASS |
+| Dimension           | Verdict              |
+| ------------------- | -------------------- |
+| Plan Adherence      | PASS (1 observation) |
+| Scope Discipline    | WARNING              |
+| Safety & Quality    | WARNING              |
+| Architecture        | PASS                 |
 | Pattern Consistency | PASS (1 observation) |
-| Success Criteria | PASS (1 observation) |
+| Success Criteria    | PASS (1 observation) |
 
 ## Automated verification (re-run 2026-10-26)
 
-| Command | Result |
-|---|---|
-| `npm test` | PASS: 172 tests in 12 files |
-| `npm run lint` | PASS |
-| `npx astro check` | PASS: 0 errors, 0 warnings, 0 hints |
-| `npm run check:home-tokens` | PASS |
-| `npm run build` | PASS |
-| `npm run migration-check` | PASS: `20261026150000_profile_avatar.sql` applied |
-| `npm run db:types` | PASS: no diff |
-| `npm run smoke` | PASS: all steps, including the 9 avatar checks |
-| `npx playwright test` | PASS: 10/10 |
+| Command                     | Result                                            |
+| --------------------------- | ------------------------------------------------- |
+| `npm test`                  | PASS: 172 tests in 12 files                       |
+| `npm run lint`              | PASS                                              |
+| `npx astro check`           | PASS: 0 errors, 0 warnings, 0 hints               |
+| `npm run check:home-tokens` | PASS                                              |
+| `npm run build`             | PASS                                              |
+| `npm run migration-check`   | PASS: `20261026150000_profile_avatar.sql` applied |
+| `npm run db:types`          | PASS: no diff                                     |
+| `npm run smoke`             | PASS: all steps, including the 9 avatar checks    |
+| `npx playwright test`       | PASS: 10/10                                       |
 
 `migration-check` resets the local DB and deletes the local e2e user. Playwright passed once that user was recreated the way CI creates it. This is an environment issue, not a code defect.
 
@@ -49,7 +50,7 @@
   - Tradeoff: A chunked upload with no `Content-Length` would be refused; browsers always send the header for form posts.
   - Confidence: MED — Workers forward `Content-Length` for normal uploads, but this has not been measured on Workers.
   - Blind spot: Whether Cloudflare's own body limit on this plan is already lower than the Worker's memory.
-- **Decision**: PENDING
+- **Decision**: FIXED — `MAX_BODY_BYTES` Content-Length guard before `formData()`, plus the smoke check "avatar upload rejects a body over the size limit". Smoke and the avatar e2e test pass.
 
 ### F2 — Two unplanned commits on the branch
 
@@ -59,7 +60,7 @@
 - **Location**: commits 2d4332a, bed9971
 - **Detail**: 2d4332a changes the top-bar greeting from the email to the user's name (`topbarName`, and the model field `email` is renamed to `name`). It is consistent and tested, but it has nothing to do with avatars. bed9971 commits `CLAUDE.md` and removes it from `.gitignore`. Neither commit is in the plan or in `change.md` Notes.
 - **Fix**: Add a short addendum about the greeting change to `change.md` Notes and the plan, and name both commits in the PR description.
-- **Decision**: PENDING
+- **Decision**: FIXED — `change.md` Notes item 3 and the plan's "Plan addenda" section added; both commits still need to be named in the PR description.
 
 ### F3 — Top bar uses a custom `<img>` instead of `AvatarImage`
 
@@ -69,7 +70,7 @@
 - **Location**: src/components/TopbarActions.tsx:34-58
 - **Detail**: The plan specified `<AvatarImage className="object-cover">`. The code renders `AccountImage`, a plain absolutely-positioned `<img>` that hides itself when the image fails to load. A comment explains why: the Radix image only renders after hydration, so the initials would flash on every page. The change is intentional and covered by e2e, but the plan is not updated.
 - **Fix**: Add a one-line addendum to the plan's Phase 3 §2 recording the change and the reason.
-- **Decision**: PENDING
+- **Decision**: FIXED — recorded in the plan's "Plan addenda" section.
 
 ### F4 — `avatar_path` check accepts `..` segments
 
@@ -79,7 +80,7 @@
 - **Location**: supabase/migrations/20261026150000_profile_avatar.sql:4-8
 - **Detail**: `avatar_path like id::text || '/%'` only checks the prefix. Through PostgREST, a user can store `<own-uid>/../<victim-uid>/x.png`, and the browser normalises the `..` when it loads the image. The only effect is that the user's own top bar shows another user's avatar, which is already public. Storage RLS still prevents deleting or overwriting anyone else's file. LIKE wildcards are not a risk, because a uuid's text contains only hex digits and `-`.
 - **Fix**: In a new migration, replace the check with `avatar_path ~ ('^' || id::text || '/[0-9a-f-]{36}\.(png|jpg|webp)$')`. Use `not valid` and then `validate`, so the migration stays backward compatible.
-- **Decision**: PENDING
+- **Decision**: FIXED — new migration `20261026160000_profile_avatar_path_strict.sql` replaces the check with a regex for `<id>/<uuid>.<png|jpg|webp>` (`not valid`, then `validate`); smoke check "avatar path rejects a climb out of the own folder" added.
 
 ### F5 — Concurrent or direct uploads can leave orphaned files
 
@@ -89,7 +90,7 @@
 - **Location**: src/lib/services/profile-avatar.ts:47-101
 - **Detail**: Reading the old path, uploading, writing the column and deleting the old file do not happen as one step. Two overlapping saves can leave a file that nothing references; no interleaving breaks the avatar that is shown. The insert policy also lets a user upload directly to their own folder through the Storage API, skipping the magic-byte check. The bucket's MIME and size limits still apply. The plan already excludes orphan cleanup.
 - **Fix**: Accept for now, and record a follow-up for a cleanup job that removes objects not referenced by `profiles.avatar_path`.
-- **Decision**: PENDING
+- **Decision**: ACCEPTED — risk recorded, with a cleanup-job follow-up in `follow-ups/review-fixes.md`.
 
 ### F6 — `submitAvatarForm` duplicates `submitAuthForm`
 
@@ -99,7 +100,7 @@
 - **Location**: src/components/profile/ProfileAvatarForm.tsx:27-59
 - **Detail**: This is almost a copy of `src/lib/auth-form.ts` `submitAuthForm`. The differences are the submitter's `intent` and dropping the file on remove. The plan allowed a plain `fetch`, so this is not drift, but the fetch and payload handling now exists in two places.
 - **Fix**: Give `submitAuthForm` an optional prepared `FormData` argument and call it from the avatar form.
-- **Decision**: PENDING
+- **Decision**: FIXED — `submitAuthForm` takes an optional `FormData`; the avatar form builds it with `avatarFormData` and the duplicated fetch is removed.
 
 ### F7 — E2E cleanup only runs if the test passes
 
@@ -109,4 +110,13 @@
 - **Location**: tests/e2e/profile-avatar.spec.ts:22-53
 - **Detail**: The final Remove step is in the test body, not in `afterEach` or `finally`, so a failure after the upload leaves an avatar for other specs. The start-of-test cleanup (L36-38) handles it on the next run, but specs in the same run can still see an image. Separately, the unit test for a sniff mismatch only compares values; the API's refusal is covered by smoke.
 - **Fix**: Move the removal into `test.afterEach`, which removes the avatar through the Avatar tab when the Remove button is shown.
-- **Decision**: PENDING
+- **Decision**: FIXED — `test.afterEach` removes any avatar left behind through the Avatar tab.
+
+## Triage summary (2026-10-26)
+
+| Outcome | Findings |
+|---|---|
+| Fixed | F1, F2, F3, F4, F6, F7 |
+| Accepted | F5 (follow-up queued) |
+
+After the fixes: `npm test` (172), lint, `astro check`, build, `migration-check` and `db:types` (no diff) pass; smoke passes all steps, including the 11 avatar checks; Playwright passes 10/10.

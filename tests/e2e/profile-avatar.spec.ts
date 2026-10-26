@@ -19,6 +19,14 @@ async function removeAvatar(page: Page): Promise<void> {
   await expect(page.getByText("Your avatar was removed.")).toBeVisible();
 }
 
+// Leave no avatar behind for other specs, even when the test fails after the upload.
+test.afterEach(async ({ page }) => {
+  await page.goto("/profile/avatar");
+  if (await page.getByRole("button", { name: "Remove" }).isVisible()) {
+    await removeAvatar(page);
+  }
+});
+
 test("an uploaded avatar shows in the top bar and Remove restores the initials", async ({ page }) => {
   // The first /measurements visit creates the profile row a fresh trainee needs.
   await page.goto("/measurements");
