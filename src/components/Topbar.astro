@@ -1,5 +1,7 @@
 ---
+import { SUPABASE_URL } from "astro:env/server";
 import TopbarActions from "@/components/TopbarActions";
+import { avatarPublicUrl } from "@/lib/profile-avatar";
 import { readTopbarProfile } from "@/lib/services/profile-details";
 import { createClient } from "@/lib/supabase";
 import { topbarModel, type TopbarModelInput } from "@/lib/topbar";
@@ -21,6 +23,7 @@ if (preview) {
   let role: TopbarModelInput["role"] = null;
   let firstName: string | null = null;
   let lastName: string | null = null;
+  let avatarUrl: string | null = null;
 
   if (user) {
     const supabase = createClient(Astro.request.headers, Astro.cookies);
@@ -29,10 +32,11 @@ if (preview) {
       role = profile?.role ?? null;
       firstName = profile?.names.firstName ?? null;
       lastName = profile?.names.lastName ?? null;
+      avatarUrl = SUPABASE_URL ? avatarPublicUrl(SUPABASE_URL, profile?.avatarPath ?? null) : null;
     }
   }
 
-  model = topbarModel({ signedIn, email, role, firstName, lastName, pathname });
+  model = topbarModel({ signedIn, email, role, firstName, lastName, avatarUrl, pathname });
 }
 ---
 

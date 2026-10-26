@@ -6,6 +6,7 @@ export interface TopbarModelInput {
   role: "trainee" | "trainer" | null;
   firstName: string | null;
   lastName: string | null;
+  avatarUrl: string | null;
   pathname: string;
 }
 
@@ -25,6 +26,7 @@ export interface TopbarAccountItem {
 
 export interface TopbarAccount {
   initials: string;
+  imageUrl: string | null;
   label: string;
   items: TopbarAccountItem[];
 }
@@ -36,11 +38,26 @@ export interface TopbarModel {
   account: TopbarAccount | null;
 }
 
-function withCurrent<T extends { href: string }>(items: T[], pathname: string): (T & { current: boolean })[] {
-  return items.map((item) => ({ ...item, current: item.href === pathname }));
+function withCurrent<T extends { href: string }>(
+  items: T[],
+  pathname: string,
+  matchSubpaths = false,
+): (T & { current: boolean })[] {
+  return items.map((item) => ({
+    ...item,
+    current: item.href === pathname || (matchSubpaths && pathname.startsWith(`${item.href}/`)),
+  }));
 }
 
-export function topbarModel({ signedIn, email, role, firstName, lastName, pathname }: TopbarModelInput): TopbarModel {
+export function topbarModel({
+  signedIn,
+  email,
+  role,
+  firstName,
+  lastName,
+  avatarUrl,
+  pathname,
+}: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
       greeting: "Hello, guest",
@@ -71,6 +88,7 @@ export function topbarModel({ signedIn, email, role, firstName, lastName, pathna
     ),
     account: {
       initials: avatarInitials({ firstName, lastName, email }),
+      imageUrl: avatarUrl,
       label: "Account menu",
       items: withCurrent<Omit<TopbarAccountItem, "current">>(
         [
@@ -78,6 +96,7 @@ export function topbarModel({ signedIn, email, role, firstName, lastName, pathna
           { id: "settings", label: "Settings", href: "/settings" },
         ],
         pathname,
+        true,
       ),
     },
   };

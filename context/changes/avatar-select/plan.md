@@ -339,33 +339,33 @@ Additive only: nullable column, a check that holds for `null`, a grant, a bucket
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Type check passes: `npx astro check`
-- [x] 2.4 Build passes: `npm run build`
-- [x] 2.5 Existing e2e still passes (Details and Change password tabs selected): `npx playwright test tests/e2e/account-menu.spec.ts`
+- [x] 2.1 Unit tests pass: `npm test` — 991517f
+- [x] 2.2 Lint passes: `npm run lint` — 991517f
+- [x] 2.3 Type check passes: `npx astro check` — 991517f
+- [x] 2.4 Build passes: `npm run build` — 991517f
+- [x] 2.5 Existing e2e still passes (Details and Change password tabs selected): `npx playwright test tests/e2e/account-menu.spec.ts` — 991517f
 
 #### Manual
 
-- [x] 2.6 `/profile` shows centered Details and Avatar tabs; clicking each opens its URL with that tab selected
-- [x] 2.7 Picking an image shows a preview; Save stores it and shows "Your avatar was saved."
-- [x] 2.8 Picking a GIF or a 3 MB file shows the matching error and saves nothing
-- [x] 2.9 Remove returns the tab to initials and shows "Your avatar was removed."
-- [x] 2.10 `/settings` still shows only the Change password tab and the password change still works
+- [x] 2.6 `/profile` shows centered Details and Avatar tabs; clicking each opens its URL with that tab selected — 991517f
+- [x] 2.7 Picking an image shows a preview; Save stores it and shows "Your avatar was saved." — 991517f
+- [x] 2.8 Picking a GIF or a 3 MB file shows the matching error and saves nothing — 991517f
+- [x] 2.9 Remove returns the tab to initials and shows "Your avatar was removed." — 991517f
+- [x] 2.10 `/settings` still shows only the Change password tab and the password change still works — 991517f
 
 ### Phase 3: Avatar in the top bar
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm test`
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 Type check passes: `npx astro check`
-- [ ] 3.4 Home token check passes: `npm run check:home-tokens`
-- [ ] 3.5 Build passes: `npm run build`
-- [ ] 3.6 E2E passes including the new spec: `npx playwright test`
+- [x] 3.1 Unit tests pass: `npm test`
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 Type check passes: `npx astro check`
+- [x] 3.4 Home token check passes: `npm run check:home-tokens`
+- [x] 3.5 Build passes: `npm run build`
+- [x] 3.6 E2E passes including the new spec: `npx playwright test`
 
 #### Manual
 
-- [ ] 3.7 After an upload, the image shows in the top bar on Home, Measurements, Profile and Settings, on desktop and at 360×800
-- [ ] 3.8 A user without an avatar still sees initials
-- [ ] 3.9 `/kitchen-sink/home` shows the image preview next to the initials previews
+- [x] 3.7 After an upload, the image shows in the top bar on Home, Measurements, Profile and Settings, on desktop and at 360×800
+- [x] 3.8 A user without an avatar still sees initials
+- [x] 3.9 `/kitchen-sink/home` shows the image preview next to the initials previews

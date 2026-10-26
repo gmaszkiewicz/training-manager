@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
           Topbar
         </h2>
         <p class="text-muted-foreground text-sm">
-          Preview bars for the seven product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
+          Preview bars for the eight product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
           <code class="text-foreground">preview</code> so this sink stays session-free. Below the measurement-row width
           the links sit in a Menu button with the avatar to its right. At that width they stay in the bar before the
           avatar. The avatar opens Profile, Settings, and Sign out at every width.
@@ -31,7 +31,15 @@ import { Button } from "@/components/ui/button";
             Guest on <code class="text-foreground">/</code>: "Hello, guest", Home marked.
           </p>
           <Topbar
-            preview={{ signedIn: false, email: "", role: null, firstName: null, lastName: null, pathname: "/" }}
+            preview={{
+              signedIn: false,
+              email: "",
+              role: null,
+              firstName: null,
+              lastName: null,
+              avatarUrl: null,
+              pathname: "/",
+            }}
           />
         </div>
 
@@ -46,6 +54,7 @@ import { Button } from "@/components/ui/button";
               role: null,
               firstName: null,
               lastName: null,
+              avatarUrl: null,
               pathname: "/auth/signin",
             }}
           />
@@ -64,6 +73,7 @@ import { Button } from "@/components/ui/button";
               role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
+              avatarUrl: null,
               pathname: "/",
             }}
           />
@@ -83,6 +93,7 @@ import { Button } from "@/components/ui/button";
               role: "trainer",
               firstName: null,
               lastName: null,
+              avatarUrl: null,
               pathname: "/measurements",
             }}
           />
@@ -100,6 +111,7 @@ import { Button } from "@/components/ui/button";
               role: null,
               firstName: null,
               lastName: null,
+              avatarUrl: null,
               pathname: "/measurements",
             }}
           />
@@ -117,6 +129,7 @@ import { Button } from "@/components/ui/button";
               role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
+              avatarUrl: null,
               pathname: "/profile",
             }}
           />
@@ -134,7 +147,26 @@ import { Button } from "@/components/ui/button";
               role: "trainee",
               firstName: null,
               lastName: null,
+              avatarUrl: null,
               pathname: "/settings",
+            }}
+          />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainee Ada Lovelace with a saved avatar on <code class="text-foreground">/profile/avatar</code>: the avatar
+            shows the image instead of "AL"; Profile is marked inside the avatar menu.
+          </p>
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainee",
+              firstName: "Ada",
+              lastName: "Lovelace",
+              avatarUrl: "/kitchen-sink/avatar.png",
+              pathname: "/profile/avatar",
             }}
           />
         </div>
