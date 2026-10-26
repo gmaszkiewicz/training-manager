@@ -1,7 +1,7 @@
 ---
 change_id: user-profile-rework
 title: Avatar menu with Profile Details and Settings change-password tabs
-status: implementing
+status: implemented
 created: 2026-10-26
 updated: 2026-10-26
 archived_at: null

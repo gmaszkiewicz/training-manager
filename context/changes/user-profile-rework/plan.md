@@ -353,17 +353,17 @@ Additive only: two nullable columns, one column-level grant, one policy. The pre
 
 #### Automated
 
-- [x] 3.1 Unit tests pass, including the updated `topbar.test.ts`: `npm test`
-- [x] 3.2 Token check passes: `npm run check:home-tokens`
-- [x] 3.3 Type checking passes: `npx astro check`
-- [x] 3.4 Linting passes: `npm run lint`
-- [x] 3.5 Production build succeeds: `npm run build`
-- [x] 3.6 Smoke still passes: `npm run smoke`
-- [x] 3.7 E2E passes, including `account-menu.spec.ts`: `npx playwright test`
+- [x] 3.1 Unit tests pass, including the updated `topbar.test.ts`: `npm test` — 36abae5
+- [x] 3.2 Token check passes: `npm run check:home-tokens` — 36abae5
+- [x] 3.3 Type checking passes: `npx astro check` — 36abae5
+- [x] 3.4 Linting passes: `npm run lint` — 36abae5
+- [x] 3.5 Production build succeeds: `npm run build` — 36abae5
+- [x] 3.6 Smoke still passes: `npm run smoke` — 36abae5
+- [x] 3.7 E2E passes, including `account-menu.spec.ts`: `npx playwright test` — 36abae5
 
 #### Manual
 
-- [x] 3.8 On desktop the bar reads Home, Measurements, avatar; no Profile link or Sign out button is visible outside the menu
-- [x] 3.9 On a phone the hamburger holds Home and Measurements and the avatar sits to its right; both open on the first tap in Safari on iOS
-- [x] 3.10 The avatar shows the saved initials, and the email's first letter after both names are cleared
-- [x] 3.11 `/kitchen-sink/home` shows the avatar bar previews
+- [x] 3.8 On desktop the bar reads Home, Measurements, avatar; no Profile link or Sign out button is visible outside the menu — 36abae5
+- [x] 3.9 On a phone the hamburger holds Home and Measurements and the avatar sits to its right; both open on the first tap in Safari on iOS — 36abae5
+- [x] 3.10 The avatar shows the saved initials, and the email's first letter after both names are cleared — 36abae5
+- [x] 3.11 `/kitchen-sink/home` shows the avatar bar previews — 36abae5
