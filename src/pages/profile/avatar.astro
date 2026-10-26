@@ -1,0 +1,62 @@
+---
+import { SUPABASE_URL } from "astro:env/server";
+import Layout from "@/layouts/Layout.astro";
+import AccountTabs from "@/components/account/AccountTabs";
+import ProfileAvatarForm from "@/components/profile/ProfileAvatarForm";
+import Topbar from "@/components/Topbar.astro";
+import { AVATAR_UNAVAILABLE_ERROR, avatarPageError, avatarPageNotice, avatarPublicUrl } from "@/lib/profile-avatar";
+import { avatarInitials } from "@/lib/profile-form";
+import { PROFILE_TABS } from "@/lib/profile-tabs";
+import { readAvatarPath } from "@/lib/services/profile-avatar";
+import { readProfileNames } from "@/lib/services/profile-details";
+import { createClient } from "@/lib/supabase";
+
+const error = Astro.url.searchParams.get("error");
+const notice = Astro.url.searchParams.get("notice");
+const user = Astro.locals.user;
+const email = user?.email ?? "";
+let firstName: string | null = null;
+let lastName: string | null = null;
+let avatarUrl: string | null = null;
+let unavailable = false;
+if (user) {
+  const supabase = createClient(Astro.request.headers, Astro.cookies);
+  const [avatar, names] = supabase
+    ? await Promise.all([readAvatarPath(supabase, user.id), readProfileNames(supabase, user.id)])
+    : [null, null];
+  if (avatar && SUPABASE_URL) {
+    avatarUrl = avatarPublicUrl(SUPABASE_URL, avatar.path);
+  } else {
+    // Without the stored path the tab cannot tell "no avatar" from "unknown", so Save and Remove stay off.
+    unavailable = true;
+  }
+  if (names) {
+    firstName = names.firstName;
+    lastName = names.lastName;
+  }
+}
+const initials = avatarInitials({ firstName, lastName, email });
+const serverError = avatarPageError(error) ?? (unavailable ? AVATAR_UNAVAILABLE_ERROR : null);
+---
+
+<Layout title="Profile" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-measurement">
+      <Topbar />
+    </div>
+  </div>
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4 text-card-foreground">
+      <AccountTabs tabs={PROFILE_TABS} current="avatar">
+        <ProfileAvatarForm
+          avatarUrl={avatarUrl}
+          initials={initials}
+          serverError={serverError}
+          unavailable={unavailable}
+          notice={avatarPageNotice(notice)}
+          client:load
+        />
+      </AccountTabs>
+    </div>
+  </div>
+</Layout>

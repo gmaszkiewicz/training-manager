@@ -322,36 +322,36 @@ Additive only: nullable column, a check that holds for `null`, a grant, a bucket
 
 #### Automated
 
-- [x] 1.1 Migration applies on local Supabase: `npx supabase db reset`
-- [x] 1.2 Migration check passes: `npm run migration-check`
-- [x] 1.3 Types regenerated without diff after reset: `npm run db:types`
-- [x] 1.4 Unit tests pass: `npm test`
-- [x] 1.5 Lint passes: `npm run lint`
-- [x] 1.6 Type check passes: `npx astro check`
-- [x] 1.7 Smoke passes with the avatar checks: `npm run smoke`
+- [x] 1.1 Migration applies on local Supabase: `npx supabase db reset` — 10a0739
+- [x] 1.2 Migration check passes: `npm run migration-check` — 10a0739
+- [x] 1.3 Types regenerated without diff after reset: `npm run db:types` — 10a0739
+- [x] 1.4 Unit tests pass: `npm test` — 10a0739
+- [x] 1.5 Lint passes: `npm run lint` — 10a0739
+- [x] 1.6 Type check passes: `npx astro check` — 10a0739
+- [x] 1.7 Smoke passes with the avatar checks: `npm run smoke` — 10a0739
 
 #### Manual
 
-- [x] 1.8 In local Supabase Studio, the `avatars` bucket is public with the 2 MB limit and the three MIME types
-- [x] 1.9 After an upload and a second upload, only one file remains in the user's folder
+- [x] 1.8 In local Supabase Studio, the `avatars` bucket is public with the 2 MB limit and the three MIME types — 10a0739
+- [x] 1.9 After an upload and a second upload, only one file remains in the user's folder — 10a0739
 
 ### Phase 2: Avatar tab in Profile
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Type check passes: `npx astro check`
-- [ ] 2.4 Build passes: `npm run build`
-- [ ] 2.5 Existing e2e still passes (Details and Change password tabs selected): `npx playwright test tests/e2e/account-menu.spec.ts`
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Type check passes: `npx astro check`
+- [x] 2.4 Build passes: `npm run build`
+- [x] 2.5 Existing e2e still passes (Details and Change password tabs selected): `npx playwright test tests/e2e/account-menu.spec.ts`
 
 #### Manual
 
-- [ ] 2.6 `/profile` shows centered Details and Avatar tabs; clicking each opens its URL with that tab selected
-- [ ] 2.7 Picking an image shows a preview; Save stores it and shows "Your avatar was saved."
-- [ ] 2.8 Picking a GIF or a 3 MB file shows the matching error and saves nothing
-- [ ] 2.9 Remove returns the tab to initials and shows "Your avatar was removed."
-- [ ] 2.10 `/settings` still shows only the Change password tab and the password change still works
+- [x] 2.6 `/profile` shows centered Details and Avatar tabs; clicking each opens its URL with that tab selected
+- [x] 2.7 Picking an image shows a preview; Save stores it and shows "Your avatar was saved."
+- [x] 2.8 Picking a GIF or a 3 MB file shows the matching error and saves nothing
+- [x] 2.9 Remove returns the tab to initials and shows "Your avatar was removed."
+- [x] 2.10 `/settings` still shows only the Change password tab and the password change still works
 
 ### Phase 3: Avatar in the top bar
 

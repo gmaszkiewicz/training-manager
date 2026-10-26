@@ -18,7 +18,10 @@ const serverError = settingsPageError(error);
   </div>
   <div class="flex justify-center px-4 pb-4">
     <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4 text-card-foreground">
-      <AccountTabs tab={{ value: "change-password", label: "Change password" }}>
+      <AccountTabs
+        tabs={[{ value: "change-password", label: "Change password", href: "/settings" }]}
+        current="change-password"
+      >
         <ChangePasswordForm
           serverError={serverError}
           notice={notice === "password-changed" ? PASSWORD_CHANGED_NOTICE : null}

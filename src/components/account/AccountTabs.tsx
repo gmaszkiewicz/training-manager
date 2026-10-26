@@ -1,20 +1,32 @@
 import type { ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+export interface AccountTab {
+  value: string;
+  label: string;
+  href: string;
+}
+
 interface Props {
-  tab: { value: string; label: string };
+  tabs: readonly AccountTab[];
+  current: string;
   children?: ReactNode;
 }
 
-export default function AccountTabs({ tab, children }: Props) {
+// Each tab is its own page: the server picks the selected tab and a tab click navigates.
+export default function AccountTabs({ tabs, current, children }: Props) {
   return (
-    <Tabs value={tab.value} className="gap-6">
+    <Tabs value={current} className="gap-6">
       <div className="flex justify-center">
         <TabsList>
-          <TabsTrigger value={tab.value}>{tab.label}</TabsTrigger>
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value} asChild>
+              <a href={tab.href}>{tab.label}</a>
+            </TabsTrigger>
+          ))}
         </TabsList>
       </div>
-      <TabsContent value={tab.value} className="mx-auto w-full max-w-sm">
+      <TabsContent value={current} className="mx-auto w-full max-w-sm">
         {children}
       </TabsContent>
     </Tabs>
