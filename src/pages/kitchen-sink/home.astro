@@ -20,41 +20,72 @@ import { Button } from "@/components/ui/button";
           Topbar
         </h2>
         <p class="text-muted-foreground text-sm">
-          Preview bars for the six product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
+          Preview bars for the seven product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
           <code class="text-foreground">preview</code> so this sink stays session-free. Below the measurement-row width
-          the links sit in a Menu button. At that width they stay in the bar.
+          the links sit in a Menu button with the avatar to its right. At that width they stay in the bar before the
+          avatar. The avatar opens Profile, Settings, and Sign out at every width.
         </p>
 
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
             Guest on <code class="text-foreground">/</code>: "Hello, guest", Home marked.
           </p>
-          <Topbar preview={{ signedIn: false, email: "", role: null, pathname: "/" }} />
+          <Topbar
+            preview={{ signedIn: false, email: "", role: null, firstName: null, lastName: null, pathname: "/" }}
+          />
         </div>
 
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
             Guest on <code class="text-foreground">/auth/signin</code>: Sign in marked.
           </p>
-          <Topbar preview={{ signedIn: false, email: "", role: null, pathname: "/auth/signin" }} />
+          <Topbar
+            preview={{
+              signedIn: false,
+              email: "",
+              role: null,
+              firstName: null,
+              lastName: null,
+              pathname: "/auth/signin",
+            }}
+          />
         </div>
 
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
-            Trainee <code class="text-foreground">ada@example.com</code> on <code class="text-foreground">/</code>:
-            "Hello, ada@example.com", Home marked.
+            Trainee <code class="text-foreground">ada@example.com</code> named Ada Lovelace on{" "}
+            <code class="text-foreground">/</code>: "Hello, ada@example.com", Home marked, Home and Measurements links,
+            avatar "AL" opening Profile, Settings, Sign out.
           </p>
-          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: "trainee", pathname: "/" }} />
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainee",
+              firstName: "Ada",
+              lastName: "Lovelace",
+              pathname: "/",
+            }}
+          />
         </div>
 
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
-            Trainer <code class="text-foreground">ada@example.com</code> on{" "}
+            Trainer <code class="text-foreground">ada@example.com</code> with no saved name on{" "}
             <code class="text-foreground">/measurements</code>: "Hello, ada@example.com", Measurements marked, href{" "}
-            <code class="text-foreground">/measurements</code>. This is the bar for{" "}
+            <code class="text-foreground">/measurements</code>, avatar "A" from the email. This is the bar for{" "}
             <code class="text-foreground">/measurements?trainee=abc</code>.
           </p>
-          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: "trainer", pathname: "/measurements" }} />
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainer",
+              firstName: null,
+              lastName: null,
+              pathname: "/measurements",
+            }}
+          />
         </div>
 
         <div class="flex flex-col gap-2">
@@ -62,16 +93,50 @@ import { Button } from "@/components/ui/button";
             Signed in, role null, email <code class="text-foreground">ada@example.com</code>, pathname{" "}
             <code class="text-foreground">/measurements</code>: the email only, Measurements marked, no Hello line.
           </p>
-          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: null, pathname: "/measurements" }} />
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: null,
+              firstName: null,
+              lastName: null,
+              pathname: "/measurements",
+            }}
+          />
         </div>
 
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
-            Trainee <code class="text-foreground">ada@example.com</code> on{" "}
-            <code class="text-foreground">/profile</code>: "Hello, ada@example.com", Profile marked, href{" "}
-            <code class="text-foreground">/profile</code>.
+            Trainee Ada Lovelace on <code class="text-foreground">/profile</code>: no bar link marked; Profile is marked
+            inside the avatar menu.
           </p>
-          <Topbar preview={{ signedIn: true, email: "ada@example.com", role: "trainee", pathname: "/profile" }} />
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainee",
+              firstName: "Ada",
+              lastName: "Lovelace",
+              pathname: "/profile",
+            }}
+          />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainee with no saved name on <code class="text-foreground">/settings</code>: avatar "A" from the email;
+            Settings is marked inside the avatar menu.
+          </p>
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainee",
+              firstName: null,
+              lastName: null,
+              pathname: "/settings",
+            }}
+          />
         </div>
       </section>
 

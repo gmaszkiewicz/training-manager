@@ -30,16 +30,16 @@ export const POST: APIRoute = async (context) => {
   const confirmPassword = formField(form, "confirmPassword");
 
   if (newPassword.length < MIN_PASSWORD_LENGTH) {
-    return authPage(context, "/profile?error=password-short", PASSWORD_SHORT_ERROR);
+    return authPage(context, "/settings?error=password-short", PASSWORD_SHORT_ERROR);
   }
 
   if (newPassword !== confirmPassword) {
-    return authPage(context, "/profile?error=password-mismatch", PASSWORD_MISMATCH_ERROR);
+    return authPage(context, "/settings?error=password-mismatch", PASSWORD_MISMATCH_ERROR);
   }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return authPage(context, "/profile?error=password-unavailable", PASSWORD_UNAVAILABLE_ERROR);
+    return authPage(context, "/settings?error=password-unavailable", PASSWORD_UNAVAILABLE_ERROR);
   }
 
   const proved = await supabase.auth.signInWithPassword({
@@ -47,20 +47,20 @@ export const POST: APIRoute = async (context) => {
     password: currentPassword,
   });
   if (proved.error) {
-    return authPage(context, "/profile?error=current-password", CURRENT_PASSWORD_ERROR);
+    return authPage(context, "/settings?error=current-password", CURRENT_PASSWORD_ERROR);
   }
 
   const updated = await supabase.auth.updateUser({ password: newPassword });
   if (updated.error?.code === "same_password") {
-    return authPage(context, "/profile?error=password-same", PASSWORD_SAME_ERROR);
+    return authPage(context, "/settings?error=password-same", PASSWORD_SAME_ERROR);
   }
   if (updated.error) {
-    return authPage(context, "/profile?error=password-unchanged", PASSWORD_UNCHANGED_ERROR);
+    return authPage(context, "/settings?error=password-unchanged", PASSWORD_UNCHANGED_ERROR);
   }
 
   const signedOut = await supabase.auth.signOut({ scope: "others" });
   if (signedOut.error) {
-    return authPage(context, "/profile?error=other-sessions", OTHER_SESSIONS_ERROR);
+    return authPage(context, "/settings?error=other-sessions", OTHER_SESSIONS_ERROR);
   }
-  return authPage(context, "/profile?notice=password-changed");
+  return authPage(context, "/settings?notice=password-changed");
 };

@@ -57,6 +57,8 @@ const password = "Smoke-Test-Passw0rd!";
 const profileEmail = `smoke-profile-${Date.now()}@example.com`;
 const profilePassword = "Smoke-Profile-Current1!";
 const profileNextPassword = "Smoke-Profile-Nextword1!";
+const profileFirstName = "Smoke";
+const profileLastName = "Trainee";
 const jar = new Map();
 const jarA = new Map();
 const jarB = new Map();
@@ -338,6 +340,22 @@ async function searchUnlinkedTraineesRpc() {
   return { status: response.status, location: "", body };
 }
 
+// Reads the trainee's own profile row through Supabase REST, so the role can be checked next to the names /profile renders.
+async function traineeProfileRest() {
+  if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
+    return { status: 0, location: "", body: "" };
+  }
+  const query = `id=eq.${encodeURIComponent(traineeId)}&select=role,first_name,last_name`;
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?${query}`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken()}`,
+    },
+  });
+  const body = await response.text();
+  return { status: response.status, location: "", body };
+}
+
 function smokeTraineeSearchPath() {
   return `/api/trainer-links?q=${encodeURIComponent(` ${email.toUpperCase()} `)}`;
 }
@@ -364,10 +382,16 @@ const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["measurements redirects anonymous user", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
   ["profile redirects anonymous user", () => request("/profile"), { status: 302, location: "/auth/signin" }],
+  ["settings redirects anonymous user", () => request("/settings"), { status: 302, location: "/auth/signin" }],
   [
     "measurements redirect anonymous user",
     () => request("/api/measurements", { method: "POST" }),
     { status: 302, location: "/auth/signin" },
+  ],
+  [
+    "profile name save redirects anonymous user",
+    () => request("/api/profile", { method: "POST", form: { firstName: "Anon", lastName: "User" } }),
+    { status: 302, location: "/auth/signin", exactLocation: true },
   ],
   ["signed-out trainer search is rejected", () => request("/api/trainer-links?q=a"), { status: 401 }],
   [
@@ -748,6 +772,78 @@ const steps = [
     { status: 200, body: ["Add measurement", earlierNote], forbid: foreignWriteNote },
   ],
   [
+    "profile names save",
+    () =>
+      request("/api/profile", {
+        method: "POST",
+        form: { firstName: ` ${profileFirstName} `, lastName: profileLastName },
+      }),
+    { status: 302, location: "/profile?notice=profile-saved", exactLocation: true },
+  ],
+  [
+    "profile names are stored",
+    () => traineeProfileRest(),
+    {
+      status: 200,
+      json: () => ({ profileRow: { role: "trainee", first_name: profileFirstName, last_name: profileLastName } }),
+    },
+  ],
+  [
+    "profile renders the saved names",
+    () => request("/profile"),
+    { status: 200, body: [`value="${profileFirstName}"`, `value="${profileLastName}"`] },
+  ],
+  [
+    "profile rejects a 51-character first name",
+    () => request("/api/profile", { method: "POST", form: { firstName: "a".repeat(51), lastName: profileLastName } }),
+    { status: 302, location: "/profile?error=", locationIncludes: "first-name-long" },
+  ],
+  [
+    "profile names survive the rejected save",
+    () => traineeProfileRest(),
+    {
+      status: 200,
+      json: () => ({ profileRow: { role: "trainee", first_name: profileFirstName, last_name: profileLastName } }),
+    },
+  ],
+  [
+    "profile save ignores a role field",
+    () =>
+      request("/api/profile", {
+        method: "POST",
+        form: { firstName: profileFirstName, lastName: profileLastName, role: "trainer", email: unknownEmail },
+      }),
+    { status: 302, location: "/profile?notice=profile-saved", exactLocation: true },
+  ],
+  [
+    "profile role stays trainee after the save",
+    () => traineeProfileRest(),
+    {
+      status: 200,
+      json: () => ({ profileRow: { role: "trainee", first_name: profileFirstName, last_name: profileLastName } }),
+    },
+  ],
+  [
+    "trainee journal still renders after the role field",
+    () => request("/measurements"),
+    { status: 200, body: ["Add measurement", earlierNote], forbid: "Find trainee by email" },
+  ],
+  [
+    "profile empty fields clear the names",
+    () => request("/api/profile", { method: "POST", form: { firstName: "", lastName: "  " } }),
+    { status: 302, location: "/profile?notice=profile-saved", exactLocation: true },
+  ],
+  [
+    "profile names are cleared",
+    () => traineeProfileRest(),
+    { status: 200, json: () => ({ profileRow: { role: "trainee", first_name: null, last_name: null } }) },
+  ],
+  [
+    "profile form no longer shows the cleared names",
+    () => request("/profile"),
+    { status: 200, forbid: [`value="${profileFirstName}"`, `value="${profileLastName}"`] },
+  ],
+  [
     "signin shows forgot password",
     () => request("/auth/signin"),
     { status: 200, body: ["Forgot password?", 'href="/auth/reset-password"'] },
@@ -801,9 +897,9 @@ const steps = [
         method: "POST",
         form: { currentPassword: "wrong", password: profileNextPassword, confirmPassword: profileNextPassword },
       }),
-    { status: 302, location: "/profile?error=current-password", exactLocation: true },
+    { status: 302, location: "/settings?error=current-password", exactLocation: true },
   ],
-  ["profile other session stays signed in", () => requestWith(jarB, "/profile"), { status: 200 }],
+  ["profile other session stays signed in", () => requestWith(jarB, "/settings"), { status: 200 }],
   [
     "profile changes the password",
     () =>
@@ -815,10 +911,10 @@ const steps = [
           confirmPassword: profileNextPassword,
         },
       }),
-    { status: 302, location: "/profile?notice=password-changed", exactLocation: true },
+    { status: 302, location: "/settings?notice=password-changed", exactLocation: true },
   ],
-  ["profile stays signed in after the change", () => requestWith(jarA, "/profile"), { status: 200 }],
-  ["profile other session ends", () => requestWith(jarB, "/profile"), { status: 302, location: "/auth/signin" }],
+  ["profile stays signed in after the change", () => requestWith(jarA, "/settings"), { status: 200 }],
+  ["profile other session ends", () => requestWith(jarB, "/settings"), { status: 302, location: "/auth/signin" }],
   [
     "profile signs out",
     () => requestWith(jarA, "/api/auth/signout", { method: "POST" }),
@@ -912,6 +1008,14 @@ function jsonProblems(parsed, spec) {
     const delta = deltas && typeof deltas === "object" ? deltas.weight_kg : undefined;
     if (!sameWeightDelta(delta, spec.weightDelta)) {
       problems.push(`deltas.weight_kg ${JSON.stringify(delta ?? null)} expected ${JSON.stringify(spec.weightDelta)}`);
+    }
+  }
+  if (spec.profileRow !== undefined) {
+    const row = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : undefined;
+    const same =
+      row && typeof row === "object" && Object.keys(spec.profileRow).every((key) => row[key] === spec.profileRow[key]);
+    if (!same) {
+      problems.push(`profile row ${JSON.stringify(parsed)} expected ${JSON.stringify([spec.profileRow])}`);
     }
   }
   if (spec.measuredMonths !== undefined && !monthSetEquals(parsed, spec.measuredMonths)) {
