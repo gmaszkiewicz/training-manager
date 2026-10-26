@@ -1,35 +1,52 @@
+import { avatarInitials } from "@/lib/profile-form";
+
 export interface TopbarModelInput {
   signedIn: boolean;
   email: string;
   role: "trainee" | "trainer" | null;
+  firstName: string | null;
+  lastName: string | null;
   pathname: string;
 }
 
 export interface TopbarLink {
-  id: "home" | "measurements" | "profile" | "signin" | "signup";
-  label: "Home" | "Measurements" | "Profile" | "Sign in" | "Sign up";
+  id: "home" | "measurements" | "signin" | "signup";
+  label: "Home" | "Measurements" | "Sign in" | "Sign up";
   href: string;
   current: boolean;
+}
+
+export interface TopbarAccountItem {
+  id: "profile" | "settings";
+  label: "Profile" | "Settings";
+  href: string;
+  current: boolean;
+}
+
+export interface TopbarAccount {
+  initials: string;
+  label: string;
+  items: TopbarAccountItem[];
 }
 
 export interface TopbarModel {
   greeting: "Hello, guest" | "Hello," | null;
   email: string | null;
   links: TopbarLink[];
-  showSignOut: boolean;
+  account: TopbarAccount | null;
 }
 
-function withCurrent(links: Omit<TopbarLink, "current">[], pathname: string): TopbarLink[] {
-  return links.map((link) => ({ ...link, current: link.href === pathname }));
+function withCurrent<T extends { href: string }>(items: T[], pathname: string): (T & { current: boolean })[] {
+  return items.map((item) => ({ ...item, current: item.href === pathname }));
 }
 
-export function topbarModel({ signedIn, email, role, pathname }: TopbarModelInput): TopbarModel {
+export function topbarModel({ signedIn, email, role, firstName, lastName, pathname }: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
       greeting: "Hello, guest",
       email: null,
-      showSignOut: false,
-      links: withCurrent(
+      account: null,
+      links: withCurrent<Omit<TopbarLink, "current">>(
         [
           { id: "home", label: "Home", href: "/" },
           { id: "signin", label: "Sign in", href: "/auth/signin" },
@@ -45,14 +62,23 @@ export function topbarModel({ signedIn, email, role, pathname }: TopbarModelInpu
   return {
     greeting,
     email,
-    showSignOut: true,
-    links: withCurrent(
+    links: withCurrent<Omit<TopbarLink, "current">>(
       [
         { id: "home", label: "Home", href: "/" },
         { id: "measurements", label: "Measurements", href: "/measurements" },
-        { id: "profile", label: "Profile", href: "/profile" },
       ],
       pathname,
     ),
+    account: {
+      initials: avatarInitials({ firstName, lastName, email }),
+      label: "Account menu",
+      items: withCurrent<Omit<TopbarAccountItem, "current">>(
+        [
+          { id: "profile", label: "Profile", href: "/profile" },
+          { id: "settings", label: "Settings", href: "/settings" },
+        ],
+        pathname,
+      ),
+    },
   };
 }

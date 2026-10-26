@@ -1,6 +1,7 @@
 ---
 import TopbarActions from "@/components/TopbarActions";
 import { readProfileRole } from "@/lib/services/ensure-profile";
+import { readProfileNames } from "@/lib/services/profile-details";
 import { createClient } from "@/lib/supabase";
 import { topbarModel, type TopbarModelInput } from "@/lib/topbar";
 
@@ -19,15 +20,23 @@ if (preview) {
   const email = user?.email ?? "";
   const pathname = Astro.url.pathname;
   let role: TopbarModelInput["role"] = null;
+  let firstName: string | null = null;
+  let lastName: string | null = null;
 
   if (user) {
     const supabase = createClient(Astro.request.headers, Astro.cookies);
     if (supabase) {
-      role = await readProfileRole(supabase, user.id);
+      const [readRole, names] = await Promise.all([
+        readProfileRole(supabase, user.id),
+        readProfileNames(supabase, user.id),
+      ]);
+      role = readRole;
+      firstName = names?.firstName ?? null;
+      lastName = names?.lastName ?? null;
     }
   }
 
-  model = topbarModel({ signedIn, email, role, pathname });
+  model = topbarModel({ signedIn, email, role, firstName, lastName, pathname });
 }
 ---
 
@@ -37,6 +46,6 @@ if (preview) {
     greeting={model.greeting}
     email={model.email}
     links={model.links}
-    showSignOut={model.showSignOut}
+    account={model.account}
   />
 </div>

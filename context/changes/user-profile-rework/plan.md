@@ -337,33 +337,33 @@ Additive only: two nullable columns, one column-level grant, one policy. The pre
 
 #### Automated
 
-- [x] 2.1 Token check passes with the new files listed: `npm run check:home-tokens`
-- [x] 2.2 Unit tests pass: `npm test`
-- [x] 2.3 Type checking passes: `npx astro check`
-- [x] 2.4 Linting passes: `npm run lint`
-- [x] 2.5 Production build succeeds: `npm run build`
-- [x] 2.6 Smoke passes with the `/settings` password steps: `npm run smoke`
+- [x] 2.1 Token check passes with the new files listed: `npm run check:home-tokens` — 043fae3
+- [x] 2.2 Unit tests pass: `npm test` — 043fae3
+- [x] 2.3 Type checking passes: `npx astro check` — 043fae3
+- [x] 2.4 Linting passes: `npm run lint` — 043fae3
+- [x] 2.5 Production build succeeds: `npm run build` — 043fae3
+- [x] 2.6 Smoke passes with the `/settings` password steps: `npm run smoke` — 043fae3
 
 #### Manual
 
-- [x] 2.7 `/profile` shows a centered tab menu with Details marked, read-only email, editable first and last name, and no page heading; saving shows the notice and the names stay after reload
-- [x] 2.8 `/settings` shows a centered tab menu with Change password marked and the existing form, with no page heading; a password change works and shows its notice
+- [x] 2.7 `/profile` shows a centered tab menu with Details marked, read-only email, editable first and last name, and no page heading; saving shows the notice and the names stay after reload — 043fae3
+- [x] 2.8 `/settings` shows a centered tab menu with Change password marked and the existing form, with no page heading; a password change works and shows its notice — 043fae3
 
 ### Phase 3: Avatar menu in the top bar
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass, including the updated `topbar.test.ts`: `npm test`
-- [ ] 3.2 Token check passes: `npm run check:home-tokens`
-- [ ] 3.3 Type checking passes: `npx astro check`
-- [ ] 3.4 Linting passes: `npm run lint`
-- [ ] 3.5 Production build succeeds: `npm run build`
-- [ ] 3.6 Smoke still passes: `npm run smoke`
-- [ ] 3.7 E2E passes, including `account-menu.spec.ts`: `npx playwright test`
+- [x] 3.1 Unit tests pass, including the updated `topbar.test.ts`: `npm test`
+- [x] 3.2 Token check passes: `npm run check:home-tokens`
+- [x] 3.3 Type checking passes: `npx astro check`
+- [x] 3.4 Linting passes: `npm run lint`
+- [x] 3.5 Production build succeeds: `npm run build`
+- [x] 3.6 Smoke still passes: `npm run smoke`
+- [x] 3.7 E2E passes, including `account-menu.spec.ts`: `npx playwright test`
 
 #### Manual
 
-- [ ] 3.8 On desktop the bar reads Home, Measurements, avatar; no Profile link or Sign out button is visible outside the menu
-- [ ] 3.9 On a phone the hamburger holds Home and Measurements and the avatar sits to its right; both open on the first tap in Safari on iOS
-- [ ] 3.10 The avatar shows the saved initials, and the email's first letter after both names are cleared
-- [ ] 3.11 `/kitchen-sink/home` shows the avatar bar previews
+- [x] 3.8 On desktop the bar reads Home, Measurements, avatar; no Profile link or Sign out button is visible outside the menu
+- [x] 3.9 On a phone the hamburger holds Home and Measurements and the avatar sits to its right; both open on the first tap in Safari on iOS
+- [x] 3.10 The avatar shows the saved initials, and the email's first letter after both names are cleared
+- [x] 3.11 `/kitchen-sink/home` shows the avatar bar previews

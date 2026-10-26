@@ -39,6 +39,7 @@ const FILES = [
   "src/components/profile/ProfileDetailsForm.tsx",
   "src/components/account/AccountTabs.tsx",
   "src/components/ui/tabs.tsx",
+  "src/components/ui/avatar.tsx",
 ];
 
 const PATTERN =
