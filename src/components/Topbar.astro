@@ -41,11 +41,5 @@ if (preview) {
 ---
 
 <div class="border-border bg-card text-muted-foreground mb-4 flex items-center justify-between rounded-xl border px-4 py-2 text-sm">
-  <TopbarActions
-    client:load
-    greeting={model.greeting}
-    email={model.email}
-    links={model.links}
-    account={model.account}
-  />
+  <TopbarActions client:load greeting={model.greeting} name={model.name} links={model.links} account={model.account} />
 </div>

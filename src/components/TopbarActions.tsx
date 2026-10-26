@@ -93,15 +93,15 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
   );
 }
 
-export default function TopbarActions({ greeting, email, links, account }: Props) {
+export default function TopbarActions({ greeting, name, links, account }: Props) {
   return (
     <div className="flex w-full items-center justify-between gap-3">
       <div className="min-w-0">
-        {greeting != null || email != null ? (
+        {greeting != null || name != null ? (
           <span className="block truncate">
             {greeting}
-            {greeting != null && email != null ? " " : null}
-            {email}
+            {greeting != null && name != null ? " " : null}
+            {name}
           </span>
         ) : null}
       </div>
