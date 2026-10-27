@@ -1,6 +1,8 @@
 // Hub collaborations: a throwaway trainer sends a request from /measurements, the seeded trainee accepts it in the Hub,
-// and the trainer unlinks after confirming. Runs at desktop width and at 360×800. The Hub tab content is as narrow as
-// Profile and Settings, so row actions sit behind the "Actions for …" menu at every width.
+// and the trainer unlinks after confirming. Each side's notifications are checked on the way: the trainee opens the
+// request from the bell, and the trainer marks the "accepted" notification read and deletes it in the Hub. Runs at
+// desktop width and at 360×800. The Hub tab content is as narrow as Profile and Settings, so row actions sit behind
+// the "Actions for …" menu at every width.
 import { expect, test, type BrowserContext, type Locator, type Page } from "@playwright/test";
 
 const widths = [
@@ -89,14 +91,83 @@ async function removeStaleHubTrainers(traineePage: Page): Promise<void> {
   }
 }
 
+function notificationRow(page: Page, text: string | RegExp): Locator {
+  return page.getByRole("row").filter({ hasText: text });
+}
+
+// The bell trigger is always there for a signed-in user; its label carries the unread count.
+async function openBell(page: Page, item: Locator): Promise<void> {
+  const bell = page.getByRole("button", { name: /^Notifications, \d+ unread$/ });
+  await expect(bell).toBeVisible();
+  // A click before the island hydrates opens nothing. Retry until the menu shows.
+  await expect(async () => {
+    await bell.click();
+    await expect(item).toBeVisible({ timeout: 1_000 });
+  }).toPass();
+}
+
+// The checkboxes are a React island; a click before it hydrates checks nothing. Retry until checked.
+async function check(checkbox: Locator): Promise<void> {
+  await expect(checkbox).toBeVisible();
+  await expect(async () => {
+    if ((await checkbox.getAttribute("aria-checked")) !== "true") {
+      await checkbox.click();
+    }
+    await expect(checkbox).toBeChecked({ timeout: 1_000 });
+  }).toPass();
+}
+
+// Users may delete their own notifications. Collects the ids of every row the predicate keeps, page by page, and
+// deletes them through the form route the table uses (at most 15 ids per request).
+async function removeNotifications(page: Page, keep: (text: string) => boolean): Promise<void> {
+  const ids: string[] = [];
+  for (let current = 1; current <= 50; current += 1) {
+    await page.goto(`/hub/notifications?page=${String(current)}&size=15`);
+    for (const row of await page
+      .getByRole("row")
+      .filter({ has: page.locator('input[name="id"]') })
+      .all()) {
+      const id = await row.locator('input[name="id"]').first().getAttribute("value");
+      if (id && keep(await row.innerText())) {
+        ids.push(id);
+      }
+    }
+    if ((await page.locator('a[aria-label="Next page"]').count()) === 0) {
+      break;
+    }
+  }
+  for (let start = 0; start < ids.length; start += 15) {
+    const body = new URLSearchParams({ page: "1", size: "15" });
+    for (const id of ids.slice(start, start + 15)) {
+      body.append("ids", id);
+    }
+    await page.request.post("/api/notifications/delete", {
+      data: body.toString(),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  }
+}
+
+// Notifications naming a trainer from an earlier run (here or one whose cleanup never ran) would push this run's
+// request past the bell's five items. Remove only those older than ten minutes, so a parallel run's are left alone.
+async function removeStaleHubNotifications(traineePage: Page): Promise<void> {
+  const staleBefore = Date.now() - 10 * 60_000;
+  await removeNotifications(traineePage, (text) => {
+    const startedAt = Number(/e2e-hub-trainer-(\d+)-/.exec(text)?.[1] ?? Number.NaN);
+    return startedAt < staleBefore;
+  });
+}
+
 for (const { name, viewport } of widths) {
   test.describe(`hub collaborations at ${name}`, () => {
     test.use({ viewport });
 
     let trainerContext: BrowserContext | undefined;
+    let trainerEmail: string | undefined;
 
-    // Leave the seeded trainee without this run's trainer, whatever step failed. A hook still runs after a timeout.
-    test.afterEach(async () => {
+    // Leave the seeded trainee without this run's trainer or its notifications, whatever step failed. Removing a
+    // leftover link writes one more notification, so notifications go last. A hook still runs after a timeout.
+    test.afterEach(async ({ page }) => {
       const traineeEmail = process.env.E2E_USERNAME;
       if (trainerContext === undefined) {
         return;
@@ -107,6 +178,11 @@ for (const { name, viewport } of widths) {
       }
       await trainerContext.close();
       trainerContext = undefined;
+      const runTrainer = trainerEmail;
+      trainerEmail = undefined;
+      if (runTrainer !== undefined) {
+        await removeNotifications(page, (text) => text.includes(runTrainer));
+      }
     });
 
     test("a trainer request is accepted by the trainee in the Hub and then unlinked", async ({ page, browser }) => {
@@ -118,10 +194,11 @@ for (const { name, viewport } of widths) {
       // A fresh, signed-out context for a throwaway trainer, unique per run so retries don't collide.
       trainerContext = await browser.newContext({ storageState: { cookies: [], origins: [] }, viewport });
       const trainerPage = await trainerContext.newPage();
-      const trainerEmail = `e2e-hub-trainer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+      const runTrainer = `e2e-hub-trainer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+      trainerEmail = runTrainer;
 
       const signup = await trainerPage.request.post("/api/auth/signup", {
-        form: { email: trainerEmail, password: "E2e-Hub-Trainer-Passw0rd!", role: "trainer" },
+        form: { email: runTrainer, password: "E2e-Hub-Trainer-Passw0rd!", role: "trainer" },
       });
       expect(signup.ok(), `trainer signup failed: ${signup.status()}`).toBeTruthy();
       test.skip(
@@ -149,6 +226,24 @@ for (const { name, viewport } of widths) {
 
       await test.step("stale trainers from earlier runs are cleared from the trainee's list", async () => {
         await removeStaleHubTrainers(page);
+        await removeStaleHubNotifications(page);
+      });
+
+      const requested = `Trainer ${runTrainer} sent you a link request`;
+
+      await test.step("the trainee opens the request from the bell and lands on Collaborations", async () => {
+        await page.goto("/measurements");
+        const item = page.getByRole("menuitem", { name: requested });
+        await openBell(page, item);
+        await item.click();
+        await expect(page).toHaveURL(/\/hub\/collaborations\/?$/);
+        await expect(page.getByRole("tab", { name: "Collaborations", selected: true })).toBeVisible();
+
+        await page.goto("/hub/notifications?page=1&size=15");
+        const row = notificationRow(page, requested);
+        await expect(row).toHaveCount(1);
+        await expect(row).toContainText(/\bRead/);
+        await expect(row).not.toContainText("Unread");
       });
 
       await test.step("the trainee opens the Hub from the avatar menu and accepts the request", async () => {
@@ -158,7 +253,7 @@ for (const { name, viewport } of widths) {
         await expect(page).toHaveURL(/\/hub\/collaborations\/?$/);
         await expect(page.getByRole("tab", { name: "Collaborations", selected: true })).toBeVisible();
 
-        const row = collaborationRow(page, trainerEmail);
+        const row = collaborationRow(page, runTrainer);
         await expect(row).toHaveCount(1);
         await expect(row.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
         await chooseRowAction(row, page, "Accept request");
@@ -183,7 +278,47 @@ for (const { name, viewport } of widths) {
       await test.step("the trainee's list no longer shows that trainer", async () => {
         await page.goto("/hub/collaborations");
         await expect(page.getByRole("tab", { name: "Collaborations", selected: true })).toBeVisible();
-        await expect(collaborationRow(page, trainerEmail)).toHaveCount(0);
+        await expect(collaborationRow(page, runTrainer)).toHaveCount(0);
+      });
+
+      // The item's name also carries its received time, so the pattern is not anchored at the end.
+      const accepted = /^Trainee .+ accepted your link request/;
+
+      await test.step("the trainer's bell lists the accepted request", async () => {
+        await trainerPage.goto("/measurements");
+        // A fresh trainer has exactly this one notification.
+        await expect(trainerPage.getByRole("button", { name: "Notifications, 1 unread" })).toBeVisible();
+        await openBell(trainerPage, trainerPage.getByRole("menuitem", { name: accepted }));
+      });
+
+      await test.step("the trainer selects all and marks them read in the Hub", async () => {
+        await trainerPage.goto("/hub/notifications");
+        await expect(trainerPage.getByRole("tab", { name: "Notifications", selected: true })).toBeVisible();
+        const row = notificationRow(trainerPage, "accepted your link request");
+        await expect(row).toHaveCount(1);
+        await expect(row).toContainText("Unread");
+        await check(trainerPage.getByRole("checkbox", { name: "Select all" }));
+        await trainerPage.getByRole("button", { name: "Mark as read" }).click();
+        await expect(trainerPage.getByText("Notifications marked as read")).toBeVisible();
+        await expect(row).not.toContainText("Unread");
+
+        await trainerPage.reload();
+        await expect(trainerPage.getByRole("button", { name: "Notifications, 0 unread" })).toBeVisible();
+      });
+
+      await test.step("the trainer selects one and deletes it after confirming", async () => {
+        await trainerPage.goto("/hub/notifications");
+        const row = notificationRow(trainerPage, "accepted your link request");
+        await expect(row).toHaveCount(1);
+        await check(row.getByRole("checkbox", { name: /^Select notification from / }));
+        await trainerPage.getByRole("button", { name: "Delete", exact: true }).click();
+        const confirm = trainerPage.getByRole("alertdialog");
+        await expect(confirm).toBeVisible();
+        await expect(confirm).toContainText("Delete 1 notification for good?");
+        await confirm.getByRole("button", { name: "Delete", exact: true }).click();
+        await expect(trainerPage.getByText("Notifications deleted")).toBeVisible();
+        await expect(row).toHaveCount(0);
+        await expect(trainerPage.getByText("No notifications")).toBeVisible();
       });
     });
   });

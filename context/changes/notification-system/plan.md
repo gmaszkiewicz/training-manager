@@ -534,21 +534,21 @@ Prove the bell and the table in a real browser at desktop width and at 360×800.
 
 #### Automated
 
-- [x] 4.1 Topbar unit tests pass with the new bell cases: `npm test`
-- [x] 4.2 Token check passes: `npm run check:home-tokens`
-- [x] 4.3 Type check, lint and build pass: `npx astro check && npm run lint && npm run build`
-- [x] 4.4 Smoke passes: `npm run smoke`
+- [x] 4.1 Topbar unit tests pass with the new bell cases: `npm test` — 866b220
+- [x] 4.2 Token check passes: `npm run check:home-tokens` — 866b220
+- [x] 4.3 Type check, lint and build pass: `npx astro check && npm run lint && npm run build` — 866b220
+- [x] 4.4 Smoke passes: `npm run smoke` — 866b220
 
 #### Manual
 
-- [x] 4.5 `/kitchen-sink/home` shows the no-bell, 3-unread and 99+ states, desktop and phone
-- [x] 4.6 On a phone, the bell sits between the hamburger and the avatar; on desktop, between the links and the avatar
-- [x] 4.7 On iOS Safari the bell opens on the first tap
-- [x] 4.8 Clicking an item lands on Collaborations, and the count drops by one on that page load
+- [x] 4.5 `/kitchen-sink/home` shows the no-bell, 3-unread and 99+ states, desktop and phone — 866b220
+- [x] 4.6 On a phone, the bell sits between the hamburger and the avatar; on desktop, between the links and the avatar — 866b220
+- [x] 4.7 On iOS Safari the bell opens on the first tap — 866b220
+- [x] 4.8 Clicking an item lands on Collaborations, and the count drops by one on that page load — 866b220
 
 ### Phase 5: E2E coverage
 
 #### Automated
 
-- [ ] 5.1 Playwright passes at both widths: `npx playwright test`
-- [ ] 5.2 Lint passes: `npm run lint`
+- [x] 5.1 Playwright passes at both widths: `npx playwright test`
+- [x] 5.2 Lint passes: `npm run lint`
