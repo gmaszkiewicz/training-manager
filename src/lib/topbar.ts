@@ -18,8 +18,8 @@ export interface TopbarLink {
 }
 
 export interface TopbarAccountItem {
-  id: "profile" | "settings";
-  label: "Profile" | "Settings";
+  id: "profile" | "hub" | "settings";
+  label: "Profile" | "Hub" | "Settings";
   href: string;
   current: boolean;
 }
@@ -111,6 +111,7 @@ export function topbarModel({
       items: withCurrent<Omit<TopbarAccountItem, "current">>(
         [
           { id: "profile", label: "Profile", href: "/profile" },
+          { id: "hub", label: "Hub", href: "/hub" },
           { id: "settings", label: "Settings", href: "/settings" },
         ],
         pathname,

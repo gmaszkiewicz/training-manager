@@ -454,37 +454,37 @@ The lists are bounded by the primary key on `(trainer_id, trainee_id)`. The trai
 
 #### Automated
 
-- [x] 1.1 Migration applies on a fresh local Supabase: `npx supabase db reset`
-- [x] 1.2 Migration check passes: `npm run migration-check`
-- [x] 1.3 Unit tests pass, including `src/lib/collaborations.test.ts` and `src/lib/trainer-preview.test.ts`: `npm test`
-- [x] 1.4 Type check passes: `npx astro check`
-- [x] 1.5 Lint passes: `npm run lint`
-- [x] 1.6 Smoke passes against the production preview with local Supabase, including the request → no access → accept → access → remove → no access lifecycle: `npm run smoke`
+- [x] 1.1 Migration applies on a fresh local Supabase: `npx supabase db reset` — 2745407
+- [x] 1.2 Migration check passes: `npm run migration-check` — 2745407
+- [x] 1.3 Unit tests pass, including `src/lib/collaborations.test.ts` and `src/lib/trainer-preview.test.ts`: `npm test` — 2745407
+- [x] 1.4 Type check passes: `npx astro check` — 2745407
+- [x] 1.5 Lint passes: `npm run lint` — 2745407
+- [x] 1.6 Smoke passes against the production preview with local Supabase, including the request → no access → accept → access → remove → no access lifecycle: `npm run smoke` — 2745407
 
 #### Manual
 
-- [x] 1.7 As a trainer on `/measurements`, submitting a trainee email shows "Your request has been sent to <email>", and the trainee does not appear in the trainee picker
-- [x] 1.8 Re-submitting the same email shows "A request to <email> is already pending"
-- [x] 1.9 A trainer linked before the migration still sees that trainee's journal
+- [x] 1.7 As a trainer on `/measurements`, submitting a trainee email shows "Your request has been sent to <email>", and the trainee does not appear in the trainee picker — 2745407
+- [x] 1.8 Re-submitting the same email shows "A request to <email> is already pending" — 2745407
+- [x] 1.9 A trainer linked before the migration still sees that trainee's journal — 2745407
 
 ### Phase 2: Hub with Collaborations
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass, including the new `topbar.test.ts` Hub cases and `collaborations.test.ts`: `npm test`
-- [ ] 2.2 Token check passes with the Hub files listed: `npm run check:home-tokens`
-- [ ] 2.3 Type check passes: `npx astro check`
-- [ ] 2.4 Lint passes: `npm run lint`
-- [ ] 2.5 Production build succeeds: `npm run build`
-- [ ] 2.6 Smoke passes with the Hub accept/remove routes and redirects: `npm run smoke`
+- [x] 2.1 Unit tests pass, including the new `topbar.test.ts` Hub cases and `collaborations.test.ts`: `npm test`
+- [x] 2.2 Token check passes with the Hub files listed: `npm run check:home-tokens`
+- [x] 2.3 Type check passes: `npx astro check`
+- [x] 2.4 Lint passes: `npm run lint`
+- [x] 2.5 Production build succeeds: `npm run build`
+- [x] 2.6 Smoke passes with the Hub accept/remove routes and redirects: `npm run smoke`
 
 #### Manual
 
-- [ ] 2.7 The avatar menu reads Profile, Hub, Settings, Sign out, and Hub is marked current on `/hub/collaborations`
-- [ ] 2.8 As a trainer, the Collaborations list shows pending trainees above linked ones; Cancel request removes the pending row; Unlink asks for confirmation and then removes access on `/measurements`
-- [ ] 2.9 As a trainee, ✓ accepts a request (the trainer then sees the journal) and ✕ declines it; Remove asks for confirmation
-- [ ] 2.10 With six or more rows, the pager shows "Page 1 of 2", and Next/Previous move between pages; "Entries per page" shows only 5
-- [ ] 2.11 `/kitchen-sink/hub` renders every listed state on desktop and at 360px
+- [x] 2.7 The avatar menu reads Profile, Hub, Settings, Sign out, and Hub is marked current on `/hub/collaborations`
+- [x] 2.8 As a trainer, the Collaborations list shows pending trainees above linked ones; Cancel request removes the pending row; Unlink asks for confirmation and then removes access on `/measurements`
+- [x] 2.9 As a trainee, ✓ accepts a request (the trainer then sees the journal) and ✕ declines it; Remove asks for confirmation
+- [x] 2.10 With six or more rows, the pager shows "Page 1 of 2", and Next/Previous move between pages; "Entries per page" shows only 5
+- [x] 2.11 `/kitchen-sink/hub` renders every listed state on desktop and at 360px
 
 ### Phase 3: Browser coverage
 

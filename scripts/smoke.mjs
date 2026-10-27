@@ -477,6 +477,25 @@ function requestErrorPath(message) {
   return `/measurements?error=${encodeURIComponent(message)}`;
 }
 
+function hubPath(query) {
+  return `/hub/collaborations?page=1&${query}`;
+}
+
+// Hub actions post the other side's id with the session in the given cookie jar.
+function acceptWith(cookieJar, otherId) {
+  return requestWith(cookieJar, "/api/collaborations/accept", {
+    method: "POST",
+    form: { other: otherId, page: "1" },
+  });
+}
+
+function removeWith(cookieJar, otherId, intent) {
+  return requestWith(cookieJar, "/api/collaborations/remove", {
+    method: "POST",
+    form: { other: otherId, page: "1", intent },
+  });
+}
+
 function smokeTraineeSearchPath() {
   return `/api/trainer-links?q=${encodeURIComponent(` ${email.toUpperCase()} `)}`;
 }
@@ -504,6 +523,11 @@ const steps = [
   ["measurements redirects anonymous user", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
   ["profile redirects anonymous user", () => request("/profile"), { status: 302, location: "/auth/signin" }],
   ["settings redirects anonymous user", () => request("/settings"), { status: 302, location: "/auth/signin" }],
+  [
+    "hub collaborations redirects anonymous user",
+    () => request("/hub/collaborations"),
+    { status: 302, location: "/auth/signin" },
+  ],
   [
     "measurements redirect anonymous user",
     () => request("/api/measurements", { method: "POST" }),
@@ -722,14 +746,24 @@ const steps = [
     { status: 200, json: () => ({ value: "not_found" }) },
   ],
   [
+    "trainee hub redirects to collaborations",
+    () => request("/hub"),
+    { status: 302, location: "/hub/collaborations", exactLocation: true },
+  ],
+  [
+    "trainee hub shows the pending trainer request",
+    () => request("/hub/collaborations"),
+    { status: 200, body: [trainerEmail, "Pending"] },
+  ],
+  [
     "trainee accepts the trainer request",
-    () => rpcWith(jar, "accept_trainer_link", { p_trainer_id: trainerId }),
-    { status: 200, json: () => ({ value: true }) },
+    () => acceptWith(jar, trainerId),
+    { status: 302, location: hubPath("notice=accepted"), exactLocation: true },
   ],
   [
     "trainee accept repeats with no pending request",
-    () => rpcWith(jar, "accept_trainer_link", { p_trainer_id: trainerId }),
-    { status: 200, json: () => ({ value: false }) },
+    () => acceptWith(jar, trainerId),
+    { status: 302, location: hubPath("error=failed"), exactLocation: true },
   ],
   [
     "signout before the second trainee",
@@ -857,8 +891,8 @@ const steps = [
   ],
   [
     "second trainee accepts the trainer request",
-    () => rpcWith(secondJar, "accept_trainer_link", { p_trainer_id: trainerId }),
-    { status: 200, json: () => ({ value: true }) },
+    () => acceptWith(secondJar, trainerId),
+    { status: 302, location: hubPath("notice=accepted"), exactLocation: true },
   ],
   [
     "trainer default shows the later email",
@@ -948,8 +982,8 @@ const steps = [
   ],
   [
     "unlinked trainee accepts the trainer request",
-    () => rpcWith(unlinkedJar, "accept_trainer_link", { p_trainer_id: trainerId }),
-    { status: 200, json: () => ({ value: true }) },
+    () => acceptWith(unlinkedJar, trainerId),
+    { status: 302, location: hubPath("notice=accepted"), exactLocation: true },
   ],
   [
     "trainer linked January catalog",
@@ -973,13 +1007,13 @@ const steps = [
   ],
   [
     "trainer removes the link",
-    () => rpcWith(jar, "remove_trainer_link", { p_other_id: unlinkedTraineeId }),
-    { status: 200, json: () => ({ value: true }) },
+    () => removeWith(jar, unlinkedTraineeId, "unlink"),
+    { status: 302, location: hubPath("notice=unlinked"), exactLocation: true },
   ],
   [
     "trainer remove repeats with no link",
-    () => rpcWith(jar, "remove_trainer_link", { p_other_id: unlinkedTraineeId }),
-    { status: 200, json: () => ({ value: false }) },
+    () => removeWith(jar, unlinkedTraineeId, "unlink"),
+    { status: 302, location: hubPath("error=failed"), exactLocation: true },
   ],
   [
     "trainer removed catalog is the current month",
