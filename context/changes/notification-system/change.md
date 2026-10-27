@@ -1,7 +1,7 @@
 ---
 change_id: notification-system
 title: Notification system with topbar bell and hub notifications table
-status: implementing
+status: implemented
 created: 2026-10-27
 updated: 2026-10-27
 archived_at: null

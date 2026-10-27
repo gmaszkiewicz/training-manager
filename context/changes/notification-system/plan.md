@@ -550,5 +550,5 @@ Prove the bell and the table in a real browser at desktop width and at 360×800.
 
 #### Automated
 
-- [x] 5.1 Playwright passes at both widths: `npx playwright test`
-- [x] 5.2 Lint passes: `npm run lint`
+- [x] 5.1 Playwright passes at both widths: `npx playwright test` — f5f40e4
+- [x] 5.2 Lint passes: `npm run lint` — f5f40e4
