@@ -853,7 +853,7 @@ const steps = [
   [
     "notification open with an unknown id fails",
     () => openNotificationWith(jar, unknownNotificationId),
-    { status: 302, location: "/hub/notifications?error=failed", exactLocation: true },
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
   ],
   ["trainee search is rejected", () => request("/api/trainer-links?q=a"), { status: 403 }],
   [
@@ -1244,7 +1244,7 @@ const steps = [
   [
     "another user's notification does not open",
     () => openNotificationWith(unlinkedJar, newestNotificationIds.get(jar) ?? ""),
-    { status: 302, location: "/hub/notifications?error=failed", exactLocation: true },
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
   ],
   [
     "notification read route leaves another user's row unread",

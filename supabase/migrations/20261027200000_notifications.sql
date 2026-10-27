@@ -19,7 +19,7 @@ create index notifications_recipient_created_idx
 on public.notifications (recipient_id, created_at desc, id desc);
 
 create index notifications_recipient_unread_idx
-on public.notifications (recipient_id, created_at desc)
+on public.notifications (recipient_id, created_at desc, id desc)
 where read_at is null;
 
 alter table public.notifications enable row level security;

@@ -118,7 +118,7 @@ Create the storage and the only write path. Prove every event and every RLS refu
   - `read_at timestamptz null`
 - Indexes:
   - `(recipient_id, created_at desc, id desc)`
-  - partial `(recipient_id, created_at desc) where read_at is null`
+  - partial `(recipient_id, created_at desc, id desc) where read_at is null`
 - RLS enabled. Policies, all `to authenticated`:
   - `notifications_select_own`: select using `recipient_id = auth.uid()`
   - `notifications_update_own`: update using and with check `recipient_id = auth.uid()`
@@ -488,6 +488,21 @@ Prove the bell and the table in a real browser at desktop width and at 360×800.
 - Dropdown POST pattern: `src/components/hub/CollaborationRowActions.tsx`
 - Prior deferral: `context/archive/2026-10-27-hub-collaborations-handle/plan.md:65-66`
 - Roadmap: S-39 in `context/foundation/roadmap.md`
+
+## Addendum (2026-10-27, impl review)
+
+- The bell is always present for a signed-in user, which supersedes "With zero unread, no bell is rendered" (Desired End State) and the `| null` contract in Phase 4.1.
+  - At zero unread, the bell has no badge, reads "Notifications, 0 unread", and its menu holds only "See all notifications".
+  - A failed bell read shows the same empty bell plus a "Could not load notifications" error toast (impl review F8).
+  - `TopbarAccount.notifications` is non-null whenever `account` is set.
+  - Tests, E2E and `/kitchen-sink/home` assert this.
+- Known risk (impl review F2): every request → withdraw cycle writes `link_requested` and `link_cancelled` for the trainee. Nothing rate-limits, dedupes or caps these rows, so a trainer can flood a trainee's bell and table. Accepted for this release; the follow-up (trigger dedupe or RPC rate limit) is queued in `follow-ups/review-fixes.md`.
+- `read_at` (impl review F6) is set from the Worker clock (`new Date().toISOString()`), not the database's `now()`. It stays idempotent through `.is("read_at", null)`.
+  - The column grant lets a user write any `read_at` value, null included, on their own rows over REST.
+  - The impact is limited to that user, so both are accepted.
+- Deviations (impl review F7):
+  - "Entries per page" is a GET form whose `aria-pressed` submit buttons send `page=1&size=N`, rather than `<a>` links. The resulting URL is the same.
+  - The trigger lowercases and trims the actor email. When the email is empty it skips the notification, and the link change still succeeds.
 
 ## Progress
 

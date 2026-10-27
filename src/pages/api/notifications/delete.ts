@@ -1,13 +1,17 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 
+import { pageSizes } from "@/lib/measurement-page";
 import { notificationsPath, parseNotificationPage, parseNotificationPageSize } from "@/lib/notifications";
 import { deleteNotifications } from "@/lib/services/notifications";
 import { createClient } from "@/lib/supabase";
 
 export const prerender = false;
 
-const idsSchema = z.array(z.uuid()).min(1).max(15);
+const idsSchema = z
+  .array(z.uuid())
+  .min(1)
+  .max(Math.max(...pageSizes));
 
 function text(value: FormDataEntryValue | null): string | null {
   return typeof value === "string" ? value : null;

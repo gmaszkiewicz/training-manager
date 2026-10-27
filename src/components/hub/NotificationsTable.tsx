@@ -110,10 +110,12 @@ function DeleteConfirmToast({
 
 function NotificationRow({
   notification,
+  page,
   selected,
   onSelectedChange,
 }: {
   notification: AppNotification;
+  page: NotificationPage;
   selected: boolean;
   onSelectedChange: (selected: boolean) => void;
 }) {
@@ -134,6 +136,8 @@ function NotificationRow({
       <TableCell className="px-2 py-2 whitespace-normal">
         <form method="POST" action="/api/notifications/open" className="flex items-start gap-2">
           <input type="hidden" name="id" value={notification.id} />
+          <input type="hidden" name="page" value={page.page} />
+          <input type="hidden" name="size" value={page.size} />
           <span
             aria-hidden="true"
             className={cn("bg-primary mt-1.5 size-2 shrink-0 rounded-full", !unread && "invisible")}
@@ -281,6 +285,7 @@ export default function NotificationsTable({ page, initialSelectedIds = [], init
                 <NotificationRow
                   key={notification.id}
                   notification={notification}
+                  page={page}
                   selected={selectedIds.has(notification.id)}
                   onSelectedChange={(selected) => {
                     setRowSelected(notification.id, selected);
