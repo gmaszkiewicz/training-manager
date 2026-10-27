@@ -105,6 +105,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-35 | user-profile-rework | user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings | S-25, S-32 | MS-27 | done |
 | S-36 | avatar-select | user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting | S-35 | MS-28 | done |
 | S-37 | hub-collaborations-handle | user can open a Hub from the avatar menu with a Collaborations section: a trainer sees linked and pending trainees, five per page, and can cancel a pending request or unlink a trainee; a trainee sees their trainers, five per page, and accepts or declines a link request; finding a trainee by email sends a link request instead of linking at once | S-04, S-29, S-35 | MS-29 | in-progress |
+| S-38 | drop-link-trainee-by-email | a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block | S-37 | MS-29 | in-progress |
 
 ## Streams
 
@@ -113,7 +114,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | Stream | Theme                | Chain                                      | Note                                                                                                      |
 | ------ | -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
 | A      | Measurement journal  | `S-01` → `S-02` → `S-05` → `S-06` → `S-22` → `S-23` → `S-24` → `S-26` → `S-27` → `S-30` | Speed puts the comparison (S-02) immediately after the trainee account. S-05 and S-06 can run side by side once S-02 is done. S-22 adds date and time on the same journal after S-02. S-23 pages that journal one month at a time. S-24 keeps that page and builds it without walking the whole journal. S-26 shows that difference while a new entry is being typed; it joins Stream E at S-13 for the measurements screen and does not depend on paging. S-27 replaces the month dropdown with a week strip and puts date and time in one popup; saved values are centered with the same icons. It does not change the difference. S-30 shows field errors above the measurement labels without shifting that row, and makes active and inactive buttons easier to tell apart. |
-| B      | Trainer preview      | `S-03` → `S-04` → `S-37`                   | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed. S-37 turns the instant link into a request the trainee accepts or declines, and adds a Hub with Collaborations; it joins Stream E at S-29 for the trainee search and Stream F at S-35 for the avatar menu. |
+| B      | Trainer preview      | `S-03` → `S-04` → `S-37` → `S-38`          | Joins Stream A at S-01 for the trainee account and at S-02 for the list being previewed. S-37 turns the instant link into a request the trainee accepts or declines, and adds a Hub with Collaborations; it joins Stream E at S-29 for the trainee search and Stream F at S-35 for the avatar menu. S-38 drops the legacy instant-link function once S-37 is live. |
 | C      | Public home          | `S-07` → `S-17` → `S-31`                   | S-17 is the deploy-path task on the same anchor, MS-01. It does not change the public home. S-31 refreshes the README under its current headings and copies each slice issue from this roadmap. |
 | D      | Auth entry screens   | `S-08`                                     | Stands alone: sign-in, registration, and email confirmation do not change measurement data, so this can run beside the remaining journal edits. |
 | E      | Dashboard visual contract | `S-09` → `S-10` → `S-12` → `S-13` → `S-28` → `S-29` → `S-32` → `S-33` | Restyles the measurements screen without changing measurement data. S-10 joins Stream B at S-04: the trainer panel uses the contract S-09 already applied to the trainee journal. S-12 turns the measurement fields on that journal and on the trainer list from a column into a horizontal row. S-13 polishes the copy and moves the screen to `/measurements`. S-28 replaces that horizontal linked-trainee row with a centered email field and joins Stream A at S-27 for the month-field control. S-29 is the trainee search on that screen and joins Stream B at S-04 for who is already linked. S-32 fits that same screen on a phone and joins Stream A at S-30. S-33 opens the add form and starts the list at five entries per page, and joins Stream A at S-23 for the page-size control. Can run beside S-05 and S-06. |
@@ -584,6 +585,18 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Risk:** Changing a link from instant to request-and-accept touches the rule that lets a trainer read a trainee's journal: a pending or declined request must not open that journal, and unlinking must close it at once. Existing links must stay accepted after the migration.
 - **Status:** in-progress
 
+### S-38: Drop the legacy instant-link function after the Hub release
+
+- **Outcome:** a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block
+- **Change ID:** drop-link-trainee-by-email
+- **PRD refs:** MS-29
+- **Prerequisites:** S-37
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** The drop must ship only after the S-37 Worker is live in production; an older Worker that still calls the function would fail on the link POST. Follow-up to the S-37 implementation review (F4, F5).
+- **Status:** in-progress
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                 | Suggested issue title                                                          | Ready for `/10x-plan` | Notes                                      |
@@ -625,6 +638,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-35       | user-profile-rework                 | Avatar menu with Profile details and Settings                              | yes                   | [#129](https://github.com/gmaszkiewicz/training-manager/issues/129). On MS-27. Change folder exists. Run `/10x-plan user-profile-rework`. |
 | S-36       | avatar-select                       | Avatar tab in Profile                                                      | no                    | [#133](https://github.com/gmaszkiewicz/training-manager/issues/133). On MS-28. Implemented and reviewed on `claude/avatar-select`. Run `/10x-archive avatar-select` after merge. |
 | S-37       | hub-collaborations-handle           | Hub with Collaborations for trainer and trainee links                      | yes                   | [#138](https://github.com/gmaszkiewicz/training-manager/issues/138). On MS-29. Change folder exists. Run `/10x-plan hub-collaborations-handle`. |
+| S-38       | drop-link-trainee-by-email          | Drop the legacy instant-link function after the Hub release                | yes                   | [#142](https://github.com/gmaszkiewicz/training-manager/issues/142). Follow-up to [#138](https://github.com/gmaszkiewicz/training-manager/issues/138) (review F4, F5). On MS-29. Change folder exists. Run `/10x-plan drop-link-trainee-by-email`. |
 
 ## Open Roadmap Questions
 

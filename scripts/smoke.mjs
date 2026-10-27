@@ -947,17 +947,22 @@ const steps = [
     { status: 200, json: () => ({ measuredMonths: [] }) },
   ],
   [
-    "trainer direct link call returns the trainee",
+    "legacy link function is gone",
     () => rpcWith(jar, "link_trainee_by_email", { p_email: unlinkedEmail }),
-    { status: 200, json: () => ({ value: unlinkedTraineeId }) },
+    { status: 404 },
   ],
   [
-    "trainer direct link row is only pending",
+    "trainer direct request call is sent",
+    () => rpcWith(jar, "request_trainee_link", { p_email: unlinkedEmail }),
+    { status: 200, json: () => ({ value: "sent" }) },
+  ],
+  [
+    "trainer direct request row is only pending",
     () => trainerLinkRest(unlinkedTraineeId),
     { status: 200, json: () => ({ linkStatus: "pending" }) },
   ],
   [
-    "trainer direct link catalog is still the current month",
+    "trainer direct request catalog is still the current month",
     () => request(`/api/measurements?month=2024-06&size=5&page=1&trainee=${unlinkedTraineeId}`),
     { status: 200, json: () => ({ dates: [utcCurrentMonth()], entriesLength: 0, pageCount: 1 }) },
   ],
@@ -967,7 +972,7 @@ const steps = [
     { status: 200, json: () => ({ measuredMonths: [] }) },
   ],
   [
-    "trainer request after the direct link is already pending",
+    "trainer request after the direct request is already pending",
     () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
     {
       status: 302,
