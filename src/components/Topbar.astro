@@ -1,7 +1,9 @@
 ---
 import { SUPABASE_URL } from "astro:env/server";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import TopbarActions from "@/components/TopbarActions";
 import { avatarPublicUrl } from "@/lib/profile-avatar";
+import { readNotificationBell } from "@/lib/services/notifications";
 import { readTopbarProfile } from "@/lib/services/profile-details";
 import { createClient } from "@/lib/supabase";
 import { topbarModel, type TopbarModelInput } from "@/lib/topbar";
@@ -13,6 +15,7 @@ interface Props {
 const { preview } = Astro.props;
 
 let model;
+let bellFailed = false;
 if (preview) {
   model = topbarModel(preview);
 } else {
@@ -24,22 +27,30 @@ if (preview) {
   let firstName: string | null = null;
   let lastName: string | null = null;
   let avatarUrl: string | null = null;
+  let notifications: TopbarModelInput["notifications"];
 
   if (user) {
     const supabase = createClient(Astro.request.headers, Astro.cookies);
     if (supabase) {
-      const profile = await readTopbarProfile(supabase, user.id);
+      const [profile, bell] = await Promise.all([
+        readTopbarProfile(supabase, user.id),
+        readNotificationBell(supabase, user.id),
+      ]);
       role = profile?.role ?? null;
       firstName = profile?.names.firstName ?? null;
       lastName = profile?.names.lastName ?? null;
       avatarUrl = SUPABASE_URL ? avatarPublicUrl(SUPABASE_URL, profile?.avatarPath ?? null) : null;
+      // A failed read keeps the empty bell and raises an error toast.
+      notifications = bell.ok ? bell.bell : undefined;
+      bellFailed = !bell.ok;
     }
   }
 
-  model = topbarModel({ signedIn, email, role, firstName, lastName, avatarUrl, pathname });
+  model = topbarModel({ signedIn, email, role, firstName, lastName, avatarUrl, pathname, notifications });
 }
 ---
 
 <div class="border-border bg-card text-muted-foreground mb-4 flex items-center justify-between rounded-xl border px-4 py-2 text-sm">
   <TopbarActions client:load greeting={model.greeting} name={model.name} links={model.links} account={model.account} />
 </div>
+{bellFailed ? <PageErrorToasts messages={["Could not load notifications"]} client:load /> : null}

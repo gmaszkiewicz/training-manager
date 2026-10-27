@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { topbarModel, topbarName, type TopbarModelInput } from "@/lib/topbar";
+import type { AppNotification } from "@/types";
 
 const signedIn: Omit<TopbarModelInput, "pathname"> = {
   signedIn: true,
@@ -71,7 +72,13 @@ describe("topbarModel", () => {
       greeting: "Hello,",
       name: "ada@example.com",
       links: signedInLinks("home"),
-      account: { initials: "A", imageUrl: null, label: "Account menu", items: accountItems(null) },
+      account: {
+        initials: "A",
+        imageUrl: null,
+        label: "Account menu",
+        items: accountItems(null),
+        notifications: { unreadCount: 0, items: [], allHref: "/hub/notifications" },
+      },
     });
   });
 
@@ -175,8 +182,71 @@ describe("topbarModel", () => {
       greeting: null,
       name: "ada@example.com",
       links: signedInLinks("home"),
-      account: { initials: "A", imageUrl: null, label: "Account menu", items: accountItems(null) },
+      account: {
+        initials: "A",
+        imageUrl: null,
+        label: "Account menu",
+        items: accountItems(null),
+        notifications: { unreadCount: 0, items: [], allHref: "/hub/notifications" },
+      },
     });
+  });
+});
+
+const emptyBell = { unreadCount: 0, items: [], allHref: "/hub/notifications" };
+
+const unread = (index: number): AppNotification => ({
+  id: `00000000-0000-4000-8000-00000000000${index}`,
+  kind: "link_requested",
+  actorRole: "trainer",
+  actorFirstName: "Grace",
+  actorLastName: "Hopper",
+  actorEmail: "grace@example.com",
+  createdAt: `2026-10-2${index}T10:00:00.000Z`,
+  readAt: null,
+});
+
+describe("topbarModel notifications", () => {
+  it("keeps an empty bell with the see-all link when no notifications are passed", () => {
+    expect(topbarModel({ ...signedIn, pathname: "/" }).account?.notifications).toEqual(emptyBell);
+  });
+
+  it("keeps an empty bell with the see-all link at zero unread", () => {
+    const result = topbarModel({ ...signedIn, pathname: "/", notifications: { unreadCount: 0, latest: [] } });
+
+    expect(result.account?.notifications).toEqual(emptyBell);
+  });
+
+  it("carries one unread with its message, date and the see-all link", () => {
+    const result = topbarModel({ ...signedIn, pathname: "/", notifications: { unreadCount: 1, latest: [unread(1)] } });
+
+    expect(result.account?.notifications).toEqual({
+      unreadCount: 1,
+      items: [
+        {
+          id: unread(1).id,
+          message: "Trainer G. Hopper sent you a link request",
+          createdAt: "2026-10-21T10:00:00.000Z",
+        },
+      ],
+      allHref: "/hub/notifications",
+    });
+  });
+
+  it("keeps the total count and five items when more than five are unread", () => {
+    const latest = [1, 2, 3, 4, 5, 6].map(unread);
+    const result = topbarModel({ ...signedIn, pathname: "/", notifications: { unreadCount: 120, latest } });
+
+    expect(result.account?.notifications.unreadCount).toBe(120);
+    expect(result.account?.notifications.items.map((item) => item.id)).toEqual(
+      latest.slice(0, 5).map((notification) => notification.id),
+    );
+  });
+
+  it("has no account and so no bell for a guest", () => {
+    const result = topbarModel({ ...guest, pathname: "/", notifications: { unreadCount: 3, latest: [unread(1)] } });
+
+    expect(result.account).toBeNull();
   });
 });
 

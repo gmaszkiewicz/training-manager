@@ -20,10 +20,11 @@ import { Button } from "@/components/ui/button";
           Topbar
         </h2>
         <p class="text-muted-foreground text-sm">
-          Preview bars for the eight product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
+          Preview bars for the eleven product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
           <code class="text-foreground">preview</code> so this sink stays session-free. Below the measurement-row width
           the links sit in a Menu button with the avatar to its right. At that width they stay in the bar before the
-          avatar. The avatar opens Profile, Hub, Settings, and Sign out at every width.
+          avatar. The avatar opens Profile, Hub, Settings, and Sign out at every width. A signed-in bar always has a
+          bell right before the avatar; it carries a badge only while something is unread.
         </p>
 
         <div class="flex flex-col gap-2">
@@ -167,6 +168,150 @@ import { Button } from "@/components/ui/button";
               lastName: "Lovelace",
               avatarUrl: "/kitchen-sink/avatar.png",
               pathname: "/profile/avatar",
+            }}
+          />
+        </div>
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainee Ada Lovelace on <code class="text-foreground">/</code> with no unread notifications: the bell has no
+            badge, and its menu holds only "See all notifications".
+          </p>
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainee",
+              firstName: "Ada",
+              lastName: "Lovelace",
+              avatarUrl: null,
+              pathname: "/",
+              notifications: { unreadCount: 0, latest: [] },
+            }}
+          />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainee Ada Lovelace on <code class="text-foreground">/</code> with 3 unread: the bell sits before the
+            avatar with badge "3"; it lists the three messages and "See all notifications".
+          </p>
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainee",
+              firstName: "Ada",
+              lastName: "Lovelace",
+              avatarUrl: null,
+              pathname: "/",
+              notifications: {
+                unreadCount: 3,
+                latest: [
+                  {
+                    id: "00000000-0000-4000-8000-000000000001",
+                    kind: "link_requested",
+                    actorRole: "trainer",
+                    actorFirstName: "Grace",
+                    actorLastName: "Hopper",
+                    actorEmail: "grace@example.com",
+                    createdAt: "2026-10-27T09:30:00.000Z",
+                    readAt: null,
+                  },
+                  {
+                    id: "00000000-0000-4000-8000-000000000002",
+                    kind: "link_accepted",
+                    actorRole: "trainee",
+                    actorFirstName: "Alan",
+                    actorLastName: "Turing",
+                    actorEmail: "alan@example.com",
+                    createdAt: "2026-10-26T09:31:00.000Z",
+                    readAt: null,
+                  },
+                  {
+                    id: "00000000-0000-4000-8000-000000000003",
+                    kind: "link_removed",
+                    actorRole: "trainee",
+                    actorFirstName: null,
+                    actorLastName: null,
+                    actorEmail: "edsger@example.com",
+                    createdAt: "2026-10-25T09:32:00.000Z",
+                    readAt: null,
+                  },
+                ],
+              },
+            }}
+          />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainer Ada Lovelace on <code class="text-foreground">/</code> with 120 unread: badge "99+", the label still
+            reads 120; the menu lists the latest five.
+          </p>
+          <Topbar
+            preview={{
+              signedIn: true,
+              email: "ada@example.com",
+              role: "trainer",
+              firstName: "Ada",
+              lastName: "Lovelace",
+              avatarUrl: null,
+              pathname: "/",
+              notifications: {
+                unreadCount: 120,
+                latest: [
+                  {
+                    id: "00000000-0000-4000-8000-000000000001",
+                    kind: "link_requested",
+                    actorRole: "trainer",
+                    actorFirstName: "Grace",
+                    actorLastName: "Hopper",
+                    actorEmail: "grace@example.com",
+                    createdAt: "2026-10-27T09:30:00.000Z",
+                    readAt: null,
+                  },
+                  {
+                    id: "00000000-0000-4000-8000-000000000002",
+                    kind: "link_accepted",
+                    actorRole: "trainee",
+                    actorFirstName: "Alan",
+                    actorLastName: "Turing",
+                    actorEmail: "alan@example.com",
+                    createdAt: "2026-10-26T09:31:00.000Z",
+                    readAt: null,
+                  },
+                  {
+                    id: "00000000-0000-4000-8000-000000000003",
+                    kind: "link_removed",
+                    actorRole: "trainee",
+                    actorFirstName: null,
+                    actorLastName: null,
+                    actorEmail: "edsger@example.com",
+                    createdAt: "2026-10-25T09:32:00.000Z",
+                    readAt: null,
+                  },
+                  {
+                    id: "00000000-0000-4000-8000-000000000004",
+                    kind: "link_requested",
+                    actorRole: "trainer",
+                    actorFirstName: "Grace",
+                    actorLastName: "Hopper",
+                    actorEmail: "grace@example.com",
+                    createdAt: "2026-10-24T09:33:00.000Z",
+                    readAt: null,
+                  },
+                  {
+                    id: "00000000-0000-4000-8000-000000000005",
+                    kind: "link_accepted",
+                    actorRole: "trainee",
+                    actorFirstName: "Alan",
+                    actorLastName: "Turing",
+                    actorEmail: "alan@example.com",
+                    createdAt: "2026-10-23T09:34:00.000Z",
+                    readAt: null,
+                  },
+                ],
+              },
             }}
           />
         </div>

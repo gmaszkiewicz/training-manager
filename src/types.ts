@@ -1,4 +1,5 @@
 import type { Database } from "@/db/database.types";
+import type { PageSize } from "@/lib/measurement-page";
 
 export interface Profile {
   id: string;
@@ -46,3 +47,29 @@ export interface CollaborationPage {
 }
 
 export type LinkRequestOutcome = "sent" | "pending" | "linked" | "not_found";
+
+export type NotificationKind = "link_requested" | "link_accepted" | "link_declined" | "link_cancelled" | "link_removed";
+
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  actorRole: Profile["role"];
+  actorFirstName: string | null;
+  actorLastName: string | null;
+  actorEmail: string;
+  createdAt: string;
+  readAt: string | null;
+}
+
+export interface NotificationPage {
+  rows: AppNotification[];
+  page: number;
+  pageCount: number;
+  size: PageSize;
+  total: number;
+}
+
+export interface NotificationBellData {
+  unreadCount: number;
+  latest: AppNotification[];
+}

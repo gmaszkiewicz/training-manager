@@ -365,6 +365,92 @@ async function trainerLinkRest(subjectId) {
   return { status: response.status, location: "", body };
 }
 
+// The newest notification id seen per cookie jar, so the RLS steps can aim at another user's row.
+const newestNotificationIds = new Map();
+
+function restUnavailable() {
+  return SUPABASE_URL === "" || SUPABASE_KEY === "";
+}
+
+async function notificationsRest(cookieJar, query, { method = "GET", body, prefer } = {}) {
+  if (restUnavailable()) {
+    return { status: 0, location: "", body: "" };
+  }
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/notifications${query ? `?${query}` : ""}`, {
+    method,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken(cookieJar)}`,
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(prefer ? { Prefer: prefer } : {}),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await response.text();
+  return { status: response.status, location: "", body: text };
+}
+
+// Reads the newest notification of the user signed in to the given jar and remembers its id.
+async function newestNotificationRest(cookieJar) {
+  const actual = await notificationsRest(
+    cookieJar,
+    "select=id,kind,actor_role,actor_email,read_at&order=created_at.desc,id.desc&limit=1",
+  );
+  try {
+    const rows = JSON.parse(actual.body);
+    if (Array.isArray(rows) && rows.length === 1 && typeof rows[0].id === "string") {
+      newestNotificationIds.set(cookieJar, rows[0].id);
+    }
+  } catch {
+    // The json check reports the unreadable body.
+  }
+  return actual;
+}
+
+function notificationIdQuery(cookieJar) {
+  return `id=eq.${encodeURIComponent(newestNotificationIds.get(cookieJar) ?? "")}`;
+}
+
+function unreadNotification(kind, actorRole, actorEmail) {
+  return { notification: { kind, actor_role: actorRole, actor_email: actorEmail, read_at: null } };
+}
+
+// Ids the route steps act on, read fresh over REST so earlier event assertions keep their rows.
+let ownNotificationIds = [];
+const unknownNotificationId = "00000000-0000-4000-8000-000000000000";
+
+// Reads the two newest notifications of the user signed in to the given jar and remembers their ids.
+async function newestNotificationPairRest(cookieJar) {
+  const actual = await notificationsRest(cookieJar, "select=id&order=created_at.desc,id.desc&limit=2");
+  try {
+    const rows = JSON.parse(actual.body);
+    ownNotificationIds = Array.isArray(rows) ? rows.map((row) => row.id).filter((id) => typeof id === "string") : [];
+  } catch {
+    ownNotificationIds = [];
+  }
+  return actual;
+}
+
+function ownNotificationIdsQuery(extra = "") {
+  return `id=in.(${ownNotificationIds.map(encodeURIComponent).join(",")})&select=id${extra}`;
+}
+
+function notificationsListPath(query) {
+  return `/hub/notifications?page=1&size=5&${query}`;
+}
+
+function openNotificationWith(cookieJar, id) {
+  return requestWith(cookieJar, "/api/notifications/open", { method: "POST", form: { id } });
+}
+
+// Repeated `ids` fields, as the table's checkboxes post them.
+function notificationActionWith(cookieJar, action, ids) {
+  return requestWith(cookieJar, `/api/notifications/${action}`, {
+    method: "POST",
+    form: [...ids.map((id) => ["ids", id]), ["page", "1"], ["size", "5"]],
+  });
+}
+
 async function searchUnlinkedTraineesRpc() {
   if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
     return { status: 0, location: "", body: "" };
@@ -544,6 +630,21 @@ const steps = [
     { status: 302, location: "/auth/signin", exactLocation: true },
   ],
   ["signed-out trainer search is rejected", () => request("/api/trainer-links?q=a"), { status: 401 }],
+  [
+    "signed-out notification open redirects to sign in",
+    () => openNotificationWith(jar, unknownNotificationId),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
+  [
+    "signed-out notification read redirects to sign in",
+    () => notificationActionWith(jar, "read", [unknownNotificationId]),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
+  [
+    "signed-out notification delete redirects to sign in",
+    () => notificationActionWith(jar, "delete", [unknownNotificationId]),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
   [
     "signup creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email, password, role: "trainee" } }),
@@ -728,6 +829,32 @@ const steps = [
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
     { status: 302, location: "/measurements" },
   ],
+  [
+    "trainee receives the link request notification",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_requested", "trainer", trainerEmail) },
+  ],
+  [
+    "trainee opens the link request notification",
+    () => openNotificationWith(jar, newestNotificationIds.get(jar) ?? ""),
+    { status: 302, location: "/hub/collaborations", exactLocation: true },
+  ],
+  [
+    "opened link request notification is read",
+    () => newestNotificationRest(jar),
+    {
+      status: 200,
+      json: () => ({
+        notification: { kind: "link_requested", actor_role: "trainer", actor_email: trainerEmail },
+        notificationRead: true,
+      }),
+    },
+  ],
+  [
+    "notification open with an unknown id fails",
+    () => openNotificationWith(jar, unknownNotificationId),
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
+  ],
   ["trainee search is rejected", () => request("/api/trainer-links?q=a"), { status: 403 }],
   [
     "trainee search rpc returns no rows",
@@ -880,6 +1007,11 @@ const steps = [
     { status: 302, location: "/measurements" },
   ],
   [
+    "trainer receives the accept notification",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_accepted", "trainee", email) },
+  ],
+  [
     "trainer requests the second trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email: secondEmail } }),
     { status: 302, location: () => requestSentPath(secondEmail), exactLocation: true },
@@ -1016,6 +1148,11 @@ const steps = [
     { status: 302, location: hubPath("notice=unlinked"), exactLocation: true },
   ],
   [
+    "trainee receives the unlink notification",
+    () => newestNotificationRest(unlinkedJar),
+    { status: 200, json: () => unreadNotification("link_removed", "trainer", trainerEmail) },
+  ],
+  [
     "trainer remove repeats with no link",
     () => removeWith(jar, unlinkedTraineeId, "unlink"),
     { status: 302, location: hubPath("error=failed"), exactLocation: true },
@@ -1041,6 +1178,11 @@ const steps = [
     { status: 302, location: hubPath("notice=declined"), exactLocation: true },
   ],
   [
+    "trainer receives the decline notification",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_declined", "trainee", unlinkedEmail) },
+  ],
+  [
     "trainer request after a decline is sent at once",
     () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
     { status: 302, location: () => requestSentPath(unlinkedEmail), exactLocation: true },
@@ -1054,6 +1196,120 @@ const steps = [
     "trainer cancels the request after a decline",
     () => removeWith(jar, unlinkedTraineeId, "cancel"),
     { status: 302, location: hubPath("notice=cancelled"), exactLocation: true },
+  ],
+  [
+    "trainee receives the cancel notification",
+    () => newestNotificationRest(unlinkedJar),
+    { status: 200, json: () => unreadNotification("link_cancelled", "trainer", trainerEmail) },
+  ],
+  [
+    "notification insert over REST is refused",
+    () =>
+      notificationsRest(unlinkedJar, "", {
+        method: "POST",
+        prefer: "return=minimal",
+        body: {
+          recipient_id: unlinkedTraineeId,
+          kind: "link_requested",
+          actor_role: "trainer",
+          actor_email: trainerEmail,
+        },
+      }),
+    { status: [401, 403], body: "42501" },
+  ],
+  [
+    "another user's notification is not readable",
+    () => notificationsRest(unlinkedJar, `${notificationIdQuery(jar)}&select=id`),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
+  ],
+  [
+    "another user's notification is not marked read",
+    () =>
+      notificationsRest(unlinkedJar, `${notificationIdQuery(jar)}&select=id`, {
+        method: "PATCH",
+        prefer: "return=representation",
+        body: { read_at: new Date().toISOString() },
+      }),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
+  ],
+  [
+    "another user's notification is not deleted",
+    () =>
+      notificationsRest(unlinkedJar, `${notificationIdQuery(jar)}&select=id`, {
+        method: "DELETE",
+        prefer: "return=representation",
+      }),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
+  ],
+  [
+    "another user's notification does not open",
+    () => openNotificationWith(unlinkedJar, newestNotificationIds.get(jar) ?? ""),
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
+  ],
+  [
+    "notification read route leaves another user's row unread",
+    () => notificationActionWith(unlinkedJar, "read", [newestNotificationIds.get(jar) ?? ""]),
+    { status: 302, location: "/hub/notifications?page=1&size=5&" },
+  ],
+  [
+    "notification delete route leaves another user's row",
+    () => notificationActionWith(unlinkedJar, "delete", [newestNotificationIds.get(jar) ?? ""]),
+    { status: 302, location: "/hub/notifications?page=1&size=5&" },
+  ],
+  [
+    "trainer decline notification is still there and unread",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_declined", "trainee", unlinkedEmail) },
+  ],
+  [
+    "own notification kind update is refused",
+    () =>
+      notificationsRest(unlinkedJar, notificationIdQuery(unlinkedJar), {
+        method: "PATCH",
+        prefer: "return=minimal",
+        body: { kind: "link_removed" },
+      }),
+    { status: [401, 403], body: "42501" },
+  ],
+  [
+    "own notification kind is unchanged",
+    () => newestNotificationRest(unlinkedJar),
+    { status: 200, json: () => unreadNotification("link_cancelled", "trainer", trainerEmail) },
+  ],
+  [
+    "unlinked trainee has two notifications to act on",
+    () => newestNotificationPairRest(unlinkedJar),
+    { status: 200, json: () => ({ arrayLength: 2 }) },
+  ],
+  [
+    "notification read without ids fails",
+    () => notificationActionWith(unlinkedJar, "read", []),
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
+  ],
+  [
+    "notification read with a malformed id fails",
+    () => notificationActionWith(unlinkedJar, "read", ["not-a-uuid"]),
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
+  ],
+  [
+    "notification read marks two rows",
+    () => notificationActionWith(unlinkedJar, "read", ownNotificationIds),
+    { status: 302, location: notificationsListPath("notice=read"), exactLocation: true },
+  ],
+  [
+    "both notifications are read",
+    () => notificationsRest(unlinkedJar, ownNotificationIdsQuery("&read_at=not.is.null")),
+    { status: 200, json: () => ({ arrayLength: 2 }) },
+  ],
+  [
+    "notification delete removes two rows",
+    () => notificationActionWith(unlinkedJar, "delete", ownNotificationIds),
+    { status: 302, location: notificationsListPath("notice=deleted"), exactLocation: true },
+  ],
+  [
+    "deleted notifications are gone",
+    () => notificationsRest(unlinkedJar, ownNotificationIdsQuery()),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
   ],
   [
     "signout before checking the trainee journal",
@@ -1379,6 +1635,25 @@ function jsonProblems(parsed, spec) {
     const status = row && typeof row === "object" ? row.status : undefined;
     if (status !== spec.linkStatus) {
       problems.push(`link rows ${JSON.stringify(parsed)} expected one with status ${JSON.stringify(spec.linkStatus)}`);
+    }
+  }
+  if (spec.notification !== undefined) {
+    const row = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : undefined;
+    const same =
+      row &&
+      typeof row === "object" &&
+      Object.keys(spec.notification).every((key) => row[key] === spec.notification[key]);
+    if (!same) {
+      problems.push(`notification rows ${JSON.stringify(parsed)} expected ${JSON.stringify([spec.notification])}`);
+    }
+  }
+  if (spec.notificationRead !== undefined) {
+    const row = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : undefined;
+    const readAt = row && typeof row === "object" ? row.read_at : undefined;
+    if ((typeof readAt === "string" && readAt !== "") !== spec.notificationRead) {
+      problems.push(
+        `notification read_at ${JSON.stringify(readAt ?? null)} expected ${spec.notificationRead ? "set" : "null"}`,
+      );
     }
   }
   if (spec.measuredMonths !== undefined && !monthSetEquals(parsed, spec.measuredMonths)) {

@@ -1,4 +1,6 @@
+import { notificationMessage } from "@/lib/notifications";
 import { avatarInitials } from "@/lib/profile-form";
+import type { NotificationBellData } from "@/types";
 
 export interface TopbarModelInput {
   signedIn: boolean;
@@ -8,6 +10,7 @@ export interface TopbarModelInput {
   lastName: string | null;
   avatarUrl: string | null;
   pathname: string;
+  notifications?: NotificationBellData;
 }
 
 export interface TopbarLink {
@@ -29,6 +32,19 @@ export interface TopbarAccount {
   imageUrl: string | null;
   label: string;
   items: TopbarAccountItem[];
+  notifications: TopbarNotifications;
+}
+
+export interface TopbarNotificationItem {
+  id: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface TopbarNotifications {
+  unreadCount: number;
+  items: TopbarNotificationItem[];
+  allHref: "/hub/notifications";
 }
 
 export interface TopbarModel {
@@ -67,6 +83,21 @@ export function topbarName({
   return last || first || email;
 }
 
+const topbarBellSize = 5;
+
+/** The bell is always there for a signed-in user; the count stays the total, the items the latest few unread. */
+function topbarNotifications(bell: NotificationBellData | undefined): TopbarNotifications {
+  return {
+    unreadCount: bell?.unreadCount ?? 0,
+    items: (bell?.latest ?? []).slice(0, topbarBellSize).map((notification) => ({
+      id: notification.id,
+      message: notificationMessage(notification),
+      createdAt: notification.createdAt,
+    })),
+    allHref: "/hub/notifications",
+  };
+}
+
 export function topbarModel({
   signedIn,
   email,
@@ -75,6 +106,7 @@ export function topbarModel({
   lastName,
   avatarUrl,
   pathname,
+  notifications,
 }: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
@@ -117,6 +149,7 @@ export function topbarModel({
         pathname,
         true,
       ),
+      notifications: topbarNotifications(notifications),
     },
   };
 }
