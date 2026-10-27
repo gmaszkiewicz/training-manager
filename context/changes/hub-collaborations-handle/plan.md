@@ -490,9 +490,9 @@ The lists are bounded by the primary key on `(trainer_id, trainee_id)`. The trai
 
 #### Automated
 
-- [x] 3.1 Playwright suite passes, including `hub-collaborations.spec.ts` at desktop and 360px: `npx playwright test`
-- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.1 Playwright suite passes, including `hub-collaborations.spec.ts` at desktop and 360px: `npx playwright test` — e1bb2b8
+- [x] 3.2 Lint passes: `npm run lint` — e1bb2b8
 
 #### Manual
 
-- [x] 3.3 The Hub list and its actions are readable and tappable on a real phone (or device emulation), with no horizontal scroll
+- [x] 3.3 The Hub list and its actions are readable and tappable on a real phone (or device emulation), with no horizontal scroll — e1bb2b8
