@@ -1,7 +1,7 @@
 ---
 change_id: hub-collaborations-handle
 title: Hub screen with Collaborations section for managing trainer–trainee links
-status: implemented
+status: impl_reviewed
 created: 2026-10-27
 updated: 2026-10-27
 archived_at: null

@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   collaborationErrorMessage,
+  collaborationMaxPage,
   collaborationNoticeMessage,
   pageCountFor,
   parseCollaborationPage,
+  requestFailedMessage,
+  requestedNoticeEmail,
   requestOutcomeMessage,
   toCollaboration,
   type CollaborationRow,
@@ -32,6 +35,11 @@ describe("parseCollaborationPage", () => {
     expect(parseCollaborationPage("1.5")).toBe(1);
     expect(parseCollaborationPage("")).toBe(1);
     expect(parseCollaborationPage(null)).toBe(1);
+  });
+
+  it("caps a huge page so the list call cannot overflow", () => {
+    expect(parseCollaborationPage("99999999999")).toBe(collaborationMaxPage);
+    expect(parseCollaborationPage(String(collaborationMaxPage))).toBe(collaborationMaxPage);
   });
 });
 
@@ -67,6 +75,18 @@ describe("requestOutcomeMessage", () => {
     expect(requestOutcomeMessage("pending", "a@b.pl")).toBe("A request to a@b.pl is already pending");
     expect(requestOutcomeMessage("linked", "a@b.pl")).toBe("a@b.pl is already linked");
     expect(requestOutcomeMessage("not_found", "a@b.pl")).toBe("No trainee with that email");
+  });
+
+  it("shows the sent notice only for an email", () => {
+    expect(requestedNoticeEmail(" a@b.pl ")).toBe("a@b.pl");
+    expect(requestedNoticeEmail("Your account is locked")).toBeNull();
+    expect(requestedNoticeEmail("")).toBeNull();
+    expect(requestedNoticeEmail(null)).toBeNull();
+  });
+
+  it("keeps a failed request apart from a miss", () => {
+    expect(requestFailedMessage).toBe("Could not send the request. Try again.");
+    expect(requestFailedMessage).not.toBe(requestOutcomeMessage("not_found", "a@b.pl"));
   });
 });
 

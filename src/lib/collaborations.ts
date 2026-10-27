@@ -1,7 +1,11 @@
+import { z } from "zod";
+
 import { topbarName } from "@/lib/topbar";
 import type { Collaboration, LinkRequestOutcome } from "@/types";
 
 export const collaborationPageSize = 5;
+// Keeps (page - 1) * size well inside the int4 page argument of the list functions.
+export const collaborationMaxPage = 10_000;
 
 /** One row of `list_trainer_collaborations` or `list_trainee_collaborations`, with the other side's id. */
 export interface CollaborationRow {
@@ -18,7 +22,7 @@ export function parseCollaborationPage(raw: string | null | undefined): number {
     return 1;
   }
   const page = Number(raw.trim());
-  return Number.isSafeInteger(page) && page >= 1 ? page : 1;
+  return Number.isSafeInteger(page) && page >= 1 ? Math.min(page, collaborationMaxPage) : 1;
 }
 
 export function pageCountFor(total: number, size: number): number {
@@ -50,6 +54,15 @@ export function requestOutcomeMessage(outcome: LinkRequestOutcome, email: string
   }
   return "No trainee with that email";
 }
+
+// `?requested=` only becomes the sent notice when it is an email, so a crafted link cannot show arbitrary text.
+export function requestedNoticeEmail(raw: string | null): string | null {
+  const parsed = z.email().safeParse(raw?.trim());
+  return parsed.success ? parsed.data : null;
+}
+
+// The request could not reach the database; kept apart from not_found so an outage never reads as a miss.
+export const requestFailedMessage = "Could not send the request. Try again.";
 
 export function collaborationNoticeMessage(code: string | null): string | null {
   if (code === "accepted") {

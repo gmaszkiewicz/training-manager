@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 
-import { requestOutcomeMessage } from "@/lib/collaborations";
+import { requestFailedMessage, requestOutcomeMessage } from "@/lib/collaborations";
 import { readProfileRole } from "@/lib/services/ensure-profile";
 import { requestTraineeLink, searchUnlinkedTrainees } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
@@ -80,7 +80,7 @@ export const POST: APIRoute = async (context) => {
   const email = parsed.data;
   const requested = await requestTraineeLink(supabase, email);
   if (!requested.ok) {
-    return measurementsError(context, requestOutcomeMessage("not_found", email), trainee);
+    return measurementsError(context, requestFailedMessage, trainee);
   }
 
   if (requested.outcome !== "sent") {

@@ -58,6 +58,37 @@ async function removeLeftoverLink(trainerPage: Page, traineeEmail: string): Prom
   });
 }
 
+// Trainers from earlier runs whose cleanup never ran would sort above this run's row and could push it past the
+// first page of five. Remove only links older than ten minutes, so a parallel run's fresh request is left alone.
+async function removeStaleHubTrainers(traineePage: Page): Promise<void> {
+  const staleBefore = Date.now() - 10 * 60_000;
+  for (let pass = 0; pass < 20; pass += 1) {
+    await traineePage.goto("/hub/collaborations");
+    const stale: string[] = [];
+    for (const row of await traineePage.getByRole("row").filter({ hasText: "e2e-hub-trainer-" }).all()) {
+      const startedAt = Number(/e2e-hub-trainer-(\d+)-/.exec(await row.innerText())?.[1] ?? Number.NaN);
+      const field = row.locator('input[name="other"]');
+      const confirmLink = row.locator('a[href*="confirm="]');
+      let other: string | null = null;
+      if ((await field.count()) > 0) {
+        other = await field.first().getAttribute("value");
+      } else if ((await confirmLink.count()) > 0) {
+        const href = (await confirmLink.first().getAttribute("href")) ?? "";
+        other = new URL(href, traineePage.url()).searchParams.get("confirm");
+      }
+      if (other && startedAt < staleBefore) {
+        stale.push(other);
+      }
+    }
+    if (stale.length === 0) {
+      return;
+    }
+    for (const other of stale) {
+      await traineePage.request.post("/api/collaborations/remove", { form: { other, page: "1", intent: "remove" } });
+    }
+  }
+}
+
 for (const { name, viewport } of widths) {
   test.describe(`hub collaborations at ${name}`, () => {
     test.use({ viewport });
@@ -114,6 +145,10 @@ for (const { name, viewport } of widths) {
         await expect(match).toHaveCount(0);
         await trainerPage.getByRole("button", { name: "Send request" }).click();
         await expect(trainerPage.getByText(`Your request has been sent to ${traineeEmail}`)).toBeVisible();
+      });
+
+      await test.step("stale trainers from earlier runs are cleared from the trainee's list", async () => {
+        await removeStaleHubTrainers(page);
       });
 
       await test.step("the trainee opens the Hub from the avatar menu and accepts the request", async () => {

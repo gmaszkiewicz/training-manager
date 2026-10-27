@@ -18,6 +18,7 @@ import {
   utcToday,
   type PageSize,
 } from "@/lib/measurement-page";
+import { requestedNoticeEmail } from "@/lib/collaborations";
 import { ensureProfile } from "@/lib/services/ensure-profile";
 import { getMeasurement, readMeasurementPage } from "@/lib/services/measurements";
 import { listTrainerLinks } from "@/lib/services/trainer-links";
@@ -133,7 +134,7 @@ if (supabase && user) {
         }
       } else {
         trainerAccountId = user.id;
-        requestedEmail = requestedParam !== null && requestedParam.trim() !== "" ? requestedParam.trim() : null;
+        requestedEmail = requestedNoticeEmail(requestedParam);
         const listedLinks = await listTrainerLinks(supabase);
         trainerLinksLoaded = listedLinks.ok;
         if (listedLinks.ok) {

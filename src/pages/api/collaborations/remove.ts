@@ -1,13 +1,19 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 
+import { collaborationMaxPage } from "@/lib/collaborations";
 import { removeTrainerLink } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 
 export const prerender = false;
 
 const otherSchema = z.uuid();
-const pageSchema = z.coerce.number().int().positive().catch(1);
+const pageSchema = z.coerce
+  .number()
+  .int()
+  .positive()
+  .catch(1)
+  .transform((page) => Math.min(page, collaborationMaxPage));
 const intentSchema = z.enum(["cancel", "unlink", "decline", "remove"]);
 
 // The database decides which link the caller may delete; the intent only picks the notice wording.
