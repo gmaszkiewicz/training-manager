@@ -497,15 +497,15 @@ Prove the bell and the table in a real browser at desktop width and at 360×800.
 
 #### Automated
 
-- [x] 1.1 Migration applies on local Supabase: `npx supabase db reset`
-- [x] 1.2 Migration check passes with the new migration newest: `npm run migration-check`
-- [x] 1.3 Generated types include `notifications` and type check passes: `npx astro check`
-- [x] 1.4 Smoke passes, including the five event steps and the RLS refusal steps: `npm run smoke`
-- [x] 1.5 Lint passes: `npm run lint`
+- [x] 1.1 Migration applies on local Supabase: `npx supabase db reset` — 9b47067
+- [x] 1.2 Migration check passes with the new migration newest: `npm run migration-check` — 9b47067
+- [x] 1.3 Generated types include `notifications` and type check passes: `npx astro check` — 9b47067
+- [x] 1.4 Smoke passes, including the five event steps and the RLS refusal steps: `npm run smoke` — 9b47067
+- [x] 1.5 Lint passes: `npm run lint` — 9b47067
 
 #### Manual
 
-- [x] 1.6 In Supabase Studio, the trigger appears on `trainer_links`, and `notifications` shows RLS enabled with exactly three policies
+- [x] 1.6 In Supabase Studio, the trigger appears on `trainer_links`, and `notifications` shows RLS enabled with exactly three policies — 9b47067
 
 ### Phase 2: Domain, service and API routes
 
