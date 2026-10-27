@@ -1,10 +1,10 @@
 ---
 change_id: drop-link-trainee-by-email
 title: Drop the legacy link_trainee_by_email function after the Hub release
-status: impl_reviewed
+status: archived
 created: 2026-10-27
 updated: 2026-10-27
-archived_at: null
+archived_at: 2026-10-27T11:31:32Z
 ---
 
 ## Notes

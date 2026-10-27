@@ -105,7 +105,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-35 | user-profile-rework | user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings | S-25, S-32 | MS-27 | done |
 | S-36 | avatar-select | user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting | S-35 | MS-28 | done |
 | S-37 | hub-collaborations-handle | user can open a Hub from the avatar menu with a Collaborations section: a trainer sees linked and pending trainees, five per page, and can cancel a pending request or unlink a trainee; a trainee sees their trainers, five per page, and accepts or declines a link request; finding a trainee by email sends a link request instead of linking at once | S-04, S-29, S-35 | MS-29 | done |
-| S-38 | drop-link-trainee-by-email | a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block | S-37 | MS-29 | in-progress |
+| S-38 | drop-link-trainee-by-email | a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block | S-37 | MS-29 | done |
 
 ## Streams
 
@@ -595,7 +595,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The drop must ship only after the S-37 Worker is live in production; an older Worker that still calls the function would fail on the link POST. Follow-up to the S-37 implementation review (F4, F5).
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -698,3 +698,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-35: user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings** — Archived 2026-10-26 → `context/archive/2026-10-26-user-profile-rework/`. Lesson: —.
 - **S-36: user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting** — Archived 2026-10-26 → `context/archive/2026-10-26-avatar-select/`. Lesson: —.
 - **S-37: user can open a Hub from the avatar menu with a Collaborations section: a trainer sees linked and pending trainees, five per page, and can cancel a pending request or unlink a trainee; a trainee sees their trainers, five per page, and accepts or declines a link request; finding a trainee by email sends a link request instead of linking at once** — Archived 2026-10-27 → `context/archive/2026-10-27-hub-collaborations-handle/`. Lesson: —.
+- **S-38: a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block** — Archived 2026-10-27 → `context/archive/2026-10-27-drop-link-trainee-by-email/`. Lesson: —.
