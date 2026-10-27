@@ -520,31 +520,31 @@ Prove the bell and the table in a real browser at desktop width and at 360×800.
 
 #### Automated
 
-- [x] 3.1 Token check passes with the new files listed: `npm run check:home-tokens`
-- [x] 3.2 Type check, lint, unit tests and build pass: `npx astro check && npm run lint && npm test && npm run build`
-- [x] 3.3 Smoke still passes, including Hub tab and redirect steps: `npm run smoke`
+- [x] 3.1 Token check passes with the new files listed: `npm run check:home-tokens` — b07c50e
+- [x] 3.2 Type check, lint, unit tests and build pass: `npx astro check && npm run lint && npm test && npm run build` — b07c50e
+- [x] 3.3 Smoke still passes, including Hub tab and redirect steps: `npm run smoke` — b07c50e
 
 #### Manual
 
-- [x] 3.4 `/kitchen-sink/hub` shows every Notifications state in light and dark mode
-- [x] 3.5 On `/hub/notifications`, select-all, partial selection, mark read and delete-with-confirm behave as expected, and size 5/10/15 and paging keep the selection actions working
-- [x] 3.6 The table is usable at 360px width
+- [x] 3.4 `/kitchen-sink/hub` shows every Notifications state in light and dark mode — b07c50e
+- [x] 3.5 On `/hub/notifications`, select-all, partial selection, mark read and delete-with-confirm behave as expected, and size 5/10/15 and paging keep the selection actions working — b07c50e
+- [x] 3.6 The table is usable at 360px width — b07c50e
 
 ### Phase 4: Top-bar bell
 
 #### Automated
 
-- [ ] 4.1 Topbar unit tests pass with the new bell cases: `npm test`
-- [ ] 4.2 Token check passes: `npm run check:home-tokens`
-- [ ] 4.3 Type check, lint and build pass: `npx astro check && npm run lint && npm run build`
-- [ ] 4.4 Smoke passes: `npm run smoke`
+- [x] 4.1 Topbar unit tests pass with the new bell cases: `npm test`
+- [x] 4.2 Token check passes: `npm run check:home-tokens`
+- [x] 4.3 Type check, lint and build pass: `npx astro check && npm run lint && npm run build`
+- [x] 4.4 Smoke passes: `npm run smoke`
 
 #### Manual
 
-- [ ] 4.5 `/kitchen-sink/home` shows the no-bell, 3-unread and 99+ states, desktop and phone
-- [ ] 4.6 On a phone, the bell sits between the hamburger and the avatar; on desktop, between the links and the avatar
-- [ ] 4.7 On iOS Safari the bell opens on the first tap
-- [ ] 4.8 Clicking an item lands on Collaborations, and the count drops by one on that page load
+- [x] 4.5 `/kitchen-sink/home` shows the no-bell, 3-unread and 99+ states, desktop and phone
+- [x] 4.6 On a phone, the bell sits between the hamburger and the avatar; on desktop, between the links and the avatar
+- [x] 4.7 On iOS Safari the bell opens on the first tap
+- [x] 4.8 Clicking an item lands on Collaborations, and the count drops by one on that page load
 
 ### Phase 5: E2E coverage
 

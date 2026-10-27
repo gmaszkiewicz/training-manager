@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -39,6 +40,71 @@ function HiddenSelection({ ids, page }: { ids: readonly string[]; page: Notifica
       <input type="hidden" name="page" value={page.page} />
       <input type="hidden" name="size" value={page.size} />
     </>
+  );
+}
+
+function subscribeToNothing(): () => void {
+  return () => undefined;
+}
+
+// Bottom-right toast like the Delete measurement and Remove collaboration confirmations.
+function DeleteConfirmToast({
+  ids,
+  page,
+  autoFocus,
+  onCancel,
+}: {
+  ids: readonly string[];
+  page: NotificationPage;
+  autoFocus: boolean;
+  onCancel: () => void;
+}) {
+  const deleteRef = useRef<HTMLButtonElement>(null);
+  const onClient = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
+
+  useEffect(() => {
+    if (onClient && autoFocus) {
+      deleteRef.current?.focus();
+    }
+  }, [onClient, autoFocus]);
+
+  if (!onClient) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed right-4 bottom-4 z-50 w-[min(24rem,calc(100%-2rem))]">
+      <form
+        method="POST"
+        action="/api/notifications/delete"
+        role="alertdialog"
+        aria-labelledby="confirm-delete-notifications"
+        className="bg-background text-foreground border-border flex flex-col gap-3 rounded-lg border p-4 shadow-lg"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            onCancel();
+          }
+        }}
+      >
+        <p id="confirm-delete-notifications" className="text-sm">
+          {ids.length === 1 ? "Delete 1 notification for good?" : `Delete ${ids.length} notifications for good?`}
+        </p>
+        <HiddenSelection ids={ids} page={page} />
+        <div className="flex items-center gap-4">
+          <Button ref={deleteRef} type="submit" size="sm">
+            Delete
+          </Button>
+          <button type="button" className={textActionClassName} onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>,
+    document.body,
   );
 }
 
@@ -114,21 +180,13 @@ export default function NotificationsTable({ page, initialSelectedIds = [], init
   );
   const [confirmOpen, setConfirmOpen] = useState(initialConfirmOpen);
   // Set by the Delete click, so a preview that starts open does not steal focus on load.
-  const focusConfirmRef = useRef(false);
-  const confirmRef = useRef<HTMLButtonElement>(null);
+  const [focusConfirm, setFocusConfirm] = useState(false);
 
   const visibleSelected = page.rows.filter((row) => selectedIds.has(row.id)).map((row) => row.id);
   const selectedCount = visibleSelected.length;
   const allVisibleSelected = page.rows.length > 0 && selectedCount === page.rows.length;
   const headerChecked = allVisibleSelected ? true : selectedCount > 0 ? "indeterminate" : false;
   const confirmShown = confirmOpen && selectedCount > 0;
-
-  useEffect(() => {
-    if (confirmShown && focusConfirmRef.current) {
-      focusConfirmRef.current = false;
-      confirmRef.current?.focus();
-    }
-  }, [confirmShown]);
 
   function setVisibleSelected(selected: boolean): void {
     setSelectedIds(selected ? new Set(page.rows.map((row) => row.id)) : new Set());
@@ -161,7 +219,7 @@ export default function NotificationsTable({ page, initialSelectedIds = [], init
           size="sm"
           disabled={selectedCount === 0}
           onClick={() => {
-            focusConfirmRef.current = true;
+            setFocusConfirm(true);
             setConfirmOpen(true);
           }}
         >
@@ -187,39 +245,14 @@ export default function NotificationsTable({ page, initialSelectedIds = [], init
         </form>
       </div>
       {confirmShown ? (
-        <form
-          method="POST"
-          action="/api/notifications/delete"
-          role="alertdialog"
-          aria-labelledby="confirm-delete-notifications"
-          className="bg-background text-foreground border-border flex flex-col gap-3 rounded-lg border p-4 shadow-lg"
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setConfirmOpen(false);
-            }
+        <DeleteConfirmToast
+          ids={visibleSelected}
+          page={page}
+          autoFocus={focusConfirm}
+          onCancel={() => {
+            setConfirmOpen(false);
           }}
-        >
-          <p id="confirm-delete-notifications" className="text-sm">
-            {selectedCount === 1
-              ? "Delete 1 notification for good?"
-              : `Delete ${selectedCount} notifications for good?`}
-          </p>
-          <HiddenSelection ids={visibleSelected} page={page} />
-          <div className="flex items-center gap-4">
-            <Button ref={confirmRef} type="submit" size="sm">
-              Delete
-            </Button>
-            <button
-              type="button"
-              className={textActionClassName}
-              onClick={() => {
-                setConfirmOpen(false);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+        />
       ) : null}
       {page.rows.length === 0 ? (
         <p className="text-muted-foreground text-sm">No notifications</p>

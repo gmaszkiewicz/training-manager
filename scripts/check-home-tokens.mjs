@@ -10,6 +10,7 @@ const FILES = [
   "src/pages/index.astro",
   "src/components/home/HomeActions.tsx",
   "src/components/TopbarActions.tsx",
+  "src/components/NotificationBell.tsx",
   "src/pages/auth/signin.astro",
   "src/pages/auth/signup.astro",
   "src/pages/auth/confirm-email.astro",
