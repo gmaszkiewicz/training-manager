@@ -109,6 +109,7 @@ export type Database = {
         Row: {
           email: string;
           linked_at: string;
+          status: string;
           trainee_id: string;
           trainer_id: string;
         };
@@ -116,12 +117,14 @@ export type Database = {
         Insert: {
           email: string;
           linked_at?: string;
+          status?: string;
           trainee_id: string;
           trainer_id: string;
         };
         Update: {
           email?: string;
           linked_at?: string;
+          status?: string;
           trainee_id?: string;
           trainer_id?: string;
         };
@@ -147,13 +150,40 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_trainer_link: { Args: { p_trainer_id: string }; Returns: boolean };
       link_trainee_by_email: { Args: { p_email: string }; Returns: string };
+      list_trainee_collaborations: {
+        Args: { p_page: number; p_size: number };
+        Returns: {
+          email: string;
+          first_name: string;
+          last_name: string;
+          linked_at: string;
+          status: string;
+          total: number;
+          trainer_id: string;
+        }[];
+      };
+      list_trainer_collaborations: {
+        Args: { p_page: number; p_size: number };
+        Returns: {
+          email: string;
+          first_name: string;
+          last_name: string;
+          linked_at: string;
+          status: string;
+          total: number;
+          trainee_id: string;
+        }[];
+      };
       measurement_months: {
         Args: { p_trainee_id: string };
         Returns: {
           measured_month: string;
         }[];
       };
+      remove_trainer_link: { Args: { p_other_id: string }; Returns: boolean };
+      request_trainee_link: { Args: { p_email: string }; Returns: string };
       search_unlinked_trainee_emails: { Args: { p_query: string }; Returns: string[] };
     };
     Enums: {

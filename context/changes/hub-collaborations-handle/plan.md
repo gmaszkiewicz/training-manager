@@ -454,18 +454,18 @@ The lists are bounded by the primary key on `(trainer_id, trainee_id)`. The trai
 
 #### Automated
 
-- [ ] 1.1 Migration applies on a fresh local Supabase: `npx supabase db reset`
-- [ ] 1.2 Migration check passes: `npm run migration-check`
-- [ ] 1.3 Unit tests pass, including `src/lib/collaborations.test.ts` and `src/lib/trainer-preview.test.ts`: `npm test`
-- [ ] 1.4 Type check passes: `npx astro check`
-- [ ] 1.5 Lint passes: `npm run lint`
-- [ ] 1.6 Smoke passes against the production preview with local Supabase, including the request → no access → accept → access → remove → no access lifecycle: `npm run smoke`
+- [x] 1.1 Migration applies on a fresh local Supabase: `npx supabase db reset`
+- [x] 1.2 Migration check passes: `npm run migration-check`
+- [x] 1.3 Unit tests pass, including `src/lib/collaborations.test.ts` and `src/lib/trainer-preview.test.ts`: `npm test`
+- [x] 1.4 Type check passes: `npx astro check`
+- [x] 1.5 Lint passes: `npm run lint`
+- [x] 1.6 Smoke passes against the production preview with local Supabase, including the request → no access → accept → access → remove → no access lifecycle: `npm run smoke`
 
 #### Manual
 
-- [ ] 1.7 As a trainer on `/measurements`, submitting a trainee email shows "Your request has been sent to <email>", and the trainee does not appear in the trainee picker
-- [ ] 1.8 Re-submitting the same email shows "A request to <email> is already pending"
-- [ ] 1.9 A trainer linked before the migration still sees that trainee's journal
+- [x] 1.7 As a trainer on `/measurements`, submitting a trainee email shows "Your request has been sent to <email>", and the trainee does not appear in the trainee picker
+- [x] 1.8 Re-submitting the same email shows "A request to <email> is already pending"
+- [x] 1.9 A trainer linked before the migration still sees that trainee's journal
 
 ### Phase 2: Hub with Collaborations
 

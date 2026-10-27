@@ -34,6 +34,7 @@ const measurementNotice = measurementNoticeMessage(
   Astro.url.searchParams.get("measured_on"),
 );
 const traineeParam = Astro.url.searchParams.get("trainee");
+const requestedParam = Astro.url.searchParams.get("requested");
 
 type ProfileRole = Profile["role"];
 
@@ -65,6 +66,7 @@ let trainerLinks: TrainerLink[] = [];
 let selectedLink: TrainerLink | null = null;
 let trainerLinksLoaded = false;
 let trainerMeasurementsLoaded = false;
+let requestedEmail: string | null = null;
 const now = new Date();
 const today = utcToday(now);
 let month = measurementMonth(today);
@@ -131,6 +133,7 @@ if (supabase && user) {
         }
       } else {
         trainerAccountId = user.id;
+        requestedEmail = requestedParam !== null && requestedParam.trim() !== "" ? requestedParam.trim() : null;
         const listedLinks = await listTrainerLinks(supabase);
         trainerLinksLoaded = listedLinks.ok;
         if (listedLinks.ok) {
@@ -200,6 +203,7 @@ if (supabase && user) {
     <TrainerPanel
       mode={role === "trainer" ? "trainer" : "unavailable"}
       serverError={serverError}
+      requestedEmail={requestedEmail}
       trainerLinksLoaded={trainerLinksLoaded}
       trainerLinks={trainerLinks}
       selectedLink={selectedLink}

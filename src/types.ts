@@ -26,3 +26,23 @@ export interface ProfileDetails {
 }
 
 export type ProfileNames = Pick<ProfileDetails, "firstName" | "lastName">;
+
+/** `linked` is the UI name for an `accepted` trainer link. */
+export type CollaborationStatus = "pending" | "linked";
+
+export interface Collaboration {
+  otherId: string;
+  name: string;
+  email: string;
+  status: CollaborationStatus;
+  linkedAt: string;
+}
+
+export interface CollaborationPage {
+  rows: Collaboration[];
+  page: number;
+  pageCount: number;
+  pageSize: 5;
+}
+
+export type LinkRequestOutcome = "sent" | "pending" | "linked" | "not_found";
