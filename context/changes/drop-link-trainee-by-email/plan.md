@@ -211,17 +211,17 @@ None.
 
 #### Manual
 
-- [x] 1.8 Workers Build for `57ea069` (#141) shows a successful production deploy before this PR is merged
+- [x] 1.8 Workers Build for `57ea069` (#141) shows a successful production deploy before this PR is merged — b1142a5
 
 ### Phase 2: Pin and record F5
 
 #### Automated
 
-- [x] 2.1 Lint passes: `npm run lint`
-- [x] 2.2 Smoke passes, including the new decline steps: `npm run smoke`
-- [x] 2.3 Markdown formatting is clean: `npx prettier --check context/foundation/prd.md context/changes/hub-collaborations-handle/follow-ups/review-fixes.md`
+- [x] 2.1 Lint passes: `npm run lint` — b1142a5
+- [x] 2.2 Smoke passes, including the new decline steps: `npm run smoke` — b1142a5
+- [x] 2.3 Markdown formatting is clean: `npx prettier --check context/foundation/prd.md context/changes/hub-collaborations-handle/follow-ups/review-fixes.md` — b1142a5
 
 #### Manual
 
-- [x] 2.4 PRD FR-007 and the Pairing line read correctly and no longer say "no pending/accept ceremony"
-- [x] 2.5 The F5 entry in `review-fixes.md` states the accepted decision and no longer asks for one
+- [x] 2.4 PRD FR-007 and the Pairing line read correctly and no longer say "no pending/accept ceremony" — b1142a5
+- [x] 2.5 The F5 entry in `review-fixes.md` states the accepted decision and no longer asks for one — b1142a5
