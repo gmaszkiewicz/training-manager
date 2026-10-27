@@ -62,7 +62,10 @@ const profileLastName = "Trainee";
 const jar = new Map();
 const jarA = new Map();
 const jarB = new Map();
+const secondJar = new Map();
+const unlinkedJar = new Map();
 let traineeId = "";
+let trainerId = "";
 let secondTraineeId = "";
 let unlinkedTraineeId = "";
 let measurementId = "";
@@ -165,18 +168,18 @@ function cookieText(raw) {
   }
 }
 
-function sessionPayload() {
+function sessionPayload(cookieJar = jar) {
   const bases = new Set();
-  for (const name of jar.keys()) {
+  for (const name of cookieJar.keys()) {
     const match = /^(sb-.+-auth-token)(?:\.\d+)?$/.exec(name);
     if (match) bases.add(match[1]);
   }
   for (const base of bases) {
-    let encoded = cookieText(jar.get(base) ?? "");
+    let encoded = cookieText(cookieJar.get(base) ?? "");
     if (!encoded) {
       const parts = [];
       for (let index = 0; ; index += 1) {
-        const chunk = jar.get(`${base}.${index}`);
+        const chunk = cookieJar.get(`${base}.${index}`);
         if (!chunk) break;
         parts.push(cookieText(chunk));
       }
@@ -198,8 +201,8 @@ function sessionUserId() {
   return session ? userIdFromSession(session) : "";
 }
 
-function sessionAccessToken() {
-  const session = sessionPayload();
+function sessionAccessToken(cookieJar = jar) {
+  const session = sessionPayload(cookieJar);
   if (!session || typeof session.access_token !== "string") return "";
   return session.access_token;
 }
@@ -209,6 +212,15 @@ function rememberTrainee(run) {
     const actual = await run();
     const id = sessionUserId();
     if (id) traineeId = id;
+    return actual;
+  };
+}
+
+function rememberTrainer(run) {
+  return async () => {
+    const actual = await run();
+    const id = sessionUserId();
+    if (id) trainerId = id;
     return actual;
   };
 }
@@ -315,18 +327,39 @@ async function request(path, options) {
   return requestWith(jar, path, options);
 }
 
-async function measurementMonthsRpc() {
+// Calls a Supabase RPC over REST with the session held in the given cookie jar.
+async function rpcWith(cookieJar, name, args) {
   if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
     return { status: 0, location: "", body: "" };
   }
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/measurement_months`, {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${sessionAccessToken()}`,
+      Authorization: `Bearer ${sessionAccessToken(cookieJar)}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ p_trainee_id: unlinkedTraineeId }),
+    body: JSON.stringify(args),
+  });
+  const body = await response.text();
+  return { status: response.status, location: "", body };
+}
+
+async function measurementMonthsRpc(subjectId = unlinkedTraineeId) {
+  return rpcWith(jar, "measurement_months", { p_trainee_id: subjectId });
+}
+
+// Reads the signed-in trainer's own link row for one trainee, so its status can be checked.
+async function trainerLinkRest(subjectId) {
+  if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
+    return { status: 0, location: "", body: "" };
+  }
+  const query = `trainee_id=eq.${encodeURIComponent(subjectId)}&select=status`;
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/trainer_links?${query}`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken()}`,
+    },
   });
   const body = await response.text();
   return { status: response.status, location: "", body };
@@ -436,6 +469,33 @@ async function foreignAvatarPathRest(path) {
   return { status: response.status, location: "", body };
 }
 
+function requestSentPath(traineeEmail) {
+  return `/measurements?requested=${encodeURIComponent(traineeEmail)}`;
+}
+
+function requestErrorPath(message) {
+  return `/measurements?error=${encodeURIComponent(message)}`;
+}
+
+function hubPath(query) {
+  return `/hub/collaborations?page=1&${query}`;
+}
+
+// Hub actions post the other side's id with the session in the given cookie jar.
+function acceptWith(cookieJar, otherId) {
+  return requestWith(cookieJar, "/api/collaborations/accept", {
+    method: "POST",
+    form: { other: otherId, page: "1" },
+  });
+}
+
+function removeWith(cookieJar, otherId, intent) {
+  return requestWith(cookieJar, "/api/collaborations/remove", {
+    method: "POST",
+    form: { other: otherId, page: "1", intent },
+  });
+}
+
 function smokeTraineeSearchPath() {
   return `/api/trainer-links?q=${encodeURIComponent(` ${email.toUpperCase()} `)}`;
 }
@@ -463,6 +523,11 @@ const steps = [
   ["measurements redirects anonymous user", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
   ["profile redirects anonymous user", () => request("/profile"), { status: 302, location: "/auth/signin" }],
   ["settings redirects anonymous user", () => request("/settings"), { status: 302, location: "/auth/signin" }],
+  [
+    "hub collaborations redirects anonymous user",
+    () => request("/hub/collaborations"),
+    { status: 302, location: "/auth/signin" },
+  ],
   [
     "measurements redirect anonymous user",
     () => request("/api/measurements", { method: "POST" }),
@@ -586,7 +651,7 @@ const steps = [
   ],
   [
     "trainer measurements confirms the role",
-    () => request("/measurements"),
+    rememberTrainer(() => request("/measurements")),
     { status: 200, body: "Find trainee by email", forbid: "No measurements yet" },
   ],
   [
@@ -596,15 +661,40 @@ const steps = [
   ],
   ["trainer search finds the unlinked trainee", () => request(smokeTraineeSearchPath()), { status: 200, body: email }],
   [
-    "trainer link opens the trainee",
-    () => request("/api/trainer-links", { method: "POST", form: { email } }),
-    { status: 302, location: () => `/measurements?trainee=${traineeId}`, exactLocation: true },
+    "trainer request is sent",
+    rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email } })),
+    { status: 302, location: () => requestSentPath(email), exactLocation: true },
   ],
-  ["trainer search omits the linked trainee", () => request(smokeTraineeSearchPath()), { status: 200, forbid: email }],
   [
-    "trainer link repeats the same trainee",
-    () => request("/api/trainer-links", { method: "POST", form: { email } }),
-    { status: 302, location: () => `/measurements?trainee=${traineeId}`, exactLocation: true },
+    "trainer request shows the sent notice",
+    followRedirect,
+    { status: 200, body: `Your request has been sent to ${email}` },
+  ],
+  [
+    "trainer re-request is already pending",
+    rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email } })),
+    { status: 302, location: () => requestErrorPath(`A request to ${email} is already pending`), exactLocation: true },
+  ],
+  [
+    "trainer re-request shows the pending sentence",
+    followRedirect,
+    { status: 200, body: `A request to ${email} is already pending` },
+  ],
+  ["trainer search omits the pending trainee", () => request(smokeTraineeSearchPath()), { status: 200, forbid: email }],
+  [
+    "trainer pending trainee query shows no notes",
+    () => request(`/measurements?trainee=${traineeId}`),
+    { status: 200, forbid: [earlierNote, email] },
+  ],
+  [
+    "trainer pending catalog is empty",
+    () => request(`/api/measurements?month=${utcCurrentMonth()}&size=5&page=1&trainee=${traineeId}`),
+    { status: 200, json: () => ({ dates: [utcCurrentMonth()], entriesLength: 0, pageCount: 1 }) },
+  ],
+  [
+    "trainer pending measurement months",
+    () => measurementMonthsRpc(traineeId),
+    { status: 200, json: () => ({ measuredMonths: [] }) },
   ],
   [
     "unknown email link is rejected",
@@ -650,6 +740,31 @@ const steps = [
     { status: 302, location: "/measurements?error=" },
   ],
   ["trainee link shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
+  [
+    "trainee request rpc is not found",
+    () => rpcWith(jar, "request_trainee_link", { p_email: email }),
+    { status: 200, json: () => ({ value: "not_found" }) },
+  ],
+  [
+    "trainee hub redirects to collaborations",
+    () => request("/hub"),
+    { status: 302, location: "/hub/collaborations", exactLocation: true },
+  ],
+  [
+    "trainee hub shows the pending trainer request",
+    () => request("/hub/collaborations"),
+    { status: 200, body: [trainerEmail, "Pending"] },
+  ],
+  [
+    "trainee accepts the trainer request",
+    () => acceptWith(jar, trainerId),
+    { status: 302, location: hubPath("notice=accepted"), exactLocation: true },
+  ],
+  [
+    "trainee accept repeats with no pending request",
+    () => acceptWith(jar, trainerId),
+    { status: 302, location: hubPath("error=failed"), exactLocation: true },
+  ],
   [
     "signout before the second trainee",
     () => request("/api/auth/signout", { method: "POST" }),
@@ -765,9 +880,19 @@ const steps = [
     { status: 302, location: "/measurements" },
   ],
   [
-    "trainer links the second trainee",
+    "trainer requests the second trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email: secondEmail } }),
-    { status: 302, location: () => `/measurements?trainee=${secondTraineeId}`, exactLocation: true },
+    { status: 302, location: () => requestSentPath(secondEmail), exactLocation: true },
+  ],
+  [
+    "second trainee signs in to accept",
+    () => requestWith(secondJar, "/api/auth/signin", { method: "POST", form: { email: secondEmail, password } }),
+    { status: 302, location: "/measurements" },
+  ],
+  [
+    "second trainee accepts the trainer request",
+    () => acceptWith(secondJar, trainerId),
+    { status: 302, location: hubPath("notice=accepted"), exactLocation: true },
   ],
   [
     "trainer default shows the later email",
@@ -822,9 +947,43 @@ const steps = [
     { status: 200, json: () => ({ measuredMonths: [] }) },
   ],
   [
-    "trainer links the unlinked trainee",
+    "trainer direct link call returns the trainee",
+    () => rpcWith(jar, "link_trainee_by_email", { p_email: unlinkedEmail }),
+    { status: 200, json: () => ({ value: unlinkedTraineeId }) },
+  ],
+  [
+    "trainer direct link row is only pending",
+    () => trainerLinkRest(unlinkedTraineeId),
+    { status: 200, json: () => ({ linkStatus: "pending" }) },
+  ],
+  [
+    "trainer direct link catalog is still the current month",
+    () => request(`/api/measurements?month=2024-06&size=5&page=1&trainee=${unlinkedTraineeId}`),
+    { status: 200, json: () => ({ dates: [utcCurrentMonth()], entriesLength: 0, pageCount: 1 }) },
+  ],
+  [
+    "trainer measurement months while pending",
+    () => measurementMonthsRpc(),
+    { status: 200, json: () => ({ measuredMonths: [] }) },
+  ],
+  [
+    "trainer request after the direct link is already pending",
     () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
-    { status: 302, location: () => `/measurements?trainee=${unlinkedTraineeId}`, exactLocation: true },
+    {
+      status: 302,
+      location: () => requestErrorPath(`A request to ${unlinkedEmail} is already pending`),
+      exactLocation: true,
+    },
+  ],
+  [
+    "unlinked trainee signs in to accept",
+    () => requestWith(unlinkedJar, "/api/auth/signin", { method: "POST", form: { email: unlinkedEmail, password } }),
+    { status: 302, location: "/measurements" },
+  ],
+  [
+    "unlinked trainee accepts the trainer request",
+    () => acceptWith(unlinkedJar, trainerId),
+    { status: 302, location: hubPath("notice=accepted"), exactLocation: true },
   ],
   [
     "trainer linked January catalog",
@@ -840,6 +999,31 @@ const steps = [
     "trainer measurement months after the link",
     () => measurementMonthsRpc(),
     { status: 200, json: () => ({ measuredMonths: fixtureMonths }) },
+  ],
+  [
+    "trainer re-request is already linked",
+    () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
+    { status: 302, location: () => requestErrorPath(`${unlinkedEmail} is already linked`), exactLocation: true },
+  ],
+  [
+    "trainer removes the link",
+    () => removeWith(jar, unlinkedTraineeId, "unlink"),
+    { status: 302, location: hubPath("notice=unlinked"), exactLocation: true },
+  ],
+  [
+    "trainer remove repeats with no link",
+    () => removeWith(jar, unlinkedTraineeId, "unlink"),
+    { status: 302, location: hubPath("error=failed"), exactLocation: true },
+  ],
+  [
+    "trainer removed catalog is the current month",
+    () => request(`/api/measurements?month=2024-01&size=5&page=1&trainee=${unlinkedTraineeId}`),
+    { status: 200, json: () => ({ dates: [utcCurrentMonth()], entriesLength: 0, pageCount: 1 }) },
+  ],
+  [
+    "trainer measurement months after the removal",
+    () => measurementMonthsRpc(),
+    { status: 200, json: () => ({ measuredMonths: [] }) },
   ],
   [
     "signout before checking the trainee journal",
@@ -1155,6 +1339,16 @@ function jsonProblems(parsed, spec) {
       problems.push(
         `avatar_path ${JSON.stringify(path ?? null)} expected ${spec.avatarPathPrefix === null ? "null" : `to start with ${JSON.stringify(spec.avatarPathPrefix)}`}`,
       );
+    }
+  }
+  if (spec.value !== undefined && parsed !== spec.value) {
+    problems.push(`value ${JSON.stringify(parsed)} expected ${JSON.stringify(spec.value)}`);
+  }
+  if (spec.linkStatus !== undefined) {
+    const row = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : undefined;
+    const status = row && typeof row === "object" ? row.status : undefined;
+    if (status !== spec.linkStatus) {
+      problems.push(`link rows ${JSON.stringify(parsed)} expected one with status ${JSON.stringify(spec.linkStatus)}`);
     }
   }
   if (spec.measuredMonths !== undefined && !monthSetEquals(parsed, spec.measuredMonths)) {

@@ -1,0 +1,195 @@
+---
+import { Check, ChevronLeft, ChevronRight, Dumbbell, Link2, PersonStanding, X } from "lucide-react";
+import CollaborationRowActions from "@/components/hub/CollaborationRowActions";
+import ConfirmRemoveToast from "@/components/hub/ConfirmRemoveToast";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { Collaboration, CollaborationPage } from "@/types";
+
+interface Props {
+  viewerRole: "trainer" | "trainee";
+  page: CollaborationPage;
+  confirm?: string | null;
+}
+
+const { viewerRole, page, confirm = null } = Astro.props;
+
+const textActionClassName = "text-primary focus-visible:ring-ring underline focus-visible:ring-2";
+
+function pageHref(target: number): string {
+  return `/hub/collaborations?page=${target}`;
+}
+
+function confirmHref(row: Collaboration): string {
+  return `${pageHref(page.page)}&confirm=${encodeURIComponent(row.otherId)}`;
+}
+
+const PartyIcon = viewerRole === "trainer" ? PersonStanding : Dumbbell;
+
+// The toast only opens for a linked row on this page; any other `confirm` value is ignored.
+const confirming =
+  confirm === null ? null : (page.rows.find((row) => row.otherId === confirm && row.status === "linked") ?? null);
+---
+
+<div class="flex flex-col gap-4">
+  {page.rows.length === 0 ? (
+    viewerRole === "trainer" ? (
+      <p class="text-muted-foreground text-sm">
+        No trainees yet. Find a trainee by email on{" "}
+        <a href="/measurements" class:list={[textActionClassName]}>
+          Measurements
+        </a>
+        .
+      </p>
+    ) : (
+      <p class="text-muted-foreground text-sm">No trainers yet.</p>
+    )
+  ) : (
+    <div class="@container border-border bg-background w-full max-w-full min-w-0 overflow-hidden rounded-md border">
+      {/* Fixed layout: Status and the actions keep their width, so a long unbroken email cannot push them out. */}
+      <Table containerClassName="overflow-x-clip" className="table-fixed">
+        <TableHeader>
+          <TableRow className="bg-muted hover:bg-muted">
+            <TableHead className="h-auto px-3 py-2">
+              <span class="inline-flex flex-col items-center gap-1">
+                <PartyIcon aria-hidden="true" className="size-4" />
+                <span>{viewerRole === "trainer" ? "Trainee" : "Trainer"}</span>
+              </span>
+            </TableHead>
+            <TableHead className="h-auto w-20 px-2 py-2 text-center">
+              <span class="flex flex-col items-center gap-1">
+                <Link2 aria-hidden="true" className="size-4" />
+                <span>Status</span>
+              </span>
+            </TableHead>
+            <TableHead className="w-14 px-3 text-right @lg:w-48">
+              <span class="sr-only">Actions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {page.rows.map((row) => (
+            <TableRow>
+              <TableCell className="px-3 py-2">
+                {/* One line each for the name and the email, cut with an ellipsis; the title carries the full text. */}
+                <div class="flex min-h-10 flex-col justify-center">
+                  <p class="text-foreground truncate font-semibold" title={row.name}>
+                    {row.name}
+                  </p>
+                  {row.email !== row.name ? (
+                    <p class="text-muted-foreground truncate" title={row.email}>
+                      {row.email}
+                    </p>
+                  ) : null}
+                </div>
+              </TableCell>
+              <TableCell className="text-muted-foreground px-2 py-2 text-center">
+                {row.status === "pending" ? "Pending" : "Linked"}
+              </TableCell>
+              <TableCell className="px-1 py-2 @lg:px-3">
+                <div class="flex justify-end @lg:hidden">
+                  <CollaborationRowActions
+                    viewerRole={viewerRole}
+                    otherId={row.otherId}
+                    name={row.name}
+                    status={row.status}
+                    page={page.page}
+                    confirmHref={confirmHref(row)}
+                    client:load
+                  />
+                </div>
+                <div class="hidden justify-end @lg:flex">
+                  {viewerRole === "trainer" ? (
+                    row.status === "pending" ? (
+                      <form method="POST" action="/api/collaborations/remove">
+                        <input type="hidden" name="other" value={row.otherId} />
+                        <input type="hidden" name="page" value={page.page} />
+                        <input type="hidden" name="intent" value="cancel" />
+                        <Button type="submit" variant="outline" size="sm">
+                          Cancel request
+                        </Button>
+                      </form>
+                    ) : (
+                      <a href={confirmHref(row)} class:list={[buttonVariants({ variant: "outline", size: "sm" })]}>
+                        Unlink
+                      </a>
+                    )
+                  ) : row.status === "pending" ? (
+                    <div class="flex gap-2">
+                      <form method="POST" action="/api/collaborations/accept">
+                        <input type="hidden" name="other" value={row.otherId} />
+                        <input type="hidden" name="page" value={page.page} />
+                        <Button type="submit" size="icon" aria-label={`Accept request from ${row.name}`}>
+                          <Check aria-hidden="true" />
+                        </Button>
+                      </form>
+                      <form method="POST" action="/api/collaborations/remove">
+                        <input type="hidden" name="other" value={row.otherId} />
+                        <input type="hidden" name="page" value={page.page} />
+                        <input type="hidden" name="intent" value="decline" />
+                        <Button
+                          type="submit"
+                          variant="outline"
+                          size="icon"
+                          aria-label={`Decline request from ${row.name}`}
+                        >
+                          <X aria-hidden="true" />
+                        </Button>
+                      </form>
+                    </div>
+                  ) : (
+                    <a href={confirmHref(row)} class:list={[buttonVariants({ variant: "outline", size: "sm" })]}>
+                      Remove
+                    </a>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )}
+  {page.pageCount > 1 ? (
+    <div class="flex flex-wrap items-center justify-end gap-2 text-sm">
+      {page.page > 1 ? (
+        <a
+          href={pageHref(page.page - 1)}
+          class:list={[buttonVariants({ variant: "outline", size: "icon" })]}
+          aria-label="Previous page"
+        >
+          <ChevronLeft aria-hidden="true" />
+        </a>
+      ) : (
+        <Button type="button" variant="outline" size="icon" aria-label="Previous page" disabled>
+          <ChevronLeft aria-hidden="true" />
+        </Button>
+      )}
+      <p>
+        Page {page.page} of {page.pageCount}
+      </p>
+      {page.page < page.pageCount ? (
+        <a
+          href={pageHref(page.page + 1)}
+          class:list={[buttonVariants({ variant: "outline", size: "icon" })]}
+          aria-label="Next page"
+        >
+          <ChevronRight aria-hidden="true" />
+        </a>
+      ) : (
+        <Button type="button" variant="outline" size="icon" aria-label="Next page" disabled>
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      )}
+    </div>
+  ) : null}
+  {confirming !== null ? (
+    <ConfirmRemoveToast
+      viewerRole={viewerRole}
+      otherId={confirming.otherId}
+      name={confirming.name}
+      page={page.page}
+      client:load
+    />
+  ) : null}
+</div>

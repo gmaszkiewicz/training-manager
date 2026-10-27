@@ -25,8 +25,9 @@ const signedInLinks = (current: "home" | "measurements" | null) => [
   { id: "measurements", label: "Measurements", href: "/measurements", current: current === "measurements" },
 ];
 
-const accountItems = (current: "profile" | "settings" | null) => [
+const accountItems = (current: "profile" | "hub" | "settings" | null) => [
   { id: "profile", label: "Profile", href: "/profile", current: current === "profile" },
+  { id: "hub", label: "Hub", href: "/hub", current: current === "hub" },
   { id: "settings", label: "Settings", href: "/settings", current: current === "settings" },
 ];
 
@@ -106,6 +107,26 @@ describe("topbarModel", () => {
 
   it("does not mark Profile on a path that only shares its prefix", () => {
     const result = topbarModel({ ...signedIn, pathname: "/profiles" });
+
+    expect(result.account?.items).toEqual(accountItems(null));
+  });
+
+  it("marks Hub in the account menu on /hub", () => {
+    const result = topbarModel({ ...signedIn, pathname: "/hub" });
+
+    expect(result.links).toEqual(signedInLinks(null));
+    expect(result.account?.items).toEqual(accountItems("hub"));
+  });
+
+  it("marks Hub in the account menu on /hub/collaborations", () => {
+    const result = topbarModel({ ...signedIn, pathname: "/hub/collaborations" });
+
+    expect(result.links).toEqual(signedInLinks(null));
+    expect(result.account?.items).toEqual(accountItems("hub"));
+  });
+
+  it("does not mark Hub on a path that only shares its prefix", () => {
+    const result = topbarModel({ ...signedIn, pathname: "/hubs" });
 
     expect(result.account?.items).toEqual(accountItems(null));
   });

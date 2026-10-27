@@ -1,0 +1,59 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AccountTabs from "@/components/account/AccountTabs";
+import CollaborationsList from "@/components/hub/CollaborationsList.astro";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
+import Topbar from "@/components/Topbar.astro";
+import { collaborationErrorMessage, collaborationNoticeMessage, parseCollaborationPage } from "@/lib/collaborations";
+import { HUB_TABS } from "@/lib/hub-tabs";
+import { readProfileRole } from "@/lib/services/ensure-profile";
+import { readCollaborationPage } from "@/lib/services/trainer-links";
+import { createClient } from "@/lib/supabase";
+import type { CollaborationPage, Profile } from "@/types";
+
+const user = Astro.locals.user;
+const requestedPage = parseCollaborationPage(Astro.url.searchParams.get("page"));
+const confirm = Astro.url.searchParams.get("confirm");
+const notice = collaborationNoticeMessage(Astro.url.searchParams.get("notice"));
+const actionError = collaborationErrorMessage(Astro.url.searchParams.get("error"));
+
+let role: Profile["role"] | null = null;
+let collaborations: CollaborationPage | null = null;
+if (user) {
+  const supabase = createClient(Astro.request.headers, Astro.cookies);
+  role = supabase ? await readProfileRole(supabase, user.id) : null;
+  if (supabase && role !== null) {
+    const listed = await readCollaborationPage(supabase, role, requestedPage);
+    collaborations = listed.ok ? listed.page : null;
+  }
+}
+
+const errors: string[] = [];
+if (actionError !== null) {
+  errors.push(actionError);
+}
+if (role === null || collaborations === null) {
+  errors.push("Could not load collaborations");
+}
+---
+
+<Layout title="Hub" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-measurement">
+      <Topbar />
+    </div>
+  </div>
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4 text-card-foreground">
+      {errors.length > 0 ? <PageErrorToasts messages={errors} clearParams={["notice", "error"]} client:load /> : null}
+      {notice !== null ? (
+        <PageErrorToasts messages={[notice]} tone="notice" clearParams={["notice", "error"]} client:load />
+      ) : null}
+      <AccountTabs tabs={HUB_TABS} current="collaborations">
+        {role !== null && collaborations !== null ? (
+          <CollaborationsList viewerRole={role} page={collaborations} confirm={confirm} />
+        ) : null}
+      </AccountTabs>
+    </div>
+  </div>
+</Layout>

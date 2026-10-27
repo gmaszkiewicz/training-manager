@@ -4,6 +4,7 @@ import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
 import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
 import { Button } from "@/components/ui/button";
+import { requestOutcomeMessage } from "@/lib/collaborations";
 import type { PageSize } from "@/lib/measurement-page";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementWithDeltas } from "@/types";
@@ -11,6 +12,7 @@ import type { MeasurementWithDeltas } from "@/types";
 interface Props {
   mode: "trainer" | "unavailable";
   serverError: string | null;
+  requestedEmail: string | null;
   trainerLinksLoaded: boolean;
   trainerLinks: TrainerLink[];
   selectedLink: TrainerLink | null;
@@ -29,6 +31,7 @@ interface Props {
 const {
   mode,
   serverError,
+  requestedEmail,
   trainerLinksLoaded,
   trainerLinks,
   selectedLink,
@@ -57,11 +60,16 @@ if (mode === "trainer" && trainerLinksLoaded && selectedLink !== null && !traine
 if (mode !== "trainer") {
   toastMessages.push("Could not open your journal");
 }
+const requestNotice =
+  mode === "trainer" && requestedEmail !== null ? requestOutcomeMessage("sent", requestedEmail) : null;
 ---
 
 <div class="flex justify-center px-4 pb-4">
   <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
     {toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
+    {requestNotice !== null ? (
+      <PageErrorToasts messages={[requestNotice]} tone="notice" clearParams={["requested"]} client:load />
+    ) : null}
     {mode === "trainer" ? (
       <>
         {trainerLinksLoaded ? (
@@ -70,7 +78,7 @@ if (mode !== "trainer") {
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
               <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
               <Button type="submit" variant="smoke" className="w-full">
-                Link trainee
+                Send request
               </Button>
             </form>
             {trainerLinks.length > 0 ? (

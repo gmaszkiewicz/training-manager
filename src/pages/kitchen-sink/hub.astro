@@ -1,0 +1,202 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CollaborationsList from "@/components/hub/CollaborationsList.astro";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
+import { collaborationErrorMessage, requestOutcomeMessage } from "@/lib/collaborations";
+import type { Collaboration, CollaborationPage } from "@/types";
+
+const pendingTrainee: Collaboration = {
+  otherId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  name: "trainee@example.com",
+  email: "trainee@example.com",
+  status: "pending",
+  linkedAt: "2026-10-20T12:00:00.000Z",
+};
+
+const linkedTrainee: Collaboration = {
+  otherId: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  name: "A. Lovelace",
+  email: "ada@example.com",
+  status: "linked",
+  linkedAt: "2026-10-18T12:00:00.000Z",
+};
+
+const pendingTrainer: Collaboration = {
+  otherId: "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  name: "G. Hopper",
+  email: "grace@example.com",
+  status: "pending",
+  linkedAt: "2026-10-21T12:00:00.000Z",
+};
+
+const linkedTrainer: Collaboration = {
+  otherId: "d4e5f6a7-b8c9-0123-def1-234567890123",
+  name: "trainer@example.com",
+  email: "trainer@example.com",
+  status: "linked",
+  linkedAt: "2026-10-01T12:00:00.000Z",
+};
+
+const trainerMixed: CollaborationPage = {
+  rows: [pendingTrainee, linkedTrainee],
+  page: 1,
+  pageCount: 1,
+  pageSize: 5,
+};
+
+const traineePending: CollaborationPage = {
+  rows: [pendingTrainer, linkedTrainer],
+  page: 1,
+  pageCount: 1,
+  pageSize: 5,
+};
+
+const emptyPage: CollaborationPage = { rows: [], page: 1, pageCount: 1, pageSize: 5 };
+
+function pagedTrainee(letter: string): Collaboration {
+  return {
+    otherId: `e5f6a7b8-c9d0-1234-ef12-34567890abc${letter}`,
+    name: `trainee-${letter}@example.com`,
+    email: `trainee-${letter}@example.com`,
+    status: "linked",
+    linkedAt: "2026-09-15T12:00:00.000Z",
+  };
+}
+
+const multiPage: CollaborationPage = {
+  rows: ["a", "b", "c", "d", "e"].map((letter) => pagedTrainee(letter)),
+  page: 2,
+  pageCount: 3,
+  pageSize: 5,
+};
+
+const confirmPage: CollaborationPage = {
+  rows: [linkedTrainee],
+  page: 1,
+  pageCount: 1,
+  pageSize: 5,
+};
+
+const sentNotice = requestOutcomeMessage("sent", "trainee@example.com");
+const updateError = collaborationErrorMessage("failed") ?? "";
+---
+
+<Layout title="Kitchen sink — hub">
+  <div class="bg-background text-foreground w-full flex-1">
+    <div class="mx-auto flex max-w-kitchen-sink flex-col gap-12 px-4 py-10 sm:px-8">
+      <header class="flex flex-col gap-2">
+        <h1 class="text-2xl font-bold">Kitchen sink — hub</h1>
+        <p class="text-muted-foreground text-sm">
+          States for the <code class="text-foreground">/hub/collaborations</code> list. Public review surface (not
+          linked from the product). Row actions post to the real routes and need a session.
+        </p>
+      </header>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-trainer-mixed">
+        <h2 id="state-trainer-mixed" class="border-border border-b pb-2 text-lg font-semibold">
+          Trainer, pending and linked
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          A table in the measurements style (muted header row with icons above the labels: PersonStanding Trainee, Link2
+          Status; Dumbbell for Trainer on the trainee side). A pending trainee with no saved names (the email is shown
+          once) above a linked trainee "A. Lovelace" with the email below. Pending rows offer Cancel request; linked
+          rows offer Unlink, which links to <code class="text-foreground">?page=1&amp;confirm=&lt;id&gt;</code>. Always
+          five rows per page, with no page-size control; no pager on one page. Every row keeps one height: the name and
+          the email take one line each, cut with "…" (the full text in the title), and the fixed table layout keeps
+          Status and the actions in view; when the list is narrower than 32rem (a container query, so it also applies in
+          these narrow cards) the actions move into an ellipsis menu ("Actions for …"), as on the measurement rows.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
+          <CollaborationsList viewerRole="trainer" page={trainerMixed} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-trainee-pending">
+        <h2 id="state-trainee-pending" class="border-border border-b pb-2 text-lg font-semibold">
+          Trainee, pending request
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          A pending request from "G. Hopper" with ✓ accept and ✕ decline icon buttons (labels "Accept request from G.
+          Hopper" and "Decline request from G. Hopper"), above a linked trainer with Remove.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
+          <CollaborationsList viewerRole="trainee" page={traineePending} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty-trainer">
+        <h2 id="state-empty-trainer" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty, trainer
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          No rows: "No trainees yet. Find a trainee by email on Measurements." with a link to{" "}
+          <code class="text-foreground">/measurements</code>. No table.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
+          <CollaborationsList viewerRole="trainer" page={emptyPage} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty-trainee">
+        <h2 id="state-empty-trainee" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty, trainee
+        </h2>
+        <p class="text-muted-foreground text-sm">No rows: "No trainers yet." No table.</p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
+          <CollaborationsList viewerRole="trainee" page={emptyPage} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-multi-page">
+        <h2 id="state-multi-page" class="border-border border-b pb-2 text-lg font-semibold">
+          Multi-page
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Five linked trainees on page 2 of 3. Previous links to <code class="text-foreground">?page=1</code> and Next
+          to <code class="text-foreground">?page=3</code>; on the first or last page that arrow is a disabled button.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
+          <CollaborationsList viewerRole="trainer" page={multiPage} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-confirm-unlink">
+        <h2 id="state-confirm-unlink" class="border-border border-b pb-2 text-lg font-semibold">
+          Confirm unlink
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          <code class="text-foreground">confirm</code> matches the linked row, so the bottom-right alert dialog reads
+          "Unlink A. Lovelace? You will no longer see their measurements." with a focused Unlink button and a Cancel
+          link back to <code class="text-foreground">?page=1</code>. The trainee copy is "Remove &lt;name&gt;? They will
+          no longer see your measurements." A <code class="text-foreground">confirm</code> that matches no linked row on
+          the page is ignored.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
+          <CollaborationsList viewerRole="trainer" page={confirmPage} confirm={linkedTrainee.otherId} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notice">
+        <h2 id="state-notice" class="border-border border-b pb-2 text-lg font-semibold">
+          Notice toast
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          A notice toast "{sentNotice}". Hub action notices ("Request accepted", "Trainee unlinked", …) use the same
+          tone.
+        </p>
+        <PageErrorToasts messages={[sentNotice]} tone="notice" client:load />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-error">
+        <h2 id="state-error" class="border-border border-b pb-2 text-lg font-semibold">
+          Error toast
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Error toasts "{updateError}" (a failed action) and "Could not load collaborations" (the list could not be
+          read; the card stays empty).
+        </p>
+        <PageErrorToasts messages={[updateError, "Could not load collaborations"]} client:load />
+      </section>
+    </div>
+  </div>
+</Layout>

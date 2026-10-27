@@ -1,12 +1,15 @@
 import type { APIRoute } from "astro";
+import { z } from "zod";
 
+import { requestFailedMessage, requestOutcomeMessage } from "@/lib/collaborations";
 import { readProfileRole } from "@/lib/services/ensure-profile";
-import { linkTraineeByEmail, searchUnlinkedTrainees } from "@/lib/services/trainer-links";
+import { requestTraineeLink, searchUnlinkedTrainees } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 
 export const prerender = false;
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const emailSchema = z.string().trim().min(1).max(320);
+const traineeSchema = z.uuid();
 
 function measurementsError(context: Parameters<APIRoute>[0], message: string, trainee?: string) {
   const error = encodeURIComponent(message);
@@ -15,11 +18,8 @@ function measurementsError(context: Parameters<APIRoute>[0], message: string, tr
 }
 
 function preservedTrainee(value: FormDataEntryValue | null): string | undefined {
-  if (typeof value === "string" && UUID_PATTERN.test(value)) {
-    return value;
-  }
-
-  return undefined;
+  const parsed = traineeSchema.safeParse(value);
+  return parsed.success ? parsed.data : undefined;
 }
 
 function json(body: unknown, status: number): Response {
@@ -67,15 +67,26 @@ export const POST: APIRoute = async (context) => {
 
   const form = await context.request.formData();
   const submitted = form.get("email");
-  const email = typeof submitted === "string" ? submitted : "";
-  if (email.trim().toLowerCase() === "") {
+  if (typeof submitted !== "string" || submitted.trim() === "") {
     return measurementsError(context, "Enter an email address");
   }
 
-  const linked = await linkTraineeByEmail(supabase, email);
-  if (!linked.ok) {
-    return measurementsError(context, "No trainee with that email", preservedTrainee(form.get("trainee")));
+  const trainee = preservedTrainee(form.get("trainee"));
+  const parsed = emailSchema.safeParse(submitted);
+  if (!parsed.success) {
+    return measurementsError(context, requestOutcomeMessage("not_found", submitted.trim()), trainee);
   }
 
-  return context.redirect(`/measurements?trainee=${encodeURIComponent(linked.traineeId)}`);
+  const email = parsed.data;
+  const requested = await requestTraineeLink(supabase, email);
+  if (!requested.ok) {
+    return measurementsError(context, requestFailedMessage, trainee);
+  }
+
+  if (requested.outcome !== "sent") {
+    return measurementsError(context, requestOutcomeMessage(requested.outcome, email), trainee);
+  }
+
+  const kept = trainee ? `&trainee=${encodeURIComponent(trainee)}` : "";
+  return context.redirect(`/measurements?requested=${encodeURIComponent(email)}${kept}`);
 };
