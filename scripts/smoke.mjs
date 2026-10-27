@@ -415,6 +415,42 @@ function unreadNotification(kind, actorRole, actorEmail) {
   return { notification: { kind, actor_role: actorRole, actor_email: actorEmail, read_at: null } };
 }
 
+// Ids the route steps act on, read fresh over REST so earlier event assertions keep their rows.
+let ownNotificationIds = [];
+const unknownNotificationId = "00000000-0000-4000-8000-000000000000";
+
+// Reads the two newest notifications of the user signed in to the given jar and remembers their ids.
+async function newestNotificationPairRest(cookieJar) {
+  const actual = await notificationsRest(cookieJar, "select=id&order=created_at.desc,id.desc&limit=2");
+  try {
+    const rows = JSON.parse(actual.body);
+    ownNotificationIds = Array.isArray(rows) ? rows.map((row) => row.id).filter((id) => typeof id === "string") : [];
+  } catch {
+    ownNotificationIds = [];
+  }
+  return actual;
+}
+
+function ownNotificationIdsQuery(extra = "") {
+  return `id=in.(${ownNotificationIds.map(encodeURIComponent).join(",")})&select=id${extra}`;
+}
+
+function notificationsListPath(query) {
+  return `/hub/notifications?page=1&size=5&${query}`;
+}
+
+function openNotificationWith(cookieJar, id) {
+  return requestWith(cookieJar, "/api/notifications/open", { method: "POST", form: { id } });
+}
+
+// Repeated `ids` fields, as the table's checkboxes post them.
+function notificationActionWith(cookieJar, action, ids) {
+  return requestWith(cookieJar, `/api/notifications/${action}`, {
+    method: "POST",
+    form: [...ids.map((id) => ["ids", id]), ["page", "1"], ["size", "5"]],
+  });
+}
+
 async function searchUnlinkedTraineesRpc() {
   if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
     return { status: 0, location: "", body: "" };
@@ -594,6 +630,21 @@ const steps = [
     { status: 302, location: "/auth/signin", exactLocation: true },
   ],
   ["signed-out trainer search is rejected", () => request("/api/trainer-links?q=a"), { status: 401 }],
+  [
+    "signed-out notification open redirects to sign in",
+    () => openNotificationWith(jar, unknownNotificationId),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
+  [
+    "signed-out notification read redirects to sign in",
+    () => notificationActionWith(jar, "read", [unknownNotificationId]),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
+  [
+    "signed-out notification delete redirects to sign in",
+    () => notificationActionWith(jar, "delete", [unknownNotificationId]),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
   [
     "signup creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email, password, role: "trainee" } }),
@@ -782,6 +833,27 @@ const steps = [
     "trainee receives the link request notification",
     () => newestNotificationRest(jar),
     { status: 200, json: () => unreadNotification("link_requested", "trainer", trainerEmail) },
+  ],
+  [
+    "trainee opens the link request notification",
+    () => openNotificationWith(jar, newestNotificationIds.get(jar) ?? ""),
+    { status: 302, location: "/hub/collaborations", exactLocation: true },
+  ],
+  [
+    "opened link request notification is read",
+    () => newestNotificationRest(jar),
+    {
+      status: 200,
+      json: () => ({
+        notification: { kind: "link_requested", actor_role: "trainer", actor_email: trainerEmail },
+        notificationRead: true,
+      }),
+    },
+  ],
+  [
+    "notification open with an unknown id fails",
+    () => openNotificationWith(jar, unknownNotificationId),
+    { status: 302, location: "/hub/notifications?error=failed", exactLocation: true },
   ],
   ["trainee search is rejected", () => request("/api/trainer-links?q=a"), { status: 403 }],
   [
@@ -1170,6 +1242,21 @@ const steps = [
     { status: 200, json: () => ({ arrayLength: 0 }) },
   ],
   [
+    "another user's notification does not open",
+    () => openNotificationWith(unlinkedJar, newestNotificationIds.get(jar) ?? ""),
+    { status: 302, location: "/hub/notifications?error=failed", exactLocation: true },
+  ],
+  [
+    "notification read route leaves another user's row unread",
+    () => notificationActionWith(unlinkedJar, "read", [newestNotificationIds.get(jar) ?? ""]),
+    { status: 302, location: "/hub/notifications?page=1&size=5&" },
+  ],
+  [
+    "notification delete route leaves another user's row",
+    () => notificationActionWith(unlinkedJar, "delete", [newestNotificationIds.get(jar) ?? ""]),
+    { status: 302, location: "/hub/notifications?page=1&size=5&" },
+  ],
+  [
     "trainer decline notification is still there and unread",
     () => newestNotificationRest(jar),
     { status: 200, json: () => unreadNotification("link_declined", "trainee", unlinkedEmail) },
@@ -1188,6 +1275,41 @@ const steps = [
     "own notification kind is unchanged",
     () => newestNotificationRest(unlinkedJar),
     { status: 200, json: () => unreadNotification("link_cancelled", "trainer", trainerEmail) },
+  ],
+  [
+    "unlinked trainee has two notifications to act on",
+    () => newestNotificationPairRest(unlinkedJar),
+    { status: 200, json: () => ({ arrayLength: 2 }) },
+  ],
+  [
+    "notification read without ids fails",
+    () => notificationActionWith(unlinkedJar, "read", []),
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
+  ],
+  [
+    "notification read with a malformed id fails",
+    () => notificationActionWith(unlinkedJar, "read", ["not-a-uuid"]),
+    { status: 302, location: notificationsListPath("error=failed"), exactLocation: true },
+  ],
+  [
+    "notification read marks two rows",
+    () => notificationActionWith(unlinkedJar, "read", ownNotificationIds),
+    { status: 302, location: notificationsListPath("notice=read"), exactLocation: true },
+  ],
+  [
+    "both notifications are read",
+    () => notificationsRest(unlinkedJar, ownNotificationIdsQuery("&read_at=not.is.null")),
+    { status: 200, json: () => ({ arrayLength: 2 }) },
+  ],
+  [
+    "notification delete removes two rows",
+    () => notificationActionWith(unlinkedJar, "delete", ownNotificationIds),
+    { status: 302, location: notificationsListPath("notice=deleted"), exactLocation: true },
+  ],
+  [
+    "deleted notifications are gone",
+    () => notificationsRest(unlinkedJar, ownNotificationIdsQuery()),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
   ],
   [
     "signout before checking the trainee journal",
@@ -1523,6 +1645,15 @@ function jsonProblems(parsed, spec) {
       Object.keys(spec.notification).every((key) => row[key] === spec.notification[key]);
     if (!same) {
       problems.push(`notification rows ${JSON.stringify(parsed)} expected ${JSON.stringify([spec.notification])}`);
+    }
+  }
+  if (spec.notificationRead !== undefined) {
+    const row = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : undefined;
+    const readAt = row && typeof row === "object" ? row.read_at : undefined;
+    if ((typeof readAt === "string" && readAt !== "") !== spec.notificationRead) {
+      problems.push(
+        `notification read_at ${JSON.stringify(readAt ?? null)} expected ${spec.notificationRead ? "set" : "null"}`,
+      );
     }
   }
   if (spec.measuredMonths !== undefined && !monthSetEquals(parsed, spec.measuredMonths)) {

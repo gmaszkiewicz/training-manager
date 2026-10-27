@@ -511,10 +511,10 @@ Prove the bell and the table in a real browser at desktop width and at 360×800.
 
 #### Automated
 
-- [ ] 2.1 Unit tests for message copy (all five kinds, both `link_removed` roles, name/email fallback), href, page and size parsing, and notice/error codes pass: `npm test`
-- [ ] 2.2 Smoke route steps pass: `npm run smoke`
-- [ ] 2.3 Type check and lint pass: `npx astro check && npm run lint`
-- [ ] 2.4 Build passes: `npm run build`
+- [x] 2.1 Unit tests for message copy (all five kinds, both `link_removed` roles, name/email fallback), href, page and size parsing, and notice/error codes pass: `npm test`
+- [x] 2.2 Smoke route steps pass: `npm run smoke`
+- [x] 2.3 Type check and lint pass: `npx astro check && npm run lint`
+- [x] 2.4 Build passes: `npm run build`
 
 ### Phase 3: Hub Notifications tab
 
