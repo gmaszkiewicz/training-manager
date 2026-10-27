@@ -104,7 +104,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-34 | test-app-refresh-and-fixes | a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap | S-19, S-32 | MS-26 | done |
 | S-35 | user-profile-rework | user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings | S-25, S-32 | MS-27 | done |
 | S-36 | avatar-select | user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting | S-35 | MS-28 | done |
-| S-37 | hub-collaborations-handle | user can open a Hub from the avatar menu with a Collaborations section: a trainer sees linked and pending trainees, five per page, and can cancel a pending request or unlink a trainee; a trainee sees their trainers, five per page, and accepts or declines a link request; finding a trainee by email sends a link request instead of linking at once | S-04, S-29, S-35 | MS-29 | in-progress |
+| S-37 | hub-collaborations-handle | user can open a Hub from the avatar menu with a Collaborations section: a trainer sees linked and pending trainees, five per page, and can cancel a pending request or unlink a trainee; a trainee sees their trainers, five per page, and accepts or declines a link request; finding a trainee by email sends a link request instead of linking at once | S-04, S-29, S-35 | MS-29 | done |
 | S-38 | drop-link-trainee-by-email | a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block | S-37 | MS-29 | done |
 
 ## Streams
@@ -583,7 +583,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** whether a declined or cancelled request is kept as a record or removed; whether the trainee search still hides trainees with a pending request.
 - **Risk:** Changing a link from instant to request-and-accept touches the rule that lets a trainer read a trainee's journal: a pending or declined request must not open that journal, and unlinking must close it at once. Existing links must stay accepted after the migration.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-38: Drop the legacy instant-link function after the Hub release
 
@@ -697,4 +697,5 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-34: a maintainer can follow a refreshed test plan and run expanded application tests, and a user on Safari for iOS can open the hamburger and row actions on the first tap** — Archived 2026-10-21 → `context/archive/2026-10-20-test-app-refresh-and-fixes/`. Lesson: —.
 - **S-35: user can open Profile, Settings, and Sign out from an avatar menu beside Measurements on desktop and beside the hamburger on a phone, change their first and last name on Profile next to a read-only email, and change their password on Settings** — Archived 2026-10-26 → `context/archive/2026-10-26-user-profile-rework/`. Lesson: —.
 - **S-36: user can upload their own avatar image on an Avatar tab beside Details in Profile, see it in the top-bar avatar instead of the initials, remove it to get the initials back, and read their name in the top-bar greeting** — Archived 2026-10-26 → `context/archive/2026-10-26-avatar-select/`. Lesson: —.
+- **S-37: user can open a Hub from the avatar menu with a Collaborations section: a trainer sees linked and pending trainees, five per page, and can cancel a pending request or unlink a trainee; a trainee sees their trainers, five per page, and accepts or declines a link request; finding a trainee by email sends a link request instead of linking at once** — Archived 2026-10-27 → `context/archive/2026-10-27-hub-collaborations-handle/`. Lesson: —.
 - **S-38: a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block** — Archived 2026-10-27 → `context/archive/2026-10-27-drop-link-trainee-by-email/`. Lesson: —.
