@@ -1,5 +1,5 @@
 ---
-import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Dumbbell, Link2, PersonStanding, X } from "lucide-react";
 import CollaborationRowActions from "@/components/hub/CollaborationRowActions";
 import ConfirmRemoveToast from "@/components/hub/ConfirmRemoveToast";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -25,6 +25,8 @@ function confirmHref(row: Collaboration): string {
 }
 
 // The toast only opens for a linked row on this page; any other `confirm` value is ignored.
+const PartyIcon = viewerRole === "trainer" ? PersonStanding : Dumbbell;
+
 const confirming =
   confirm === null ? null : (page.rows.find((row) => row.otherId === confirm && row.status === "linked") ?? null);
 ---
@@ -45,12 +47,23 @@ const confirming =
   ) : (
     <>
       <div class="@container border-border bg-background w-full max-w-full min-w-0 overflow-hidden rounded-md border">
-        <Table containerClassName="overflow-x-clip">
+        {/* Fixed layout: Status and the actions keep their width, so a long unbroken email cannot push them out. */}
+        <Table containerClassName="overflow-x-clip" className="table-fixed">
           <TableHeader>
             <TableRow className="bg-muted hover:bg-muted">
-              <TableHead className="px-3">{viewerRole === "trainer" ? "Trainee" : "Trainer"}</TableHead>
-              <TableHead className="px-2 text-center">Status</TableHead>
-              <TableHead className="px-3 text-right">
+              <TableHead className="h-auto px-3 py-2">
+                <span class="inline-flex flex-col items-center gap-1">
+                  <PartyIcon aria-hidden="true" className="size-4" />
+                  <span>{viewerRole === "trainer" ? "Trainee" : "Trainer"}</span>
+                </span>
+              </TableHead>
+              <TableHead className="h-auto w-20 px-2 py-2 text-center">
+                <span class="flex flex-col items-center gap-1">
+                  <Link2 aria-hidden="true" className="size-4" />
+                  <span>Status</span>
+                </span>
+              </TableHead>
+              <TableHead className="w-14 px-3 text-right @lg:w-48">
                 <span class="sr-only">Actions</span>
               </TableHead>
             </TableRow>
@@ -58,11 +71,17 @@ const confirming =
           <TableBody>
             {page.rows.map((row) => (
               <TableRow>
-                <TableCell className="px-3 py-2 whitespace-normal">
-                  {/* Room for the name plus an email wrapped onto two lines, so every row keeps one height. */}
-                  <div class="flex min-h-15 flex-col justify-center">
-                    <p class="text-foreground font-semibold break-words">{row.name}</p>
-                    {row.email !== row.name ? <p class="text-muted-foreground break-all">{row.email}</p> : null}
+                <TableCell className="px-3 py-2">
+                  {/* One line each for the name and the email, cut with an ellipsis; the title carries the full text. */}
+                  <div class="flex min-h-10 flex-col justify-center">
+                    <p class="text-foreground truncate font-semibold" title={row.name}>
+                      {row.name}
+                    </p>
+                    {row.email !== row.name ? (
+                      <p class="text-muted-foreground truncate" title={row.email}>
+                        {row.email}
+                      </p>
+                    ) : null}
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground px-2 py-2 text-center">

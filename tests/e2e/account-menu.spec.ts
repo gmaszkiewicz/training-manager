@@ -1,4 +1,4 @@
-// Avatar account menu in the top bar: Profile, Settings, Sign out at desktop width and at 360×800.
+// Avatar account menu in the top bar: Profile, Hub, Settings, Sign out at desktop width and at 360×800.
 import { expect, test, type Page } from "@playwright/test";
 
 const widths = [
@@ -14,6 +14,7 @@ async function openAccountMenu(page: Page): Promise<void> {
     await account.click();
     await expect(page.getByRole("menuitem", { name: "Profile" })).toBeVisible({ timeout: 1_000 });
   }).toPass();
+  await expect(page.getByRole("menuitem", { name: "Hub" })).toBeVisible();
   await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
   await expect(page.getByRole("menuitem", { name: "Sign out" })).toBeVisible();
 }
@@ -22,7 +23,9 @@ for (const { name, viewport } of widths) {
   test.describe(`account menu at ${name}`, () => {
     test.use({ viewport });
 
-    test("Profile opens the Details tab and Settings opens the Change password tab", async ({ page }) => {
+    test("Profile opens the Details tab, Settings the Change password tab, and Hub the Collaborations tab", async ({
+      page,
+    }) => {
       await page.goto("/");
       await openAccountMenu(page);
       await page.getByRole("menuitem", { name: "Profile" }).click();
@@ -37,6 +40,13 @@ for (const { name, viewport } of widths) {
 
       await openAccountMenu(page);
       await expect(page.getByRole("menuitem", { name: "Settings" })).toHaveAttribute("aria-current", "page");
+      await page.getByRole("menuitem", { name: "Hub" }).click();
+      await expect(page).toHaveURL(/\/hub\/collaborations\/?$/);
+      await expect(page.getByRole("tab", { name: "Collaborations", selected: true })).toBeVisible();
+
+      await openAccountMenu(page);
+      await expect(page.getByRole("menuitem", { name: "Hub" })).toHaveAttribute("aria-current", "page");
+      await expect(page.getByRole("menuitem", { name: "Settings" })).not.toHaveAttribute("aria-current", "page");
     });
 
     test.describe("sign out", () => {

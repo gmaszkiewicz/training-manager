@@ -97,13 +97,14 @@ const updateError = collaborationErrorMessage("failed") ?? "";
           Trainer, pending and linked
         </h2>
         <p class="text-muted-foreground text-sm">
-          A table in the measurements style (muted header row: Trainee, Status). A pending trainee with no saved names
-          (the email is shown once) above a linked trainee "A. Lovelace" with the email below. Pending rows offer Cancel
-          request; linked rows offer Unlink, which links to{" "}
-          <code class="text-foreground">?page=1&amp;confirm=&lt;id&gt;</code>. Always five rows per page, with no
-          page-size control; no pager on one page. Every row keeps one height (name plus two email lines); when the list
-          is narrower than 32rem (a container query, so it also applies in these narrow cards) the actions move into an
-          ellipsis menu ("Actions for …"), as on the measurement rows.
+          A table in the measurements style (muted header row with icons above the labels: PersonStanding Trainee, Link2
+          Status; Dumbbell for Trainer on the trainee side). A pending trainee with no saved names (the email is shown
+          once) above a linked trainee "A. Lovelace" with the email below. Pending rows offer Cancel request; linked
+          rows offer Unlink, which links to <code class="text-foreground">?page=1&amp;confirm=&lt;id&gt;</code>. Always
+          five rows per page, with no page-size control; no pager on one page. Every row keeps one height: the name and
+          the email take one line each, cut with "…" (the full text in the title), and the fixed table layout keeps
+          Status and the actions in view; when the list is narrower than 32rem (a container query, so it also applies in
+          these narrow cards) the actions move into an ellipsis menu ("Actions for …"), as on the measurement rows.
         </p>
         <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
           <CollaborationsList viewerRole="trainer" page={trainerMixed} />

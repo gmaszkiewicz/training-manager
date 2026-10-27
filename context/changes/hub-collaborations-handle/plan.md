@@ -471,28 +471,28 @@ The lists are bounded by the primary key on `(trainer_id, trainee_id)`. The trai
 
 #### Automated
 
-- [x] 2.1 Unit tests pass, including the new `topbar.test.ts` Hub cases and `collaborations.test.ts`: `npm test`
-- [x] 2.2 Token check passes with the Hub files listed: `npm run check:home-tokens`
-- [x] 2.3 Type check passes: `npx astro check`
-- [x] 2.4 Lint passes: `npm run lint`
-- [x] 2.5 Production build succeeds: `npm run build`
-- [x] 2.6 Smoke passes with the Hub accept/remove routes and redirects: `npm run smoke`
+- [x] 2.1 Unit tests pass, including the new `topbar.test.ts` Hub cases and `collaborations.test.ts`: `npm test` — 18c56cd
+- [x] 2.2 Token check passes with the Hub files listed: `npm run check:home-tokens` — 18c56cd
+- [x] 2.3 Type check passes: `npx astro check` — 18c56cd
+- [x] 2.4 Lint passes: `npm run lint` — 18c56cd
+- [x] 2.5 Production build succeeds: `npm run build` — 18c56cd
+- [x] 2.6 Smoke passes with the Hub accept/remove routes and redirects: `npm run smoke` — 18c56cd
 
 #### Manual
 
-- [x] 2.7 The avatar menu reads Profile, Hub, Settings, Sign out, and Hub is marked current on `/hub/collaborations`
-- [x] 2.8 As a trainer, the Collaborations list shows pending trainees above linked ones; Cancel request removes the pending row; Unlink asks for confirmation and then removes access on `/measurements`
-- [x] 2.9 As a trainee, ✓ accepts a request (the trainer then sees the journal) and ✕ declines it; Remove asks for confirmation
-- [x] 2.10 With six or more rows, the pager shows "Page 1 of 2", and Next/Previous move between pages; "Entries per page" shows only 5
-- [x] 2.11 `/kitchen-sink/hub` renders every listed state on desktop and at 360px
+- [x] 2.7 The avatar menu reads Profile, Hub, Settings, Sign out, and Hub is marked current on `/hub/collaborations` — 18c56cd
+- [x] 2.8 As a trainer, the Collaborations list shows pending trainees above linked ones; Cancel request removes the pending row; Unlink asks for confirmation and then removes access on `/measurements` — 18c56cd
+- [x] 2.9 As a trainee, ✓ accepts a request (the trainer then sees the journal) and ✕ declines it; Remove asks for confirmation — 18c56cd
+- [x] 2.10 With six or more rows, the pager shows "Page 1 of 2", and Next/Previous move between pages; "Entries per page" shows only 5 — 18c56cd
+- [x] 2.11 `/kitchen-sink/hub` renders every listed state on desktop and at 360px — 18c56cd
 
 ### Phase 3: Browser coverage
 
 #### Automated
 
-- [ ] 3.1 Playwright suite passes, including `hub-collaborations.spec.ts` at desktop and 360px: `npx playwright test`
-- [ ] 3.2 Lint passes: `npm run lint`
+- [x] 3.1 Playwright suite passes, including `hub-collaborations.spec.ts` at desktop and 360px: `npx playwright test`
+- [x] 3.2 Lint passes: `npm run lint`
 
 #### Manual
 
-- [ ] 3.3 The Hub list and its actions are readable and tappable on a real phone (or device emulation), with no horizontal scroll
+- [x] 3.3 The Hub list and its actions are readable and tappable on a real phone (or device emulation), with no horizontal scroll
