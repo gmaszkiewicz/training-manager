@@ -201,27 +201,27 @@ None.
 
 #### Automated
 
-- [x] 1.1 `grep -rn link_trainee_by_email src scripts` matches only the smoke 404 step
-- [x] 1.2 Migration check passes: `npm run migration-check`
-- [x] 1.3 Lint passes: `npm run lint`
-- [x] 1.4 Type check passes: `npx astro check`
-- [x] 1.5 Unit tests pass: `npm test`
-- [x] 1.6 Build passes: `npm run build`
-- [x] 1.7 Smoke passes against the local preview with local Supabase: `npm run smoke`
+- [x] 1.1 `grep -rn link_trainee_by_email src scripts` matches only the smoke 404 step — 97403d7
+- [x] 1.2 Migration check passes: `npm run migration-check` — 97403d7
+- [x] 1.3 Lint passes: `npm run lint` — 97403d7
+- [x] 1.4 Type check passes: `npx astro check` — 97403d7
+- [x] 1.5 Unit tests pass: `npm test` — 97403d7
+- [x] 1.6 Build passes: `npm run build` — 97403d7
+- [x] 1.7 Smoke passes against the local preview with local Supabase: `npm run smoke` — 97403d7
 
 #### Manual
 
-- [ ] 1.8 Workers Build for `57ea069` (#141) shows a successful production deploy before this PR is merged
+- [x] 1.8 Workers Build for `57ea069` (#141) shows a successful production deploy before this PR is merged
 
 ### Phase 2: Pin and record F5
 
 #### Automated
 
-- [ ] 2.1 Lint passes: `npm run lint`
-- [ ] 2.2 Smoke passes, including the new decline steps: `npm run smoke`
-- [ ] 2.3 Markdown formatting is clean: `npx prettier --check context/foundation/prd.md context/changes/hub-collaborations-handle/follow-ups/review-fixes.md`
+- [x] 2.1 Lint passes: `npm run lint`
+- [x] 2.2 Smoke passes, including the new decline steps: `npm run smoke`
+- [x] 2.3 Markdown formatting is clean: `npx prettier --check context/foundation/prd.md context/changes/hub-collaborations-handle/follow-ups/review-fixes.md`
 
 #### Manual
 
-- [ ] 2.4 PRD FR-007 and the Pairing line read correctly and no longer say "no pending/accept ceremony"
-- [ ] 2.5 The F5 entry in `review-fixes.md` states the accepted decision and no longer asks for one
+- [x] 2.4 PRD FR-007 and the Pairing line read correctly and no longer say "no pending/accept ceremony"
+- [x] 2.5 The F5 entry in `review-fixes.md` states the accepted decision and no longer asks for one

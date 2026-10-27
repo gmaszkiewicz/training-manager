@@ -1031,6 +1031,31 @@ const steps = [
     { status: 200, json: () => ({ measuredMonths: [] }) },
   ],
   [
+    "trainer requests the unlinked trainee again",
+    () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
+    { status: 302, location: () => requestSentPath(unlinkedEmail), exactLocation: true },
+  ],
+  [
+    "unlinked trainee declines the trainer request",
+    () => removeWith(unlinkedJar, trainerId, "decline"),
+    { status: 302, location: hubPath("notice=declined"), exactLocation: true },
+  ],
+  [
+    "trainer request after a decline is sent at once",
+    () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
+    { status: 302, location: () => requestSentPath(unlinkedEmail), exactLocation: true },
+  ],
+  [
+    "trainer request after a decline is pending",
+    () => trainerLinkRest(unlinkedTraineeId),
+    { status: 200, json: () => ({ linkStatus: "pending" }) },
+  ],
+  [
+    "trainer cancels the request after a decline",
+    () => removeWith(jar, unlinkedTraineeId, "cancel"),
+    { status: 302, location: hubPath("notice=cancelled"), exactLocation: true },
+  ],
+  [
     "signout before checking the trainee journal",
     () => request("/api/auth/signout", { method: "POST" }),
     { status: 302, location: "/" },
