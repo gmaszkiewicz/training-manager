@@ -1,9 +1,11 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import CollaborationsList from "@/components/hub/CollaborationsList.astro";
+import NotificationsTable from "@/components/hub/NotificationsTable";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import { collaborationErrorMessage, requestOutcomeMessage } from "@/lib/collaborations";
-import type { Collaboration, CollaborationPage } from "@/types";
+import { notificationErrorMessage, notificationNoticeMessage } from "@/lib/notifications";
+import type { AppNotification, Collaboration, CollaborationPage, NotificationKind, NotificationPage } from "@/types";
 
 const pendingTrainee: Collaboration = {
   otherId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -79,6 +81,69 @@ const confirmPage: CollaborationPage = {
 
 const sentNotice = requestOutcomeMessage("sent", "trainee@example.com");
 const updateError = collaborationErrorMessage("failed") ?? "";
+
+interface SampleActor {
+  role: "trainer" | "trainee";
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+}
+
+function sampleNotification(index: number, kind: NotificationKind, actor: SampleActor, read: boolean): AppNotification {
+  const createdAt = new Date(Date.UTC(2026, 9, 27 - index, 9 + (index % 10), 15)).toISOString();
+  return {
+    id: `f6a7b8c9-d0e1-2345-f123-4567890abc${String(index).padStart(2, "0")}`,
+    kind,
+    actorRole: actor.role,
+    actorFirstName: actor.firstName,
+    actorLastName: actor.lastName,
+    actorEmail: actor.email,
+    createdAt,
+    readAt: read ? createdAt : null,
+  };
+}
+
+const hopper: SampleActor = { role: "trainer", firstName: "Grace", lastName: "Hopper", email: "grace@example.com" };
+const lovelace: SampleActor = { role: "trainee", firstName: "Ada", lastName: "Lovelace", email: "ada@example.com" };
+const emailOnly: SampleActor = { role: "trainee", firstName: null, lastName: null, email: "trainee@example.com" };
+
+const mixedRows: AppNotification[] = [
+  sampleNotification(0, "link_requested", hopper, false),
+  sampleNotification(1, "link_accepted", lovelace, false),
+  sampleNotification(2, "link_declined", emailOnly, true),
+  sampleNotification(3, "link_cancelled", hopper, true),
+  sampleNotification(4, "link_removed", lovelace, true),
+];
+
+const mixedNotifications: NotificationPage = { rows: mixedRows, page: 1, pageCount: 1, size: 5, total: 5 };
+const emptyNotifications: NotificationPage = { rows: [], page: 1, pageCount: 1, size: 5, total: 0 };
+
+const sampleKinds: NotificationKind[] = [
+  "link_requested",
+  "link_accepted",
+  "link_declined",
+  "link_cancelled",
+  "link_removed",
+];
+const multiPageNotifications: NotificationPage = {
+  rows: Array.from({ length: 10 }, (_, index) =>
+    sampleNotification(
+      10 + index,
+      sampleKinds[index % sampleKinds.length],
+      index % 2 === 0 ? hopper : lovelace,
+      index > 3,
+    ),
+  ),
+  page: 2,
+  pageCount: 3,
+  size: 10,
+  total: 27,
+};
+
+const selectedNotificationIds = [mixedRows[0].id, mixedRows[2].id];
+const readNotice = notificationNoticeMessage("read") ?? "";
+const deletedNotice = notificationNoticeMessage("deleted") ?? "";
+const notificationsError = notificationErrorMessage("failed") ?? "";
 ---
 
 <Layout title="Kitchen sink — hub">
@@ -87,8 +152,9 @@ const updateError = collaborationErrorMessage("failed") ?? "";
       <header class="flex flex-col gap-2">
         <h1 class="text-2xl font-bold">Kitchen sink — hub</h1>
         <p class="text-muted-foreground text-sm">
-          States for the <code class="text-foreground">/hub/collaborations</code> list. Public review surface (not
-          linked from the product). Row actions post to the real routes and need a session.
+          States for the <code class="text-foreground">/hub/collaborations</code> list and the{" "}
+          <code class="text-foreground">/hub/notifications</code> table. Public review surface (not linked from the
+          product). Row actions post to the real routes and need a session.
         </p>
       </header>
 
@@ -196,6 +262,114 @@ const updateError = collaborationErrorMessage("failed") ?? "";
           read; the card stays empty).
         </p>
         <PageErrorToasts messages={[updateError, "Could not load collaborations"]} client:load />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-mixed">
+        <h2 id="state-notifications-mixed" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, read and unread
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Columns: a select checkbox, Notification, Received (UTC date over time) and Status. Unread rows show a dot, a
+          bold message and a bold "Unread"; read rows are muted. Each message is a button that posts the row id to{" "}
+          <code class="text-foreground">/api/notifications/open</code>, which marks it read and opens Collaborations.
+          Mark as read and Delete stay disabled with no selection. Entries per page (5, 10, 15, the current one pressed)
+          goes to <code class="text-foreground">?page=1&amp;size=N</code>. The header checkbox selects every visible
+          row.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
+          <NotificationsTable page={mixedNotifications} client:load />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-narrow">
+        <h2 id="state-notifications-narrow" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, narrow
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          The same table in a phone-width card: below 32rem (a container query) the Received and Status columns are
+          hidden, and the date, time and status show in a small line under each message.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-xs rounded-xl border p-4">
+          <NotificationsTable page={mixedNotifications} client:load />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-empty">
+        <h2 id="state-notifications-empty" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, empty
+        </h2>
+        <p class="text-muted-foreground text-sm">No rows: "No notifications". No table; the actions are disabled.</p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
+          <NotificationsTable page={emptyNotifications} client:load />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-multi-page">
+        <h2 id="state-notifications-multi-page" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, multi-page
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Ten rows on page 2 of 3 at size 10. Previous links to <code class="text-foreground">?page=1&amp;size=10</code>{" "}
+          and Next to <code class="text-foreground">?page=3&amp;size=10</code>; on the first or last page that arrow is
+          a disabled button.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
+          <NotificationsTable page={multiPageNotifications} client:load />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-selected">
+        <h2 id="state-notifications-selected" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, some selected
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Two of five rows selected: the header checkbox is indeterminate and Mark as read and Delete are enabled. Each
+          posts the selected <code class="text-foreground">ids</code> with <code class="text-foreground">page</code> and{" "}
+          <code class="text-foreground">size</code>.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
+          <NotificationsTable page={mixedNotifications} initialSelectedIds={selectedNotificationIds} client:load />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-confirm">
+        <h2 id="state-notifications-confirm" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, confirm delete
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Delete opens an inline alert dialog "Delete 2 notifications for good?" with a Delete button (focused when
+          opened from the toolbar) that posts to <code class="text-foreground">/api/notifications/delete</code>, and a
+          Cancel action (or Escape) that closes it.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
+          <NotificationsTable
+            page={mixedNotifications}
+            initialSelectedIds={selectedNotificationIds}
+            initialConfirmOpen
+            client:load
+          />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-notice">
+        <h2 id="state-notifications-notice" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, notice toast
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Notice toasts "{readNotice}" and "{deletedNotice}".
+        </p>
+        <PageErrorToasts messages={[readNotice, deletedNotice]} tone="notice" client:load />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-notifications-error">
+        <h2 id="state-notifications-error" class="border-border border-b pb-2 text-lg font-semibold">
+          Notifications, error toast
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Error toasts "{notificationsError}" (a failed action) and "Could not load notifications" (the table could not
+          be read; the card stays empty).
+        </p>
+        <PageErrorToasts messages={[notificationsError, "Could not load notifications"]} client:load />
       </section>
     </div>
   </div>

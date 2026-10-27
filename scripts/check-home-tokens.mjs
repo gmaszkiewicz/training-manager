@@ -42,6 +42,8 @@ const FILES = [
   "src/components/hub/CollaborationsList.astro",
   "src/components/hub/CollaborationRowActions.tsx",
   "src/components/hub/ConfirmRemoveToast.tsx",
+  "src/pages/hub/notifications.astro",
+  "src/components/hub/NotificationsTable.tsx",
   "src/components/profile/ProfileDetailsForm.tsx",
   "src/components/account/AccountTabs.tsx",
   "src/components/ui/tabs.tsx",

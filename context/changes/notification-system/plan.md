@@ -511,24 +511,24 @@ Prove the bell and the table in a real browser at desktop width and at 360×800.
 
 #### Automated
 
-- [x] 2.1 Unit tests for message copy (all five kinds, both `link_removed` roles, name/email fallback), href, page and size parsing, and notice/error codes pass: `npm test`
-- [x] 2.2 Smoke route steps pass: `npm run smoke`
-- [x] 2.3 Type check and lint pass: `npx astro check && npm run lint`
-- [x] 2.4 Build passes: `npm run build`
+- [x] 2.1 Unit tests for message copy (all five kinds, both `link_removed` roles, name/email fallback), href, page and size parsing, and notice/error codes pass: `npm test` — 2a2bc93
+- [x] 2.2 Smoke route steps pass: `npm run smoke` — 2a2bc93
+- [x] 2.3 Type check and lint pass: `npx astro check && npm run lint` — 2a2bc93
+- [x] 2.4 Build passes: `npm run build` — 2a2bc93
 
 ### Phase 3: Hub Notifications tab
 
 #### Automated
 
-- [ ] 3.1 Token check passes with the new files listed: `npm run check:home-tokens`
-- [ ] 3.2 Type check, lint, unit tests and build pass: `npx astro check && npm run lint && npm test && npm run build`
-- [ ] 3.3 Smoke still passes, including Hub tab and redirect steps: `npm run smoke`
+- [x] 3.1 Token check passes with the new files listed: `npm run check:home-tokens`
+- [x] 3.2 Type check, lint, unit tests and build pass: `npx astro check && npm run lint && npm test && npm run build`
+- [x] 3.3 Smoke still passes, including Hub tab and redirect steps: `npm run smoke`
 
 #### Manual
 
-- [ ] 3.4 `/kitchen-sink/hub` shows every Notifications state in light and dark mode
-- [ ] 3.5 On `/hub/notifications`, select-all, partial selection, mark read and delete-with-confirm behave as expected, and size 5/10/15 and paging keep the selection actions working
-- [ ] 3.6 The table is usable at 360px width
+- [x] 3.4 `/kitchen-sink/hub` shows every Notifications state in light and dark mode
+- [x] 3.5 On `/hub/notifications`, select-all, partial selection, mark read and delete-with-confirm behave as expected, and size 5/10/15 and paging keep the selection actions working
+- [x] 3.6 The table is usable at 360px width
 
 ### Phase 4: Top-bar bell
 

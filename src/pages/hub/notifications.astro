@@ -1,0 +1,59 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AccountTabs from "@/components/account/AccountTabs";
+import NotificationsTable from "@/components/hub/NotificationsTable";
+import PageErrorToasts from "@/components/measurements/PageErrorToasts";
+import Topbar from "@/components/Topbar.astro";
+import { HUB_TABS } from "@/lib/hub-tabs";
+import {
+  notificationErrorMessage,
+  notificationNoticeMessage,
+  parseNotificationPage,
+  parseNotificationPageSize,
+} from "@/lib/notifications";
+import { readNotificationPage } from "@/lib/services/notifications";
+import { createClient } from "@/lib/supabase";
+import type { NotificationPage } from "@/types";
+
+const user = Astro.locals.user;
+const requestedPage = parseNotificationPage(Astro.url.searchParams.get("page"));
+const requestedSize = parseNotificationPageSize(Astro.url.searchParams.get("size"));
+const notice = notificationNoticeMessage(Astro.url.searchParams.get("notice"));
+const actionError = notificationErrorMessage(Astro.url.searchParams.get("error"));
+
+let notifications: NotificationPage | null = null;
+if (user) {
+  const supabase = createClient(Astro.request.headers, Astro.cookies);
+  if (supabase) {
+    const listed = await readNotificationPage(supabase, user.id, requestedPage, requestedSize);
+    notifications = listed.ok ? listed.page : null;
+  }
+}
+
+const errors: string[] = [];
+if (actionError !== null) {
+  errors.push(actionError);
+}
+if (notifications === null) {
+  errors.push("Could not load notifications");
+}
+---
+
+<Layout title="Hub" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-measurement">
+      <Topbar />
+    </div>
+  </div>
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4 text-card-foreground">
+      {errors.length > 0 ? <PageErrorToasts messages={errors} clearParams={["notice", "error"]} client:load /> : null}
+      {notice !== null ? (
+        <PageErrorToasts messages={[notice]} tone="notice" clearParams={["notice", "error"]} client:load />
+      ) : null}
+      <AccountTabs tabs={HUB_TABS} current="notifications" contentClassName="max-w-full">
+        {notifications !== null ? <NotificationsTable page={notifications} client:load /> : null}
+      </AccountTabs>
+    </div>
+  </div>
+</Layout>
