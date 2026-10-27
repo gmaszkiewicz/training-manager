@@ -77,6 +77,51 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          actor_email: string;
+          actor_first_name: string | null;
+          actor_last_name: string | null;
+          actor_role: string;
+          created_at: string;
+          id: string;
+          kind: string;
+          read_at: string | null;
+          recipient_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actor_email: string;
+          actor_first_name?: string | null;
+          actor_last_name?: string | null;
+          actor_role: string;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          read_at?: string | null;
+          recipient_id: string;
+        };
+        Update: {
+          actor_email?: string;
+          actor_first_name?: string | null;
+          actor_last_name?: string | null;
+          actor_role?: string;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          read_at?: string | null;
+          recipient_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_id_fkey";
+            columns: ["recipient_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_path: string | null;

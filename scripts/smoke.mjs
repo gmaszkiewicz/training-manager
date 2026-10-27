@@ -365,6 +365,56 @@ async function trainerLinkRest(subjectId) {
   return { status: response.status, location: "", body };
 }
 
+// The newest notification id seen per cookie jar, so the RLS steps can aim at another user's row.
+const newestNotificationIds = new Map();
+
+function restUnavailable() {
+  return SUPABASE_URL === "" || SUPABASE_KEY === "";
+}
+
+async function notificationsRest(cookieJar, query, { method = "GET", body, prefer } = {}) {
+  if (restUnavailable()) {
+    return { status: 0, location: "", body: "" };
+  }
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/notifications${query ? `?${query}` : ""}`, {
+    method,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${sessionAccessToken(cookieJar)}`,
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(prefer ? { Prefer: prefer } : {}),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await response.text();
+  return { status: response.status, location: "", body: text };
+}
+
+// Reads the newest notification of the user signed in to the given jar and remembers its id.
+async function newestNotificationRest(cookieJar) {
+  const actual = await notificationsRest(
+    cookieJar,
+    "select=id,kind,actor_role,actor_email,read_at&order=created_at.desc,id.desc&limit=1",
+  );
+  try {
+    const rows = JSON.parse(actual.body);
+    if (Array.isArray(rows) && rows.length === 1 && typeof rows[0].id === "string") {
+      newestNotificationIds.set(cookieJar, rows[0].id);
+    }
+  } catch {
+    // The json check reports the unreadable body.
+  }
+  return actual;
+}
+
+function notificationIdQuery(cookieJar) {
+  return `id=eq.${encodeURIComponent(newestNotificationIds.get(cookieJar) ?? "")}`;
+}
+
+function unreadNotification(kind, actorRole, actorEmail) {
+  return { notification: { kind, actor_role: actorRole, actor_email: actorEmail, read_at: null } };
+}
+
 async function searchUnlinkedTraineesRpc() {
   if (SUPABASE_URL === "" || SUPABASE_KEY === "") {
     return { status: 0, location: "", body: "" };
@@ -728,6 +778,11 @@ const steps = [
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
     { status: 302, location: "/measurements" },
   ],
+  [
+    "trainee receives the link request notification",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_requested", "trainer", trainerEmail) },
+  ],
   ["trainee search is rejected", () => request("/api/trainer-links?q=a"), { status: 403 }],
   [
     "trainee search rpc returns no rows",
@@ -880,6 +935,11 @@ const steps = [
     { status: 302, location: "/measurements" },
   ],
   [
+    "trainer receives the accept notification",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_accepted", "trainee", email) },
+  ],
+  [
     "trainer requests the second trainee",
     () => request("/api/trainer-links", { method: "POST", form: { email: secondEmail } }),
     { status: 302, location: () => requestSentPath(secondEmail), exactLocation: true },
@@ -1016,6 +1076,11 @@ const steps = [
     { status: 302, location: hubPath("notice=unlinked"), exactLocation: true },
   ],
   [
+    "trainee receives the unlink notification",
+    () => newestNotificationRest(unlinkedJar),
+    { status: 200, json: () => unreadNotification("link_removed", "trainer", trainerEmail) },
+  ],
+  [
     "trainer remove repeats with no link",
     () => removeWith(jar, unlinkedTraineeId, "unlink"),
     { status: 302, location: hubPath("error=failed"), exactLocation: true },
@@ -1041,6 +1106,11 @@ const steps = [
     { status: 302, location: hubPath("notice=declined"), exactLocation: true },
   ],
   [
+    "trainer receives the decline notification",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_declined", "trainee", unlinkedEmail) },
+  ],
+  [
     "trainer request after a decline is sent at once",
     () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
     { status: 302, location: () => requestSentPath(unlinkedEmail), exactLocation: true },
@@ -1054,6 +1124,70 @@ const steps = [
     "trainer cancels the request after a decline",
     () => removeWith(jar, unlinkedTraineeId, "cancel"),
     { status: 302, location: hubPath("notice=cancelled"), exactLocation: true },
+  ],
+  [
+    "trainee receives the cancel notification",
+    () => newestNotificationRest(unlinkedJar),
+    { status: 200, json: () => unreadNotification("link_cancelled", "trainer", trainerEmail) },
+  ],
+  [
+    "notification insert over REST is refused",
+    () =>
+      notificationsRest(unlinkedJar, "", {
+        method: "POST",
+        prefer: "return=minimal",
+        body: {
+          recipient_id: unlinkedTraineeId,
+          kind: "link_requested",
+          actor_role: "trainer",
+          actor_email: trainerEmail,
+        },
+      }),
+    { status: [401, 403], body: "42501" },
+  ],
+  [
+    "another user's notification is not readable",
+    () => notificationsRest(unlinkedJar, `${notificationIdQuery(jar)}&select=id`),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
+  ],
+  [
+    "another user's notification is not marked read",
+    () =>
+      notificationsRest(unlinkedJar, `${notificationIdQuery(jar)}&select=id`, {
+        method: "PATCH",
+        prefer: "return=representation",
+        body: { read_at: new Date().toISOString() },
+      }),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
+  ],
+  [
+    "another user's notification is not deleted",
+    () =>
+      notificationsRest(unlinkedJar, `${notificationIdQuery(jar)}&select=id`, {
+        method: "DELETE",
+        prefer: "return=representation",
+      }),
+    { status: 200, json: () => ({ arrayLength: 0 }) },
+  ],
+  [
+    "trainer decline notification is still there and unread",
+    () => newestNotificationRest(jar),
+    { status: 200, json: () => unreadNotification("link_declined", "trainee", unlinkedEmail) },
+  ],
+  [
+    "own notification kind update is refused",
+    () =>
+      notificationsRest(unlinkedJar, notificationIdQuery(unlinkedJar), {
+        method: "PATCH",
+        prefer: "return=minimal",
+        body: { kind: "link_removed" },
+      }),
+    { status: [401, 403], body: "42501" },
+  ],
+  [
+    "own notification kind is unchanged",
+    () => newestNotificationRest(unlinkedJar),
+    { status: 200, json: () => unreadNotification("link_cancelled", "trainer", trainerEmail) },
   ],
   [
     "signout before checking the trainee journal",
@@ -1379,6 +1513,16 @@ function jsonProblems(parsed, spec) {
     const status = row && typeof row === "object" ? row.status : undefined;
     if (status !== spec.linkStatus) {
       problems.push(`link rows ${JSON.stringify(parsed)} expected one with status ${JSON.stringify(spec.linkStatus)}`);
+    }
+  }
+  if (spec.notification !== undefined) {
+    const row = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : undefined;
+    const same =
+      row &&
+      typeof row === "object" &&
+      Object.keys(spec.notification).every((key) => row[key] === spec.notification[key]);
+    if (!same) {
+      problems.push(`notification rows ${JSON.stringify(parsed)} expected ${JSON.stringify([spec.notification])}`);
     }
   }
   if (spec.measuredMonths !== undefined && !monthSetEquals(parsed, spec.measuredMonths)) {
