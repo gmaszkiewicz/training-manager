@@ -34,13 +34,16 @@ The trainer (trener). They need a preview of protégés' entries instead of chas
 ## Success Criteria
 
 ### Primary
+
 - A trainee can register, add at least two body-measurement entries, see each entry's up/down arrow and difference versus the previous entry, and edit or delete an entry.
 - A linked trainer can register, link that existing trainee by email, and preview the trainee's measurement list.
 
 ### Secondary
+
 - A trainee can narrow the measurement list by date.
 
 ### Guardrails
+
 - A trainer cannot create, edit, or delete a trainee's measurements.
 
 ## User Stories
@@ -52,6 +55,7 @@ The trainer (trener). They need a preview of protégés' entries instead of chas
 - **Then** they see it on the list with an up/down arrow and the difference versus the previous entry, and they can edit or delete the entry
 
 #### Acceptance Criteria
+
 - Each listed measurement shows the difference versus the immediately previous entry
 - A first entry has no fake comparison — no delta until a previous entry exists
 - The trainee can edit or delete an entry they created
@@ -60,12 +64,14 @@ The trainer (trener). They need a preview of protégés' entries instead of chas
 ## Functional Requirements
 
 ### Accounts
+
 - FR-001: Trainee can register with email and password and pick the trainee role. Priority: must-have
   > Socrates: Counter-argument considered: "open sign-up with a role picker invites junk trainer/trainee accounts." Resolution: kept; self-serve trainee sign-up stays.
 - FR-002: Trainer can register with email and password and pick the trainer role. Priority: must-have
   > Socrates: Counter-argument considered: "trainer accounts can wait — proving the trainee journal first is the real MVP." Resolution: kept; trainer sign-up stays in this 3-week MVP.
 
 ### Body measurements
+
 - FR-003: Trainee can add a body-measurement entry with date, weight, chest, waist, arms, thigh, calf, hips, navel circumference, and an optional note. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
 - FR-004: Trainee can edit a previous measurement entry. Priority: must-have
@@ -78,7 +84,8 @@ The trainer (trener). They need a preview of protégés' entries instead of chas
   > Socrates: Counter-argument considered: "the list will be short; date filter is unused until there's months of data." Resolution: kept as nice-to-have; out of MVP unless time remains.
 
 ### Trainer preview
-- FR-007: Trainer can link an existing trainee by email, with no pending/accept ceremony. Priority: must-have
+
+- FR-007: Trainer finds an existing trainee by email and sends a link request; the trainee accepts or declines it in the Hub. A declined request is removed, and the trainer may send it again at once. Priority: must-have
   > Socrates: Counter-argument considered: "invite is a whole sub-product (send, accept, pending) — too big for a 3-week measurements MVP." Resolution: revised; trainer links an existing trainee by email instead of an invite flow.
 - FR-008: Trainer can preview measurement entries of protégés they linked. Priority: must-have
   > Socrates: Counter-argument considered: "trainer preview doesn't need deltas — a raw list is enough for v1." Resolution: kept; trainer sees the same list the trainee sees, including arrows + difference.
@@ -103,7 +110,7 @@ Login with email and password. Anyone can register and pick a role: trainer or t
 
 - Trainee: create, edit, and delete their own body-measurement entries; add notes on an entry.
 - Trainer: preview entries of protégés they linked. No reply to trainee notes in MVP.
-- Pairing: a trainer links an existing trainee by email (no pending/accept ceremony); the trainer then sees that protégé's entries.
+- Pairing: a trainer sends a link request to an existing trainee by email; the trainee accepts or declines it in the Hub. The trainer sees that protégé's entries only after the trainee accepts. A declined request is removed, and the trainer may send it again at once.
 - Unauthenticated users do not get the journal.
 
 ## Non-Goals

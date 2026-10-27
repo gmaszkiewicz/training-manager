@@ -151,7 +151,6 @@ export type Database = {
     };
     Functions: {
       accept_trainer_link: { Args: { p_trainer_id: string }; Returns: boolean };
-      link_trainee_by_email: { Args: { p_email: string }; Returns: string };
       list_trainee_collaborations: {
         Args: { p_page: number; p_size: number };
         Returns: {
