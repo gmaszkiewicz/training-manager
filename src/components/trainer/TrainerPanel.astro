@@ -78,7 +78,7 @@ const requestNotice =
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
               <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
               <Button type="submit" variant="smoke" className="w-full">
-                Send request
+                Request read access
               </Button>
             </form>
             {trainerLinks.length > 0 ? (

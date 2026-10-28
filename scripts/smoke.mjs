@@ -575,11 +575,10 @@ function acceptWith(cookieJar, otherId) {
   });
 }
 
-function removeWith(cookieJar, otherId, intent) {
-  return requestWith(cookieJar, "/api/collaborations/remove", {
-    method: "POST",
-    form: { other: otherId, page: "1", intent },
-  });
+function removeWith(cookieJar, otherId, intent, dashboard) {
+  const form = { other: otherId, page: "1", intent };
+  if (dashboard !== undefined) form.dashboard = dashboard;
+  return requestWith(cookieJar, "/api/collaborations/remove", { method: "POST", form });
 }
 
 function smokeTraineeSearchPath() {
@@ -769,17 +768,21 @@ const steps = [
   [
     "trainer request shows the sent notice",
     followRedirect,
-    { status: 200, body: `Your request has been sent to ${email}` },
+    { status: 200, body: `Your request for read access to measurements has been sent to ${email}` },
   ],
   [
     "trainer re-request is already pending",
     rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email } })),
-    { status: 302, location: () => requestErrorPath(`A request to ${email} is already pending`), exactLocation: true },
+    {
+      status: 302,
+      location: () => requestErrorPath(`A request for read access to measurements is already pending for ${email}`),
+      exactLocation: true,
+    },
   ],
   [
     "trainer re-request shows the pending sentence",
     followRedirect,
-    { status: 200, body: `A request to ${email} is already pending` },
+    { status: 200, body: `A request for read access to measurements is already pending for ${email}` },
   ],
   ["trainer search omits the pending trainee", () => request(smokeTraineeSearchPath()), { status: 200, forbid: email }],
   [
@@ -1108,7 +1111,8 @@ const steps = [
     () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
     {
       status: 302,
-      location: () => requestErrorPath(`A request to ${unlinkedEmail} is already pending`),
+      location: () =>
+        requestErrorPath(`A request for read access to measurements is already pending for ${unlinkedEmail}`),
       exactLocation: true,
     },
   ],
@@ -1138,22 +1142,32 @@ const steps = [
     { status: 200, json: () => ({ measuredMonths: fixtureMonths }) },
   ],
   [
-    "trainer re-request is already linked",
+    "trainer re-request already has read access",
     () => request("/api/trainer-links", { method: "POST", form: { email: unlinkedEmail } }),
-    { status: 302, location: () => requestErrorPath(`${unlinkedEmail} is already linked`), exactLocation: true },
+    {
+      status: 302,
+      location: () => requestErrorPath(`${unlinkedEmail} has already given you read access to measurements`),
+      exactLocation: true,
+    },
   ],
   [
-    "trainer removes the link",
-    () => removeWith(jar, unlinkedTraineeId, "unlink"),
-    { status: 302, location: hubPath("notice=unlinked"), exactLocation: true },
+    "trainer revoke with an unknown dashboard fails",
+    () => removeWith(jar, unlinkedTraineeId, "revoke", "unknown"),
+    { status: 302, location: hubPath("error=failed"), exactLocation: true },
   ],
   [
-    "trainee receives the unlink notification",
+    "trainer revokes the read access",
+    () => removeWith(jar, unlinkedTraineeId, "revoke", "measurements"),
+    { status: 302, location: hubPath("notice=revoked"), exactLocation: true },
+  ],
+  [
+    "trainee receives the revoke notification",
     () => newestNotificationRest(unlinkedJar),
     { status: 200, json: () => unreadNotification("link_removed", "trainer", trainerEmail) },
   ],
   [
-    "trainer remove repeats with no link",
+    // A page rendered by the previous Worker can still post the legacy intent during a deploy.
+    "trainer legacy unlink repeats with no link",
     () => removeWith(jar, unlinkedTraineeId, "unlink"),
     { status: 302, location: hubPath("error=failed"), exactLocation: true },
   ],

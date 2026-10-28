@@ -32,25 +32,31 @@ export function pageCountFor(total: number, size: number): number {
   return Math.max(1, Math.ceil(total / size));
 }
 
+// A trainer link is read access to measurements: granted once accepted, pending otherwise.
 export function toCollaboration(row: CollaborationRow): Collaboration {
   return {
     otherId: row.otherId,
     name: topbarName({ firstName: row.firstName, lastName: row.lastName, email: row.email }),
     email: row.email,
-    status: row.status === "accepted" ? "linked" : "pending",
+    access: {
+      measurements: [{ type: "read", pending: row.status !== "accepted" }],
+      nutrition: [],
+      training: [],
+      planning: [],
+    },
     linkedAt: row.linkedAt,
   };
 }
 
 export function requestOutcomeMessage(outcome: LinkRequestOutcome, email: string): string {
   if (outcome === "sent") {
-    return `Your request has been sent to ${email}`;
+    return `Your request for read access to measurements has been sent to ${email}`;
   }
   if (outcome === "pending") {
-    return `A request to ${email} is already pending`;
+    return `A request for read access to measurements is already pending for ${email}`;
   }
-  if (outcome === "linked") {
-    return `${email} is already linked`;
+  if (outcome === "granted") {
+    return `${email} has already given you read access to measurements`;
   }
   return "No trainee with that email";
 }
@@ -74,11 +80,9 @@ export function collaborationNoticeMessage(code: string | null): string | null {
   if (code === "cancelled") {
     return "Request cancelled";
   }
-  if (code === "unlinked") {
-    return "Trainee unlinked";
-  }
-  if (code === "removed") {
-    return "Trainer removed";
+  // `unlinked` and `removed` come from pages rendered before the revoke intent existed.
+  if (code === "revoked" || code === "unlinked" || code === "removed") {
+    return "Access revoked";
   }
   return null;
 }

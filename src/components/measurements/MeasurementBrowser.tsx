@@ -430,16 +430,16 @@ function NoteRowCell({
       <Button
         type="button"
         variant="ghost"
-        className="note-fit font-normal whitespace-normal"
+        className="text-fit font-normal whitespace-normal"
         aria-label={label}
         aria-expanded={expanded}
         data-note-id={noteId}
         onClick={onClick}
       >
-        <span className="note-fit-icon" aria-hidden="true">
+        <span className="text-fit-icon" aria-hidden="true">
           <StickyNote className="size-4" />
         </span>
-        <span className="note-fit-text">{singleLine}</span>
+        <span className="text-fit-text">{singleLine}</span>
       </Button>
     </div>
   );

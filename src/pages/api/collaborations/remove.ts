@@ -14,15 +14,22 @@ const pageSchema = z.coerce
   .positive()
   .catch(1)
   .transform((page) => Math.min(page, collaborationMaxPage));
-const intentSchema = z.enum(["cancel", "unlink", "decline", "remove"]);
+// `unlink` and `remove` are kept for pages rendered by the previous Worker during a deploy.
+const intentSchema = z.enum(["cancel", "decline", "revoke", "unlink", "remove"]);
 
 // The database decides which link the caller may delete; the intent only picks the notice wording.
 const NOTICES = {
   cancel: "cancelled",
-  unlink: "unlinked",
   decline: "declined",
-  remove: "removed",
+  revoke: "revoked",
+  unlink: "revoked",
+  remove: "revoked",
 } as const satisfies Record<z.infer<typeof intentSchema>, string>;
+
+// Only measurements may be revoked: the delete below removes the whole link, which is the only access
+// today. Enabling another dashboard needs per-dashboard storage before it is accepted here. A missing
+// dashboard means measurements.
+const dashboardSchema = z.literal("measurements").optional();
 
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
@@ -36,7 +43,8 @@ export const POST: APIRoute = async (context) => {
 
   const other = otherSchema.safeParse(form.get("other"));
   const intent = intentSchema.safeParse(form.get("intent"));
-  if (!other.success || !intent.success) {
+  const dashboard = dashboardSchema.safeParse(form.get("dashboard") ?? undefined);
+  if (!other.success || !intent.success || !dashboard.success) {
     return context.redirect(failed);
   }
 

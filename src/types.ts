@@ -28,14 +28,21 @@ export interface ProfileDetails {
 
 export type ProfileNames = Pick<ProfileDetails, "firstName" | "lastName">;
 
-/** `linked` is the UI name for an `accepted` trainer link. */
-export type CollaborationStatus = "pending" | "linked";
+export type Dashboard = "measurements" | "nutrition" | "training" | "planning";
+
+export type AccessType = "read";
+
+/** One kind of access to a dashboard; `pending` until the trainee accepts the request. */
+export interface DashboardAccess {
+  type: AccessType;
+  pending: boolean;
+}
 
 export interface Collaboration {
   otherId: string;
   name: string;
   email: string;
-  status: CollaborationStatus;
+  access: Record<Dashboard, DashboardAccess[]>;
   linkedAt: string;
 }
 
@@ -46,7 +53,7 @@ export interface CollaborationPage {
   pageSize: 5;
 }
 
-export type LinkRequestOutcome = "sent" | "pending" | "linked" | "not_found";
+export type LinkRequestOutcome = "sent" | "pending" | "granted" | "not_found";
 
 export type NotificationKind = "link_requested" | "link_accepted" | "link_declined" | "link_cancelled" | "link_removed";
 
