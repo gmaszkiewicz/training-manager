@@ -1,7 +1,7 @@
 ---
 change_id: improvment-for-status-collaborations
 title: Per-dashboard access in the Collaborations panel instead of a single link status
-status: implementing
+status: implemented
 created: 2026-10-28
 updated: 2026-10-28
 archived_at: null
