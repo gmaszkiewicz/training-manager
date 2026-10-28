@@ -458,6 +458,6 @@ No schema change. Stored notifications keep their `kind` and re-render with the 
 
 #### Manual
 
-- [x] 3.4 `/kitchen-sink/hub` shows the four-dashboard layout, the pending state, the confirm-revoke prompt and the `Access revoked` notice
+- [x] 3.4 `/kitchen-sink/hub` shows the four-dashboard layout, the pending state, the confirm-revoke prompt and the `Access revoked` notice — 4f28e48
 - [x] 3.5 `/kitchen-sink/hub` "Access that does not fit" shows the KeyRound icon, and its dialog lists the access entries — 4f28e48
 - [x] 3.6 `/kitchen-sink/home` and `/kitchen-sink/trainer` show the new notification and request copy — 4f28e48
