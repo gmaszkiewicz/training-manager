@@ -1,10 +1,10 @@
 ---
 change_id: visualization-of-measurements
 title: Line charts visualizing measurement history with selectable entries
-status: impl_reviewed
+status: archived
 created: 2026-10-28
 updated: 2026-10-28
-archived_at: null
+archived_at: 2026-10-28T19:57:07Z
 ---
 
 ## Notes
