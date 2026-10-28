@@ -1,7 +1,7 @@
 ---
 change_id: visualization-of-measurements
 title: Line charts visualizing measurement history with selectable entries
-status: implemented
+status: impl_reviewed
 created: 2026-10-28
 updated: 2026-10-28
 archived_at: null
@@ -16,3 +16,5 @@ The y-axis is divided in steps of 5, with the maximum value matching the allowed
 2) The charts live in a separate tile placed above the new-entry tile and the entries table. Like "Add your next measurements", it must collapse like an accordion, hiding all charts.
 3) Also add a "Visualize" button below the measurements table: selecting x entries with checkboxes visualizes those entries on the charts — selection allowed up to x values. Next to it, a "Clear" button restores the original visualization of all measurements from the given month.
 4) Selections must be remembered by the browser.
+
+Revised during implementation: the charts tile sits below the measurements table, and the period views plot the latest entry per day, month or year (see `plan.md` → Deviations).

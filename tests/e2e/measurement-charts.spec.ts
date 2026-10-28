@@ -20,6 +20,14 @@ function minuteValue(at: Date): string {
 
 /** Seeds `count` entries a few minutes in the past, in the current UTC month so the default list month shows them. */
 async function seedEntries(page: Page, count: number): Promise<string[]> {
+  // Right after a UTC month starts there are not enough past minutes in it yet: wait until there are.
+  const started = new Date();
+  const monthStart = Date.UTC(started.getUTCFullYear(), started.getUTCMonth(), 1);
+  const wait = (count + 1) * 60_000 - (started.getTime() - monthStart);
+  if (wait > 0) {
+    test.setTimeout(test.info().timeout + wait);
+    await page.waitForTimeout(wait);
+  }
   const now = new Date();
   const seeded: string[] = [];
   for (let minutesAgo = 1; seeded.length < count && minutesAgo < 120; minutesAgo += 1) {

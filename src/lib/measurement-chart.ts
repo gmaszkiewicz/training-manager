@@ -82,18 +82,6 @@ function addDays(day: string, delta: number): string {
   return formatDay(parts.year, parts.month, parts.day + delta);
 }
 
-function daysInMonth(year: number, month: number): number {
-  return new Date(Date.UTC(year, month, 0)).getUTCDate();
-}
-
-function addMonthsClamped(day: string, delta: number): string {
-  const parts = dayParts(day);
-  const target = new Date(Date.UTC(parts.year, parts.month - 1 + delta, 1));
-  const year = target.getUTCFullYear();
-  const month = target.getUTCMonth() + 1;
-  return formatDay(year, month, Math.min(parts.day, daysInMonth(year, month)));
-}
-
 function yearWindow(year: number): ChartWindow {
   return {
     start: `${String(year).padStart(4, "0")}-01-01T00:00:00`,
@@ -299,21 +287,6 @@ export function chartQueryAnchor(period: Exclude<ChartPeriod, "years">, anchorDa
     return `${measurementMonth(anchorDay)}-01`;
   }
   return `${anchorDay.slice(0, 4)}-01-01`;
-}
-
-/** Steps to the neighbouring calendar week, month or year. */
-export function stepAnchor(period: ChartPeriod, anchorDay: string, direction: -1 | 1): string {
-  if (period === "week") {
-    const week = calendarWeek(anchorDay);
-    return direction === 1 ? addDays(week.last, 1) : addDays(week.first, -1);
-  }
-  if (period === "month") {
-    return addMonthsClamped(anchorDay, direction);
-  }
-  if (period === "year") {
-    return addMonthsClamped(anchorDay, 12 * direction);
-  }
-  return anchorDay;
 }
 
 function shortDay(day: string): string {
@@ -665,9 +638,4 @@ export function limitSelection(current: readonly string[], toAdd: readonly strin
     }
   }
   return selection;
-}
-
-export function reconcileSelection(ids: readonly string[], foundIds: readonly string[]): string[] {
-  const found = new Set(foundIds);
-  return ids.filter((id) => found.has(id));
 }

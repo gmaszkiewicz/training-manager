@@ -76,8 +76,8 @@ export interface ChartBody {
 
 type ChartResult = { query: string; ok: true; body: ChartBody } | { query: string; ok: false };
 
-/** Entry days for the period picker: `null` while loading, `[]` when the read failed or there are none. */
-type DaysState = { query: string; days: string[] } | null;
+/** Entry days for the period picker: `null` while loading; `days: null` when the read failed. */
+type DaysState = { query: string; days: string[] | null } | null;
 
 interface PickerOption {
   key: string;
@@ -137,13 +137,13 @@ async function fetchJson(query: string): Promise<unknown> {
   }
 }
 
-function readDays(value: unknown): string[] {
+function readDays(value: unknown): string[] | null {
   if (value === null || typeof value !== "object") {
-    return [];
+    return null;
   }
   const days = (value as Record<string, unknown>).days;
   if (!Array.isArray(days)) {
-    return [];
+    return null;
   }
   return entryDays(days.filter((day): day is string => typeof day === "string"));
 }
@@ -467,10 +467,12 @@ export default function MeasurementCharts({
   const rootRef = useRef<HTMLDivElement>(null);
 
   let days: string[] | null = null;
+  let daysFailed = false;
   if (entries !== undefined) {
     days = entryDays(entries.map((entry) => entry.measured_on));
   } else if (remoteDays !== null && remoteDays.query === daysQuery) {
     days = remoteDays.days;
+    daysFailed = remoteDays.days === null;
   }
   const query = chartQuery(view, period, anchor, years, traineeId);
   const heading = view.kind === "selected" ? selectedChartHeading(view.ids.length) : chartHeading(period);
@@ -527,20 +529,24 @@ export default function MeasurementCharts({
       return;
     }
     const serial = ++requestSerial.current;
-    const selectedIds = view.kind === "selected";
+    const requestedIds = view.kind === "selected" ? visualizedIds : null;
     void fetchJson(query).then((payload) => {
       if (serial !== requestSerial.current) {
         return;
       }
-      shownQuery.current = query;
       const body = readChartBody(payload);
+      // A failed read is not "on screen": coming back to this query reads it again.
+      shownQuery.current = body === null ? null : query;
       setResult(body === null ? { query, ok: false } : { query, ok: true, body });
-      if (selectedIds && body !== null) {
+      if (requestedIds !== null && body !== null) {
         // Deleted entries are missing from the read: drop them from the selection, falling back to a period if none remain.
-        reconcile(body.entries.map((entry) => entry.id));
+        reconcile(
+          requestedIds,
+          body.entries.map((entry) => entry.id),
+        );
       }
     });
-  }, [local, restored, query, view.kind, reconcile]);
+  }, [local, restored, query, view.kind, visualizedIds, reconcile]);
 
   // The summary heading belongs to the server-rendered tile around this island; keep it in step with the period.
   useEffect(() => {
@@ -564,7 +570,8 @@ export default function MeasurementCharts({
 
   const selected = view.kind === "selected";
   let body: ChartBody | null = null;
-  let failed = false;
+  // Without the entry days the period picker cannot be built, so a failed days read is a failed tile.
+  let failed = daysFailed && !selected;
   if (entries !== undefined) {
     body = localBody(entries, view, period, anchor, years);
   } else if (result !== null && result.query === query) {

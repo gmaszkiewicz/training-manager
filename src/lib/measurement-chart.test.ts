@@ -35,8 +35,6 @@ import {
   monthAnchor,
   parseChartAnchor,
   parseChartPeriod,
-  reconcileSelection,
-  stepAnchor,
   xTicks,
   yAxis,
 } from "@/lib/measurement-chart";
@@ -126,32 +124,6 @@ describe("chartWindow", () => {
       start: "2024-01-01T00:00:00",
       end: "2025-01-01T00:00:00",
     });
-  });
-});
-
-describe("stepAnchor", () => {
-  it("steps to the neighbouring calendar week, across months", () => {
-    expect(stepAnchor("week", "2026-10-28", 1)).toBe("2026-11-02");
-    expect(stepAnchor("week", "2026-10-14", 1)).toBe("2026-10-19");
-    expect(stepAnchor("week", "2026-10-02", -1)).toBe("2026-09-27");
-    expect(stepAnchor("week", "2026-01-01", -1)).toBe("2025-12-28");
-  });
-
-  it("keeps the anchor a valid day at month ends", () => {
-    expect(stepAnchor("month", "2026-01-31", 1)).toBe("2026-02-28");
-    expect(stepAnchor("month", "2026-03-31", -1)).toBe("2026-02-28");
-    expect(stepAnchor("month", "2026-12-15", 1)).toBe("2027-01-15");
-    expect(stepAnchor("month", "2026-01-15", -1)).toBe("2025-12-15");
-  });
-
-  it("steps a year and keeps a leap day valid", () => {
-    expect(stepAnchor("year", "2026-10-28", 1)).toBe("2027-10-28");
-    expect(stepAnchor("year", "2024-02-29", 1)).toBe("2025-02-28");
-  });
-
-  it("does not step all years", () => {
-    expect(stepAnchor("years", "2026-10-28", 1)).toBe("2026-10-28");
-    expect(stepAnchor("years", "2026-10-28", -1)).toBe("2026-10-28");
   });
 });
 
@@ -320,13 +292,6 @@ describe("limitSelection", () => {
   it("adds nothing once the selection is full", () => {
     const full = ids.slice(0, 15);
     expect(limitSelection(full, ["new"], CHART_SELECTION_LIMIT)).toEqual(full);
-  });
-});
-
-describe("reconcileSelection", () => {
-  it("drops ids that were not found and keeps the order", () => {
-    expect(reconcileSelection(["c", "a", "b", "d"], ["a", "c", "d"])).toEqual(["c", "a", "d"]);
-    expect(reconcileSelection(["a"], [])).toEqual([]);
   });
 });
 

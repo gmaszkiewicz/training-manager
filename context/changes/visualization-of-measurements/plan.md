@@ -43,12 +43,12 @@ Verify with `npm run lint`, `npm run check:home-tokens`, `npx astro check`, `npm
 
 - No week strip or day buttons in the list. The list stays month-paged.
 - Tile prev/next does not move the list's month. Only list to tile syncing exists.
-- No aggregation or averaging: every point is a real entry.
-- No new database index, migration or RPC. The range read uses the existing unique `(trainee_id, measured_on)` index.
+- No aggregation or averaging: every point is a real entry. *(Revised in implementation: period views plot the latest entry per day, month or year. See Deviations.)*
+- No new database index, migration or RPC. The range read uses the existing unique `(trainee_id, measured_on)` index. *(Revised: one additive RPC, `measurement_days`. See Deviations.)*
 - No good/bad (red/green) colouring of differences (PRD non-goal).
 - No chart export, zoom or brush. No charts on the hub or the profile.
-- The selection is not mirrored to a cookie (UUID lists are too large). The period and selection apply after hydration.
-- No server-side render of chart data. The tile shows a loading state and fetches after hydration.
+- The selection is not mirrored to a cookie (UUID lists are too large). The selection applies after hydration. *(Revised: the period and anchor are kept in a cookie. See Deviations.)*
+- No server-side render of chart data. The tile shows a loading state and fetches after hydration. *(Revised: the initial period chart is server-rendered. See Deviations.)*
 
 ## Implementation Approach
 
@@ -162,7 +162,7 @@ Pure chart rules, exported field limits, two new service reads and the `/api/mea
 
 #### Manual Verification:
 
-- `GET /api/measurements/chart?period=years&anchor=<today>` as a trainee returns every entry oldest first, and the tooltip-ready differences match the list for the first entry of a month
+- `GET /api/measurements/chart?period=years&anchor=<today>` as a trainee returns every entry oldest first, and the tooltip-ready differences match the list for the first entry of a month *(as shipped: `period=years&from=<year-4>&to=<year>`; see Deviations)*
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -255,7 +255,7 @@ Install the chart component, add the colour tokens, and build the `MeasurementCh
 
 - On the production preview (`npm run preview`), the Charts tile hydrates and renders eight coloured charts in light and dark themes (no Auto Minify or CommonJS breakage)
 - Hovering a point shows the date and time, the value with its unit, and a difference matching the list row, including the first entry of a month
-- Week / Month / Year / Years and prev/next change the charts. Changing the list month moves Month mode. The period survives a reload
+- Week / Month / Year / Years and prev/next change the charts. Changing the list month does not move the tile (independent pickers, contract 2.4). The period survives a reload
 - Closing the tile and reloading renders it closed with no flash. The add form's own state is unaffected
 - A trainer viewing a linked trainee sees the same tile above the read-only list
 - The layout at phone width has no horizontal scroll, and the kitchen sinks show every state
@@ -363,8 +363,8 @@ Role and accessible-name selectors only.
   - Navel 299 → upper bound 300.
   - Empty → `null`.
 - `xTicks`:
-  - 8 entries → 8 ticks. 9 entries in a month → Mondays.
-  - Year → 12 month ticks.
+  - 8 entries in a week or month → 8 ticks. 9 entries in a month → Mondays.
+  - Year → 12 month ticks, and Years → one tick per year, whatever the entry count.
   - `"selected"` spans of 3 days, 20 days and 200 days.
 - `measuredOnMs` across a DST date gives exact 24 h steps.
 - `limitSelection`:
@@ -397,7 +397,21 @@ Role and accessible-name selectors only.
 
 ## Migration Notes
 
-No schema change. New localStorage keys and one new cookie (`tm.measurements.charts.<account>`) need no cleanup. When a key is missing, the defaults apply (tile open, Month mode, nothing selected).
+No schema change. New localStorage keys and two new cookies (`tm.measurements.charts.<account>` for the open state, `tm.measurements.chartsPeriod.<account>.<trainee>` for the period and anchor) need no cleanup. When a key is missing, the defaults apply (tile open, Month mode, nothing selected).
+
+## Deviations
+
+These changes were made during implementation (commits f07c65c, 26627bc, 87a5697) and recorded during the implementation review (`reviews/impl-review.md`, F1). Where this section and the phase contracts above disagree, this section describes what shipped.
+
+- **Aggregation**: Week and Month views plot the latest entry per day, Year the latest per month, Years the latest per year (`latestPerBucket`), with points snapped to the bucket start. Visualize mode still plots every selected entry. The tooltip shows the difference against the previous journal entry (`vs <previous entry>`, `previous_measured_on`).
+- **Placement**: The Charts tile is a separate card below the measurements table for trainees, and below the read-only list for trainers. It is no longer above the add form, or between the trainee picker and the list.
+- **Server render and period cookie**: `measurements.astro` reads the period and anchor from the `chartsPeriod` cookie and server-renders the initial chart (`readInitialChart` → `readMeasurementRange` + `readMeasurementDays`). The island writes the cookie as well as localStorage. The selection is still never mirrored to a cookie.
+- **Years**: A fixed span of the last `YEARS_SPAN_LIMIT` = 5 calendar years, requested with `period=years&from=YYYY&to=YYYY`. `period=years&anchor=…` returns 400. The label is "Last 5 years". `measurement_months` is not used.
+- **Period controls**: The Week / Month / Year / Years selector is an `aria-pressed` button group, not `ui/tabs`. Prev/next jump to the nearest period that has entries, using the API's `days=1` mode (`readMeasurementDays`). A picker lists the periods that have entries. In Years, prev/next are disabled, not hidden. `stepAnchor` and `reconcileSelection` were removed as unused (review F9).
+- **Days RPC**: `readMeasurementDays` calls the additive `measurement_days(p_trainee_id)` RPC (`supabase/migrations/20261028200000_measurement_days.sql`, security invoker, one `text[]` value) instead of paging through every `measured_on` row (review F3).
+- **Heading**: The tile heading is per period ("Weekly/Monthly/Yearly progression" with a note). In Visualize mode it reads "Selected entries (n)".
+- **Criteria as verified**: Progress rows keep their original titles. Row 1.6 was verified with `period=years&from=…&to=…`. Row 2.9 was verified as "the list month does not move the tile", per contract 2.4 (review F4).
+- **X ticks**: Year and Years always tick per month or per year. Month falls back to Mondays when entries are less than 4 days apart. Tick labels are thinned to the chart width (`useElementWidth`).
 
 ## References
 

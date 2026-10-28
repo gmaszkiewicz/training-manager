@@ -223,8 +223,8 @@ if (supabase && user) {
               pageCount = listed.pageCount;
               pageSize = listed.pageSize;
               month = listed.month;
+              await readInitialChart(supabase, user.id, selectedLink.traineeId, month);
             }
-            await readInitialChart(supabase, user.id, selectedLink.traineeId, month);
           }
         }
       }

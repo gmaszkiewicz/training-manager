@@ -396,24 +396,11 @@ export async function readMeasurementDays(
   traineeId: string,
 ): Promise<{ ok: true; days: string[] } | { ok: false }> {
   try {
-    const measuredOns: string[] = [];
-    for (let from = 0; ; from += RANGE_PAGE_ROWS) {
-      const { data, error } = await supabase
-        .from("measurements")
-        .select("measured_on")
-        .eq("trainee_id", traineeId)
-        .order("measured_on", { ascending: true })
-        .range(from, from + RANGE_PAGE_ROWS - 1);
-
-      if (error) {
-        return { ok: false };
-      }
-
-      measuredOns.push(...data.map((row) => row.measured_on));
-      if (data.length < RANGE_PAGE_ROWS) {
-        return { ok: true, days: entryDays(measuredOns) };
-      }
+    const { data, error } = await supabase.rpc("measurement_days", { p_trainee_id: traineeId });
+    if (error) {
+      return { ok: false };
     }
+    return { ok: true, days: entryDays(data) };
   } catch {
     return { ok: false };
   }

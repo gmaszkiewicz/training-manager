@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { readStored, writeStored } from "@/lib/browser-storage";
-import { CHART_SELECTION_LIMIT, limitSelection, reconcileSelection } from "@/lib/measurement-chart";
+import { CHART_SELECTION_LIMIT, limitSelection } from "@/lib/measurement-chart";
 import { chartsSelectionStorageKey, chartsVisualizedStorageKey } from "@/lib/measurement-page";
 
 /** Sent on `window` after every write, so the list and the charts tile (separate islands) re-read the selection. */
@@ -28,7 +28,7 @@ export interface ChartSelection {
   setChecked: (ids: readonly string[]) => void;
   visualize: () => void;
   clear: () => void;
-  reconcile: (foundIds: readonly string[]) => void;
+  reconcile: (requestedIds: readonly string[], foundIds: readonly string[]) => void;
 }
 
 interface Options {
@@ -62,9 +62,22 @@ function parseIds(value: string | null): string[] {
   }
 }
 
+// This page's writes, shared by both islands. Storage only seeds the first read, so a blocked or failing
+// localStorage still leaves the checkboxes and buttons working for this visit.
+const pageSelection = new Map<string, string>();
+
+function readSelection(key: string): string | null {
+  return pageSelection.get(key) ?? readStored(key);
+}
+
+function writeSelection(key: string, value: string): void {
+  pageSelection.set(key, value);
+  writeStored(key, value);
+}
+
 function readSnapshot(keys: SelectionKeys): string {
   // A string snapshot compares by value, so an unchanged selection never re-renders.
-  return `${readStored(keys.checked) ?? ""}\n${readStored(keys.visualized) ?? ""}`;
+  return `${readSelection(keys.checked) ?? ""}\n${readSelection(keys.visualized) ?? ""}`;
 }
 
 function parseSnapshot(snapshot: string): Selection {
@@ -153,8 +166,8 @@ export function useMeasurementChartSelection(
         }
         return;
       }
-      writeStored(keys.checked, JSON.stringify(next.checked));
-      writeStored(keys.visualized, JSON.stringify(next.visualized));
+      writeSelection(keys.checked, JSON.stringify(next.checked));
+      writeSelection(keys.visualized, JSON.stringify(next.visualized));
       const detail: ChartSelectionEventDetail = { checkedKey: keys.checked, cleared };
       window.dispatchEvent(new CustomEvent(chartSelectionEvent, { detail }));
     },
@@ -178,17 +191,17 @@ export function useMeasurementChartSelection(
   }, [write]);
 
   const reconcile = useCallback(
-    (foundIds: readonly string[]): void => {
+    (requestedIds: readonly string[], foundIds: readonly string[]): void => {
       const selection = current();
       const found = new Set(foundIds);
-      // Only the visualized ids were read, so only those can be known stale; other checked ids stay.
-      const stale = new Set(selection.visualized.filter((id) => !found.has(id)));
-      if (stale.size === 0) {
+      // Only ids this read asked for can be known stale; ids visualized since then, and other checked ids, stay.
+      const stale = new Set(requestedIds.filter((id) => !found.has(id)));
+      if (!selection.visualized.some((id) => stale.has(id))) {
         return;
       }
       write({
         checked: selection.checked.filter((id) => !stale.has(id)),
-        visualized: reconcileSelection(selection.visualized, foundIds),
+        visualized: selection.visualized.filter((id) => !stale.has(id)),
       });
     },
     [current, write],
