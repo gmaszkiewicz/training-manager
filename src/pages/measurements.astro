@@ -5,8 +5,11 @@ import Topbar from "@/components/Topbar.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
   addFormStorageKey,
+  chartsOpenStorageKey,
+  chartsPeriodStorageKey,
   dayStorageKey,
   parseAddFormOpen,
+  parseChartsOpen,
   defaultPageSize,
   journalMonth,
   journalPageStorageKey,
@@ -20,7 +23,21 @@ import {
 } from "@/lib/measurement-page";
 import { requestedNoticeEmail } from "@/lib/collaborations";
 import { ensureProfile } from "@/lib/services/ensure-profile";
-import { getMeasurement, readMeasurementPage } from "@/lib/services/measurements";
+import type { ChartBody } from "@/components/measurements/MeasurementCharts";
+import {
+  defaultChartPeriod,
+  lastYearsRange,
+  monthAnchor,
+  parseChartPreference,
+  type ChartPreference,
+  type ChartPeriod,
+} from "@/lib/measurement-chart";
+import {
+  getMeasurement,
+  readMeasurementDays,
+  readMeasurementPage,
+  readMeasurementRange,
+} from "@/lib/services/measurements";
 import { listTrainerLinks } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 import { measurementNoticeMessage } from "@/lib/measurement-notice";
@@ -68,6 +85,10 @@ let selectedLink: TrainerLink | null = null;
 let trainerLinksLoaded = false;
 let trainerMeasurementsLoaded = false;
 let requestedEmail: string | null = null;
+let chartsPeriod: ChartPeriod = defaultChartPeriod;
+let chartsAnchor: string | null = null;
+let chartInitial: ChartBody | null = null;
+let chartDays: string[] | null = null;
 const now = new Date();
 const today = utcToday(now);
 let month = measurementMonth(today);
@@ -90,6 +111,38 @@ function preferredJournalPage(accountUserId: string, subjectTraineeId: string): 
 
 function preferredAddForm(accountUserId: string): boolean | null {
   return parseAddFormOpen(cookieValue(addFormStorageKey(accountUserId)));
+}
+
+function preferredChartsOpen(accountUserId: string): boolean | null {
+  return parseChartsOpen(cookieValue(chartsOpenStorageKey(accountUserId)));
+}
+
+function preferredChartsPeriod(accountUserId: string, subjectTraineeId: string): ChartPreference {
+  return parseChartPreference(cookieValue(chartsPeriodStorageKey(accountUserId, subjectTraineeId)));
+}
+
+// The tile's first render: the remembered period around the list's month, plus the days for its picker. A failed
+// read leaves both to the island's own fetch.
+async function readInitialChart(
+  client: NonNullable<typeof supabase>,
+  accountUserId: string,
+  subjectTraineeId: string,
+  listMonth: string,
+): Promise<void> {
+  const preference = preferredChartsPeriod(accountUserId, subjectTraineeId);
+  chartsPeriod = preference.period;
+  // The charts keep their own week, month or year apart from the list; only a first visit starts from its month.
+  chartsAnchor = preference.anchor ?? monthAnchor(listMonth, today);
+  const [range, days] = await Promise.all([
+    readMeasurementRange(client, subjectTraineeId, {
+      period: chartsPeriod,
+      anchor: chartsAnchor,
+      years: lastYearsRange(today),
+    }),
+    readMeasurementDays(client, subjectTraineeId),
+  ]);
+  chartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
+  chartDays = days.ok ? days.days : null;
 }
 
 if (supabase && user) {
@@ -117,6 +170,9 @@ if (supabase && user) {
           pageCount = listed.pageCount;
           pageSize = listed.pageSize;
           month = listed.month;
+        }
+        if (listed.ok && editId === null) {
+          await readInitialChart(supabase, user.id, user.id, month);
         }
         if (editId !== null) {
           const loaded = await getMeasurement(supabase, user.id, editId);
@@ -167,6 +223,7 @@ if (supabase && user) {
               pageCount = listed.pageCount;
               pageSize = listed.pageSize;
               month = listed.month;
+              await readInitialChart(supabase, user.id, selectedLink.traineeId, month);
             }
           }
         }
@@ -193,6 +250,11 @@ if (supabase && user) {
       accountUserId={traineeAccountId}
       subjectTraineeId={traineeAccountId}
       addFormOpen={traineeAccountId ? preferredAddForm(traineeAccountId) : null}
+      chartsOpen={traineeAccountId ? preferredChartsOpen(traineeAccountId) : null}
+      chartsPeriod={chartsPeriod}
+      chartsAnchor={chartsAnchor}
+      chartInitial={chartInitial}
+      chartDays={chartDays}
       today={today}
       dates={dates}
       page={page}
@@ -211,6 +273,11 @@ if (supabase && user) {
       trainerMeasurementsLoaded={trainerMeasurementsLoaded}
       entries={entries}
       accountUserId={trainerAccountId}
+      chartsOpen={trainerAccountId ? preferredChartsOpen(trainerAccountId) : null}
+      chartsPeriod={chartsPeriod}
+      chartsAnchor={chartsAnchor}
+      chartInitial={chartInitial}
+      chartDays={chartDays}
       today={today}
       dates={dates}
       page={page}

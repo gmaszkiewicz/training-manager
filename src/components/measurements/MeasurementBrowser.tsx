@@ -19,7 +19,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useMeasurementChartSelection } from "@/components/hooks/useMeasurementChartSelection";
+import { readStored, writeCookie, writePreference } from "@/lib/browser-storage";
 import { monthLabel, widestMonthLabel } from "@/lib/journal-calendar";
+import { CHART_SELECTION_LIMIT, limitSelection } from "@/lib/measurement-chart";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
 import {
   dayStorageKey,
@@ -485,6 +488,7 @@ function MeasurementEntry({
   openEditingId,
   noteOpen,
   selected,
+  selectDisabled,
   isLast,
   onOpenNote,
   onSelectedChange,
@@ -494,6 +498,7 @@ function MeasurementEntry({
   openEditingId: string | null;
   noteOpen: boolean;
   selected: boolean;
+  selectDisabled: boolean;
   isLast: boolean;
   onOpenNote: () => void;
   onSelectedChange: (selected: boolean) => void;
@@ -510,6 +515,7 @@ function MeasurementEntry({
         <TableCell className={cn("w-10 px-0 text-center", stickyBodyClass, "left-0")}>
           <Checkbox
             checked={selected}
+            disabled={selectDisabled}
             onCheckedChange={(checked) => {
               onSelectedChange(checked === true);
             }}
@@ -621,35 +627,6 @@ function clampPage(page: number, pageCount: number): number {
     return pageCount;
   }
   return whole;
-}
-
-function readStored(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStored(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // Storage can be blocked; the controls still update on screen.
-  }
-}
-
-function writeCookie(name: string, value: string): void {
-  try {
-    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  } catch {
-    // The document request then keeps the default month and page size.
-  }
-}
-
-function writePreference(key: string, value: string): void {
-  writeStored(key, value);
-  writeCookie(key, value);
 }
 
 function isPageSize(value: unknown): value is PageSize {
@@ -779,7 +756,12 @@ export default function MeasurementBrowser({
       });
   const initialMonth = localInitial?.day ?? serverMonth ?? focusedMonth ?? measurementMonth(todayValue);
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const { checkedIds, visualizedIds, setChecked, visualize, clear } = useMeasurementChartSelection(
+    accountId,
+    subjectId,
+  );
+  const selectedIds: ReadonlySet<string> = new Set(checkedIds);
+  const selectionFull = checkedIds.length >= CHART_SELECTION_LIMIT;
   const [pageSize, setPageSize] = useState<PageSize>(isPageSize(pageSizeProp) ? pageSizeProp : defaultPageSize);
   const [month, setMonth] = useState(initialMonth);
   const [page, setPage] = useState(localInitial?.page ?? pageProp ?? 1);
@@ -912,29 +894,21 @@ export default function MeasurementBrowser({
   const headerChecked = allVisibleSelected ? true : visibleSelectedCount > 0 ? "indeterminate" : false;
 
   function setVisibleSelected(selected: boolean): void {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      for (const entry of visibleEntries) {
-        if (selected) {
-          next.add(entry.id);
-        } else {
-          next.delete(entry.id);
-        }
-      }
-      return next;
-    });
+    const visibleIds = visibleEntries.map((entry) => entry.id);
+    if (selected) {
+      setChecked(limitSelection(checkedIds, visibleIds, CHART_SELECTION_LIMIT));
+      return;
+    }
+    const visible = new Set(visibleIds);
+    setChecked(checkedIds.filter((id) => !visible.has(id)));
   }
 
   function setEntrySelected(id: string, selected: boolean): void {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (selected) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
+    if (selected) {
+      setChecked(limitSelection(checkedIds, [id], CHART_SELECTION_LIMIT));
+      return;
+    }
+    setChecked(checkedIds.filter((checkedId) => checkedId !== id));
   }
   const showPager = paged ? pageCount > 1 : monthRows.length > pageSize;
   const noMeasurementsYet = paged
@@ -981,6 +955,7 @@ export default function MeasurementBrowser({
     const nextTop = selected.offsetTop - container.clientHeight / 2 + selected.clientHeight / 2;
     container.scrollTop = Math.max(0, nextTop);
   }, [monthListOpen, monthListScrolls, month]);
+
   const cancelHref = measurementCancelHref(openEditingId);
   const confirmingEntry =
     openConfirmingId === null
@@ -1073,7 +1048,7 @@ export default function MeasurementBrowser({
 
   return (
     <div className="w-full">
-      <div className="measurement-row:gap-4 mt-6 flex w-full flex-nowrap items-center gap-1">
+      <div className="measurement-row:flex-nowrap measurement-row:gap-4 mt-6 flex w-full flex-wrap items-center gap-1 gap-y-2">
         <div ref={monthFieldRef} className="relative z-20 w-auto min-w-0 flex-none">
           <div className="measurement-row:gap-2 flex min-w-0 items-center gap-1" role="group" aria-label="Month">
             <Button
@@ -1233,6 +1208,7 @@ export default function MeasurementBrowser({
                     openEditingId={openEditingId}
                     noteOpen={openNoteId === entry.id}
                     selected={selectedIds.has(entry.id)}
+                    selectDisabled={selectionFull && !selectedIds.has(entry.id)}
                     isLast={index === visibleEntries.length - 1}
                     onOpenNote={() => {
                       setOpenNoteId((current) => (current === entry.id ? null : entry.id));
@@ -1277,6 +1253,35 @@ export default function MeasurementBrowser({
             </div>
           ) : null}
         </>
+      )}
+      {noMeasurementsYet ? null : (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={checkedIds.length === 0}
+            onClick={() => {
+              visualize();
+            }}
+          >
+            Visualize
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={checkedIds.length === 0 && visualizedIds.length === 0}
+            onClick={() => {
+              clear();
+            }}
+          >
+            Clear
+          </Button>
+          <p className="text-muted-foreground text-sm">
+            {checkedIds.length} of {CHART_SELECTION_LIMIT} selected
+          </p>
+        </div>
       )}
       {confirmingEntry === null ? null : (
         <DeleteConfirmToast entry={confirmingEntry} editingId={openEditingId} cancelHref={cancelHref} />

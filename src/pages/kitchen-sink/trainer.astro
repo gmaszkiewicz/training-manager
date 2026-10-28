@@ -74,7 +74,8 @@ const sampleEntry: MeasurementWithDeltas = {
           TrainerPanel in trainer mode with links loaded, two trainees in a centered email field, the first array item
           selected, the left arrow disabled, the right arrow linking to the second trainee, one sample measurement
           entry, and no server error. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on
-          screen. The sample row has no Edit or Delete link. Form ids are unprefixed.
+          screen. The sample row has no Edit or Delete link. The Charts tile is its own card below the panel and its
+          read-only list, charting the sample entry in local mode. Form ids are unprefixed.
         </p>
         <TrainerPanel
           mode="trainer"
@@ -87,6 +88,8 @@ const sampleEntry: MeasurementWithDeltas = {
           entries={[sampleEntry]}
           idPrefix=""
           today="2026-09-15"
+          month="2026-09"
+          chartEntries={[sampleEntry]}
         />
       </section>
 

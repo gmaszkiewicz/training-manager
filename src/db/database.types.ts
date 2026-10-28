@@ -220,6 +220,7 @@ export type Database = {
           trainee_id: string;
         }[];
       };
+      measurement_days: { Args: { p_trainee_id: string }; Returns: string[] };
       measurement_months: {
         Args: { p_trainee_id: string };
         Returns: {

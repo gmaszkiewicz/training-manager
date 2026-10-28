@@ -1,7 +1,9 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import TraineeJournal from "@/components/journal/TraineeJournal.astro";
+import ChartsTile from "@/components/measurements/ChartsTile.astro";
 import JournalSinkStates from "@/components/kitchen-sink/JournalSinkStates";
+import { withDeltas } from "@/lib/measurement-deltas";
 import { measurementFields } from "@/lib/measurement-input";
 import type { FieldDelta, MeasurementField, MeasurementWithDeltas } from "@/types";
 
@@ -30,6 +32,32 @@ const sampleEntry: MeasurementWithDeltas = {
   ...fieldValues,
   deltas,
 };
+
+const chartDays = [
+  "2026-08-28T07:30:00",
+  "2026-09-02T07:15:00",
+  "2026-09-09T07:40:00",
+  "2026-09-16T07:20:00",
+  "2026-09-23T07:35:00",
+  "2026-09-29T07:10:00",
+];
+const chartWaves = [0, 1.2, -0.6, 0.9, -1.1, 0.4];
+
+const chartEntries: MeasurementWithDeltas[] = withDeltas(
+  chartDays.map((measuredOn, step) => ({
+    id: `sink-chart-${String(step + 1)}`,
+    measured_on: measuredOn,
+    created_at: `${measuredOn}.000Z`,
+    note: null,
+    ...(Object.fromEntries(
+      measurementFields.map((definition, index) => [
+        definition.field,
+        Math.round((fieldValues[definition.field] + chartWaves[(step + index) % chartWaves.length] - step * 0.3) * 10) /
+          10,
+      ]),
+    ) as Record<MeasurementField, number>),
+  })),
+).reverse();
 ---
 
 <Layout title="Kitchen sink — journal">
@@ -54,6 +82,72 @@ const sampleEntry: MeasurementWithDeltas = {
           Form ids are unprefixed.
         </p>
         <TraineeJournal measurementsLoaded={true} entries={[sampleEntry]} serverError={null} today="2026-09-15" />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-charts-default">
+        <h2 id="state-charts-default" class="border-border border-b pb-2 text-lg font-semibold">
+          Charts, default
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          ChartsTile open in local mode, headed "Monthly progression" with the muted note "Shows the last entry of each
+          day", with six sample entries from 28 Aug to 29 Sep 2026 and{" "}
+          <code class="text-foreground">today="2026-09-30"</code>. Month mode charts the five September entries, one
+          chart per field in its own <code class="text-foreground">--chart-1..8</code> colour. The first September
+          entry's tooltip difference is against the August entry. Week / Month / Year / Years and previous/next work on
+          the same data. The period picker lists only the weeks, months and years that have entries, and Years shows a
+          fixed, disabled "Last 5 years" box. Each point sits on its day, month or year tick, and the tooltip names the
+          entry its difference is against. On <code class="text-foreground">/measurements</code> the tile is its own
+          card below the journal card.
+        </p>
+        <ChartsTile readOnly={false} month="2026-09" today="2026-09-30" startsOpen={true} entries={chartEntries} />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-charts-closed">
+        <h2 id="state-charts-closed" class="border-border border-b pb-2 text-lg font-semibold">
+          Charts, closed
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          ChartsTile with <code class="text-foreground">{"startsOpen={false}"}</code>: only the summary, here rendered
+          with <code class="text-foreground">initialPeriod="week"</code> ("Weekly progression", "Shows the last entry of
+          each day"), and its chevron.
+        </p>
+        <ChartsTile
+          readOnly={false}
+          month="2026-09"
+          today="2026-09-30"
+          startsOpen={false}
+          entries={chartEntries}
+          initialPeriod="week"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-charts-empty">
+        <h2 id="state-charts-empty" class="border-border border-b pb-2 text-lg font-semibold">
+          Charts, empty period
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          The same entries with <code class="text-foreground">month="2026-11"</code> and{" "}
+          <code class="text-foreground">today="2026-11-15"</code>, so November shows "No measurements in this period".
+        </p>
+        <ChartsTile readOnly={false} month="2026-11" today="2026-11-15" startsOpen={true} entries={chartEntries} />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-charts-loading">
+        <h2 id="state-charts-loading" class="border-border border-b pb-2 text-lg font-semibold">
+          Charts, loading
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          ChartsTile with <code class="text-foreground">forceLoading</code>, showing "Loading charts…" as it does before
+          the first chart read returns.
+        </p>
+        <ChartsTile
+          readOnly={false}
+          month="2026-09"
+          today="2026-09-30"
+          startsOpen={true}
+          entries={[]}
+          forceLoading={true}
+        />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-hover">

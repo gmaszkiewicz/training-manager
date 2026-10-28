@@ -1,0 +1,135 @@
+---
+import MeasurementCharts, { type ChartBody } from "@/components/measurements/MeasurementCharts";
+import { chartHeading, defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
+import { chartsOpenStorageKey } from "@/lib/measurement-page";
+import type { MeasurementWithDeltas } from "@/types";
+
+interface Props {
+  accountUserId?: string;
+  subjectTraineeId?: string;
+  readOnly: boolean;
+  month?: string;
+  today?: string;
+  startsOpen: boolean;
+  /** Kitchen-sink local mode: chart these entries without a fetch. */
+  entries?: MeasurementWithDeltas[];
+  /** Kitchen-sink only: hold the loading state. */
+  forceLoading?: boolean;
+  /** The period from the preference cookie, so the heading and charts are right on the first render. */
+  initialPeriod?: ChartPeriod;
+  /** The remembered week, month or year; `null` starts from the list's month. */
+  initialAnchor?: string | null;
+  /** The server's chart read for `initialPeriod`; `null` leaves the read to the island. */
+  initialChart?: ChartBody | null;
+  initialDays?: string[] | null;
+}
+
+const {
+  accountUserId,
+  subjectTraineeId,
+  readOnly,
+  month,
+  today,
+  startsOpen,
+  entries,
+  forceLoading = false,
+  initialPeriod = defaultChartPeriod,
+  initialAnchor = null,
+  initialChart = null,
+  initialDays = null,
+} = Astro.props;
+
+const storageKey = accountUserId ? chartsOpenStorageKey(accountUserId) : null;
+const heading = chartHeading(initialPeriod);
+const headingId = `charts-${crypto.randomUUID()}`;
+---
+
+<div class="flex justify-center px-4 pb-4">
+  <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
+    <details class="group" data-charts-tile data-storage-key={storageKey} open={startsOpen}>
+      <summary
+        aria-labelledby={`${headingId}-title`}
+        aria-describedby={`${headingId}-note`}
+        class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden"
+      >
+        <span class="flex min-w-0 flex-col">
+          <span id={`${headingId}-title`} data-charts-title>
+            {heading.title}
+          </span>
+          <span
+            id={`${headingId}-note`}
+            data-charts-note
+            class="text-sm font-normal text-muted-foreground"
+            hidden={heading.note === null}
+          >
+            {heading.note}
+          </span>
+        </span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-5 shrink-0 transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6"></path>
+        </svg>
+      </summary>
+      <div class="pt-3">
+        <MeasurementCharts
+          accountUserId={accountUserId}
+          subjectTraineeId={subjectTraineeId}
+          readOnly={readOnly}
+          month={month}
+          today={today}
+          entries={entries}
+          forceLoading={forceLoading}
+          initialPeriod={initialPeriod}
+          initialAnchor={initialAnchor}
+          initialChart={initialChart}
+          initialDays={initialDays}
+          client:load
+        />
+      </div>
+    </details>
+    <script is:inline>
+      (function () {
+        var script = document.currentScript;
+        var details = script && script.previousElementSibling;
+        if (!(details instanceof HTMLDetailsElement)) return;
+        var key = details.getAttribute("data-storage-key");
+        if (!key) return;
+        function remember(value) {
+          try {
+            localStorage.setItem(key, value);
+          } catch (error) {
+            // Storage can be blocked; the cookie still keeps the next visit.
+          }
+          try {
+            document.cookie =
+              encodeURIComponent(key) + "=" + encodeURIComponent(value) + "; Path=/; Max-Age=31536000; SameSite=Lax";
+          } catch (error) {
+            // The choice still stays for this visit.
+          }
+        }
+        details.addEventListener("toggle", function () {
+          remember(details.open ? "open" : "closed");
+        });
+        var stored = null;
+        try {
+          stored = localStorage.getItem(key);
+        } catch (error) {
+          stored = null;
+        }
+        if (stored === "open" || stored === "closed") {
+          details.open = stored === "open";
+          remember(stored);
+        }
+      })();
+    </script>
+  </div>
+</div>
