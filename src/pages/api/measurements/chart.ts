@@ -1,9 +1,15 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 
-import { CHART_SELECTION_LIMIT, chartPeriods, parseChartAnchor, type ChartPeriod } from "@/lib/measurement-chart";
+import {
+  CHART_SELECTION_LIMIT,
+  isYearsRange,
+  parseChartAnchor,
+  type ChartPeriod,
+  type YearsRange,
+} from "@/lib/measurement-chart";
 import { readProfileRole } from "@/lib/services/ensure-profile";
-import { readMeasurementRange, readMeasurementsByIds } from "@/lib/services/measurements";
+import { readMeasurementDays, readMeasurementRange, readMeasurementsByIds } from "@/lib/services/measurements";
 import { createClient } from "@/lib/supabase";
 
 export const prerender = false;
@@ -11,9 +17,16 @@ export const prerender = false;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const periodQuery = z.object({
-  period: z.enum(chartPeriods),
+  period: z.enum(["week", "month", "year"]),
   anchor: z.string().refine((value) => parseChartAnchor(value) !== null),
 });
+
+const yearText = z
+  .string()
+  .regex(/^\d{4}$/)
+  .transform(Number);
+
+const yearsQuery = z.object({ from: yearText, to: yearText }).refine((range) => isYearsRange(range.from, range.to));
 
 const idsQuery = z
   .string()
@@ -27,21 +40,49 @@ function json(body: unknown, status: number): Response {
   });
 }
 
-type ChartQuery = { mode: "period"; period: ChartPeriod; anchor: string } | { mode: "ids"; ids: string[] };
+type ChartQuery =
+  | { mode: "period"; period: ChartPeriod; anchor: string; years: YearsRange | null }
+  | { mode: "ids"; ids: string[] }
+  | { mode: "days" };
 
 function readChartQuery(url: URL): ChartQuery | null {
+  const days = url.searchParams.get("days");
   const ids = url.searchParams.get("ids");
   const period = url.searchParams.get("period");
   const anchor = url.searchParams.get("anchor");
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+  if (days !== null) {
+    if (days !== "1" || ids !== null || period !== null || anchor !== null || from !== null || to !== null) {
+      return null;
+    }
+    return { mode: "days" };
+  }
   if (ids !== null) {
-    if (period !== null || anchor !== null) {
+    if (period !== null || anchor !== null || from !== null || to !== null) {
       return null;
     }
     const parsed = idsQuery.safeParse(ids);
     return parsed.success ? { mode: "ids", ids: parsed.data } : null;
   }
+  if (period === "years") {
+    if (anchor !== null) {
+      return null;
+    }
+    const parsed = yearsQuery.safeParse({ from, to });
+    if (!parsed.success) {
+      return null;
+    }
+    const years = { from: parsed.data.from, to: parsed.data.to };
+    return { mode: "period", period: "years", anchor: `${String(years.from)}-01-01`, years };
+  }
+  if (from !== null || to !== null) {
+    return null;
+  }
   const parsed = periodQuery.safeParse({ period, anchor });
-  return parsed.success ? { mode: "period", period: parsed.data.period, anchor: parsed.data.anchor } : null;
+  return parsed.success
+    ? { mode: "period", period: parsed.data.period, anchor: parsed.data.anchor, years: null }
+    : null;
 }
 
 export const GET: APIRoute = async (context) => {
@@ -58,7 +99,7 @@ export const GET: APIRoute = async (context) => {
   const url = new URL(context.request.url);
   const query = readChartQuery(url);
   if (query === null) {
-    return json({ error: "Invalid period, anchor or ids" }, 400);
+    return json({ error: "Invalid period, anchor, years, ids or days" }, 400);
   }
 
   const role = await readProfileRole(supabase, user.id);
@@ -75,6 +116,14 @@ export const GET: APIRoute = async (context) => {
     traineeId = trainee;
   }
 
+  if (query.mode === "days") {
+    const read = await readMeasurementDays(supabase, traineeId);
+    if (!read.ok) {
+      return json({ error: "Could not load measurements" }, 500);
+    }
+    return json({ days: read.days }, 200);
+  }
+
   if (query.mode === "ids") {
     const read = await readMeasurementsByIds(supabase, traineeId, query.ids);
     if (!read.ok) {
@@ -86,7 +135,7 @@ export const GET: APIRoute = async (context) => {
   const read = await readMeasurementRange(supabase, traineeId, {
     period: query.period,
     anchor: query.anchor,
-    now: new Date(),
+    years: query.years,
   });
   if (!read.ok) {
     return json({ error: "Could not load measurements" }, 500);

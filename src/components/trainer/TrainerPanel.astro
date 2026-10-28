@@ -1,11 +1,14 @@
 ---
+import ChartsTile from "@/components/measurements/ChartsTile.astro";
+import type { ChartBody } from "@/components/measurements/MeasurementCharts";
+import type { ChartPeriod } from "@/lib/measurement-chart";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
 import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
 import { Button } from "@/components/ui/button";
 import { requestOutcomeMessage } from "@/lib/collaborations";
-import type { PageSize } from "@/lib/measurement-page";
+import { addFormStartsOpen, type PageSize } from "@/lib/measurement-page";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { MeasurementWithDeltas } from "@/types";
 
@@ -26,6 +29,14 @@ interface Props {
   pageCount?: number;
   pageSize?: PageSize;
   month?: string;
+  chartsOpen?: boolean | null;
+  chartsPeriod?: ChartPeriod;
+  chartsAnchor?: string | null;
+  /** The server's chart read and entry days for the tile's first render. */
+  chartInitial?: ChartBody | null;
+  chartDays?: string[] | null;
+  /** Kitchen-sink local mode for the charts tile. */
+  chartEntries?: MeasurementWithDeltas[];
 }
 
 const {
@@ -45,6 +56,12 @@ const {
   pageCount,
   pageSize,
   month,
+  chartsOpen = null,
+  chartsPeriod,
+  chartsAnchor = null,
+  chartInitial = null,
+  chartDays = null,
+  chartEntries,
 } = Astro.props;
 
 const toastMessages: string[] = [];
@@ -60,6 +77,8 @@ if (mode === "trainer" && trainerLinksLoaded && selectedLink !== null && !traine
 if (mode !== "trainer") {
   toastMessages.push("Could not open your journal");
 }
+const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
+const showCharts = accountUserId !== undefined || chartEntries !== undefined;
 const requestNotice =
   mode === "trainer" && requestedEmail !== null ? requestOutcomeMessage("sent", requestedEmail) : null;
 ---
@@ -119,3 +138,18 @@ const requestNotice =
     )}
   </div>
 </div>
+{mode === "trainer" && trainerLinksLoaded && selectedLink && showCharts ? (
+  <ChartsTile
+    accountUserId={accountUserId}
+    subjectTraineeId={selectedLink.traineeId}
+    readOnly={true}
+    month={month}
+    today={today}
+    startsOpen={chartsStartOpen}
+    initialPeriod={chartsPeriod}
+    initialAnchor={chartsAnchor}
+    initialChart={chartInitial}
+    initialDays={chartDays}
+    entries={chartEntries}
+  />
+) : null}

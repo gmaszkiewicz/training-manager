@@ -28,6 +28,9 @@ const FILES = [
   "src/components/measurements/MeasurementForm.tsx",
   "src/components/journal/TraineeJournal.astro",
   "src/components/measurements/MeasurementBrowser.tsx",
+  "src/components/measurements/ChartsTile.astro",
+  "src/components/measurements/MeasurementCharts.tsx",
+  "src/components/measurements/MeasurementChart.tsx",
   "src/components/trainer/TrainerPanel.astro",
   "src/components/trainer/LinkedTraineeField.tsx",
   "src/components/trainer/TraineeEmailSearch.tsx",
@@ -49,6 +52,7 @@ const FILES = [
   "src/components/profile/ProfileDetailsForm.tsx",
   "src/components/account/AccountTabs.tsx",
   "src/components/ui/tabs.tsx",
+  "src/components/ui/chart.tsx",
   "src/components/ui/avatar.tsx",
 ];
 

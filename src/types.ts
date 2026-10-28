@@ -20,6 +20,11 @@ export type MeasurementWithDeltas = MeasurementEntry & {
   deltas: Record<MeasurementField, FieldDelta> | null;
 };
 
+/** A chart read entry: its deltas are against the journal entry measured at `previous_measured_on`. */
+export type ChartMeasurement = MeasurementWithDeltas & {
+  previous_measured_on: string | null;
+};
+
 export interface ProfileDetails {
   email: string;
   firstName: string | null;

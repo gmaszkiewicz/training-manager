@@ -1062,7 +1062,7 @@ const steps = [
   [
     "unlinked trainee chart June difference matches the list",
     rememberJuneChartId(() => request(chartPath("period=month&anchor=2024-06-01"))),
-    { status: 200, json: () => juneDifference(false) },
+    { status: 200, json: () => ({ ...juneDifference(false), previousMeasuredOnMinutes: ["2024-01-28T08:00"] }) },
   ],
   [
     "unlinked trainee chart ids skip an unknown id",
@@ -1072,15 +1072,25 @@ const steps = [
       json: () => ({
         measuredOnMinutes: ["2024-01-02T08:00", "2024-06-01T08:00"],
         weightDeltas: [null, { direction: "up", difference: 8 }],
+        previousMeasuredOnMinutes: [null, "2024-01-28T08:00"],
         window: null,
       }),
     },
   ],
   [
     "unlinked trainee chart years covers every entry",
-    () => request(chartPath(`period=years&anchor=${utcDatePlusDays(0)}`)),
+    () => request(chartPath("period=years&from=2024&to=2026")),
     { status: 200, json: yearsChart },
   ],
+  [
+    "unlinked trainee chart days are oldest first",
+    () => request(chartPath("days=1")),
+    {
+      status: 200,
+      json: () => ({ days: ["2024-01-02", "2024-01-15", "2024-01-28", "2024-06-01", "2026-03-01"] }),
+    },
+  ],
+  ["chart rejects more than five years", () => request(chartPath("period=years&from=2020&to=2025")), { status: 400 }],
   ["chart rejects 16 ids", () => request(chartPath(`ids=${sixteenMeasurementIds.join(",")}`)), { status: 400 }],
   ["chart rejects an invalid anchor", () => request(chartPath("period=month&anchor=2024-02-30")), { status: 400 }],
   [
@@ -1167,8 +1177,13 @@ const steps = [
   ],
   [
     "trainer unlinked chart is empty",
-    () => request(chartPath(`period=years&anchor=${utcDatePlusDays(0)}`, unlinkedTraineeId)),
+    () => request(chartPath("period=years&from=2024&to=2026", unlinkedTraineeId)),
     { status: 200, json: () => ({ entriesLength: 0 }) },
+  ],
+  [
+    "trainer unlinked chart days are empty",
+    () => request(chartPath("days=1", unlinkedTraineeId)),
+    { status: 200, json: () => ({ days: [] }) },
   ],
   [
     "trainer unlinked chart ids are empty",
@@ -1693,6 +1708,12 @@ function jsonProblems(parsed, spec) {
   if (spec.dates !== undefined && !sameStrings(dates, spec.dates)) {
     problems.push(`dates ${JSON.stringify(dates)} expected ${JSON.stringify(spec.dates)}`);
   }
+  if (spec.days !== undefined) {
+    const days = parsed && typeof parsed === "object" ? parsed.days : undefined;
+    if (!sameStrings(days, spec.days)) {
+      problems.push(`days ${JSON.stringify(days)} expected ${JSON.stringify(spec.days)}`);
+    }
+  }
   if (spec.datesBelow !== undefined) {
     const length = Array.isArray(dates) ? dates.length : -1;
     if (!(length < spec.datesBelow)) {
@@ -1730,6 +1751,24 @@ function jsonProblems(parsed, spec) {
       : undefined;
     if (!sameStrings(minutes, spec.measuredOnMinutes)) {
       problems.push(`measured_on ${JSON.stringify(minutes)} expected ${JSON.stringify(spec.measuredOnMinutes)}`);
+    }
+  }
+  if (spec.previousMeasuredOnMinutes !== undefined) {
+    const previous = Array.isArray(entries)
+      ? entries.map((entry) =>
+          entry && typeof entry.previous_measured_on === "string"
+            ? entry.previous_measured_on.replace(" ", "T").slice(0, 16)
+            : null,
+        )
+      : undefined;
+    const same =
+      Array.isArray(previous) &&
+      previous.length === spec.previousMeasuredOnMinutes.length &&
+      previous.every((value, index) => value === spec.previousMeasuredOnMinutes[index]);
+    if (!same) {
+      problems.push(
+        `previous_measured_on ${JSON.stringify(previous)} expected ${JSON.stringify(spec.previousMeasuredOnMinutes)}`,
+      );
     }
   }
   if (spec.weightDeltas !== undefined) {

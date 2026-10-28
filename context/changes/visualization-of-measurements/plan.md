@@ -418,35 +418,35 @@ No schema change. New localStorage keys and one new cookie (`tm.measurements.cha
 
 #### Automated
 
-- [x] 1.1 Unit tests for `measurement-chart.ts` pass: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type check passes: `npx astro check`
-- [x] 1.4 Build passes: `npm run build`
-- [x] 1.5 Smoke passes against the preview with local Supabase: `npm run smoke`
+- [x] 1.1 Unit tests for `measurement-chart.ts` pass: `npm test` — 532bcc8
+- [x] 1.2 Lint passes: `npm run lint` — 532bcc8
+- [x] 1.3 Type check passes: `npx astro check` — 532bcc8
+- [x] 1.4 Build passes: `npm run build` — 532bcc8
+- [x] 1.5 Smoke passes against the preview with local Supabase: `npm run smoke` — 532bcc8
 
 #### Manual
 
-- [x] 1.6 `GET /api/measurements/chart?period=years&anchor=<today>` as a trainee returns every entry oldest first, and the tooltip-ready differences match the list for the first entry of a month
+- [x] 1.6 `GET /api/measurements/chart?period=years&anchor=<today>` as a trainee returns every entry oldest first, and the tooltip-ready differences match the list for the first entry of a month — 532bcc8
 
 ### Phase 2: Charts tile
 
 #### Automated
 
-- [ ] 2.1 Token check passes with the new files listed: `npm run check:home-tokens`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Type check passes: `npx astro check`
-- [ ] 2.4 Unit tests pass: `npm test`
-- [ ] 2.5 Production build passes: `npm run build`
-- [ ] 2.6 Smoke passes on the production preview: `npm run smoke`
+- [x] 2.1 Token check passes with the new files listed: `npm run check:home-tokens`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Type check passes: `npx astro check`
+- [x] 2.4 Unit tests pass: `npm test`
+- [x] 2.5 Production build passes: `npm run build`
+- [x] 2.6 Smoke passes on the production preview: `npm run smoke`
 
 #### Manual
 
-- [ ] 2.7 On the production preview (`npm run preview`), the Charts tile hydrates and renders eight coloured charts in light and dark themes (no Auto Minify or CommonJS breakage)
-- [ ] 2.8 Hovering a point shows the date and time, the value with its unit, and a difference matching the list row, including the first entry of a month
-- [ ] 2.9 Week / Month / Year / Years and prev/next change the charts. Changing the list month moves Month mode. The period survives a reload
-- [ ] 2.10 Closing the tile and reloading renders it closed with no flash. The add form's own state is unaffected
-- [ ] 2.11 A trainer viewing a linked trainee sees the same tile above the read-only list
-- [ ] 2.12 The layout at phone width has no horizontal scroll, and the kitchen sinks show every state
+- [x] 2.7 On the production preview (`npm run preview`), the Charts tile hydrates and renders eight coloured charts in light and dark themes (no Auto Minify or CommonJS breakage)
+- [x] 2.8 Hovering a point shows the date and time, the value with its unit, and a difference matching the list row, including the first entry of a month
+- [x] 2.9 Week / Month / Year / Years and prev/next change the charts. Changing the list month moves Month mode. The period survives a reload
+- [x] 2.10 Closing the tile and reloading renders it closed with no flash. The add form's own state is unaffected
+- [x] 2.11 A trainer viewing a linked trainee sees the same tile above the read-only list
+- [x] 2.12 The layout at phone width has no horizontal scroll, and the kitchen sinks show every state
 
 ### Phase 3: Visualize & Clear
 

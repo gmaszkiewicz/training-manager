@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { monthLabel, widestMonthLabel } from "@/lib/journal-calendar";
+import { MEASUREMENT_MONTH_EVENT, type MeasurementMonthDetail } from "@/lib/measurement-chart";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
 import {
   dayStorageKey,
@@ -790,6 +791,8 @@ export default function MeasurementBrowser({
   const monthFieldRef = useRef<HTMLDivElement>(null);
   const monthListRef = useRef<HTMLDivElement>(null);
   const requestSerial = useRef(0);
+  // Set when the user picks a month, so the charts tile can tell that change from the load and restore.
+  const userMonthChange = useRef(false);
 
   const loadPage = useCallback(
     (query: PageQuery): void => {
@@ -891,6 +894,15 @@ export default function MeasurementBrowser({
     serverMonth,
   ]);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  // `month` changes only once a read settles, so the charts tile never follows a month the list rejected.
+  useEffect(() => {
+    const restored = !userMonthChange.current;
+    userMonthChange.current = false;
+    window.dispatchEvent(
+      new CustomEvent<MeasurementMonthDetail>(MEASUREMENT_MONTH_EVENT, { detail: { month, restored } }),
+    );
+  }, [month]);
 
   const monthRows = filterByMonth(entries, month);
   const localPageCount = pageCountOf(monthRows.length, pageSize);
@@ -1002,6 +1014,7 @@ export default function MeasurementBrowser({
     if (nextMonth === month || !dates.includes(nextMonth)) {
       return;
     }
+    userMonthChange.current = true;
     if (accountId !== null && subjectId !== null) {
       writePreference(dayStorageKey(accountId, subjectId), nextMonth);
       writePreference(journalPageStorageKey(accountId, subjectId), "1");

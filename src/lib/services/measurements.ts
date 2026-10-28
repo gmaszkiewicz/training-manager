@@ -1,7 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/db/database.types";
-import { chartWindow, type ChartPeriod, type ChartWindow } from "@/lib/measurement-chart";
+import {
+  chartWindow,
+  entryDays,
+  linkPrevious,
+  type ChartPeriod,
+  type ChartWindow,
+  type YearsRange,
+} from "@/lib/measurement-chart";
 import {
   deltasForVisiblePage,
   measurementMonth,
@@ -12,7 +19,7 @@ import {
   utcToday,
   type PageSize,
 } from "@/lib/measurement-page";
-import type { MeasurementEntry, MeasurementField, MeasurementWithDeltas } from "@/types";
+import type { ChartMeasurement, MeasurementEntry, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface MeasurementInput {
   measured_on: string;
@@ -342,7 +349,7 @@ async function selectRangeRows(
   }
 }
 
-function oldestFirst(entries: MeasurementWithDeltas[]): MeasurementWithDeltas[] {
+function oldestFirst<T extends MeasurementEntry>(entries: T[]): T[] {
   return [...entries].sort((left, right) => {
     if (left.measured_on !== right.measured_on) {
       return left.measured_on < right.measured_on ? -1 : 1;
@@ -357,24 +364,10 @@ function oldestFirst(entries: MeasurementWithDeltas[]): MeasurementWithDeltas[] 
 export async function readMeasurementRange(
   supabase: SupabaseClient<Database>,
   traineeId: string,
-  input: { period: ChartPeriod; anchor: string; now: Date },
-): Promise<{ ok: true; window: ChartWindow; entries: MeasurementWithDeltas[] } | { ok: false }> {
+  input: { period: ChartPeriod; anchor: string; years: YearsRange | null },
+): Promise<{ ok: true; window: ChartWindow; entries: ChartMeasurement[] } | { ok: false }> {
   try {
-    let earliestMonth: string | null = null;
-    if (input.period === "years") {
-      const { data, error } = await supabase.rpc("measurement_months", { p_trainee_id: traineeId });
-      if (error) {
-        return { ok: false };
-      }
-      for (const row of data) {
-        const month = measurementMonth(row.measured_month);
-        if (earliestMonth === null || month < earliestMonth) {
-          earliestMonth = month;
-        }
-      }
-    }
-
-    const window = chartWindow(input.period, input.anchor, earliestMonth, utcToday(input.now));
+    const window = chartWindow(input.period, input.anchor, input.years);
     const selected = await selectRangeRows(supabase, traineeId, window);
     if (!selected.ok) {
       return { ok: false };
@@ -390,7 +383,37 @@ export async function readMeasurementRange(
       older = olderResult.row;
     }
 
-    return { ok: true, window, entries: oldestFirst(deltasForVisiblePage(selected.rows, older)) };
+    const entries = linkPrevious(oldestFirst(deltasForVisiblePage(selected.rows, older)), older?.measured_on ?? null);
+    return { ok: true, window, entries };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/** Distinct days with at least one entry, oldest first, for the chart period picker. */
+export async function readMeasurementDays(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+): Promise<{ ok: true; days: string[] } | { ok: false }> {
+  try {
+    const measuredOns: string[] = [];
+    for (let from = 0; ; from += RANGE_PAGE_ROWS) {
+      const { data, error } = await supabase
+        .from("measurements")
+        .select("measured_on")
+        .eq("trainee_id", traineeId)
+        .order("measured_on", { ascending: true })
+        .range(from, from + RANGE_PAGE_ROWS - 1);
+
+      if (error) {
+        return { ok: false };
+      }
+
+      measuredOns.push(...data.map((row) => row.measured_on));
+      if (data.length < RANGE_PAGE_ROWS) {
+        return { ok: true, days: entryDays(measuredOns) };
+      }
+    }
   } catch {
     return { ok: false };
   }
@@ -400,7 +423,7 @@ export async function readMeasurementsByIds(
   supabase: SupabaseClient<Database>,
   traineeId: string,
   ids: readonly string[],
-): Promise<{ ok: true; entries: MeasurementWithDeltas[] } | { ok: false }> {
+): Promise<{ ok: true; entries: ChartMeasurement[] } | { ok: false }> {
   const validIds = [...new Set(ids.filter((id) => MEASUREMENT_ID.test(id)))];
   if (validIds.length === 0) {
     return { ok: true, entries: [] };
@@ -423,11 +446,15 @@ export async function readMeasurementsByIds(
         if (!older.ok) {
           return null;
         }
-        return deltasForVisiblePage([row], older.row)[0] ?? null;
+        const compared = deltasForVisiblePage([row], older.row)[0] as MeasurementWithDeltas | undefined;
+        if (compared === undefined) {
+          return null;
+        }
+        return { ...compared, previous_measured_on: older.row?.measured_on ?? null };
       }),
     );
 
-    const entries: MeasurementWithDeltas[] = [];
+    const entries: ChartMeasurement[] = [];
     for (const entry of compared) {
       if (entry === null) {
         return { ok: false };
