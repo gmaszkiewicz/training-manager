@@ -9,6 +9,9 @@ function subscribeToNothing(): () => void {
   return () => undefined;
 }
 
+// Each AccessCell is its own island, so the open dialog announces itself and the others close.
+const ACCESS_DIALOG_OPEN = "access-dialog-open";
+
 interface Props {
   dashboardLabel: string;
   name: string;
@@ -46,6 +49,12 @@ function AccessDialog({
     }
     const closeButton = dialog.querySelector("button");
     closeButton?.focus();
+    document.dispatchEvent(new CustomEvent(ACCESS_DIALOG_OPEN, { detail: triggerId }));
+    function onOtherOpen(event: Event) {
+      if (event instanceof CustomEvent && event.detail !== triggerId) {
+        dialog.close();
+      }
+    }
     function onDialogClose() {
       onCloseRef.current();
     }
@@ -69,7 +78,9 @@ function AccessDialog({
     dialog.addEventListener("close", onDialogClose);
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
+    document.addEventListener(ACCESS_DIALOG_OPEN, onOtherOpen);
     return () => {
+      document.removeEventListener(ACCESS_DIALOG_OPEN, onOtherOpen);
       dialog.removeEventListener("close", onDialogClose);
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);

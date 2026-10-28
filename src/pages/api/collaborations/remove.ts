@@ -2,7 +2,6 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 
 import { collaborationMaxPage } from "@/lib/collaborations";
-import { enabledDashboards } from "@/lib/dashboards";
 import { removeTrainerLink } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 
@@ -27,13 +26,10 @@ const NOTICES = {
   remove: "revoked",
 } as const satisfies Record<z.infer<typeof intentSchema>, string>;
 
-const enabledDashboardIds = enabledDashboards().map((dashboard) => dashboard.id);
-
-// A missing dashboard means measurements, the only one with access today.
-const dashboardSchema = z
-  .string()
-  .optional()
-  .refine((value) => value === undefined || enabledDashboardIds.some((id) => id === value));
+// Only measurements may be revoked: the delete below removes the whole link, which is the only access
+// today. Enabling another dashboard needs per-dashboard storage before it is accepted here. A missing
+// dashboard means measurements.
+const dashboardSchema = z.literal("measurements").optional();
 
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
@@ -47,8 +43,6 @@ export const POST: APIRoute = async (context) => {
 
   const other = otherSchema.safeParse(form.get("other"));
   const intent = intentSchema.safeParse(form.get("intent"));
-  // The dashboard does not change what is deleted yet: the whole link is the only access, so revoking
-  // measurements removes the link.
   const dashboard = dashboardSchema.safeParse(form.get("dashboard") ?? undefined);
   if (!other.success || !intent.success || !dashboard.success) {
     return context.redirect(failed);

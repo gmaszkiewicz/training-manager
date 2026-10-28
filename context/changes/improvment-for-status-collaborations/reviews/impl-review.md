@@ -59,7 +59,7 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
   - Tradeoff: The test can be updated without reading the message; it doesn't protect at runtime.
   - Confidence: MED — relies on discipline.
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: FIXED via Fix A (`dashboardSchema = z.literal("measurements").optional()`)
 
 ### F3 — Unplanned table layout work and an inaccurate kitchen-sink claim
 
@@ -69,7 +69,7 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
 - **Location**: src/styles/global.css:183-195; src/components/hub/CollaborationsList.astro:58-72; src/pages/kitchen-sink/hub.astro
 - **Detail**: Phase 3 added `[data-collaborations-table]` width rules driven by `--dashboard-count`, a `<colgroup>`, a sticky party column, and horizontal scrolling (removing `overflow-x-clip`). It also widened the kitchen-sink "Multi-page" card. These are benign and support the four-dashboard layout, but none are in the plan. The "All four dashboards" text says "Actions for a disabled dashboard are refused by the route". That is true for `/remove`, but `/api/collaborations/accept` does not validate `dashboard`.
 - **Fix**: Record the layout additions in the plan addendum (with F1), and reword the kitchen-sink sentence to name only revoke/cancel/decline.
-- **Decision**: PENDING
+- **Decision**: FIXED (plan addendum; kitchen-sink/hub.astro sentence reworded)
 
 ### F4 — AccessCell.tsx not covered by check:home-tokens
 
@@ -79,7 +79,7 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
 - **Location**: scripts/check-home-tokens.mjs:42-47
 - **Detail**: Every other hub component, including the renamed `ConfirmRevokeToast.tsx`, is listed in `FILES`, but the new view `src/components/hub/AccessCell.tsx` is not, so CI never token-checks it.
 - **Fix**: Add `"src/components/hub/AccessCell.tsx"` to `FILES` next to the other hub entries.
-- **Decision**: PENDING
+- **Decision**: FIXED (added to FILES; check:home-tokens clean)
 
 ### F5 — Access header lost its KeyRound icon; plan not updated
 
@@ -89,7 +89,7 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
 - **Location**: src/components/hub/CollaborationsList.astro:81-83
 - **Detail**: Plan Phase 2 §3 and the Desired End State put a KeyRound icon above "Access". The code shows plain "Access". The fea5054 commit body explains why ("so the header fits in two lines"), but the plan was not amended.
 - **Fix**: Include it in the same plan addendum as F1/F3.
-- **Decision**: PENDING
+- **Decision**: FIXED (plan addendum)
 
 ### F6 — `?dashboard=` on the confirm URL is ignored
 
@@ -99,7 +99,7 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
 - **Location**: src/components/hub/CollaborationsList.astro:38-41, 173-181; src/components/hub/ConfirmRevokeToast.tsx
 - **Detail**: `confirmHref` adds `&dashboard=<id>`, but `collaborations.astro` never reads it. The toast is always given `dashboard="measurements"` with measurements-only copy. This is harmless today, but a second dashboard would show Measurements copy for a Nutrition revoke.
 - **Fix**: Add a follow-up to the roadmap's second-dashboard slice: parse `dashboard` against the enabled ids, use `hasGrantedAccess(row, dashboard)`, and derive the toast copy from the dashboard label.
-- **Decision**: PENDING
+- **Decision**: FIXED differently: wired through now. `collaborations.astro` passes `?dashboard=` as `confirmDashboard`. `CollaborationsList` resolves it against its `dashboards` prop (missing → measurements; unknown or hidden → no toast) and checks `hasGrantedAccess(row, dashboard.id)`. `ConfirmRevokeToast` builds its copy from `dashboardLabel`, and the Measurements strings are unchanged.
 
 ### F7 — Several access dialogs can be open at once
 
@@ -109,7 +109,7 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
 - **Location**: src/components/hub/AccessCell.tsx:127, 156-166
 - **Detail**: `MeasurementBrowser` keeps one `openNoteId`, so only one note dialog can be open. Each `AccessCell` keeps its own `open` state. Opening a second cell by keyboard leaves the first dialog open, so the centred dialogs overlap, and Escape closes all of them. (Focus is also not returned to the trigger on close, but that gap was copied from `NoteDialog`.)
 - **Fix**: When an access dialog opens, close any others: lift the open id into the list, or broadcast an "access-dialog-open" event.
-- **Decision**: PENDING
+- **Decision**: FIXED (the `access-dialog-open` document event closes other open access dialogs)
 
 ### F8 — Duplicated "granted" check in CollaborationRowActions
 
@@ -119,7 +119,7 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
 - **Location**: src/components/hub/CollaborationRowActions.tsx:55
 - **Detail**: `entries.some((entry) => !entry.pending)` re-implements `hasGrantedAccess` from `src/lib/dashboards.ts:33` at the entries level.
 - **Fix**: Add an entries-level helper (e.g. `isGranted(entries)`) to dashboards.ts, and use it in both places.
-- **Decision**: PENDING
+- **Decision**: FIXED (`isGranted` added and unit-tested; used by `hasGrantedAccess` and `CollaborationRowActions`)
 
 ### F9 — "Linked trainees" label survives the rename
 
@@ -129,4 +129,4 @@ Automated gates run during review: `npm run lint`, `npm run check:home-tokens`, 
 - **Location**: src/components/trainer/LinkedTraineeField.tsx:67
 - **Detail**: `aria-label="Linked trainees"` is the only remaining "Linked" wording in src/, tests/ and scripts/. The plan did not list this file, so the omission is consistent with the plan, but it diverges from the change's vocabulary ("linked" → "read").
 - **Fix**: Rename to e.g. "Trainees with read access" and update any e2e selector that uses it, or leave it for a later wording pass.
-- **Decision**: PENDING
+- **Decision**: FIXED (aria-label is now "Trainees with read access"; no selector used it)

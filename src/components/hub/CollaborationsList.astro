@@ -13,11 +13,13 @@ interface Props {
   viewerRole: "trainer" | "trainee";
   page: CollaborationPage;
   confirm?: string | null;
+  /** The `?dashboard=` of the confirm link; missing means measurements. */
+  confirmDashboard?: string | null;
   /** The Access sub-columns; the kitchen sink passes every dashboard, the app only the enabled ones. */
   dashboards?: readonly DashboardConfig[];
 }
 
-const { viewerRole, page, confirm = null, dashboards = enabledDashboards() } = Astro.props;
+const { viewerRole, page, confirm = null, confirmDashboard = null, dashboards = enabledDashboards() } = Astro.props;
 
 const textActionClassName = "text-primary focus-visible:ring-ring underline focus-visible:ring-2";
 
@@ -34,11 +36,14 @@ const PartyIcon = viewerRole === "trainer" ? PersonStanding : Dumbbell;
 const stickyHeaderClassName = "sticky left-0 z-10 bg-muted";
 const stickyBodyClassName = "sticky left-0 z-10 bg-background group-hover:bg-muted/50";
 
-// The toast only opens for a row on this page with granted measurements access; any other `confirm` value is ignored.
+// The toast only opens for a shown dashboard and a row on this page with granted access to it; any other
+// `confirm` or `dashboard` value is ignored.
+const confirmingDashboard =
+  dashboards.find((dashboard) => dashboard.id === (confirmDashboard ?? "measurements")) ?? null;
 const confirming =
-  confirm === null
+  confirm === null || confirmingDashboard === null
     ? null
-    : (page.rows.find((row) => row.otherId === confirm && hasGrantedAccess(row, "measurements")) ?? null);
+    : (page.rows.find((row) => row.otherId === confirm && hasGrantedAccess(row, confirmingDashboard.id)) ?? null);
 ---
 
 <div class="flex flex-col gap-4">
@@ -170,12 +175,13 @@ const confirming =
       )}
     </div>
   ) : null}
-  {confirming !== null ? (
+  {confirming !== null && confirmingDashboard !== null ? (
     <ConfirmRevokeToast
       viewerRole={viewerRole}
       otherId={confirming.otherId}
       name={confirming.name}
-      dashboard="measurements"
+      dashboard={confirmingDashboard.id}
+      dashboardLabel={confirmingDashboard.label}
       page={page.page}
       client:load
     />

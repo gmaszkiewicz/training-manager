@@ -304,8 +304,9 @@ const notificationsError = notificationErrorMessage("failed") ?? "";
         <p class="text-muted-foreground text-sm">
           Every dashboard passed as a sub-column, the layout a future dashboard would add (the app shows only enabled
           dashboards). "A. Turing" has "Read" on Measurements, "Read · Pending" on Nutrition and "—" with no action on
-          Training and Planning; the trainee below has "Read · Pending" on Measurements only. Actions for a disabled
-          dashboard are refused by the route. A card narrower than the columns scrolls the table sideways.
+          Training and Planning; the trainee below has "Read · Pending" on Measurements only. The remove route refuses
+          revoke, cancel and decline for any dashboard but Measurements. A card narrower than the columns scrolls the
+          table sideways.
         </p>
         <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
           <CollaborationsList viewerRole="trainer" page={fourDashboardPage} dashboards={dashboards} />

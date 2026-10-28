@@ -418,6 +418,9 @@ No schema change. Stored notifications keep their `kind` and re-render with the 
 Decisions made during implementation that supersede the phase text above (recorded by the implementation review, 2026-10-28):
 
 - **Actions at every width sit in the per-dashboard ellipsis menu** (Phase 2 §3, 4f28e48). The planned `@lg` inline buttons and their aria-labels (`Revoke {dashboard} access for {name}`, `Accept/Decline {dashboard} request from {name}`) were not built. The menu trigger `{dashboardLabel} actions for {name}` and its `Revoke` / `Cancel request` / `Accept request` / `Decline request` items are the contract at every width. Progress row 2.6's "`Revoke` button" means the menu's `Revoke` item.
+- **The Access header is plain text with no KeyRound icon** (Phase 2 §3 and Desired End State, fea5054), so the two-row header stays two lines tall. KeyRound remains the icon for the narrow-cell fallback.
+- **Table layout for several dashboards** (Phase 3, 4f28e48): `[data-collaborations-table]` width rules in `global.css` driven by `--dashboard-count`, a `<colgroup>`, a sticky party column, and horizontal scrolling instead of `overflow-x-clip`, so extra Access columns scroll. The kitchen-sink "Multi-page" card is widened to `max-w-measurement`.
+- **The remove route accepts only `dashboard=measurements`** (or no dashboard), found in the implementation review: revoking deletes the whole link, so the route must not accept another dashboard before per-dashboard storage exists.
 
 ## Progress
 

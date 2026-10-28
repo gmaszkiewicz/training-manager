@@ -29,8 +29,12 @@ export function accessSummary(entries: readonly DashboardAccess[]): string {
   return entries.length === 0 ? "—" : entries.map(accessLabel).join(", ");
 }
 
+export function isGranted(entries: readonly DashboardAccess[]): boolean {
+  return entries.some((entry) => !entry.pending);
+}
+
 export function hasGrantedAccess(collaboration: Pick<Collaboration, "access">, dashboard: Dashboard): boolean {
-  return collaboration.access[dashboard].some((entry) => !entry.pending);
+  return isGranted(collaboration.access[dashboard]);
 }
 
 export function hasPendingAccess(collaboration: Pick<Collaboration, "access">, dashboard: Dashboard): boolean {

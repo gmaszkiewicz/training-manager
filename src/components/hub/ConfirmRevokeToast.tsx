@@ -14,11 +14,12 @@ interface Props {
   otherId: string;
   name: string;
   dashboard: Dashboard;
+  dashboardLabel: string;
   page: number;
 }
 
 // URL-driven confirmation (`?confirm=<id>&dashboard=<id>`), modelled on the Delete measurement toast.
-export default function ConfirmRevokeToast({ viewerRole, otherId, name, dashboard, page }: Props) {
+export default function ConfirmRevokeToast({ viewerRole, otherId, name, dashboard, dashboardLabel, page }: Props) {
   const confirmRef = useRef<HTMLButtonElement>(null);
   const onClient = useSyncExternalStore(
     subscribeToNothing,
@@ -38,6 +39,7 @@ export default function ConfirmRevokeToast({ viewerRole, otherId, name, dashboar
   }
 
   const trainer = viewerRole === "trainer";
+  const subject = dashboardLabel.toLowerCase();
 
   return createPortal(
     <div className="fixed right-4 bottom-4 z-50 w-[min(24rem,calc(100%-2rem))]">
@@ -50,8 +52,8 @@ export default function ConfirmRevokeToast({ viewerRole, otherId, name, dashboar
       >
         <p id="confirm-revoke-toast" className="text-sm">
           {trainer
-            ? `Revoke your read access to ${name}'s measurements? You will no longer see their measurements.`
-            : `Revoke ${name}'s read access to your measurements? They will no longer see your measurements.`}
+            ? `Revoke your read access to ${name}'s ${subject}? You will no longer see their ${subject}.`
+            : `Revoke ${name}'s read access to your ${subject}? They will no longer see your ${subject}.`}
         </p>
         <input type="hidden" name="other" value={otherId} />
         <input type="hidden" name="page" value={page} />

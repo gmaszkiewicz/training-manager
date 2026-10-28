@@ -7,6 +7,7 @@ import {
   enabledDashboards,
   hasGrantedAccess,
   hasPendingAccess,
+  isGranted,
 } from "@/lib/dashboards";
 import type { Collaboration } from "@/types";
 
@@ -52,6 +53,22 @@ describe("accessSummary", () => {
         { type: "read", pending: true },
       ]),
     ).toBe("Read, Read · Pending");
+  });
+});
+
+describe("isGranted", () => {
+  it("is true when any entry is granted", () => {
+    expect(
+      isGranted([
+        { type: "read", pending: true },
+        { type: "read", pending: false },
+      ]),
+    ).toBe(true);
+  });
+
+  it("is false for pending-only and empty entries", () => {
+    expect(isGranted([{ type: "read", pending: true }])).toBe(false);
+    expect(isGranted([])).toBe(false);
   });
 });
 

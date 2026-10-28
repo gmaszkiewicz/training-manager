@@ -14,6 +14,7 @@ import type { CollaborationPage, Profile } from "@/types";
 const user = Astro.locals.user;
 const requestedPage = parseCollaborationPage(Astro.url.searchParams.get("page"));
 const confirm = Astro.url.searchParams.get("confirm");
+const confirmDashboard = Astro.url.searchParams.get("dashboard");
 const notice = collaborationNoticeMessage(Astro.url.searchParams.get("notice"));
 const actionError = collaborationErrorMessage(Astro.url.searchParams.get("error"));
 
@@ -51,7 +52,12 @@ if (role === null || collaborations === null) {
       ) : null}
       <AccountTabs tabs={HUB_TABS} current="collaborations">
         {role !== null && collaborations !== null ? (
-          <CollaborationsList viewerRole={role} page={collaborations} confirm={confirm} />
+          <CollaborationsList
+            viewerRole={role}
+            page={collaborations}
+            confirm={confirm}
+            confirmDashboard={confirmDashboard}
+          />
         ) : null}
       </AccountTabs>
     </div>

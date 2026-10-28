@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { isGranted } from "@/lib/dashboards";
 import type { Dashboard, DashboardAccess } from "@/types";
 
 interface Props {
@@ -52,7 +53,7 @@ export default function CollaborationRowActions({
   confirmHref,
 }: Props) {
   const formRefs = useRef<(HTMLFormElement | null)[]>([]);
-  const granted = entries.some((entry) => !entry.pending);
+  const granted = isGranted(entries);
   const postActions = postActionsFor(viewerRole, granted);
 
   if (entries.length === 0) {
