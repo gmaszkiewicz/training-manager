@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
+import { useMeasurementChartSelection } from "@/components/hooks/useMeasurementChartSelection";
 import MeasurementChart, { type ChartPoint } from "@/components/measurements/MeasurementChart";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
   chartWindow,
   chartXDomain,
   compactChartPeriodLabel,
+  chartDateTimeLabel,
   defaultChartPeriod,
   earlierPeriod,
   entryDays,
@@ -35,6 +37,7 @@ import {
   type ChartWindow,
   type YearsRange,
 } from "@/lib/measurement-chart";
+import { readStored, writePreference } from "@/lib/browser-storage";
 import { widestMonthLabel } from "@/lib/journal-calendar";
 import { measurementFields } from "@/lib/measurement-input";
 import { chartsPeriodStorageKey, journalMonth, measurementMonth, utcToday } from "@/lib/measurement-page";
@@ -61,7 +64,7 @@ interface Props {
   initialDays?: string[] | null;
 }
 
-/** Phase 3 switches the tile to the selected entries; until then it always charts a period. */
+/** The tile charts a period, or exactly the entries the list visualized. */
 type ChartView = { kind: "period" } | { kind: "selected"; ids: string[] };
 
 type SinglePeriod = Exclude<ChartPeriod, "years">;
@@ -93,30 +96,6 @@ function namedId(id: string | null | undefined): string | null {
     return null;
   }
   return id;
-}
-
-function readStored(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStored(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // Storage can be blocked; the period still changes on screen.
-  }
-}
-
-function writeCookie(name: string, value: string): void {
-  try {
-    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  } catch {
-    // The next document request then renders the default period.
-  }
 }
 
 function readWindow(value: unknown): ChartWindow | null | undefined {
@@ -199,18 +178,23 @@ function chartQuery(
 
 function localBody(
   entries: readonly MeasurementWithDeltas[],
+  view: ChartView,
   period: ChartPeriod,
   anchor: string,
   years: YearsRange,
 ): ChartBody {
-  const window = chartWindow(period, anchor, years);
-  const start = measuredOnMs(window.start);
-  const end = measuredOnMs(window.end);
   // The sink's entries are the whole journal, so each one's predecessor is the entry before it.
   const journal = linkPrevious(
     [...entries].sort((left, right) => measuredOnMs(left.measured_on) - measuredOnMs(right.measured_on)),
     null,
   );
+  if (view.kind === "selected") {
+    const ids = new Set(view.ids);
+    return { entries: journal.filter((entry) => ids.has(entry.id)), window: null };
+  }
+  const window = chartWindow(period, anchor, years);
+  const start = measuredOnMs(window.start);
+  const end = measuredOnMs(window.end);
   const inWindow = journal.filter((entry) => {
     const at = measuredOnMs(entry.measured_on);
     return at >= start && at < end;
@@ -456,7 +440,14 @@ export default function MeasurementCharts({
   const [period, setPeriod] = useState<ChartPeriod>(initialPeriod);
   const [anchor, setAnchor] = useState(startAnchor);
   const [restored, setRestored] = useState(false);
-  const [view] = useState<ChartView>({ kind: "period" });
+  // Clear returns the tile to a first visit: Month mode on the current month, whatever month the list shows.
+  const { visualizedIds, reconcile } = useMeasurementChartSelection(accountId, subjectId, {
+    onClear: () => {
+      setPeriod(defaultChartPeriod);
+      setAnchor(todayValue);
+    },
+  });
+  const view: ChartView = visualizedIds.length > 0 ? { kind: "selected", ids: visualizedIds } : { kind: "period" };
   // The server read the same period, anchor and years, so it seeds the first render under the same query.
   const [result, setResult] = useState<ChartResult | null>(() =>
     initialChart === null || local
@@ -508,8 +499,7 @@ export default function MeasurementCharts({
     }
     const key = chartsPeriodStorageKey(accountId, subjectId);
     const value = chartPreferenceValue({ period, anchor });
-    writeStored(key, value);
-    writeCookie(key, value);
+    writePreference(key, value);
   }, [restored, accountId, subjectId, period, anchor]);
 
   useEffect(() => {
@@ -537,6 +527,7 @@ export default function MeasurementCharts({
       return;
     }
     const serial = ++requestSerial.current;
+    const selectedIds = view.kind === "selected";
     void fetchJson(query).then((payload) => {
       if (serial !== requestSerial.current) {
         return;
@@ -544,8 +535,12 @@ export default function MeasurementCharts({
       shownQuery.current = query;
       const body = readChartBody(payload);
       setResult(body === null ? { query, ok: false } : { query, ok: true, body });
+      if (selectedIds && body !== null) {
+        // Deleted entries are missing from the read: drop them from the selection, falling back to a period if none remain.
+        reconcile(body.entries.map((entry) => entry.id));
+      }
     });
-  }, [local, restored, query]);
+  }, [local, restored, query, view.kind, reconcile]);
 
   // The summary heading belongs to the server-rendered tile around this island; keep it in step with the period.
   useEffect(() => {
@@ -571,7 +566,7 @@ export default function MeasurementCharts({
   let body: ChartBody | null = null;
   let failed = false;
   if (entries !== undefined) {
-    body = localBody(entries, period, anchor, years);
+    body = localBody(entries, view, period, anchor, years);
   } else if (result !== null && result.query === query) {
     if (result.ok) {
       body = result.body;
@@ -580,6 +575,21 @@ export default function MeasurementCharts({
     }
   }
   const loading = forceLoading || (body === null && !failed);
+
+  // Hovering "Selected entries (n)" lists the charted entries, oldest first; a period heading has no hover text.
+  const selectedHint =
+    selected && body !== null ? body.entries.map((entry) => chartDateTimeLabel(entry.measured_on)).join("\n") : "";
+  useEffect(() => {
+    const title = rootRef.current?.closest("[data-charts-tile]")?.querySelector("[data-charts-title]");
+    if (!(title instanceof HTMLElement)) {
+      return;
+    }
+    if (selectedHint === "") {
+      title.removeAttribute("title");
+    } else {
+      title.title = selectedHint;
+    }
+  }, [selectedHint]);
 
   let status: ReactNode;
   if (loading) {
