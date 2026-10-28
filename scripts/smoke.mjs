@@ -603,6 +603,65 @@ function juneDifference(withDates) {
   return spec;
 }
 
+const unknownMeasurementId = "00000000-0000-4000-8000-000000000001";
+const sixteenMeasurementIds = Array.from(
+  { length: 16 },
+  (_, index) => `00000000-0000-4000-8000-${String(index + 2).padStart(12, "0")}`,
+);
+let januaryChartIds = [];
+let juneChartId = "";
+
+function chartPath(query, subjectId) {
+  const trainee = subjectId === undefined ? "" : `&trainee=${subjectId}`;
+  return `/api/measurements/chart?${query}${trainee}`;
+}
+
+function chartEntryIds(body) {
+  try {
+    const parsed = JSON.parse(body);
+    if (!parsed || !Array.isArray(parsed.entries)) return [];
+    return parsed.entries.map((entry) => (entry && typeof entry.id === "string" ? entry.id : ""));
+  } catch {
+    return [];
+  }
+}
+
+function rememberJanuaryChartIds(run) {
+  return async () => {
+    const actual = await run();
+    januaryChartIds = chartEntryIds(actual.body);
+    return actual;
+  };
+}
+
+function rememberJuneChartId(run) {
+  return async () => {
+    const actual = await run();
+    juneChartId = chartEntryIds(actual.body)[0] ?? "";
+    return actual;
+  };
+}
+
+function januaryChart() {
+  return {
+    entriesLength: 3,
+    measuredOnMinutes: ["2024-01-02T08:00", "2024-01-15T08:00", "2024-01-28T08:00"],
+    window: { start: "2024-01-01T00:00:00", end: "2024-02-01T00:00:00" },
+  };
+}
+
+function yearsChart() {
+  return {
+    measuredOnMinutes: [
+      "2024-01-02T08:00",
+      "2024-01-15T08:00",
+      "2024-01-28T08:00",
+      "2024-06-01T08:00",
+      "2026-03-01T08:00",
+    ],
+  };
+}
+
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["measurements redirects anonymous user", () => request("/measurements"), { status: 302, location: "/auth/signin" }],
@@ -629,6 +688,7 @@ const steps = [
     { status: 302, location: "/auth/signin", exactLocation: true },
   ],
   ["signed-out trainer search is rejected", () => request("/api/trainer-links?q=a"), { status: 401 }],
+  ["signed-out chart read is rejected", () => request(chartPath("period=month&anchor=2024-01-15")), { status: 401 }],
   [
     "signed-out notification open redirects to sign in",
     () => openNotificationWith(jar, unknownNotificationId),
@@ -995,6 +1055,35 @@ const steps = [
     { status: 200, json: () => juneDifference(false) },
   ],
   [
+    "unlinked trainee chart month is oldest first",
+    rememberJanuaryChartIds(() => request(chartPath("period=month&anchor=2024-01-15"))),
+    { status: 200, json: januaryChart },
+  ],
+  [
+    "unlinked trainee chart June difference matches the list",
+    rememberJuneChartId(() => request(chartPath("period=month&anchor=2024-06-01"))),
+    { status: 200, json: () => juneDifference(false) },
+  ],
+  [
+    "unlinked trainee chart ids skip an unknown id",
+    () => request(chartPath(`ids=${juneChartId},${unknownMeasurementId},${januaryChartIds[0] ?? ""}`)),
+    {
+      status: 200,
+      json: () => ({
+        measuredOnMinutes: ["2024-01-02T08:00", "2024-06-01T08:00"],
+        weightDeltas: [null, { direction: "up", difference: 8 }],
+        window: null,
+      }),
+    },
+  ],
+  [
+    "unlinked trainee chart years covers every entry",
+    () => request(chartPath(`period=years&anchor=${utcDatePlusDays(0)}`)),
+    { status: 200, json: yearsChart },
+  ],
+  ["chart rejects 16 ids", () => request(chartPath(`ids=${sixteenMeasurementIds.join(",")}`)), { status: 400 }],
+  ["chart rejects an invalid anchor", () => request(chartPath("period=month&anchor=2024-02-30")), { status: 400 }],
+  [
     "unlinked trainee measurement months",
     () => measurementMonthsRpc(),
     { status: 200, json: () => ({ measuredMonths: fixtureMonths }) },
@@ -1077,6 +1166,16 @@ const steps = [
     },
   ],
   [
+    "trainer unlinked chart is empty",
+    () => request(chartPath(`period=years&anchor=${utcDatePlusDays(0)}`, unlinkedTraineeId)),
+    { status: 200, json: () => ({ entriesLength: 0 }) },
+  ],
+  [
+    "trainer unlinked chart ids are empty",
+    () => request(chartPath(`ids=${juneChartId}`, unlinkedTraineeId)),
+    { status: 200, json: () => ({ entriesLength: 0, window: null }) },
+  ],
+  [
     "trainer measurement months before the link",
     () => measurementMonthsRpc(),
     { status: 200, json: () => ({ measuredMonths: [] }) },
@@ -1135,6 +1234,11 @@ const steps = [
     "trainer linked June difference",
     () => request(`/api/measurements?month=2024-06&size=5&page=1&trainee=${unlinkedTraineeId}`),
     { status: 200, json: () => juneDifference(true) },
+  ],
+  [
+    "trainer linked chart June difference",
+    () => request(chartPath("period=month&anchor=2024-06-01", unlinkedTraineeId)),
+    { status: 200, json: () => juneDifference(false) },
   ],
   [
     "trainer measurement months after the link",
@@ -1616,6 +1720,42 @@ function jsonProblems(parsed, spec) {
     const delta = deltas && typeof deltas === "object" ? deltas.weight_kg : undefined;
     if (!sameWeightDelta(delta, spec.weightDelta)) {
       problems.push(`deltas.weight_kg ${JSON.stringify(delta ?? null)} expected ${JSON.stringify(spec.weightDelta)}`);
+    }
+  }
+  if (spec.measuredOnMinutes !== undefined) {
+    const minutes = Array.isArray(entries)
+      ? entries.map((entry) =>
+          entry && typeof entry.measured_on === "string" ? entry.measured_on.replace(" ", "T").slice(0, 16) : "",
+        )
+      : undefined;
+    if (!sameStrings(minutes, spec.measuredOnMinutes)) {
+      problems.push(`measured_on ${JSON.stringify(minutes)} expected ${JSON.stringify(spec.measuredOnMinutes)}`);
+    }
+  }
+  if (spec.weightDeltas !== undefined) {
+    const same =
+      Array.isArray(entries) &&
+      entries.length === spec.weightDeltas.length &&
+      spec.weightDeltas.every((expected, index) => {
+        const deltas = entries[index] && typeof entries[index] === "object" ? entries[index].deltas : undefined;
+        if (expected === null) return deltas === null;
+        return deltas && typeof deltas === "object" && sameWeightDelta(deltas.weight_kg, expected);
+      });
+    if (!same) {
+      const actual = Array.isArray(entries)
+        ? entries.map((entry) => (entry && entry.deltas ? entry.deltas.weight_kg : null))
+        : entries;
+      problems.push(`deltas.weight_kg ${JSON.stringify(actual)} expected ${JSON.stringify(spec.weightDeltas)}`);
+    }
+  }
+  if (spec.window !== undefined) {
+    const window = parsed && typeof parsed === "object" ? parsed.window : undefined;
+    const same =
+      spec.window === null
+        ? window === null
+        : window && typeof window === "object" && window.start === spec.window.start && window.end === spec.window.end;
+    if (!same) {
+      problems.push(`window ${JSON.stringify(window)} expected ${JSON.stringify(spec.window)}`);
     }
   }
   if (spec.profileRow !== undefined) {

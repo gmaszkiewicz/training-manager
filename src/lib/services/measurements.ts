@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/db/database.types";
+import { chartWindow, type ChartPeriod, type ChartWindow } from "@/lib/measurement-chart";
 import {
   deltasForVisiblePage,
   measurementMonth,
@@ -306,6 +307,135 @@ export async function readMeasurementPage(
       pageCount: resolved.pageCount,
       entries: deltasForVisiblePage(selected.rows, older),
     };
+  } catch {
+    return { ok: false };
+  }
+}
+
+const RANGE_PAGE_ROWS = 1000;
+
+async function selectRangeRows(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  window: ChartWindow,
+): Promise<{ ok: true; rows: MeasurementEntry[] } | { ok: false }> {
+  const rows: MeasurementEntry[] = [];
+  for (let from = 0; ; from += RANGE_PAGE_ROWS) {
+    const { data, error } = await supabase
+      .from("measurements")
+      .select(measurementColumns)
+      .eq("trainee_id", traineeId)
+      .gte("measured_on", window.start)
+      .lt("measured_on", window.end)
+      .order("measured_on", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, from + RANGE_PAGE_ROWS - 1);
+
+    if (error) {
+      return { ok: false };
+    }
+
+    rows.push(...data);
+    if (data.length < RANGE_PAGE_ROWS) {
+      return { ok: true, rows };
+    }
+  }
+}
+
+function oldestFirst(entries: MeasurementWithDeltas[]): MeasurementWithDeltas[] {
+  return [...entries].sort((left, right) => {
+    if (left.measured_on !== right.measured_on) {
+      return left.measured_on < right.measured_on ? -1 : 1;
+    }
+    if (left.id === right.id) {
+      return 0;
+    }
+    return left.id < right.id ? -1 : 1;
+  });
+}
+
+export async function readMeasurementRange(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  input: { period: ChartPeriod; anchor: string; now: Date },
+): Promise<{ ok: true; window: ChartWindow; entries: MeasurementWithDeltas[] } | { ok: false }> {
+  try {
+    let earliestMonth: string | null = null;
+    if (input.period === "years") {
+      const { data, error } = await supabase.rpc("measurement_months", { p_trainee_id: traineeId });
+      if (error) {
+        return { ok: false };
+      }
+      for (const row of data) {
+        const month = measurementMonth(row.measured_month);
+        if (earliestMonth === null || month < earliestMonth) {
+          earliestMonth = month;
+        }
+      }
+    }
+
+    const window = chartWindow(input.period, input.anchor, earliestMonth, utcToday(input.now));
+    const selected = await selectRangeRows(supabase, traineeId, window);
+    if (!selected.ok) {
+      return { ok: false };
+    }
+
+    const oldest = selected.rows[0] as MeasurementEntry | undefined;
+    let older: MeasurementEntry | null = null;
+    if (oldest) {
+      const olderResult = await selectOlderRow(supabase, traineeId, oldest);
+      if (!olderResult.ok) {
+        return { ok: false };
+      }
+      older = olderResult.row;
+    }
+
+    return { ok: true, window, entries: oldestFirst(deltasForVisiblePage(selected.rows, older)) };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export async function readMeasurementsByIds(
+  supabase: SupabaseClient<Database>,
+  traineeId: string,
+  ids: readonly string[],
+): Promise<{ ok: true; entries: MeasurementWithDeltas[] } | { ok: false }> {
+  const validIds = [...new Set(ids.filter((id) => MEASUREMENT_ID.test(id)))];
+  if (validIds.length === 0) {
+    return { ok: true, entries: [] };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("measurements")
+      .select(measurementColumns)
+      .eq("trainee_id", traineeId)
+      .in("id", validIds);
+
+    if (error) {
+      return { ok: false };
+    }
+
+    const compared = await Promise.all(
+      data.map(async (row) => {
+        const older = await selectOlderRow(supabase, traineeId, row);
+        if (!older.ok) {
+          return null;
+        }
+        return deltasForVisiblePage([row], older.row)[0] ?? null;
+      }),
+    );
+
+    const entries: MeasurementWithDeltas[] = [];
+    for (const entry of compared) {
+      if (entry === null) {
+        return { ok: false };
+      }
+      entries.push(entry);
+    }
+
+    return { ok: true, entries: oldestFirst(entries) };
   } catch {
     return { ok: false };
   }

@@ -418,15 +418,15 @@ No schema change. New localStorage keys and one new cookie (`tm.measurements.cha
 
 #### Automated
 
-- [ ] 1.1 Unit tests for `measurement-chart.ts` pass: `npm test`
-- [ ] 1.2 Lint passes: `npm run lint`
-- [ ] 1.3 Type check passes: `npx astro check`
-- [ ] 1.4 Build passes: `npm run build`
-- [ ] 1.5 Smoke passes against the preview with local Supabase: `npm run smoke`
+- [x] 1.1 Unit tests for `measurement-chart.ts` pass: `npm test`
+- [x] 1.2 Lint passes: `npm run lint`
+- [x] 1.3 Type check passes: `npx astro check`
+- [x] 1.4 Build passes: `npm run build`
+- [x] 1.5 Smoke passes against the preview with local Supabase: `npm run smoke`
 
 #### Manual
 
-- [ ] 1.6 `GET /api/measurements/chart?period=years&anchor=<today>` as a trainee returns every entry oldest first, and the tooltip-ready differences match the list for the first entry of a month
+- [x] 1.6 `GET /api/measurements/chart?period=years&anchor=<today>` as a trainee returns every entry oldest first, and the tooltip-ready differences match the list for the first entry of a month
 
 ### Phase 2: Charts tile
 

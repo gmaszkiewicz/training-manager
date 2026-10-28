@@ -77,6 +77,26 @@ export function parseAddFormOpen(value: unknown): boolean | null {
   return null;
 }
 
+export function chartsOpenStorageKey(accountUserId: string): string {
+  return `tm.measurements.charts.${accountUserId}`;
+}
+
+export function parseChartsOpen(value: unknown): boolean | null {
+  return parseAddFormOpen(value);
+}
+
+export function chartsPeriodStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.chartsPeriod.${accountUserId}.${subjectTraineeId}`;
+}
+
+export function chartsSelectionStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.chartsSelection.${accountUserId}.${subjectTraineeId}`;
+}
+
+export function chartsVisualizedStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.chartsVisualized.${accountUserId}.${subjectTraineeId}`;
+}
+
 export function addFormStartsOpen(hasServerError: boolean, preference: boolean | null): boolean {
   if (hasServerError) {
     return true;

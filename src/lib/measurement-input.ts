@@ -89,7 +89,7 @@ function measurementNumber(definition: MeasurementFieldDefinition, min: number, 
   });
 }
 
-const measurementLimits = {
+export const measurementLimits = {
   weight_kg: { min: 20, max: 400 },
   chest_cm: { min: 10, max: 300 },
   waist_cm: { min: 10, max: 300 },

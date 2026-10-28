@@ -10,7 +10,12 @@ import {
   journalMonth,
   addFormStartsOpen,
   addFormStorageKey,
+  chartsOpenStorageKey,
+  chartsPeriodStorageKey,
+  chartsSelectionStorageKey,
+  chartsVisualizedStorageKey,
   journalPageStorageKey,
+  parseChartsOpen,
   parseAddFormOpen,
   parseJournalPage,
   measurementMonth,
@@ -77,6 +82,30 @@ describe("storage keys", () => {
     expect(selectedTraineeStorageKey("account-1")).toBe("tm.measurements.trainee.account-1");
     expect(journalPageStorageKey("account-1", "trainee-2")).toBe("tm.measurements.page.account-1.trainee-2");
     expect(addFormStorageKey("account-1")).toBe("tm.measurements.addForm.account-1");
+  });
+
+  it("scopes the charts tile to the account and its period and selection to the account and trainee", () => {
+    expect(chartsOpenStorageKey("account-1")).toBe("tm.measurements.charts.account-1");
+    expect(chartsPeriodStorageKey("account-1", "trainee-2")).toBe("tm.measurements.chartsPeriod.account-1.trainee-2");
+    expect(chartsSelectionStorageKey("account-1", "trainee-2")).toBe(
+      "tm.measurements.chartsSelection.account-1.trainee-2",
+    );
+    expect(chartsVisualizedStorageKey("account-1", "trainee-2")).toBe(
+      "tm.measurements.chartsVisualized.account-1.trainee-2",
+    );
+    expect(chartsPeriodStorageKey("account-1", "trainee-3")).not.toBe(chartsPeriodStorageKey("account-1", "trainee-2"));
+    expect(chartsSelectionStorageKey("account-2", "trainee-2")).not.toBe(
+      chartsSelectionStorageKey("account-1", "trainee-2"),
+    );
+  });
+});
+
+describe("parseChartsOpen", () => {
+  it("keeps open and closed and ignores anything else", () => {
+    expect(parseChartsOpen("open")).toBe(true);
+    expect(parseChartsOpen("closed")).toBe(false);
+    expect(parseChartsOpen(null)).toBeNull();
+    expect(parseChartsOpen("true")).toBeNull();
   });
 });
 
