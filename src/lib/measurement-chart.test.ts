@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  anchorWithEntries,
   CHART_SELECTION_LIMIT,
   bucketStartMs,
   chartDateTimeLabel,
@@ -10,6 +11,8 @@ import {
   chartKeyAnchor,
   chartPeriodKey,
   chartPeriodLabel,
+  chartQueryAnchor,
+  calendarWeek,
   compactChartPeriodLabel,
   chartTickLabel,
   chartTickStyle,
@@ -69,18 +72,27 @@ describe("parseChartAnchor", () => {
 });
 
 describe("chartWindow", () => {
-  it("covers the Monday-first week across a month and a year boundary", () => {
-    expect(chartWindow("week", "2026-01-01", null)).toEqual({
-      start: "2025-12-29T00:00:00",
-      end: "2026-01-05T00:00:00",
+  it("spans the whole Monday-to-Sunday week across a year boundary", () => {
+    for (const day of ["2025-12-29", "2026-01-01", "2026-01-04"]) {
+      expect(chartWindow("week", day, null)).toEqual({
+        start: "2025-12-29T00:00:00",
+        end: "2026-01-05T00:00:00",
+      });
+    }
+  });
+
+  it("spans the whole week across a month boundary", () => {
+    expect(chartWindow("week", "2026-10-02", null)).toEqual({
+      start: "2026-09-28T00:00:00",
+      end: "2026-10-05T00:00:00",
     });
-    expect(chartWindow("week", "2025-12-29", null)).toEqual({
-      start: "2025-12-29T00:00:00",
-      end: "2026-01-05T00:00:00",
+    expect(chartWindow("week", "2026-10-28", null)).toEqual({
+      start: "2026-10-26T00:00:00",
+      end: "2026-11-02T00:00:00",
     });
-    expect(chartWindow("week", "2026-01-04", null)).toEqual({
-      start: "2025-12-29T00:00:00",
-      end: "2026-01-05T00:00:00",
+    expect(chartWindow("week", "2026-10-14", null)).toEqual({
+      start: "2026-10-12T00:00:00",
+      end: "2026-10-19T00:00:00",
     });
   });
 
@@ -118,9 +130,11 @@ describe("chartWindow", () => {
 });
 
 describe("stepAnchor", () => {
-  it("steps a week by seven days", () => {
-    expect(stepAnchor("week", "2026-10-28", 1)).toBe("2026-11-04");
-    expect(stepAnchor("week", "2026-01-01", -1)).toBe("2025-12-25");
+  it("steps to the neighbouring calendar week, across months", () => {
+    expect(stepAnchor("week", "2026-10-28", 1)).toBe("2026-11-02");
+    expect(stepAnchor("week", "2026-10-14", 1)).toBe("2026-10-19");
+    expect(stepAnchor("week", "2026-10-02", -1)).toBe("2026-09-27");
+    expect(stepAnchor("week", "2026-01-01", -1)).toBe("2025-12-28");
   });
 
   it("keeps the anchor a valid day at month ends", () => {
@@ -143,6 +157,7 @@ describe("stepAnchor", () => {
 
 describe("chartPeriodLabel", () => {
   it("names each period", () => {
+    expect(chartPeriodLabel("week", "2026-10-14")).toBe("12 – 18 Oct 2026");
     expect(chartPeriodLabel("week", "2026-10-28")).toBe("26 Oct – 1 Nov 2026");
     expect(chartPeriodLabel("week", "2026-01-01")).toBe("29 Dec 2025 – 4 Jan 2026");
     expect(chartPeriodLabel("month", "2026-10-28")).toBe("October 2026");
@@ -496,12 +511,10 @@ describe("bucketStartMs", () => {
 });
 
 describe("compactChartPeriodLabel", () => {
-  it("drops the year from a week inside one year", () => {
-    expect(compactChartPeriodLabel("week", "2026-10-28")).toBe("26 Oct – 1 Nov");
-  });
-
-  it("turns a week across years numeric", () => {
-    expect(compactChartPeriodLabel("week", "2026-01-01")).toBe("29.12.25 – 4.1.26");
+  it("drops the year from a week", () => {
+    expect(compactChartPeriodLabel("week", "2026-10-14")).toBe("12 – 18 Oct");
+    expect(compactChartPeriodLabel("week", "2026-10-02")).toBe("28 Sep – 4 Oct");
+    expect(compactChartPeriodLabel("week", "2025-12-30")).toBe("29 Dec – 4 Jan");
   });
 
   it("keeps the other labels", () => {
@@ -574,5 +587,49 @@ describe("chartHeading", () => {
 
   it("counts selected entries without a note", () => {
     expect(selectedChartHeading(3)).toEqual({ title: "Selected entries (3)", note: null });
+  });
+});
+
+describe("calendarWeek", () => {
+  it("returns the Monday-to-Sunday week, crossing months", () => {
+    expect(calendarWeek("2026-10-01")).toEqual({ first: "2026-09-28", last: "2026-10-04" });
+    expect(calendarWeek("2026-10-31")).toEqual({ first: "2026-10-26", last: "2026-11-01" });
+  });
+
+  it("keys and lists calendar weeks by their Monday", () => {
+    expect(chartPeriodKey("week", "2026-01-03")).toBe("2025-12-29");
+    expect(periodsWithEntries("week", ["2025-12-30", "2026-01-02", "2026-01-05"])).toEqual([
+      "2025-12-29",
+      "2026-01-05",
+    ]);
+  });
+});
+
+describe("chartQueryAnchor", () => {
+  it("sends the first day of the week, month or year", () => {
+    expect(chartQueryAnchor("week", "2026-10-28")).toBe("2026-10-26");
+    expect(chartQueryAnchor("month", "2026-10-28")).toBe("2026-10-01");
+    expect(chartQueryAnchor("year", "2026-10-28")).toBe("2026-01-01");
+  });
+});
+
+describe("anchorWithEntries", () => {
+  const days = ["2025-09-17", "2025-11-03", "2026-10-20"];
+
+  it("moves into the latest entry of the period on screen when the new one is empty", () => {
+    expect(anchorWithEntries("year", "week", "2025-01-01", days)).toBe("2025-11-03");
+    expect(anchorWithEntries("month", "week", "2025-09-01", days)).toBe("2025-09-17");
+  });
+
+  it("keeps an anchor whose new period holds an entry", () => {
+    expect(anchorWithEntries("week", "year", "2025-09-17", days)).toBe("2025-09-17");
+    expect(anchorWithEntries("year", "month", "2025-11-10", days)).toBe("2025-11-10");
+  });
+
+  it("falls back to the latest entry, and leaves Years or no entries alone", () => {
+    expect(anchorWithEntries("years", "month", "2026-01-01", days)).toBe("2026-10-20");
+    expect(anchorWithEntries("year", "month", "2024-01-01", days)).toBe("2026-10-20");
+    expect(anchorWithEntries("month", "years", "2025-01-01", days)).toBe("2025-01-01");
+    expect(anchorWithEntries("year", "week", "2025-01-01", [])).toBe("2025-01-01");
   });
 });

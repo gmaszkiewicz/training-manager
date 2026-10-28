@@ -11,15 +11,6 @@ export const defaultChartPeriod: ChartPeriod = "month";
 
 export const CHART_SELECTION_LIMIT = 15;
 
-/** Sent on `window` by the list once its month settles. Detail: `MeasurementMonthDetail`. */
-export const MEASUREMENT_MONTH_EVENT = "tm:measurements:month";
-
-export interface MeasurementMonthDetail {
-  month: string;
-  /** `false` only when the user picked the month; the load and the post-hydration restore send `true`. */
-  restored: boolean;
-}
-
 export interface ChartWindow {
   start: string;
   end: string;
@@ -110,10 +101,16 @@ function yearWindow(year: number): ChartWindow {
   };
 }
 
+/** The calendar week holding `anchorDay`, Monday to Sunday, even when it crosses a month or a year. */
+export function calendarWeek(anchorDay: string): { first: string; last: string } {
+  const days = weekContaining(anchorDay);
+  return { first: days[0], last: days[days.length - 1] };
+}
+
 export function chartWindow(period: ChartPeriod, anchorDay: string, years: YearsRange | null): ChartWindow {
   if (period === "week") {
-    const days = weekContaining(anchorDay);
-    return { start: `${days[0]}T00:00:00`, end: `${addDays(days[6], 1)}T00:00:00` };
+    const week = calendarWeek(anchorDay);
+    return { start: `${week.first}T00:00:00`, end: `${addDays(week.last, 1)}T00:00:00` };
   }
   if (period === "month") {
     return monthWindow(measurementMonth(anchorDay));
@@ -205,10 +202,13 @@ export function thinTicks(ticks: readonly number[], maxCount: number): number[] 
   return ticks.filter((_, index) => index % step === 0);
 }
 
-/** The key of the period that holds `anchorDay`: the Monday for a week, `YYYY-MM` for a month, `YYYY` for a year. */
+/**
+ * The key of the period that holds `anchorDay`: the Monday of its calendar week, `YYYY-MM` for a month,
+ * `YYYY` for a year.
+ */
 export function chartPeriodKey(period: Exclude<ChartPeriod, "years">, anchorDay: string): string {
   if (period === "week") {
-    return weekContaining(anchorDay)[0];
+    return calendarWeek(anchorDay).first;
   }
   if (period === "month") {
     return measurementMonth(anchorDay);
@@ -247,6 +247,29 @@ export function periodsWithEntries(period: Exclude<ChartPeriod, "years">, days: 
   return [...keys].sort();
 }
 
+/**
+ * Where the charts go when the period changes: an anchor whose new week, month or year holds an entry stays; otherwise
+ * the latest entry day of the period that was on screen, then the latest entry day of all.
+ */
+export function anchorWithEntries(
+  from: ChartPeriod,
+  to: ChartPeriod,
+  anchorDay: string,
+  days: readonly string[],
+): string {
+  if (to === "years" || days.length === 0) {
+    return anchorDay;
+  }
+  const key = chartPeriodKey(to, anchorDay);
+  if (days.some((day) => chartPeriodKey(to, day) === key)) {
+    return anchorDay;
+  }
+  const shown =
+    from === "years" ? [] : days.filter((day) => chartPeriodKey(from, day) === chartPeriodKey(from, anchorDay));
+  const pool = shown.length > 0 ? shown : days;
+  return pool.reduce((latest, day) => (day > latest ? day : latest));
+}
+
 export function earlierPeriod(current: string, keys: readonly string[]): string | null {
   let earlier: string | null = null;
   for (const candidate of keys) {
@@ -267,9 +290,22 @@ export function laterPeriod(current: string, keys: readonly string[]): string | 
   return later;
 }
 
+/** The anchor a chart query sends: the first day of the week, month or year, so equal periods share one query. */
+export function chartQueryAnchor(period: Exclude<ChartPeriod, "years">, anchorDay: string): string {
+  if (period === "week") {
+    return calendarWeek(anchorDay).first;
+  }
+  if (period === "month") {
+    return `${measurementMonth(anchorDay)}-01`;
+  }
+  return `${anchorDay.slice(0, 4)}-01-01`;
+}
+
+/** Steps to the neighbouring calendar week, month or year. */
 export function stepAnchor(period: ChartPeriod, anchorDay: string, direction: -1 | 1): string {
   if (period === "week") {
-    return addDays(anchorDay, 7 * direction);
+    const week = calendarWeek(anchorDay);
+    return direction === 1 ? addDays(week.last, 1) : addDays(week.first, -1);
   }
   if (period === "month") {
     return addMonthsClamped(anchorDay, direction);
@@ -285,17 +321,24 @@ function shortDay(day: string): string {
   return `${String(parts.day)} ${SHORT_MONTHS[parts.month - 1]}`;
 }
 
+/** "19 – 25 Oct", or "26 Oct – 1 Nov" for a week that crosses a month. */
+function weekDays(anchorDay: string): string {
+  const week = calendarWeek(anchorDay);
+  if (week.first.slice(0, 7) !== week.last.slice(0, 7)) {
+    return `${shortDay(week.first)} – ${shortDay(week.last)}`;
+  }
+  return `${String(dayParts(week.first).day)} – ${shortDay(week.last)}`;
+}
+
 export function chartPeriodLabel(period: ChartPeriod, anchorDay: string): string {
   if (period === "week") {
-    const days = weekContaining(anchorDay);
-    const first = days[0];
-    const last = days[6];
-    const firstYear = first.slice(0, 4);
-    const lastYear = last.slice(0, 4);
-    if (firstYear === lastYear) {
-      return `${shortDay(first)} – ${shortDay(last)} ${lastYear}`;
+    const week = calendarWeek(anchorDay);
+    const firstYear = week.first.slice(0, 4);
+    const lastYear = week.last.slice(0, 4);
+    if (firstYear !== lastYear) {
+      return `${shortDay(week.first)} ${firstYear} – ${shortDay(week.last)} ${lastYear}`;
     }
-    return `${shortDay(first)} ${firstYear} – ${shortDay(last)} ${lastYear}`;
+    return `${weekDays(anchorDay)} ${lastYear}`;
   }
   if (period === "month") {
     return monthLabel(measurementMonth(anchorDay));
@@ -306,23 +349,12 @@ export function chartPeriodLabel(period: ChartPeriod, anchorDay: string): string
   return "Last 5 years";
 }
 
-function numericDay(day: string): string {
-  const parts = dayParts(day);
-  return `${String(parts.day)}.${String(parts.month)}.${day.slice(2, 4)}`;
-}
-
-/** A label that fits the list's month button: a week drops its year, or turns numeric when it crosses years. */
+/** A label that fits the list's month button: a week drops its year. */
 export function compactChartPeriodLabel(period: ChartPeriod, anchorDay: string): string {
   if (period !== "week") {
     return chartPeriodLabel(period, anchorDay);
   }
-  const days = weekContaining(anchorDay);
-  const first = days[0];
-  const last = days[6];
-  if (first.slice(0, 4) === last.slice(0, 4)) {
-    return `${shortDay(first)} – ${shortDay(last)}`;
-  }
-  return `${numericDay(first)} – ${numericDay(last)}`;
+  return weekDays(anchorDay);
 }
 
 function bucketKey(ms: number, period: ChartPeriod): string {

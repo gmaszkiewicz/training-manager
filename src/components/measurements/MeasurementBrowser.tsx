@@ -20,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { monthLabel, widestMonthLabel } from "@/lib/journal-calendar";
-import { MEASUREMENT_MONTH_EVENT, type MeasurementMonthDetail } from "@/lib/measurement-chart";
 import { measurementFields, toMeasuredOnLocalValue } from "@/lib/measurement-input";
 import {
   dayStorageKey,
@@ -791,8 +790,6 @@ export default function MeasurementBrowser({
   const monthFieldRef = useRef<HTMLDivElement>(null);
   const monthListRef = useRef<HTMLDivElement>(null);
   const requestSerial = useRef(0);
-  // Set when the user picks a month, so the charts tile can tell that change from the load and restore.
-  const userMonthChange = useRef(false);
 
   const loadPage = useCallback(
     (query: PageQuery): void => {
@@ -895,15 +892,6 @@ export default function MeasurementBrowser({
   ]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // `month` changes only once a read settles, so the charts tile never follows a month the list rejected.
-  useEffect(() => {
-    const restored = !userMonthChange.current;
-    userMonthChange.current = false;
-    window.dispatchEvent(
-      new CustomEvent<MeasurementMonthDetail>(MEASUREMENT_MONTH_EVENT, { detail: { month, restored } }),
-    );
-  }, [month]);
-
   const monthRows = filterByMonth(entries, month);
   const localPageCount = pageCountOf(monthRows.length, pageSize);
   const localPage = clampPage(page, localPageCount);
@@ -993,6 +981,7 @@ export default function MeasurementBrowser({
     const nextTop = selected.offsetTop - container.clientHeight / 2 + selected.clientHeight / 2;
     container.scrollTop = Math.max(0, nextTop);
   }, [monthListOpen, monthListScrolls, month]);
+
   const cancelHref = measurementCancelHref(openEditingId);
   const confirmingEntry =
     openConfirmingId === null
@@ -1014,7 +1003,6 @@ export default function MeasurementBrowser({
     if (nextMonth === month || !dates.includes(nextMonth)) {
       return;
     }
-    userMonthChange.current = true;
     if (accountId !== null && subjectId !== null) {
       writePreference(dayStorageKey(accountId, subjectId), nextMonth);
       writePreference(journalPageStorageKey(accountId, subjectId), "1");
@@ -1086,7 +1074,7 @@ export default function MeasurementBrowser({
 
   return (
     <div className="w-full">
-      <div className="measurement-row:gap-4 mt-6 flex w-full flex-nowrap items-center gap-1">
+      <div className="measurement-row:flex-nowrap measurement-row:gap-4 mt-6 flex w-full flex-wrap items-center gap-1 gap-y-2">
         <div ref={monthFieldRef} className="relative z-20 w-auto min-w-0 flex-none">
           <div className="measurement-row:gap-2 flex min-w-0 items-center gap-1" role="group" aria-label="Month">
             <Button

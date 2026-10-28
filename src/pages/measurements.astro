@@ -131,11 +131,12 @@ async function readInitialChart(
 ): Promise<void> {
   const preference = preferredChartsPeriod(accountUserId, subjectTraineeId);
   chartsPeriod = preference.period;
-  chartsAnchor = preference.anchor;
+  // The charts keep their own week, month or year apart from the list; only a first visit starts from its month.
+  chartsAnchor = preference.anchor ?? monthAnchor(listMonth, today);
   const [range, days] = await Promise.all([
     readMeasurementRange(client, subjectTraineeId, {
       period: chartsPeriod,
-      anchor: preference.anchor ?? monthAnchor(listMonth, today),
+      anchor: chartsAnchor,
       years: lastYearsRange(today),
     }),
     readMeasurementDays(client, subjectTraineeId),

@@ -17,7 +17,7 @@ interface Props {
   forceLoading?: boolean;
   /** The period from the preference cookie, so the heading and charts are right on the first render. */
   initialPeriod?: ChartPeriod;
-  /** The remembered week, month or year; `null` follows the list's month. */
+  /** The remembered week, month or year; `null` starts from the list's month. */
   initialAnchor?: string | null;
   /** The server's chart read for `initialPeriod`; `null` leaves the read to the island. */
   initialChart?: ChartBody | null;

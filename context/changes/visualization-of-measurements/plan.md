@@ -219,16 +219,15 @@ Install the chart component, add the colour tokens, and build the `MeasurementCh
   - Trainee: before the add-form `<details>` (`TraineeJournal.astro:64`), not in edit mode.
   - Trainer: between `LinkedTraineeField` and `MeasurementBrowser` (`TrainerPanel.astro:89-94`).
 
-#### 4. List → tile month signal
+#### 4. List and tile stay independent
 
-**File**: `src/components/measurements/MeasurementBrowser.tsx`, `src/lib/measurement-chart.ts`
+**File**: `src/components/measurements/MeasurementBrowser.tsx`, `src/components/measurements/MeasurementCharts.tsx`
 
-**Intent**: Month mode tracks the list's month.
+**Intent**: The list's month picker and the tile's week/month/year picker do not move or reload each other (revised from the earlier list → tile month signal).
 
 **Contract**:
-- Export an event name constant, e.g. `MEASUREMENT_MONTH_EVENT = "tm:measurements:month"`, with detail `{ month: string }`.
-- The browser dispatches it on `window` whenever the settled `month` state changes, including the restore after hydration.
-- `MeasurementCharts` listens. On an event it sets the anchor to `monthAnchor(month, today)`, which moves the Week, Month and Year views. Years ignores it.
+- No month events pass between the list and the tile in either direction.
+- The tile starts from its remembered anchor (cookie, then storage); only without one does it start from `monthAnchor(listMonth, today)`.
 
 #### 5. Kitchen sinks and token check
 
@@ -432,21 +431,21 @@ No schema change. New localStorage keys and one new cookie (`tm.measurements.cha
 
 #### Automated
 
-- [x] 2.1 Token check passes with the new files listed: `npm run check:home-tokens`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Type check passes: `npx astro check`
-- [x] 2.4 Unit tests pass: `npm test`
-- [x] 2.5 Production build passes: `npm run build`
-- [x] 2.6 Smoke passes on the production preview: `npm run smoke`
+- [x] 2.1 Token check passes with the new files listed: `npm run check:home-tokens` — f07c65c
+- [x] 2.2 Lint passes: `npm run lint` — f07c65c
+- [x] 2.3 Type check passes: `npx astro check` — f07c65c
+- [x] 2.4 Unit tests pass: `npm test` — f07c65c
+- [x] 2.5 Production build passes: `npm run build` — f07c65c
+- [x] 2.6 Smoke passes on the production preview: `npm run smoke` — f07c65c
 
 #### Manual
 
-- [x] 2.7 On the production preview (`npm run preview`), the Charts tile hydrates and renders eight coloured charts in light and dark themes (no Auto Minify or CommonJS breakage)
-- [x] 2.8 Hovering a point shows the date and time, the value with its unit, and a difference matching the list row, including the first entry of a month
-- [x] 2.9 Week / Month / Year / Years and prev/next change the charts. Changing the list month moves Month mode. The period survives a reload
-- [x] 2.10 Closing the tile and reloading renders it closed with no flash. The add form's own state is unaffected
-- [x] 2.11 A trainer viewing a linked trainee sees the same tile above the read-only list
-- [x] 2.12 The layout at phone width has no horizontal scroll, and the kitchen sinks show every state
+- [x] 2.7 On the production preview (`npm run preview`), the Charts tile hydrates and renders eight coloured charts in light and dark themes (no Auto Minify or CommonJS breakage) — f07c65c
+- [x] 2.8 Hovering a point shows the date and time, the value with its unit, and a difference matching the list row, including the first entry of a month — f07c65c
+- [x] 2.9 Week / Month / Year / Years and prev/next change the charts. Changing the list month moves Month mode. The period survives a reload — f07c65c
+- [x] 2.10 Closing the tile and reloading renders it closed with no flash. The add form's own state is unaffected — f07c65c
+- [x] 2.11 A trainer viewing a linked trainee sees the same tile above the read-only list — f07c65c
+- [x] 2.12 The layout at phone width has no horizontal scroll, and the kitchen sinks show every state — f07c65c
 
 ### Phase 3: Visualize & Clear
 

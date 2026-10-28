@@ -4,8 +4,9 @@ import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import MeasurementChart, { type ChartPoint } from "@/components/measurements/MeasurementChart";
 import { Button } from "@/components/ui/button";
 import {
-  MEASUREMENT_MONTH_EVENT,
+  anchorWithEntries,
   bucketStartMs,
+  chartQueryAnchor,
   chartKeyAnchor,
   chartPeriodKey,
   chartPeriodLabel,
@@ -52,7 +53,7 @@ interface Props {
   forceLoading?: boolean;
   /** The period the server rendered from the preference cookie. */
   initialPeriod?: ChartPeriod;
-  /** The remembered week, month or year from the preference cookie; `null` follows the list's month. */
+  /** The remembered week, month or year from the preference cookie; `null` starts from the list's month. */
   initialAnchor?: string | null;
   /** The server's read for `initialPeriod` around `month`, so the first render needs no fetch. */
   initialChart?: ChartBody | null;
@@ -191,7 +192,7 @@ function chartQuery(
     params.set("to", String(years.to));
   } else {
     params.set("period", period);
-    params.set("anchor", anchor);
+    params.set("anchor", chartQueryAnchor(period, anchor));
   }
   return withTrainee(params, traineeId);
 }
@@ -235,8 +236,8 @@ interface PickerStep {
 }
 
 /**
- * The list's month picker: optional previous/next arrows around a button that opens a list of choices, scrolling
- * when long. An invisible widest label keeps the button from changing width.
+ * The period picker: optional previous/next arrows around a button that opens a list of choices, scrolling past
+ * five. An invisible widest label keeps the button from changing width.
  */
 function PickerField({
   groupLabel,
@@ -262,7 +263,7 @@ function PickerField({
   const [open, setOpen] = useState(false);
   const fieldRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const scrolls = options.length > 6;
+  const scrolls = options.length > 5;
 
   useEffect(() => {
     if (!open) {
@@ -359,7 +360,7 @@ function PickerField({
           ref={listRef}
           className={cn(
             "bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-full flex-col gap-2 rounded-md border p-2 shadow-md",
-            scrolls && "max-h-68 overflow-x-hidden overflow-y-auto",
+            scrolls && "max-h-57 overflow-x-hidden overflow-y-auto",
           )}
         >
           {options.map((option) => {
@@ -450,8 +451,8 @@ export default function MeasurementCharts({
   const traineeId = readOnly ? subjectId : null;
   const daysQuery = withTrainee(new URLSearchParams({ days: "1" }), traineeId);
   const years = lastYearsRange(todayValue);
-  const rememberedAnchor = parseChartAnchor(initialAnchor);
-  const startAnchor = rememberedAnchor ?? monthAnchor(listMonth, todayValue);
+  // The charts keep their own week, month or year apart from the list; only a first visit starts from its month.
+  const startAnchor = parseChartAnchor(initialAnchor) ?? monthAnchor(listMonth, todayValue);
   const [period, setPeriod] = useState<ChartPeriod>(initialPeriod);
   const [anchor, setAnchor] = useState(startAnchor);
   const [restored, setRestored] = useState(false);
@@ -473,8 +474,6 @@ export default function MeasurementCharts({
   const shownQuery = useRef(result?.query ?? null);
   const seededDaysQuery = useRef(remoteDays?.query ?? null);
   const rootRef = useRef<HTMLDivElement>(null);
-  // A remembered anchor wins on load: the list's load and restore month then leave the tile where it was.
-  const anchorRemembered = useRef(rememberedAnchor !== null);
 
   let days: string[] | null = null;
   if (entries !== undefined) {
@@ -494,7 +493,6 @@ export default function MeasurementCharts({
         const preference = parseChartPreference(stored);
         setPeriod(preference.period);
         if (preference.anchor !== null) {
-          anchorRemembered.current = true;
           setAnchor(preference.anchor);
         }
       }
@@ -549,33 +547,6 @@ export default function MeasurementCharts({
     });
   }, [local, restored, query]);
 
-  useEffect(() => {
-    if (local) {
-      return;
-    }
-    function onMonth(event: Event) {
-      if (!(event instanceof CustomEvent)) {
-        return;
-      }
-      const detail: unknown = event.detail;
-      if (detail === null || typeof detail !== "object" || !("month" in detail) || typeof detail.month !== "string") {
-        return;
-      }
-      const restoredMonth = !("restored" in detail) || detail.restored !== false;
-      if (restoredMonth && anchorRemembered.current) {
-        return;
-      }
-      const nextMonth = journalMonth(detail.month);
-      if (nextMonth !== null) {
-        setAnchor(monthAnchor(nextMonth, todayValue));
-      }
-    }
-    window.addEventListener(MEASUREMENT_MONTH_EVENT, onMonth);
-    return () => {
-      window.removeEventListener(MEASUREMENT_MONTH_EVENT, onMonth);
-    };
-  }, [local, todayValue]);
-
   // The summary heading belongs to the server-rendered tile around this island; keep it in step with the period.
   useEffect(() => {
     const tile = rootRef.current?.closest("[data-charts-tile]");
@@ -591,6 +562,8 @@ export default function MeasurementCharts({
   }, [heading.title, heading.note]);
 
   function choosePeriod(next: ChartPeriod) {
+    // Narrowing from a year to a week or month lands on an entry instead of the year's first, empty one.
+    setAnchor(anchorWithEntries(period, next, anchor, days ?? []));
     setPeriod(next);
   }
 
