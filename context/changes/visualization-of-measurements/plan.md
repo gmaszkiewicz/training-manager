@@ -26,7 +26,7 @@ On `/measurements`, a trainee sees a "Charts" tile above "Add your next measurem
 - Y-axis: from the charted values, rounded out to multiples of 5 with one step of padding, clamped to the field's input range. Ticks every 5.
 - X-axis: time-scaled. With 8 or fewer entries there is one tick per entry date. With more, ticks are per day (week), per Monday (month) or per month (year and years).
 
-Month mode follows the list's month as it changes. Checking up to 15 rows and pressing **Visualize** switches the tile to "Selected entries (n)" with exactly those entries, whatever their dates. **Clear** unchecks everything and returns to Month mode on the list's month. After a reload, the open/closed state (cookie, no flash), the period, the checked ids and the Visualize mode are all restored per account and trainee. Ids of deleted entries are dropped silently.
+The tile's period picker and the list's month picker are independent. Checking up to 15 rows and pressing **Visualize** switches the tile to "Selected entries (n)" with exactly those entries, whatever their dates. **Clear** unchecks everything and returns the tile to its first-visit state: Month mode on the current month. After a reload, the open/closed state (cookie, no flash), the period, the checked ids and the Visualize mode are all restored per account and trainee. Ids of deleted entries are dropped silently.
 
 Verify with `npm run lint`, `npm run check:home-tokens`, `npx astro check`, `npm test`, `npm run build`, `npm run smoke`, and `npx playwright test` against the production preview.
 
@@ -299,7 +299,7 @@ Cap selection at 15, remember the checked and visualized ids per account and tra
   - `Button variant="outline" size="sm"` **Visualize**, disabled when nothing is checked.
   - **Clear**, disabled when nothing is checked or visualized.
   - Muted text "n of 15 selected".
-- Clear also sends the tile back to Month mode: the tile reacts to an empty visualized set by restoring `period = "month"` at the list month and saving it.
+- Clear also sends the tile back to its first-visit state: the tile reacts to an empty visualized set by restoring `period = defaultChartPeriod` ("month") with the anchor on today (the current month), ignoring the list's month, and saving it.
 
 #### 3. Tile: selected-entries mode and reconcile
 
@@ -342,7 +342,7 @@ Role and accessible-name selectors only.
 - Checking rows across two months, then Visualize, charts exactly those entries with their journal differences. The 16th checkbox is disabled
 - After a reload, the checked rows and "Selected entries (n)" come back. Switching to another trainee (trainer) or account shows no leaked selection
 - Deleting a visualized entry and returning drops it silently, with no error toast
-- Clear unchecks every row and returns the tile to Month mode on the list's month
+- Clear unchecks every row and returns the tile to Month mode on the current month, whatever month the list shows
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -383,10 +383,10 @@ Role and accessible-name selectors only.
 1. As a trainee with entries in two months, open `/measurements`. The Charts tile is open above the add form with eight charts for the current month.
 2. Hover a Weight point. The difference equals the list row's Weight difference.
 3. Switch to Year, then Years, then Week. Use prev/next. Reload: the period is kept.
-4. Change the list month. Month mode follows.
+4. Change the list month. The charts stay on their own period.
 5. Check 3 rows across two months and press Visualize. You see "Selected entries (3)". Reload: it is kept.
 6. Delete one of them and come back. You see "Selected entries (2)".
-7. Clear: the rows are unchecked and the Month view is back.
+7. Clear: the rows are unchecked and the Month view of the current month is back.
 8. Sign in as a linked trainer. The tile shows above the read-only list. Switching trainee does not carry the trainee's selection over.
 
 ## Performance Considerations
@@ -464,4 +464,4 @@ No schema change. New localStorage keys and one new cookie (`tm.measurements.cha
 - [ ] 3.8 Checking rows across two months, then Visualize, charts exactly those entries with their journal differences. The 16th checkbox is disabled
 - [ ] 3.9 After a reload, the checked rows and "Selected entries (n)" come back. Switching to another trainee (trainer) or account shows no leaked selection
 - [ ] 3.10 Deleting a visualized entry and returning drops it silently, with no error toast
-- [ ] 3.11 Clear unchecks every row and returns the tile to Month mode on the list's month
+- [ ] 3.11 Clear unchecks every row and returns the tile to Month mode on the current month, as on a first visit
