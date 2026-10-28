@@ -111,7 +111,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-38 | drop-link-trainee-by-email | a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block | S-37 | MS-29 | done |
 | S-39 | notification-system | user can see a bell between the menu and the avatar with the number of unread notifications (no badge when there are none), open it to read the latest notifications and go to the page each one came from, and manage every notification on a Hub Notifications table paged 5, 10, or 15, marking selected ones read or deleting them; a trainer is told when a link request is accepted or declined and when a trainee unlinks, and a trainee is told when a trainer sends a link request or unlinks | S-37, S-38 | MS-30 | done |
 | S-40 | improvment-for-status-collaborations | user can see each collaboration's access per dashboard in an Access column of Hub → Collaborations — Measurements now, with Nutrition, Training, and Planning laid out for later — where finding a trainee asks for read access to measurements, a linked trainee reads Read, each dashboard has its own action button, access types that do not fit collapse to an access icon that opens a dialog, and Revoke replaces Unlink and Remove in the panel, notifications, and toasts | S-37, S-39 | MS-31 | done |
-| S-41 | visualization-of-measurements | user can open a collapsible Charts tile above the add form with eight line charts, one per measurement field, for the selected week, month, year, or years, hover a line to read each entry and its difference versus the previous entry, chart only the entries checked in the list with Visualize, return to the whole month with Clear, and find those choices kept by the browser | S-23, S-27, S-33 | MS-32 | planned |
+| S-41 | visualization-of-measurements | user can open a collapsible Charts tile above the add form with eight line charts, one per measurement field, for the selected week, month, year, or years, hover a line to read each entry and its difference versus the previous entry, chart only the entries checked in the list with Visualize, return to the whole month with Clear, and find those choices kept by the browser | S-23, S-27, S-33 | MS-32 | planning |
 
 ## Streams
 
@@ -637,7 +637,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** which chart library fits React 19 islands and the design tokens, or hand-drawn SVG; the limit on checked entries ("up to x"); whether week, year, and years are new period controls on the Charts tile or follow the journal's month and week strip; whether a linked trainer sees the same charts; whether remembered choices are kept per trainee in browser storage; where the y-axis starts when steps of 5 meet a small field.
 - **Risk:** The charts read every entry in the period, not one page, so a years range must not walk the whole journal on each render (S-24 kept the list query lean). The tooltip's difference must match the list's difference versus the previous entry, including when that previous entry sits before the period. Remembered choices must not leak between trainees on a shared browser, and a stale remembered selection must not break when entries are edited or deleted.
-- **Status:** planned
+- **Status:** planning
 
 ## Backlog Handoff
 
