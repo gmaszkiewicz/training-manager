@@ -434,19 +434,19 @@ No schema change. Stored notifications keep their `kind` and re-render with the 
 
 #### Automated
 
-- [x] 2.1 Home token check passes: `npm run check:home-tokens`
-- [x] 2.2 Type checking passes: `npx astro check`
-- [x] 2.3 Linting passes: `npm run lint`
-- [x] 2.4 Unit tests pass: `npm test`
-- [x] 2.5 Build succeeds: `npm run build`
+- [x] 2.1 Home token check passes: `npm run check:home-tokens` — fea5054
+- [x] 2.2 Type checking passes: `npx astro check` — fea5054
+- [x] 2.3 Linting passes: `npm run lint` — fea5054
+- [x] 2.4 Unit tests pass: `npm test` — fea5054
+- [x] 2.5 Build succeeds: `npm run build` — fea5054
 
 #### Manual
 
-- [x] 2.6 As a trainer at `/hub/collaborations`: an accepted trainee shows `Read` under Access → Measurements with a `Revoke` button, and a pending one shows `Read · Pending` with `Cancel request`
-- [x] 2.7 As a trainee: a pending request shows Accept/Decline in the Measurements cell, and after Accept the cell shows `Read` with `Revoke`
-- [x] 2.8 Revoke opens the confirm prompt with the contract copy; confirming removes the row and shows `Access revoked`
-- [x] 2.9 At phone width, the Measurements cell falls back to the KeyRound icon when the text does not fit; the icon opens the access dialog, and Escape or an outside click closes it
-- [x] 2.10 The measurement Note cell still shows text or the StickyNote icon exactly as before
+- [x] 2.6 As a trainer at `/hub/collaborations`: an accepted trainee shows `Read` under Access → Measurements with a `Revoke` button, and a pending one shows `Read · Pending` with `Cancel request` — fea5054
+- [x] 2.7 As a trainee: a pending request shows Accept/Decline in the Measurements cell, and after Accept the cell shows `Read` with `Revoke` — fea5054
+- [x] 2.8 Revoke opens the confirm prompt with the contract copy; confirming removes the row and shows `Access revoked` — fea5054
+- [x] 2.9 At phone width, the Measurements cell falls back to the KeyRound icon when the text does not fit; the icon opens the access dialog, and Escape or an outside click closes it — fea5054
+- [x] 2.10 The measurement Note cell still shows text or the StickyNote icon exactly as before — fea5054
 
 ### Phase 3: Kitchen sink and end-to-end assertions
 
