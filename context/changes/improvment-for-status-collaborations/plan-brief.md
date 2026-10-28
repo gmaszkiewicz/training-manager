@@ -60,7 +60,7 @@ Hub → Collaborations shows one Status per trainer–trainee link ("Pending" / 
 
 `toCollaboration` turns `accepted` into `measurements: [{ type: "read", pending: false }]` and anything else into `pending: true`; other dashboards get `[]`. `src/lib/dashboards.ts` holds the ordered dashboard list and the label helpers (`Read`, `Read · Pending`).
 
-`CollaborationsList.astro` renders a two-row header: the party column, and Access spanning one column per enabled dashboard. Each cell holds an `AccessCell` and that dashboard's action. The `AccessCell` uses the CSS-only `text-fit` trick and a native `<dialog>`. The action is a button on wide screens and an ellipsis menu on phones.
+`CollaborationsList.astro` renders a two-row header: the party column, and Access spanning one column per enabled dashboard. Each cell holds an `AccessCell` and that dashboard's action. The `AccessCell` uses the CSS-only `text-fit` trick and a native `<dialog>`. The actions sit in a per-dashboard ellipsis menu at every width.
 
 The remove endpoint still deletes the link. The intent only picks the notice.
 

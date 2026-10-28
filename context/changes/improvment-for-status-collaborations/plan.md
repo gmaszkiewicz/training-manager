@@ -413,6 +413,12 @@ No schema change. Stored notifications keep their `kind` and re-render with the 
 - Fit pattern: `src/styles/global.css:149-181`, `src/components/measurements/MeasurementBrowser.tsx:235-328`, `:399-446`
 - Prior changes: `context/archive/2026-10-27-hub-collaborations-handle`, `context/archive/2026-10-27-notification-system`
 
+## Addendum (post-implementation)
+
+Decisions made during implementation that supersede the phase text above (recorded by the implementation review, 2026-10-28):
+
+- **Actions at every width sit in the per-dashboard ellipsis menu** (Phase 2 §3, 4f28e48). The planned `@lg` inline buttons and their aria-labels (`Revoke {dashboard} access for {name}`, `Accept/Decline {dashboard} request from {name}`) were not built. The menu trigger `{dashboardLabel} actions for {name}` and its `Revoke` / `Cancel request` / `Accept request` / `Decline request` items are the contract at every width. Progress row 2.6's "`Revoke` button" means the menu's `Revoke` item.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.

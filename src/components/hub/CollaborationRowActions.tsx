@@ -39,7 +39,7 @@ function postActionsFor(viewerRole: Props["viewerRole"], granted: boolean): Post
   ];
 }
 
-// Phone-width actions for one dashboard behind an ellipsis menu, like the measurement rows. The menu content is
+// Actions for one dashboard behind an ellipsis menu, like the measurement rows. The menu content is
 // portaled, so each POST action submits a hidden form rendered next to the trigger.
 export default function CollaborationRowActions({
   viewerRole,
