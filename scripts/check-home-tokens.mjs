@@ -42,7 +42,7 @@ const FILES = [
   "src/pages/hub/collaborations.astro",
   "src/components/hub/CollaborationsList.astro",
   "src/components/hub/CollaborationRowActions.tsx",
-  "src/components/hub/ConfirmRemoveToast.tsx",
+  "src/components/hub/ConfirmRevokeToast.tsx",
   "src/pages/hub/notifications.astro",
   "src/components/hub/NotificationsTable.tsx",
   "src/components/profile/ProfileDetailsForm.tsx",

@@ -146,8 +146,8 @@
   }
 }
 
-/* A one-line note is text when it fits the cell. Otherwise the text wraps away and the icon fills the row. */
-.note-fit {
+/* A one-line value is text when it fits the cell. Otherwise the text wraps away and the icon fills the row. */
+.text-fit {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
@@ -160,7 +160,7 @@
   padding: 0;
 }
 
-.note-fit-icon {
+.text-fit-icon {
   display: flex;
   flex-grow: 1;
   align-items: center;
@@ -170,7 +170,7 @@
   overflow: hidden;
 }
 
-.note-fit-text {
+.text-fit-text {
   display: flex;
   flex-basis: 100%;
   align-items: center;

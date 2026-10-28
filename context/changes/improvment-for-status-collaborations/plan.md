@@ -421,32 +421,32 @@ No schema change. Stored notifications keep their `kind` and re-render with the 
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Type checking passes: `npx astro check`
-- [x] 1.3 Linting passes: `npm run lint`
-- [x] 1.4 No `CollaborationStatus` or `"linked"` UI literal remains in `src/` outside the RPC whitelist: `grep -rn "CollaborationStatus\|\"linked\"" src`
+- [x] 1.1 Unit tests pass: `npm test` — 8bf2686
+- [x] 1.2 Type checking passes: `npx astro check` — 8bf2686
+- [x] 1.3 Linting passes: `npm run lint` — 8bf2686
+- [x] 1.4 No `CollaborationStatus` or `"linked"` UI literal remains in `src/` outside the RPC whitelist: `grep -rn "CollaborationStatus\|\"linked\"" src` — 8bf2686
 
 #### Manual
 
-- [x] 1.5 An existing link-request notification in the bell reads `Trainer … requested read access to your measurements` after a reload
+- [x] 1.5 An existing link-request notification in the bell reads `Trainer … requested read access to your measurements` after a reload — 8bf2686
 
 ### Phase 2: Access column UI
 
 #### Automated
 
-- [ ] 2.1 Home token check passes: `npm run check:home-tokens`
-- [ ] 2.2 Type checking passes: `npx astro check`
-- [ ] 2.3 Linting passes: `npm run lint`
-- [ ] 2.4 Unit tests pass: `npm test`
-- [ ] 2.5 Build succeeds: `npm run build`
+- [x] 2.1 Home token check passes: `npm run check:home-tokens`
+- [x] 2.2 Type checking passes: `npx astro check`
+- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.4 Unit tests pass: `npm test`
+- [x] 2.5 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 2.6 As a trainer at `/hub/collaborations`: an accepted trainee shows `Read` under Access → Measurements with a `Revoke` button, and a pending one shows `Read · Pending` with `Cancel request`
-- [ ] 2.7 As a trainee: a pending request shows Accept/Decline in the Measurements cell, and after Accept the cell shows `Read` with `Revoke`
-- [ ] 2.8 Revoke opens the confirm prompt with the contract copy; confirming removes the row and shows `Access revoked`
-- [ ] 2.9 At phone width, the Measurements cell falls back to the KeyRound icon when the text does not fit; the icon opens the access dialog, and Escape or an outside click closes it
-- [ ] 2.10 The measurement Note cell still shows text or the StickyNote icon exactly as before
+- [x] 2.6 As a trainer at `/hub/collaborations`: an accepted trainee shows `Read` under Access → Measurements with a `Revoke` button, and a pending one shows `Read · Pending` with `Cancel request`
+- [x] 2.7 As a trainee: a pending request shows Accept/Decline in the Measurements cell, and after Accept the cell shows `Read` with `Revoke`
+- [x] 2.8 Revoke opens the confirm prompt with the contract copy; confirming removes the row and shows `Access revoked`
+- [x] 2.9 At phone width, the Measurements cell falls back to the KeyRound icon when the text does not fit; the icon opens the access dialog, and Escape or an outside click closes it
+- [x] 2.10 The measurement Note cell still shows text or the StickyNote icon exactly as before
 
 ### Phase 3: Kitchen sink and end-to-end assertions
 

@@ -7,13 +7,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { Dashboard, DashboardAccess } from "@/types";
 
 interface Props {
   viewerRole: "trainer" | "trainee";
   otherId: string;
   name: string;
-  /** True once the trainee has given read access to measurements; false while the request is pending. */
-  granted: boolean;
+  dashboard: Dashboard;
+  dashboardLabel: string;
+  entries: DashboardAccess[];
   page: number;
   confirmHref: string;
 }
@@ -37,11 +39,25 @@ function postActionsFor(viewerRole: Props["viewerRole"], granted: boolean): Post
   ];
 }
 
-// Phone-width row actions behind an ellipsis menu, like the measurement rows. The menu content is portaled,
-// so each POST action submits a hidden form rendered next to the trigger.
-export default function CollaborationRowActions({ viewerRole, otherId, name, granted, page, confirmHref }: Props) {
+// Phone-width actions for one dashboard behind an ellipsis menu, like the measurement rows. The menu content is
+// portaled, so each POST action submits a hidden form rendered next to the trigger.
+export default function CollaborationRowActions({
+  viewerRole,
+  otherId,
+  name,
+  dashboard,
+  dashboardLabel,
+  entries,
+  page,
+  confirmHref,
+}: Props) {
   const formRefs = useRef<(HTMLFormElement | null)[]>([]);
+  const granted = entries.some((entry) => !entry.pending);
   const postActions = postActionsFor(viewerRole, granted);
+
+  if (entries.length === 0) {
+    return null;
+  }
 
   return (
     <>
@@ -57,19 +73,26 @@ export default function CollaborationRowActions({ viewerRole, otherId, name, gra
         >
           <input type="hidden" name="other" value={otherId} />
           <input type="hidden" name="page" value={page} />
+          <input type="hidden" name="dashboard" value={dashboard} />
           {item.intent === undefined ? null : <input type="hidden" name="intent" value={item.intent} />}
         </form>
       ))}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button type="button" variant="ghost" size="icon" className="size-12" aria-label={`Actions for ${name}`}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-12"
+            aria-label={`${dashboardLabel} actions for ${name}`}
+          >
             <Ellipsis aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {granted ? (
             <DropdownMenuItem asChild>
-              <a href={confirmHref}>{viewerRole === "trainer" ? "Unlink" : "Remove"}</a>
+              <a href={confirmHref}>Revoke</a>
             </DropdownMenuItem>
           ) : (
             postActions.map((item, index) => (

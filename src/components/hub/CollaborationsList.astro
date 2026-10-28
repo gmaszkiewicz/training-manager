@@ -1,19 +1,22 @@
 ---
-import { Check, ChevronLeft, ChevronRight, Dumbbell, Link2, PersonStanding, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Dumbbell, PersonStanding, X } from "lucide-react";
+import AccessCell from "@/components/hub/AccessCell";
 import CollaborationRowActions from "@/components/hub/CollaborationRowActions";
-import ConfirmRemoveToast from "@/components/hub/ConfirmRemoveToast";
+import ConfirmRevokeToast from "@/components/hub/ConfirmRevokeToast";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { accessSummary, hasGrantedAccess } from "@/lib/dashboards";
-import type { Collaboration, CollaborationPage } from "@/types";
+import { enabledDashboards, hasGrantedAccess, hasPendingAccess, type DashboardConfig } from "@/lib/dashboards";
+import type { Collaboration, CollaborationPage, Dashboard } from "@/types";
 
 interface Props {
   viewerRole: "trainer" | "trainee";
   page: CollaborationPage;
   confirm?: string | null;
+  /** The Access sub-columns; the kitchen sink passes every dashboard, the app only the enabled ones. */
+  dashboards?: readonly DashboardConfig[];
 }
 
-const { viewerRole, page, confirm = null } = Astro.props;
+const { viewerRole, page, confirm = null, dashboards = enabledDashboards() } = Astro.props;
 
 const textActionClassName = "text-primary focus-visible:ring-ring underline focus-visible:ring-2";
 
@@ -21,13 +24,13 @@ function pageHref(target: number): string {
   return `/hub/collaborations?page=${target}`;
 }
 
-function confirmHref(row: Collaboration): string {
-  return `${pageHref(page.page)}&confirm=${encodeURIComponent(row.otherId)}`;
+function confirmHref(row: Collaboration, dashboard: Dashboard): string {
+  return `${pageHref(page.page)}&confirm=${encodeURIComponent(row.otherId)}&dashboard=${dashboard}`;
 }
 
 const PartyIcon = viewerRole === "trainer" ? PersonStanding : Dumbbell;
 
-// The toast only opens for a row with granted access on this page; any other `confirm` value is ignored.
+// The toast only opens for a row on this page with granted measurements access; any other `confirm` value is ignored.
 const confirming =
   confirm === null
     ? null
@@ -49,25 +52,24 @@ const confirming =
     )
   ) : (
     <div class="@container border-border bg-background w-full max-w-full min-w-0 overflow-hidden rounded-md border">
-      {/* Fixed layout: Status and the actions keep their width, so a long unbroken email cannot push them out. */}
+      {/* Fixed layout: the Access cells keep their width, so a long unbroken email cannot push them out. */}
       <Table containerClassName="overflow-x-clip" className="table-fixed">
         <TableHeader>
           <TableRow className="bg-muted hover:bg-muted">
-            <TableHead className="h-auto px-3 py-2">
+            <TableHead rowSpan={2} className="h-auto px-3 py-2">
               <span class="inline-flex flex-col items-center gap-1">
                 <PartyIcon aria-hidden="true" className="size-4" />
                 <span>{viewerRole === "trainer" ? "Trainee" : "Trainer"}</span>
               </span>
             </TableHead>
-            <TableHead className="h-auto w-20 px-2 py-2 text-center">
-              <span class="flex flex-col items-center gap-1">
-                <Link2 aria-hidden="true" className="size-4" />
-                <span>Status</span>
-              </span>
+            <TableHead colSpan={dashboards.length} className="h-auto px-2 pt-2 pb-1 text-center">
+              Access
             </TableHead>
-            <TableHead className="w-14 px-3 text-right @lg:w-48">
-              <span class="sr-only">Actions</span>
-            </TableHead>
+          </TableRow>
+          <TableRow className="bg-muted hover:bg-muted">
+            {dashboards.map((dashboard) => (
+              <TableHead className="h-auto w-28 px-2 pt-1 pb-2 text-center @lg:w-56">{dashboard.label}</TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -86,67 +88,87 @@ const confirming =
                   ) : null}
                 </div>
               </TableCell>
-              <TableCell className="text-muted-foreground px-2 py-2 text-center">
-                {accessSummary(row.access.measurements)}
-              </TableCell>
-              <TableCell className="px-1 py-2 @lg:px-3">
-                <div class="flex justify-end @lg:hidden">
-                  <CollaborationRowActions
-                    viewerRole={viewerRole}
-                    otherId={row.otherId}
-                    name={row.name}
-                    granted={hasGrantedAccess(row, "measurements")}
-                    page={page.page}
-                    confirmHref={confirmHref(row)}
-                    client:load
-                  />
-                </div>
-                <div class="hidden justify-end @lg:flex">
-                  {viewerRole === "trainer" ? (
-                    !hasGrantedAccess(row, "measurements") ? (
-                      <form method="POST" action="/api/collaborations/remove">
-                        <input type="hidden" name="other" value={row.otherId} />
-                        <input type="hidden" name="page" value={page.page} />
-                        <input type="hidden" name="intent" value="cancel" />
-                        <Button type="submit" variant="outline" size="sm">
-                          Cancel request
-                        </Button>
-                      </form>
-                    ) : (
-                      <a href={confirmHref(row)} class:list={[buttonVariants({ variant: "outline", size: "sm" })]}>
-                        Unlink
-                      </a>
-                    )
-                  ) : !hasGrantedAccess(row, "measurements") ? (
-                    <div class="flex gap-2">
-                      <form method="POST" action="/api/collaborations/accept">
-                        <input type="hidden" name="other" value={row.otherId} />
-                        <input type="hidden" name="page" value={page.page} />
-                        <Button type="submit" size="icon" aria-label={`Accept request from ${row.name}`}>
-                          <Check aria-hidden="true" />
-                        </Button>
-                      </form>
-                      <form method="POST" action="/api/collaborations/remove">
-                        <input type="hidden" name="other" value={row.otherId} />
-                        <input type="hidden" name="page" value={page.page} />
-                        <input type="hidden" name="intent" value="decline" />
-                        <Button
-                          type="submit"
-                          variant="outline"
-                          size="icon"
-                          aria-label={`Decline request from ${row.name}`}
-                        >
-                          <X aria-hidden="true" />
-                        </Button>
-                      </form>
+              {dashboards.map((dashboard) => {
+                const entries = row.access[dashboard.id];
+                const granted = hasGrantedAccess(row, dashboard.id);
+                const pending = !granted && hasPendingAccess(row, dashboard.id);
+                return (
+                  <TableCell className="px-1 py-2 @lg:px-2">
+                    <div class="flex items-center gap-1 @lg:gap-2">
+                      <div class="flex min-w-0 flex-1 items-center">
+                        <AccessCell dashboardLabel={dashboard.label} name={row.name} entries={entries} client:load />
+                      </div>
+                      {entries.length > 0 ? (
+                        <>
+                          <div class="flex shrink-0 justify-end @lg:hidden">
+                            <CollaborationRowActions
+                              viewerRole={viewerRole}
+                              otherId={row.otherId}
+                              name={row.name}
+                              dashboard={dashboard.id}
+                              dashboardLabel={dashboard.label}
+                              entries={entries}
+                              page={page.page}
+                              confirmHref={confirmHref(row, dashboard.id)}
+                              client:load
+                            />
+                          </div>
+                          <div class="hidden shrink-0 justify-end @lg:flex">
+                            {granted ? (
+                              <a
+                                href={confirmHref(row, dashboard.id)}
+                                class:list={[buttonVariants({ variant: "outline", size: "sm" })]}
+                                aria-label={`Revoke ${dashboard.label} access for ${row.name}`}
+                              >
+                                Revoke
+                              </a>
+                            ) : pending && viewerRole === "trainer" ? (
+                              <form method="POST" action="/api/collaborations/remove">
+                                <input type="hidden" name="other" value={row.otherId} />
+                                <input type="hidden" name="page" value={page.page} />
+                                <input type="hidden" name="dashboard" value={dashboard.id} />
+                                <input type="hidden" name="intent" value="cancel" />
+                                <Button type="submit" variant="outline" size="sm">
+                                  Cancel request
+                                </Button>
+                              </form>
+                            ) : pending ? (
+                              <div class="flex gap-2">
+                                <form method="POST" action="/api/collaborations/accept">
+                                  <input type="hidden" name="other" value={row.otherId} />
+                                  <input type="hidden" name="page" value={page.page} />
+                                  <input type="hidden" name="dashboard" value={dashboard.id} />
+                                  <Button
+                                    type="submit"
+                                    size="icon"
+                                    aria-label={`Accept ${dashboard.label} request from ${row.name}`}
+                                  >
+                                    <Check aria-hidden="true" />
+                                  </Button>
+                                </form>
+                                <form method="POST" action="/api/collaborations/remove">
+                                  <input type="hidden" name="other" value={row.otherId} />
+                                  <input type="hidden" name="page" value={page.page} />
+                                  <input type="hidden" name="dashboard" value={dashboard.id} />
+                                  <input type="hidden" name="intent" value="decline" />
+                                  <Button
+                                    type="submit"
+                                    variant="outline"
+                                    size="icon"
+                                    aria-label={`Decline ${dashboard.label} request from ${row.name}`}
+                                  >
+                                    <X aria-hidden="true" />
+                                  </Button>
+                                </form>
+                              </div>
+                            ) : null}
+                          </div>
+                        </>
+                      ) : null}
                     </div>
-                  ) : (
-                    <a href={confirmHref(row)} class:list={[buttonVariants({ variant: "outline", size: "sm" })]}>
-                      Remove
-                    </a>
-                  )}
-                </div>
-              </TableCell>
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>
@@ -187,10 +209,11 @@ const confirming =
     </div>
   ) : null}
   {confirming !== null ? (
-    <ConfirmRemoveToast
+    <ConfirmRevokeToast
       viewerRole={viewerRole}
       otherId={confirming.otherId}
       name={confirming.name}
+      dashboard="measurements"
       page={page.page}
       client:load
     />
