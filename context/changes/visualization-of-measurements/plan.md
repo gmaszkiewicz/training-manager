@@ -451,17 +451,17 @@ No schema change. New localStorage keys and one new cookie (`tm.measurements.cha
 
 #### Automated
 
-- [x] 3.1 Unit tests for `limitSelection` / `reconcileSelection` pass: `npm test`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Token check passes: `npm run check:home-tokens`
-- [x] 3.4 Type check passes: `npx astro check`
-- [x] 3.5 Production build passes: `npm run build`
-- [x] 3.6 Smoke passes: `npm run smoke`
-- [x] 3.7 E2E passes on the preview, including the new charts spec: `npx playwright test`
+- [x] 3.1 Unit tests for `limitSelection` / `reconcileSelection` pass: `npm test` — 87a5697
+- [x] 3.2 Lint passes: `npm run lint` — 87a5697
+- [x] 3.3 Token check passes: `npm run check:home-tokens` — 87a5697
+- [x] 3.4 Type check passes: `npx astro check` — 87a5697
+- [x] 3.5 Production build passes: `npm run build` — 87a5697
+- [x] 3.6 Smoke passes: `npm run smoke` — 87a5697
+- [x] 3.7 E2E passes on the preview, including the new charts spec: `npx playwright test` — 87a5697
 
 #### Manual
 
-- [x] 3.8 Checking rows across two months, then Visualize, charts exactly those entries with their journal differences. The 16th checkbox is disabled
-- [x] 3.9 After a reload, the checked rows and "Selected entries (n)" come back. Switching to another trainee (trainer) or account shows no leaked selection
-- [x] 3.10 Deleting a visualized entry and returning drops it silently, with no error toast
-- [x] 3.11 Clear unchecks every row and returns the tile to Month mode on the current month, as on a first visit
+- [x] 3.8 Checking rows across two months, then Visualize, charts exactly those entries with their journal differences. The 16th checkbox is disabled — 87a5697
+- [x] 3.9 After a reload, the checked rows and "Selected entries (n)" come back. Switching to another trainee (trainer) or account shows no leaked selection — 87a5697
+- [x] 3.10 Deleting a visualized entry and returning drops it silently, with no error toast — 87a5697
+- [x] 3.11 Clear unchecks every row and returns the tile to Month mode on the current month, as on a first visit — 87a5697
