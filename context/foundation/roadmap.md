@@ -109,7 +109,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-37 | hub-collaborations-handle | user can open a Hub from the avatar menu with a Collaborations section: a trainer sees linked and pending trainees, five per page, and can cancel a pending request or unlink a trainee; a trainee sees their trainers, five per page, and accepts or declines a link request; finding a trainee by email sends a link request instead of linking at once | S-04, S-29, S-35 | MS-29 | done |
 | S-38 | drop-link-trainee-by-email | a maintainer can rely on the request flow as the only way to create a trainer link: the legacy instant-link database function is gone, and a declined request can be sent again at once with no block | S-37 | MS-29 | done |
 | S-39 | notification-system | user can see a bell between the menu and the avatar with the number of unread notifications (no badge when there are none), open it to read the latest notifications and go to the page each one came from, and manage every notification on a Hub Notifications table paged 5, 10, or 15, marking selected ones read or deleting them; a trainer is told when a link request is accepted or declined and when a trainee unlinks, and a trainee is told when a trainer sends a link request or unlinks | S-37, S-38 | MS-30 | done |
-| S-40 | improvment-for-status-collaborations | user can see each collaboration's access per dashboard in an Access column of Hub → Collaborations — Measurements now, with Nutrition, Training, and Planning laid out for later — where finding a trainee asks for read access to measurements, a linked trainee reads Read, each dashboard has its own action button, access types that do not fit collapse to an access icon that opens a dialog, and Revoke replaces Unlink and Remove in the panel, notifications, and toasts | S-37, S-39 | MS-31 | ready |
+| S-40 | improvment-for-status-collaborations | user can see each collaboration's access per dashboard in an Access column of Hub → Collaborations — Measurements now, with Nutrition, Training, and Planning laid out for later — where finding a trainee asks for read access to measurements, a linked trainee reads Read, each dashboard has its own action button, access types that do not fit collapse to an access icon that opens a dialog, and Revoke replaces Unlink and Remove in the panel, notifications, and toasts | S-37, S-39 | MS-31 | planning |
 
 ## Streams
 
@@ -623,7 +623,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** whether access is stored per dashboard in the database now or only shaped in the UI on top of today's link; how a pending request shows per dashboard; whether Nutrition, Training, and Planning render as disabled cells or stay hidden until built; which icon stands for access.
 - **Risk:** Renaming link statuses or notification kinds in the database must stay backward compatible, because the migration reaches hosted Supabase before the new Worker and the previous Worker still reads "linked" and "unlinked". Notifications already stored with the old wording must still read correctly. The trainer's preview of measurements must keep keying on read access to measurements, so row-level security does not widen or break.
-- **Status:** ready
+- **Status:** planning
 
 ## Backlog Handoff
 
