@@ -452,12 +452,12 @@ No schema change. Stored notifications keep their `kind` and re-render with the 
 
 #### Automated
 
-- [ ] 3.1 Full CI gate passes locally: `npm run lint`, `npm run check:home-tokens`, `npx astro check`, `npm test`, `npm run build`
-- [ ] 3.2 Smoke passes against the preview with local Supabase: `npm run smoke`
-- [ ] 3.3 E2E passes: `npx playwright test tests/e2e/hub-collaborations.spec.ts`
+- [x] 3.1 Full CI gate passes locally: `npm run lint`, `npm run check:home-tokens`, `npx astro check`, `npm test`, `npm run build`
+- [x] 3.2 Smoke passes against the preview with local Supabase: `npm run smoke`
+- [x] 3.3 E2E passes: `npx playwright test tests/e2e/hub-collaborations.spec.ts`
 
 #### Manual
 
-- [ ] 3.4 `/kitchen-sink/hub` shows the four-dashboard layout, the pending state, the confirm-revoke prompt and the `Access revoked` notice
-- [ ] 3.5 `/kitchen-sink/hub` "Access that does not fit" shows the KeyRound icon, and its dialog lists the access entries
-- [ ] 3.6 `/kitchen-sink/home` and `/kitchen-sink/trainer` show the new notification and request copy
+- [x] 3.4 `/kitchen-sink/hub` shows the four-dashboard layout, the pending state, the confirm-revoke prompt and the `Access revoked` notice
+- [x] 3.5 `/kitchen-sink/hub` "Access that does not fit" shows the KeyRound icon, and its dialog lists the access entries
+- [x] 3.6 `/kitchen-sink/home` and `/kitchen-sink/trainer` show the new notification and request copy

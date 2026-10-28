@@ -2,9 +2,11 @@
 import Layout from "@/layouts/Layout.astro";
 import CollaborationsList from "@/components/hub/CollaborationsList.astro";
 import NotificationsTable from "@/components/hub/NotificationsTable";
+import AccessCell from "@/components/hub/AccessCell";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
-import { collaborationErrorMessage, requestOutcomeMessage } from "@/lib/collaborations";
-import { notificationErrorMessage, notificationNoticeMessage } from "@/lib/notifications";
+import { collaborationErrorMessage, collaborationNoticeMessage, requestOutcomeMessage } from "@/lib/collaborations";
+import { dashboards } from "@/lib/dashboards";
+import { notificationErrorMessage, notificationMessage, notificationNoticeMessage } from "@/lib/notifications";
 import type { AppNotification, Collaboration, CollaborationPage, NotificationKind, NotificationPage } from "@/types";
 
 const pendingTrainee: Collaboration = {
@@ -104,7 +106,29 @@ const confirmPage: CollaborationPage = {
   pageSize: 5,
 };
 
+// Measurements granted, Nutrition pending, Training and Planning empty: the shape a future dashboard would add.
+const fourDashboardTrainee: Collaboration = {
+  otherId: "f7a8b9c0-d1e2-3456-a123-4567890abcde",
+  name: "A. Turing",
+  email: "alan@example.com",
+  access: {
+    measurements: [{ type: "read", pending: false }],
+    nutrition: [{ type: "read", pending: true }],
+    training: [],
+    planning: [],
+  },
+  linkedAt: "2026-10-19T12:00:00.000Z",
+};
+
+const fourDashboardPage: CollaborationPage = {
+  rows: [fourDashboardTrainee, pendingTrainee],
+  page: 1,
+  pageCount: 1,
+  pageSize: 5,
+};
+
 const sentNotice = requestOutcomeMessage("sent", "trainee@example.com");
+const revokedNotice = collaborationNoticeMessage("revoked") ?? "";
 const updateError = collaborationErrorMessage("failed") ?? "";
 
 interface SampleActor {
@@ -165,6 +189,7 @@ const multiPageNotifications: NotificationPage = {
   total: 27,
 };
 
+const sampleMessages = mixedRows.map((row) => `"${notificationMessage(row)}"`).join(", ");
 const selectedNotificationIds = [mixedRows[0].id, mixedRows[2].id];
 const readNotice = notificationNoticeMessage("read") ?? "";
 const deletedNotice = notificationNoticeMessage("deleted") ?? "";
@@ -185,17 +210,19 @@ const notificationsError = notificationErrorMessage("failed") ?? "";
 
       <section class="flex flex-col gap-4" aria-labelledby="state-trainer-mixed">
         <h2 id="state-trainer-mixed" class="border-border border-b pb-2 text-lg font-semibold">
-          Trainer, pending and linked
+          Trainer, pending and read
         </h2>
         <p class="text-muted-foreground text-sm">
-          A table in the measurements style (muted header row with icons above the labels: PersonStanding Trainee, Link2
-          Status; Dumbbell for Trainer on the trainee side). A pending trainee with no saved names (the email is shown
-          once) above a linked trainee "A. Lovelace" with the email below. Pending rows offer Cancel request; linked
-          rows offer Unlink, which links to <code class="text-foreground">?page=1&amp;confirm=&lt;id&gt;</code>. Always
-          five rows per page, with no page-size control; no pager on one page. Every row keeps one height: the name and
-          the email take one line each, cut with "…" (the full text in the title), and the fixed table layout keeps
-          Status and the actions in view; when the list is narrower than 32rem (a container query, so it also applies in
-          these narrow cards) the actions move into an ellipsis menu ("Actions for …"), as on the measurement rows.
+          A table in the measurements style: a muted two-row header with PersonStanding above Trainee (Dumbbell above
+          Trainer on the trainee side), and Access over one sub-column per enabled dashboard (only Measurements today).
+          A trainee with no saved names (the email is shown once) whose Measurements cell reads "Read · Pending", above
+          "A. Lovelace" with the email below and "Read". Pending access offers Cancel request; granted access offers
+          Revoke, which links to
+          <code class="text-foreground">?page=1&amp;confirm=&lt;id&gt;&amp;dashboard=measurements</code>. Each access
+          cell is a button that opens a dialog listing its entries. Always five rows per page, with no page-size
+          control; no pager on one page. Every row keeps one height: the name and the email take one line each, cut with
+          "…" (the full text in the title). At every width the actions sit in an ellipsis menu per dashboard
+          ("Measurements actions for …"), as on the measurement rows.
         </p>
         <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
           <CollaborationsList viewerRole="trainer" page={trainerMixed} />
@@ -207,8 +234,8 @@ const notificationsError = notificationErrorMessage("failed") ?? "";
           Trainee, pending request
         </h2>
         <p class="text-muted-foreground text-sm">
-          A pending request from "G. Hopper" with ✓ accept and ✕ decline icon buttons (labels "Accept request from G.
-          Hopper" and "Decline request from G. Hopper"), above a linked trainer with Remove.
+          A pending request from "G. Hopper" ("Read · Pending") with Accept request and Decline request in the
+          Measurements menu, above a trainer with "Read" and Revoke.
         </p>
         <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
           <CollaborationsList viewerRole="trainee" page={traineePending} />
@@ -243,27 +270,75 @@ const notificationsError = notificationErrorMessage("failed") ?? "";
           Multi-page
         </h2>
         <p class="text-muted-foreground text-sm">
-          Five linked trainees on page 2 of 3. Previous links to <code class="text-foreground">?page=1</code> and Next
-          to <code class="text-foreground">?page=3</code>; on the first or last page that arrow is a disabled button.
+          Five trainees with read access on page 2 of 3. Previous links to <code class="text-foreground">?page=1</code>{" "}
+          and Next to <code class="text-foreground">?page=3</code>; on the first or last page that arrow is a disabled
+          button.
         </p>
-        <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
+        <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
           <CollaborationsList viewerRole="trainer" page={multiPage} />
         </div>
       </section>
 
-      <section class="flex flex-col gap-4" aria-labelledby="state-confirm-unlink">
-        <h2 id="state-confirm-unlink" class="border-border border-b pb-2 text-lg font-semibold">
-          Confirm unlink
+      <section class="flex flex-col gap-4" aria-labelledby="state-confirm-revoke">
+        <h2 id="state-confirm-revoke" class="border-border border-b pb-2 text-lg font-semibold">
+          Confirm revoke
         </h2>
         <p class="text-muted-foreground text-sm">
-          <code class="text-foreground">confirm</code> matches the linked row, so the bottom-right alert dialog reads
-          "Unlink A. Lovelace? You will no longer see their measurements." with a focused Unlink button and a Cancel
-          link back to <code class="text-foreground">?page=1</code>. The trainee copy is "Remove &lt;name&gt;? They will
-          no longer see your measurements." A <code class="text-foreground">confirm</code> that matches no linked row on
-          the page is ignored.
+          <code class="text-foreground">confirm</code> matches the row with granted access, so the bottom-right alert
+          dialog reads "Revoke your read access to A. Lovelace's measurements? You will no longer see their
+          measurements." with a focused Revoke button (it posts <code class="text-foreground">intent=revoke</code> and
+          <code class="text-foreground">dashboard=measurements</code>) and a Cancel link back to
+          <code class="text-foreground">?page=1</code>. The trainee copy is "Revoke &lt;name&gt;'s read access to your
+          measurements? They will no longer see your measurements." A <code class="text-foreground">confirm</code> that
+          matches no row with granted access on the page is ignored.
         </p>
         <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-xl border p-4">
           <CollaborationsList viewerRole="trainer" page={confirmPage} confirm={linkedTrainee.otherId} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-all-dashboards">
+        <h2 id="state-all-dashboards" class="border-border border-b pb-2 text-lg font-semibold">
+          All four dashboards
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Every dashboard passed as a sub-column, the layout a future dashboard would add (the app shows only enabled
+          dashboards). "A. Turing" has "Read" on Measurements, "Read · Pending" on Nutrition and "—" with no action on
+          Training and Planning; the trainee below has "Read · Pending" on Measurements only. Actions for a disabled
+          dashboard are refused by the route. A card narrower than the columns scrolls the table sideways.
+        </p>
+        <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
+          <CollaborationsList viewerRole="trainer" page={fourDashboardPage} dashboards={dashboards} />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-access-overflow">
+        <h2 id="state-access-overflow" class="border-border border-b pb-2 text-lg font-semibold">
+          Access that does not fit
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          The same access cell twice: in a narrow box "Read · Pending" does not fit, so a KeyRound icon shows in its
+          place; in a wider box the text shows. Either button (labelled "Measurements access for G. Hopper: Read ·
+          Pending") opens a dialog "Measurements access" for G. Hopper that lists the entries, with a close button;
+          Escape or a click outside also closes it.
+        </p>
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="border-border bg-background flex w-16 items-center rounded-md border">
+            <AccessCell
+              dashboardLabel="Measurements"
+              name={pendingTrainer.name}
+              entries={pendingTrainer.access.measurements}
+              client:load
+            />
+          </div>
+          <div class="border-border bg-background flex w-48 items-center rounded-md border">
+            <AccessCell
+              dashboardLabel="Measurements"
+              name={pendingTrainer.name}
+              entries={pendingTrainer.access.measurements}
+              client:load
+            />
+          </div>
         </div>
       </section>
 
@@ -272,10 +347,11 @@ const notificationsError = notificationErrorMessage("failed") ?? "";
           Notice toast
         </h2>
         <p class="text-muted-foreground text-sm">
-          A notice toast "{sentNotice}". Hub action notices ("Request accepted", "Trainee unlinked", …) use the same
-          tone.
+          Notice toasts "{sentNotice}" and "{revokedNotice}" (after Revoke, also for the legacy
+          <code class="text-foreground">notice=unlinked</code> and <code class="text-foreground">notice=removed</code>).
+          The other hub notices ("Request accepted", "Request declined", "Request cancelled") use the same tone.
         </p>
-        <PageErrorToasts messages={[sentNotice]} tone="notice" client:load />
+        <PageErrorToasts messages={[sentNotice, revokedNotice]} tone="notice" client:load />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-error">
@@ -294,12 +370,12 @@ const notificationsError = notificationErrorMessage("failed") ?? "";
           Notifications, read and unread
         </h2>
         <p class="text-muted-foreground text-sm">
-          Columns: a select checkbox, Notification, Received (UTC date over time) and Status. Unread rows show a dot, a
-          bold message and a bold "Unread"; read rows are muted. Each message is a button that posts the row id to{" "}
-          <code class="text-foreground">/api/notifications/open</code>, which marks it read and opens Collaborations.
-          Mark as read and Delete stay disabled with no selection. Entries per page (5, 10, 15, the current one pressed)
-          goes to <code class="text-foreground">?page=1&amp;size=N</code>. The header checkbox selects every visible
-          row.
+          Columns: a select checkbox, Notification, Received (UTC date over time) and Status. The messages read
+          {sampleMessages}. Unread rows show a dot, a bold message and a bold "Unread"; read rows are muted. Each
+          message is a button that posts the row id to <code class="text-foreground">/api/notifications/open</code>,
+          which marks it read and opens Collaborations. Mark as read and Delete stay disabled with no selection. Entries
+          per page (5, 10, 15, the current one pressed) goes to <code class="text-foreground">?page=1&amp;size=N</code>.
+          The header checkbox selects every visible row.
         </p>
         <div class="border-border bg-card text-card-foreground w-full max-w-measurement rounded-xl border p-4">
           <NotificationsTable page={mixedNotifications} client:load />

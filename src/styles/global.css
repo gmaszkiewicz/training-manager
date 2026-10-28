@@ -179,3 +179,17 @@
   font-weight: 400;
   white-space: nowrap;
 }
+
+/* Collaborations: on a narrow card the party column fills what one 7rem Access column leaves, and any further
+   Access columns scroll in beside it. From 32rem the party column is 16rem and the table widens only when the
+   columns do not fit. The list sets --dashboard-count. */
+[data-collaborations-table] [data-slot="table"] {
+  width: calc(100% + (var(--dashboard-count) - 1) * 7rem);
+}
+
+@container (width >= 32rem) {
+  [data-collaborations-table] [data-slot="table"] {
+    width: 100%;
+    min-width: calc(16rem + var(--dashboard-count) * 7rem);
+  }
+}

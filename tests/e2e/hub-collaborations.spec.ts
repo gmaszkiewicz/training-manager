@@ -1,8 +1,8 @@
-// Hub collaborations: a throwaway trainer sends a request from /measurements, the seeded trainee accepts it in the Hub,
-// and the trainer unlinks after confirming. Each side's notifications are checked on the way: the trainee opens the
+// Hub collaborations: a throwaway trainer requests read access from /measurements, the seeded trainee accepts it in the
+// Hub, and the trainer revokes it after confirming. Each side's notifications are checked on the way: the trainee opens the
 // request from the bell, and the trainer marks the "accepted" notification read and deletes it in the Hub. Runs at
 // desktop width and at 360×800. The Hub tab content is as narrow as Profile and Settings, so row actions sit behind
-// the "Actions for …" menu at every width.
+// the "Measurements actions for …" menu at every width.
 import { expect, test, type BrowserContext, type Locator, type Page } from "@playwright/test";
 
 const widths = [
@@ -24,9 +24,14 @@ async function openAccountMenu(page: Page): Promise<void> {
   }).toPass();
 }
 
-// Row actions sit behind an ellipsis menu that hydrates on load. Retry until the menu shows.
+// The Measurements access cell, named "Measurements access for <name>: <summary>" whether the summary fits or not.
+function measurementsAccess(row: Locator, summary: string): Locator {
+  return row.getByRole("button", { name: new RegExp(`^Measurements access for .+: ${summary}$`) });
+}
+
+// Row actions sit behind an ellipsis menu per dashboard that hydrates on load. Retry until the menu shows.
 async function chooseRowAction(row: Locator, page: Page, item: string): Promise<void> {
-  const actions = row.getByRole("button", { name: /^Actions for / });
+  const actions = row.getByRole("button", { name: /^Measurements actions for / });
   await expect(actions).toBeVisible();
   await expect(async () => {
     await actions.click();
@@ -42,7 +47,7 @@ async function removeLeftoverLink(trainerPage: Page, traineeEmail: string): Prom
   if ((await row.count()) === 0) {
     return;
   }
-  // A pending row carries the id in its form; a linked row only in its confirm link.
+  // A pending row carries the id in its form; a row with granted access only in its confirm link.
   const field = row.locator('input[name="other"]');
   const confirmLink = row.locator('a[href*="confirm="]');
   let other: string | null = null;
@@ -86,7 +91,7 @@ async function removeStaleHubTrainers(traineePage: Page): Promise<void> {
       return;
     }
     for (const other of stale) {
-      await traineePage.request.post("/api/collaborations/remove", { form: { other, page: "1", intent: "remove" } });
+      await traineePage.request.post("/api/collaborations/remove", { form: { other, page: "1", intent: "revoke" } });
     }
   }
 }
@@ -185,7 +190,7 @@ for (const { name, viewport } of widths) {
       }
     });
 
-    test("a trainer request is accepted by the trainee in the Hub and then unlinked", async ({ page, browser }) => {
+    test("a trainer request is accepted by the trainee in the Hub and then revoked", async ({ page, browser }) => {
       const traineeEmail = process.env.E2E_USERNAME;
       if (!traineeEmail) {
         throw new Error("Set E2E_USERNAME (see context/foundation/test-stack.md, ## E2E)");
@@ -206,7 +211,7 @@ for (const { name, viewport } of widths) {
         "Sign-up needs email confirmation on this Supabase; the Hub flow needs a signed-in throwaway trainer.",
       );
 
-      await test.step("the trainer sends a request from /measurements", async () => {
+      await test.step("the trainer requests read access from /measurements", async () => {
         await trainerPage.goto("/measurements");
         const email = trainerPage.getByRole("textbox", { name: "Email" });
         // A React island drops input typed before it hydrates, and then no suggestion opens. Retry until the seeded
@@ -217,11 +222,13 @@ for (const { name, viewport } of widths) {
           await email.fill(traineeEmail);
           await expect(match).toBeVisible({ timeout: 2_000 });
         }).toPass();
-        // Choosing the match closes the list, so it no longer covers Send request.
+        // Choosing the match closes the list, so it no longer covers Request read access.
         await match.click();
         await expect(match).toHaveCount(0);
-        await trainerPage.getByRole("button", { name: "Send request" }).click();
-        await expect(trainerPage.getByText(`Your request has been sent to ${traineeEmail}`)).toBeVisible();
+        await trainerPage.getByRole("button", { name: "Request read access" }).click();
+        await expect(
+          trainerPage.getByText(`Your request for read access to measurements has been sent to ${traineeEmail}`),
+        ).toBeVisible();
       });
 
       await test.step("stale trainers from earlier runs are cleared from the trainee's list", async () => {
@@ -229,7 +236,7 @@ for (const { name, viewport } of widths) {
         await removeStaleHubNotifications(page);
       });
 
-      const requested = `Trainer ${runTrainer} sent you a link request`;
+      const requested = `Trainer ${runTrainer} requested read access to your measurements`;
 
       await test.step("the trainee opens the request from the bell and lands on Collaborations", async () => {
         await page.goto("/measurements");
@@ -255,23 +262,23 @@ for (const { name, viewport } of widths) {
 
         const row = collaborationRow(page, runTrainer);
         await expect(row).toHaveCount(1);
-        await expect(row.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
+        await expect(measurementsAccess(row, "Read · Pending")).toBeVisible();
         await chooseRowAction(row, page, "Accept request");
         await expect(page.getByText("Request accepted")).toBeVisible();
-        await expect(row.getByRole("cell", { name: "Linked", exact: true })).toBeVisible();
+        await expect(measurementsAccess(row, "Read")).toBeVisible();
       });
 
-      await test.step("the trainer sees the trainee as Linked and unlinks after confirming", async () => {
+      await test.step("the trainer sees Read access and revokes it after confirming", async () => {
         await trainerPage.goto("/hub/collaborations");
         const row = collaborationRow(trainerPage, traineeEmail);
         await expect(row).toHaveCount(1);
-        await expect(row.getByRole("cell", { name: "Linked", exact: true })).toBeVisible();
-        await chooseRowAction(row, trainerPage, "Unlink");
+        await expect(measurementsAccess(row, "Read")).toBeVisible();
+        await chooseRowAction(row, trainerPage, "Revoke");
         await expect(trainerPage).toHaveURL(/[?&]confirm=/);
         const confirm = trainerPage.getByRole("alertdialog");
         await expect(confirm).toBeVisible();
-        await confirm.getByRole("button", { name: "Unlink" }).click();
-        await expect(trainerPage.getByText("Trainee unlinked")).toBeVisible();
+        await confirm.getByRole("button", { name: "Revoke" }).click();
+        await expect(trainerPage.getByText("Access revoked")).toBeVisible();
         await expect(row).toHaveCount(0);
       });
 
@@ -282,7 +289,7 @@ for (const { name, viewport } of widths) {
       });
 
       // The item's name also carries its received time, so the pattern is not anchored at the end.
-      const accepted = /^Trainee .+ accepted your link request/;
+      const accepted = /^Trainee .+ gave you read access to their measurements/;
 
       await test.step("the trainer's bell lists the accepted request", async () => {
         await trainerPage.goto("/measurements");
@@ -294,7 +301,7 @@ for (const { name, viewport } of widths) {
       await test.step("the trainer selects all and marks them read in the Hub", async () => {
         await trainerPage.goto("/hub/notifications");
         await expect(trainerPage.getByRole("tab", { name: "Notifications", selected: true })).toBeVisible();
-        const row = notificationRow(trainerPage, "accepted your link request");
+        const row = notificationRow(trainerPage, "gave you read access to their measurements");
         await expect(row).toHaveCount(1);
         await expect(row).toContainText("Unread");
         await check(trainerPage.getByRole("checkbox", { name: "Select all" }));
@@ -308,7 +315,7 @@ for (const { name, viewport } of widths) {
 
       await test.step("the trainer selects one and deletes it after confirming", async () => {
         await trainerPage.goto("/hub/notifications");
-        const row = notificationRow(trainerPage, "accepted your link request");
+        const row = notificationRow(trainerPage, "gave you read access to their measurements");
         await expect(row).toHaveCount(1);
         await check(row.getByRole("checkbox", { name: /^Select notification from / }));
         await trainerPage.getByRole("button", { name: "Delete", exact: true }).click();

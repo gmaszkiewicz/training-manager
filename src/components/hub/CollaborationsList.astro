@@ -1,11 +1,12 @@
 ---
-import { Check, ChevronLeft, ChevronRight, Dumbbell, PersonStanding, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Dumbbell, PersonStanding } from "lucide-react";
 import AccessCell from "@/components/hub/AccessCell";
 import CollaborationRowActions from "@/components/hub/CollaborationRowActions";
 import ConfirmRevokeToast from "@/components/hub/ConfirmRevokeToast";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { enabledDashboards, hasGrantedAccess, hasPendingAccess, type DashboardConfig } from "@/lib/dashboards";
+import { enabledDashboards, hasGrantedAccess, type DashboardConfig } from "@/lib/dashboards";
+import { cn } from "@/lib/utils";
 import type { Collaboration, CollaborationPage, Dashboard } from "@/types";
 
 interface Props {
@@ -30,6 +31,9 @@ function confirmHref(row: Collaboration, dashboard: Dashboard): string {
 
 const PartyIcon = viewerRole === "trainer" ? PersonStanding : Dumbbell;
 
+const stickyHeaderClassName = "sticky left-0 z-10 bg-muted";
+const stickyBodyClassName = "sticky left-0 z-10 bg-background group-hover:bg-muted/50";
+
 // The toast only opens for a row on this page with granted measurements access; any other `confirm` value is ignored.
 const confirming =
   confirm === null
@@ -51,12 +55,24 @@ const confirming =
       <p class="text-muted-foreground text-sm">No trainers yet.</p>
     )
   ) : (
-    <div class="@container border-border bg-background w-full max-w-full min-w-0 overflow-hidden rounded-md border">
-      {/* Fixed layout: the Access cells keep their width, so a long unbroken email cannot push them out. */}
-      <Table containerClassName="overflow-x-clip" className="table-fixed">
+    <div
+      data-collaborations-table
+      style={`--dashboard-count: ${dashboards.length}`}
+      class="@container border-border bg-background w-full max-w-full min-w-0 overflow-hidden rounded-md border"
+    >
+      {/* Fixed layout: the Access columns keep their width, so a long unbroken email cannot push them out. The party
+          column stays put while further Access columns scroll, as on the measurement rows; widths in global.css. */}
+      <Table className="table-fixed">
+        {/* A fixed table sizes its columns from the first row, where Access spans every dashboard, so set them here. */}
+        <colgroup>
+          <col class="@lg:w-64" />
+          {dashboards.map(() => (
+            <col class="w-28" />
+          ))}
+        </colgroup>
         <TableHeader>
           <TableRow className="bg-muted hover:bg-muted">
-            <TableHead rowSpan={2} className="h-auto px-3 py-2">
+            <TableHead rowSpan={2} className={cn("h-auto px-2 py-2 @lg:px-3", stickyHeaderClassName)}>
               <span class="inline-flex flex-col items-center gap-1">
                 <PartyIcon aria-hidden="true" className="size-4" />
                 <span>{viewerRole === "trainer" ? "Trainee" : "Trainer"}</span>
@@ -68,14 +84,14 @@ const confirming =
           </TableRow>
           <TableRow className="bg-muted hover:bg-muted">
             {dashboards.map((dashboard) => (
-              <TableHead className="h-auto w-28 px-2 pt-1 pb-2 text-center @lg:w-56">{dashboard.label}</TableHead>
+              <TableHead className="h-auto truncate px-1 pt-1 pb-2 text-center">{dashboard.label}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {page.rows.map((row) => (
-            <TableRow>
-              <TableCell className="px-3 py-2">
+            <TableRow className="group">
+              <TableCell className={cn("px-2 py-2 @lg:px-3", stickyBodyClassName)}>
                 {/* One line each for the name and the email, cut with an ellipsis; the title carries the full text. */}
                 <div class="flex min-h-10 flex-col justify-center">
                   <p class="text-foreground truncate font-semibold" title={row.name}>
@@ -90,80 +106,26 @@ const confirming =
               </TableCell>
               {dashboards.map((dashboard) => {
                 const entries = row.access[dashboard.id];
-                const granted = hasGrantedAccess(row, dashboard.id);
-                const pending = !granted && hasPendingAccess(row, dashboard.id);
                 return (
-                  <TableCell className="px-1 py-2 @lg:px-2">
-                    <div class="flex items-center gap-1 @lg:gap-2">
+                  <TableCell className="px-1 py-2">
+                    <div class="flex items-center gap-1">
                       <div class="flex min-w-0 flex-1 items-center">
                         <AccessCell dashboardLabel={dashboard.label} name={row.name} entries={entries} client:load />
                       </div>
                       {entries.length > 0 ? (
-                        <>
-                          <div class="flex shrink-0 justify-end @lg:hidden">
-                            <CollaborationRowActions
-                              viewerRole={viewerRole}
-                              otherId={row.otherId}
-                              name={row.name}
-                              dashboard={dashboard.id}
-                              dashboardLabel={dashboard.label}
-                              entries={entries}
-                              page={page.page}
-                              confirmHref={confirmHref(row, dashboard.id)}
-                              client:load
-                            />
-                          </div>
-                          <div class="hidden shrink-0 justify-end @lg:flex">
-                            {granted ? (
-                              <a
-                                href={confirmHref(row, dashboard.id)}
-                                class:list={[buttonVariants({ variant: "outline", size: "sm" })]}
-                                aria-label={`Revoke ${dashboard.label} access for ${row.name}`}
-                              >
-                                Revoke
-                              </a>
-                            ) : pending && viewerRole === "trainer" ? (
-                              <form method="POST" action="/api/collaborations/remove">
-                                <input type="hidden" name="other" value={row.otherId} />
-                                <input type="hidden" name="page" value={page.page} />
-                                <input type="hidden" name="dashboard" value={dashboard.id} />
-                                <input type="hidden" name="intent" value="cancel" />
-                                <Button type="submit" variant="outline" size="sm">
-                                  Cancel request
-                                </Button>
-                              </form>
-                            ) : pending ? (
-                              <div class="flex gap-2">
-                                <form method="POST" action="/api/collaborations/accept">
-                                  <input type="hidden" name="other" value={row.otherId} />
-                                  <input type="hidden" name="page" value={page.page} />
-                                  <input type="hidden" name="dashboard" value={dashboard.id} />
-                                  <Button
-                                    type="submit"
-                                    size="icon"
-                                    aria-label={`Accept ${dashboard.label} request from ${row.name}`}
-                                  >
-                                    <Check aria-hidden="true" />
-                                  </Button>
-                                </form>
-                                <form method="POST" action="/api/collaborations/remove">
-                                  <input type="hidden" name="other" value={row.otherId} />
-                                  <input type="hidden" name="page" value={page.page} />
-                                  <input type="hidden" name="dashboard" value={dashboard.id} />
-                                  <input type="hidden" name="intent" value="decline" />
-                                  <Button
-                                    type="submit"
-                                    variant="outline"
-                                    size="icon"
-                                    aria-label={`Decline ${dashboard.label} request from ${row.name}`}
-                                  >
-                                    <X aria-hidden="true" />
-                                  </Button>
-                                </form>
-                              </div>
-                            ) : null}
-                          </div>
-                        </>
+                        <div class="flex shrink-0 justify-end">
+                          <CollaborationRowActions
+                            viewerRole={viewerRole}
+                            otherId={row.otherId}
+                            name={row.name}
+                            dashboard={dashboard.id}
+                            dashboardLabel={dashboard.label}
+                            entries={entries}
+                            page={page.page}
+                            confirmHref={confirmHref(row, dashboard.id)}
+                            client:load
+                          />
+                        </div>
                       ) : null}
                     </div>
                   </TableCell>
