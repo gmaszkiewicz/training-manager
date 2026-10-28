@@ -5,7 +5,15 @@ import { collaborationPageSize, pageCountFor, toCollaboration, type Collaboratio
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { CollaborationPage, LinkRequestOutcome, Profile } from "@/types";
 
-const LINK_REQUEST_OUTCOMES: readonly LinkRequestOutcome[] = ["sent", "pending", "linked", "not_found"];
+// The RPC's own vocabulary is a database contract; its `linked` is translated to `granted` below.
+const RPC_REQUEST_OUTCOMES = ["sent", "pending", "linked", "not_found"] as const;
+
+const RPC_OUTCOME_TO_OUTCOME = {
+  sent: "sent",
+  pending: "pending",
+  linked: "granted",
+  not_found: "not_found",
+} as const satisfies Record<(typeof RPC_REQUEST_OUTCOMES)[number], LinkRequestOutcome>;
 
 export async function listTrainerLinks(
   supabase: SupabaseClient<Database>,
@@ -40,12 +48,12 @@ export async function requestTraineeLink(
   try {
     const { data, error } = await supabase.rpc("request_trainee_link", { p_email: email });
 
-    const outcome = LINK_REQUEST_OUTCOMES.find((value) => value === data);
+    const outcome = RPC_REQUEST_OUTCOMES.find((value) => value === data);
     if (error || outcome === undefined) {
       return { ok: false };
     }
 
-    return { ok: true, outcome };
+    return { ok: true, outcome: RPC_OUTCOME_TO_OUTCOME[outcome] };
   } catch {
     return { ok: false };
   }

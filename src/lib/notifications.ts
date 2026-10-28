@@ -57,15 +57,17 @@ export function notificationMessage(
   });
   switch (notification.kind) {
     case "link_requested":
-      return `Trainer ${name} sent you a link request`;
+      return `Trainer ${name} requested read access to your measurements`;
     case "link_accepted":
-      return `Trainee ${name} accepted your link request`;
+      return `Trainee ${name} gave you read access to their measurements`;
     case "link_declined":
-      return `Trainee ${name} declined your link request`;
+      return `Trainee ${name} declined your request for read access to their measurements`;
     case "link_cancelled":
-      return `Trainer ${name} withdrew their link request`;
+      return `Trainer ${name} withdrew their request for read access to your measurements`;
     case "link_removed":
-      return `${notification.actorRole === "trainer" ? "Trainer" : "Trainee"} ${name} removed the link`;
+      return notification.actorRole === "trainer"
+        ? `Trainer ${name} revoked their read access to your measurements`
+        : `Trainee ${name} revoked your read access to their measurements`;
   }
 }
 

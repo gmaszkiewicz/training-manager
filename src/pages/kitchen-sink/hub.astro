@@ -11,7 +11,12 @@ const pendingTrainee: Collaboration = {
   otherId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   name: "trainee@example.com",
   email: "trainee@example.com",
-  status: "pending",
+  access: {
+    measurements: [{ type: "read", pending: true }],
+    nutrition: [],
+    training: [],
+    planning: [],
+  },
   linkedAt: "2026-10-20T12:00:00.000Z",
 };
 
@@ -19,7 +24,12 @@ const linkedTrainee: Collaboration = {
   otherId: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
   name: "A. Lovelace",
   email: "ada@example.com",
-  status: "linked",
+  access: {
+    measurements: [{ type: "read", pending: false }],
+    nutrition: [],
+    training: [],
+    planning: [],
+  },
   linkedAt: "2026-10-18T12:00:00.000Z",
 };
 
@@ -27,7 +37,12 @@ const pendingTrainer: Collaboration = {
   otherId: "c3d4e5f6-a7b8-9012-cdef-123456789012",
   name: "G. Hopper",
   email: "grace@example.com",
-  status: "pending",
+  access: {
+    measurements: [{ type: "read", pending: true }],
+    nutrition: [],
+    training: [],
+    planning: [],
+  },
   linkedAt: "2026-10-21T12:00:00.000Z",
 };
 
@@ -35,7 +50,12 @@ const linkedTrainer: Collaboration = {
   otherId: "d4e5f6a7-b8c9-0123-def1-234567890123",
   name: "trainer@example.com",
   email: "trainer@example.com",
-  status: "linked",
+  access: {
+    measurements: [{ type: "read", pending: false }],
+    nutrition: [],
+    training: [],
+    planning: [],
+  },
   linkedAt: "2026-10-01T12:00:00.000Z",
 };
 
@@ -60,7 +80,12 @@ function pagedTrainee(letter: string): Collaboration {
     otherId: `e5f6a7b8-c9d0-1234-ef12-34567890abc${letter}`,
     name: `trainee-${letter}@example.com`,
     email: `trainee-${letter}@example.com`,
-    status: "linked",
+    access: {
+      measurements: [{ type: "read", pending: false }],
+      nutrition: [],
+      training: [],
+      planning: [],
+    },
     linkedAt: "2026-09-15T12:00:00.000Z",
   };
 }

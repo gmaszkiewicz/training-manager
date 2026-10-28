@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 
 import { collaborationMaxPage } from "@/lib/collaborations";
+import { enabledDashboards } from "@/lib/dashboards";
 import { removeTrainerLink } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 
@@ -14,15 +15,25 @@ const pageSchema = z.coerce
   .positive()
   .catch(1)
   .transform((page) => Math.min(page, collaborationMaxPage));
-const intentSchema = z.enum(["cancel", "unlink", "decline", "remove"]);
+// `unlink` and `remove` are kept for pages rendered by the previous Worker during a deploy.
+const intentSchema = z.enum(["cancel", "decline", "revoke", "unlink", "remove"]);
 
 // The database decides which link the caller may delete; the intent only picks the notice wording.
 const NOTICES = {
   cancel: "cancelled",
-  unlink: "unlinked",
   decline: "declined",
-  remove: "removed",
+  revoke: "revoked",
+  unlink: "revoked",
+  remove: "revoked",
 } as const satisfies Record<z.infer<typeof intentSchema>, string>;
+
+const enabledDashboardIds = enabledDashboards().map((dashboard) => dashboard.id);
+
+// A missing dashboard means measurements, the only one with access today.
+const dashboardSchema = z
+  .string()
+  .optional()
+  .refine((value) => value === undefined || enabledDashboardIds.some((id) => id === value));
 
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
@@ -36,7 +47,10 @@ export const POST: APIRoute = async (context) => {
 
   const other = otherSchema.safeParse(form.get("other"));
   const intent = intentSchema.safeParse(form.get("intent"));
-  if (!other.success || !intent.success) {
+  // The dashboard does not change what is deleted yet: the whole link is the only access, so revoking
+  // measurements removes the link.
+  const dashboard = dashboardSchema.safeParse(form.get("dashboard") ?? undefined);
+  if (!other.success || !intent.success || !dashboard.success) {
     return context.redirect(failed);
   }
 

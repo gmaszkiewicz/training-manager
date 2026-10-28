@@ -7,13 +7,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { CollaborationStatus } from "@/types";
 
 interface Props {
   viewerRole: "trainer" | "trainee";
   otherId: string;
   name: string;
-  status: CollaborationStatus;
+  /** True once the trainee has given read access to measurements; false while the request is pending. */
+  granted: boolean;
   page: number;
   confirmHref: string;
 }
@@ -24,8 +24,8 @@ interface PostAction {
   intent?: "cancel" | "decline";
 }
 
-function postActionsFor(viewerRole: Props["viewerRole"], status: CollaborationStatus): PostAction[] {
-  if (status === "linked") {
+function postActionsFor(viewerRole: Props["viewerRole"], granted: boolean): PostAction[] {
+  if (granted) {
     return [];
   }
   if (viewerRole === "trainer") {
@@ -39,9 +39,9 @@ function postActionsFor(viewerRole: Props["viewerRole"], status: CollaborationSt
 
 // Phone-width row actions behind an ellipsis menu, like the measurement rows. The menu content is portaled,
 // so each POST action submits a hidden form rendered next to the trigger.
-export default function CollaborationRowActions({ viewerRole, otherId, name, status, page, confirmHref }: Props) {
+export default function CollaborationRowActions({ viewerRole, otherId, name, granted, page, confirmHref }: Props) {
   const formRefs = useRef<(HTMLFormElement | null)[]>([]);
-  const postActions = postActionsFor(viewerRole, status);
+  const postActions = postActionsFor(viewerRole, granted);
 
   return (
     <>
@@ -67,7 +67,7 @@ export default function CollaborationRowActions({ viewerRole, otherId, name, sta
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {status === "linked" ? (
+          {granted ? (
             <DropdownMenuItem asChild>
               <a href={confirmHref}>{viewerRole === "trainer" ? "Unlink" : "Remove"}</a>
             </DropdownMenuItem>

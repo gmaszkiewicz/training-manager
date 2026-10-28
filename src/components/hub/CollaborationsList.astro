@@ -4,6 +4,7 @@ import CollaborationRowActions from "@/components/hub/CollaborationRowActions";
 import ConfirmRemoveToast from "@/components/hub/ConfirmRemoveToast";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { accessSummary, hasGrantedAccess } from "@/lib/dashboards";
 import type { Collaboration, CollaborationPage } from "@/types";
 
 interface Props {
@@ -26,9 +27,11 @@ function confirmHref(row: Collaboration): string {
 
 const PartyIcon = viewerRole === "trainer" ? PersonStanding : Dumbbell;
 
-// The toast only opens for a linked row on this page; any other `confirm` value is ignored.
+// The toast only opens for a row with granted access on this page; any other `confirm` value is ignored.
 const confirming =
-  confirm === null ? null : (page.rows.find((row) => row.otherId === confirm && row.status === "linked") ?? null);
+  confirm === null
+    ? null
+    : (page.rows.find((row) => row.otherId === confirm && hasGrantedAccess(row, "measurements")) ?? null);
 ---
 
 <div class="flex flex-col gap-4">
@@ -84,7 +87,7 @@ const confirming =
                 </div>
               </TableCell>
               <TableCell className="text-muted-foreground px-2 py-2 text-center">
-                {row.status === "pending" ? "Pending" : "Linked"}
+                {accessSummary(row.access.measurements)}
               </TableCell>
               <TableCell className="px-1 py-2 @lg:px-3">
                 <div class="flex justify-end @lg:hidden">
@@ -92,7 +95,7 @@ const confirming =
                     viewerRole={viewerRole}
                     otherId={row.otherId}
                     name={row.name}
-                    status={row.status}
+                    granted={hasGrantedAccess(row, "measurements")}
                     page={page.page}
                     confirmHref={confirmHref(row)}
                     client:load
@@ -100,7 +103,7 @@ const confirming =
                 </div>
                 <div class="hidden justify-end @lg:flex">
                   {viewerRole === "trainer" ? (
-                    row.status === "pending" ? (
+                    !hasGrantedAccess(row, "measurements") ? (
                       <form method="POST" action="/api/collaborations/remove">
                         <input type="hidden" name="other" value={row.otherId} />
                         <input type="hidden" name="page" value={page.page} />
@@ -114,7 +117,7 @@ const confirming =
                         Unlink
                       </a>
                     )
-                  ) : row.status === "pending" ? (
+                  ) : !hasGrantedAccess(row, "measurements") ? (
                     <div class="flex gap-2">
                       <form method="POST" action="/api/collaborations/accept">
                         <input type="hidden" name="other" value={row.otherId} />

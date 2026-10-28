@@ -52,28 +52,46 @@ describe("pageCountFor", () => {
 });
 
 describe("toCollaboration", () => {
-  it("maps accepted to linked and formats the name", () => {
+  it("maps accepted to granted read access to measurements and formats the name", () => {
     expect(toCollaboration(row)).toEqual({
       otherId: row.otherId,
       name: "A. Lovelace",
       email: "ada@example.com",
-      status: "linked",
+      access: {
+        measurements: [{ type: "read", pending: false }],
+        nutrition: [],
+        training: [],
+        planning: [],
+      },
       linkedAt: row.linkedAt,
     });
   });
 
-  it("keeps pending and falls back to the email without names", () => {
+  it("maps pending to pending read access and falls back to the email without names", () => {
     const collaboration = toCollaboration({ ...row, firstName: null, lastName: null, status: "pending" });
-    expect(collaboration.status).toBe("pending");
+    expect(collaboration.access).toEqual({
+      measurements: [{ type: "read", pending: true }],
+      nutrition: [],
+      training: [],
+      planning: [],
+    });
     expect(collaboration.name).toBe("ada@example.com");
+  });
+
+  it("treats an unknown status as pending", () => {
+    expect(toCollaboration({ ...row, status: "other" }).access.measurements).toEqual([{ type: "read", pending: true }]);
   });
 });
 
 describe("requestOutcomeMessage", () => {
   it("names the email for each outcome", () => {
-    expect(requestOutcomeMessage("sent", "a@b.pl")).toBe("Your request has been sent to a@b.pl");
-    expect(requestOutcomeMessage("pending", "a@b.pl")).toBe("A request to a@b.pl is already pending");
-    expect(requestOutcomeMessage("linked", "a@b.pl")).toBe("a@b.pl is already linked");
+    expect(requestOutcomeMessage("sent", "a@b.pl")).toBe(
+      "Your request for read access to measurements has been sent to a@b.pl",
+    );
+    expect(requestOutcomeMessage("pending", "a@b.pl")).toBe(
+      "A request for read access to measurements is already pending for a@b.pl",
+    );
+    expect(requestOutcomeMessage("granted", "a@b.pl")).toBe("a@b.pl has already given you read access to measurements");
     expect(requestOutcomeMessage("not_found", "a@b.pl")).toBe("No trainee with that email");
   });
 
@@ -95,8 +113,12 @@ describe("collaborationNoticeMessage", () => {
     expect(collaborationNoticeMessage("accepted")).toBe("Request accepted");
     expect(collaborationNoticeMessage("declined")).toBe("Request declined");
     expect(collaborationNoticeMessage("cancelled")).toBe("Request cancelled");
-    expect(collaborationNoticeMessage("unlinked")).toBe("Trainee unlinked");
-    expect(collaborationNoticeMessage("removed")).toBe("Trainer removed");
+    expect(collaborationNoticeMessage("revoked")).toBe("Access revoked");
+  });
+
+  it("maps the legacy unlinked and removed codes to the revoked notice", () => {
+    expect(collaborationNoticeMessage("unlinked")).toBe("Access revoked");
+    expect(collaborationNoticeMessage("removed")).toBe("Access revoked");
   });
 
   it("ignores an unknown code", () => {

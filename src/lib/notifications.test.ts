@@ -39,34 +39,36 @@ const notification: AppNotification = {
 
 describe("notificationMessage", () => {
   it("words each kind with the actor's name", () => {
-    expect(notificationMessage(notification)).toBe("Trainer A. Lovelace sent you a link request");
+    expect(notificationMessage(notification)).toBe("Trainer A. Lovelace requested read access to your measurements");
     expect(notificationMessage({ ...notification, kind: "link_accepted", actorRole: "trainee" })).toBe(
-      "Trainee A. Lovelace accepted your link request",
+      "Trainee A. Lovelace gave you read access to their measurements",
     );
     expect(notificationMessage({ ...notification, kind: "link_declined", actorRole: "trainee" })).toBe(
-      "Trainee A. Lovelace declined your link request",
+      "Trainee A. Lovelace declined your request for read access to their measurements",
     );
     expect(notificationMessage({ ...notification, kind: "link_cancelled" })).toBe(
-      "Trainer A. Lovelace withdrew their link request",
+      "Trainer A. Lovelace withdrew their request for read access to your measurements",
     );
   });
 
-  it("names the remover's role for a removed link", () => {
+  it("names the revoker's role for revoked access", () => {
     expect(notificationMessage({ ...notification, kind: "link_removed", actorRole: "trainer" })).toBe(
-      "Trainer A. Lovelace removed the link",
+      "Trainer A. Lovelace revoked their read access to your measurements",
     );
     expect(notificationMessage({ ...notification, kind: "link_removed", actorRole: "trainee" })).toBe(
-      "Trainee A. Lovelace removed the link",
+      "Trainee A. Lovelace revoked your read access to their measurements",
     );
   });
 
   it("falls back to the one saved name, then the email", () => {
     expect(notificationMessage({ ...notification, actorFirstName: null })).toBe(
-      "Trainer Lovelace sent you a link request",
+      "Trainer Lovelace requested read access to your measurements",
     );
-    expect(notificationMessage({ ...notification, actorLastName: " " })).toBe("Trainer Ada sent you a link request");
+    expect(notificationMessage({ ...notification, actorLastName: " " })).toBe(
+      "Trainer Ada requested read access to your measurements",
+    );
     expect(notificationMessage({ ...notification, actorFirstName: null, actorLastName: null })).toBe(
-      "Trainer ada@example.com sent you a link request",
+      "Trainer ada@example.com requested read access to your measurements",
     );
   });
 });

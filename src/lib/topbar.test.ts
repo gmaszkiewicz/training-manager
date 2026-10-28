@@ -225,7 +225,7 @@ describe("topbarModel notifications", () => {
       items: [
         {
           id: unread(1).id,
-          message: "Trainer G. Hopper sent you a link request",
+          message: "Trainer G. Hopper requested read access to your measurements",
           createdAt: "2026-10-21T10:00:00.000Z",
         },
       ],

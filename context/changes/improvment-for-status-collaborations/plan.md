@@ -421,14 +421,14 @@ No schema change. Stored notifications keep their `kind` and re-render with the 
 
 #### Automated
 
-- [ ] 1.1 Unit tests pass: `npm test`
-- [ ] 1.2 Type checking passes: `npx astro check`
-- [ ] 1.3 Linting passes: `npm run lint`
-- [ ] 1.4 No `CollaborationStatus` or `"linked"` UI literal remains in `src/` outside the RPC whitelist: `grep -rn "CollaborationStatus\|\"linked\"" src`
+- [x] 1.1 Unit tests pass: `npm test`
+- [x] 1.2 Type checking passes: `npx astro check`
+- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.4 No `CollaborationStatus` or `"linked"` UI literal remains in `src/` outside the RPC whitelist: `grep -rn "CollaborationStatus\|\"linked\"" src`
 
 #### Manual
 
-- [ ] 1.5 An existing link-request notification in the bell reads `Trainer … requested read access to your measurements` after a reload
+- [x] 1.5 An existing link-request notification in the bell reads `Trainer … requested read access to your measurements` after a reload
 
 ### Phase 2: Access column UI
 
