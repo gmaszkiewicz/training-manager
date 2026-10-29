@@ -320,12 +320,12 @@ No database migration. The signing-key rotation is a dashboard action that is in
 
 #### Automated
 
-- [x] 3.1 Production build succeeds: `npm run build`
-- [x] 3.2 Wrangler accepts the config: `npx wrangler deploy --dry-run`
+- [x] 3.1 Production build succeeds: `npm run build` — 8b0ab16
+- [x] 3.2 Wrangler accepts the config: `npx wrangler deploy --dry-run` — 8b0ab16
 
 #### Manual
 
-- [ ] 3.3 Before timing on production recorded in `timing.md` before the PR merges
+- [x] 3.3 Before timing on production recorded in `timing.md` before the PR merges
 - [ ] 3.4 Hosted project checked for JWT signing keys and migrated to ES256 if it was on the legacy secret
 - [ ] 3.5 After deploy, a signed-in page load makes no `/auth/v1/user` request (Supabase auth logs or Workers observability subrequests)
 - [ ] 3.6 After timing recorded in `timing.md`, with a median below the before median

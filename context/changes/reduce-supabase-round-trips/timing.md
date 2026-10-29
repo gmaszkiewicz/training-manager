@@ -16,11 +16,11 @@ Median = 3rd value after sorting.
 
 ## Runs
 
-| Run                 | Date      | Worker version                  | Values (s) | Median (s) |
-| ------------------- | --------- | ------------------------------- | ---------- | ---------- |
-| Before              | _pending_ | `main` before this change       | _pending_  | _pending_  |
-| After               | _pending_ | this change deployed            | _pending_  | _pending_  |
-| After key migration | _pending_ | this change + ES256 signing key | _pending_  | _pending_  |
+| Run                 | Date       | Worker version                  | Values (s)          | Median (s)     |
+| ------------------- | ---------- | ------------------------------- | ------------------- | -------------- |
+| Before              | 2026-10-29 | `main` before this change       | min 0.359, max 1.20 | _not recorded_ |
+| After               | _pending_  | this change deployed            | _pending_           | _pending_      |
+| After key migration | _pending_  | this change + ES256 signing key | _pending_           | _pending_      |
 
 Drop the last row if the hosted project already signed with an asymmetric key.
 
