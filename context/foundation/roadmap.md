@@ -113,7 +113,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-39 | notification-system | user can see a bell between the menu and the avatar with the number of unread notifications (no badge when there are none), open it to read the latest notifications and go to the page each one came from, and manage every notification on a Hub Notifications table paged 5, 10, or 15, marking selected ones read or deleting them; a trainer is told when a link request is accepted or declined and when a trainee unlinks, and a trainee is told when a trainer sends a link request or unlinks | S-37, S-38 | MS-30 | done |
 | S-40 | improvment-for-status-collaborations | user can see each collaboration's access per dashboard in an Access column of Hub → Collaborations — Measurements now, with Nutrition, Training, and Planning laid out for later — where finding a trainee asks for read access to measurements, a linked trainee reads Read, each dashboard has its own action button, access types that do not fit collapse to an access icon that opens a dialog, and Revoke replaces Unlink and Remove in the panel, notifications, and toasts | S-37, S-39 | MS-31 | done |
 | S-41 | visualization-of-measurements | user can open a collapsible Charts tile above the add form with eight line charts, one per measurement field, for the selected week, month, year, or years, hover a line to read each entry and its difference versus the previous entry, chart only the entries checked in the list with Visualize, return to the whole month with Clear, and find those choices kept by the browser | S-23, S-27, S-33 | MS-32 | done |
-| S-42 | prev-values-for-new-measurement | user can open the add form with weight and every circumference already filled from their previous entry, and find the fields empty when there is no earlier entry | S-02, S-26, S-33 | MS-33 | open |
+| S-42 | prev-values-for-new-measurement | user can open the add form with weight and every circumference already filled from their previous entry, and find the fields empty when there is no earlier entry | S-02, S-26, S-33 | MS-33 | in-progress |
 
 ## Streams
 
@@ -651,7 +651,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** whether "previous" is the latest entry in the journal or the entry before the date typed for the new entry (S-26 already picks that one for the delta preview); whether the note and date/time are prefilled too (assumed not); whether the form returns to the new latest values after Add; whether a field the previous entry left empty stays empty.
 - **Risk:** A prefilled value that is saved unchanged must still go through the same validation and must not be mistaken for a typed value; the delta preview must read zero for untouched fields rather than break. Prefill must read only the trainee's own journal, not a linked trainee's.
-- **Status:** open
+- **Status:** in-progress
 
 ## Backlog Handoff
 

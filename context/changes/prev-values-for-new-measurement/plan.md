@@ -198,19 +198,19 @@ None. There is no schema or data change.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass, including the new `measurementFieldValues` cases: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type and Astro checks pass: `npx astro check`
-- [x] 1.4 Production build succeeds: `npm run build`
+- [x] 1.1 Unit tests pass, including the new `measurementFieldValues` cases: `npm test` — 449b560
+- [x] 1.2 Lint passes: `npm run lint` — 449b560
+- [x] 1.3 Type and Astro checks pass: `npx astro check` — 449b560
+- [x] 1.4 Production build succeeds: `npm run build` — 449b560
 
 #### Manual
 
-- [x] 1.5 As a trainee with entries, opening `/measurements` shows the add form prefilled with the latest entry's eight values, an empty note, the current minute, and `0.0` in every difference slot
-- [x] 1.6 As a trainee with no entries, the add form fields are empty
-- [x] 1.7 Moving the date earlier does not change the field values, and the difference slots update against the entry before the new date
-- [x] 1.8 After Add, the reopened form shows the values just saved
-- [x] 1.9 The edit form (`/measurements?edit=<id>`) still shows that entry's own values
-- [x] 1.10 `/kitchen-sink/journal` shows the prefilled Default state and the empty state
+- [x] 1.5 As a trainee with entries, opening `/measurements` shows the add form prefilled with the latest entry's eight values, an empty note, the current minute, and `0.0` in every difference slot — 449b560
+- [x] 1.6 As a trainee with no entries, the add form fields are empty — 449b560
+- [x] 1.7 Moving the date earlier does not change the field values, and the difference slots update against the entry before the new date — 449b560
+- [x] 1.8 After Add, the reopened form shows the values just saved — 449b560
+- [x] 1.9 The edit form (`/measurements?edit=<id>`) still shows that entry's own values — 449b560
+- [x] 1.10 `/kitchen-sink/journal` shows the prefilled Default state and the empty state — 449b560
 
 ### Phase 2: E2E coverage
 
