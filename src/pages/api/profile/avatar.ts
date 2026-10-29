@@ -36,15 +36,36 @@ async function readForm(request: Request): Promise<FormData | null> {
   }
 }
 
+// Reads an unwanted body to the end without keeping it. Answering before the upload is read lets
+// workerd close the connection under the local preview proxy, which then fails the request with a 500.
+async function discardBody(request: Request): Promise<void> {
+  const reader = request.body?.getReader();
+  if (!reader) {
+    return;
+  }
+  try {
+    for (;;) {
+      const { done } = await reader.read();
+      if (done) {
+        return;
+      }
+    }
+  } catch {
+    // The client went away; there is nothing left to answer.
+  }
+}
+
 export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
   if (!user) {
+    await discardBody(context.request);
     return authPage(context, "/auth/signin");
   }
 
   // Refuse oversized or unsized bodies before formData() reads them into memory.
   const length = Number(context.request.headers.get("content-length"));
   if (!length || length > MAX_BODY_BYTES) {
+    await discardBody(context.request);
     return authPage(context, `${AVATAR_PAGE}?error=avatar-large`, AVATAR_LARGE_ERROR);
   }
 
