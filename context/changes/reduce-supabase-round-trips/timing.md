@@ -16,16 +16,14 @@ Median = 3rd value after sorting.
 
 ## Runs
 
-| Run                 | Date       | Worker version                  | Values (s)          | Median (s)     |
-| ------------------- | ---------- | ------------------------------- | ------------------- | -------------- |
-| Before              | 2026-10-29 | `main` before this change       | min 0.359, max 1.20 | _not recorded_ |
-| After               | _pending_  | this change deployed            | _pending_           | _pending_      |
-| After key migration | _pending_  | this change + ES256 signing key | _pending_           | _pending_      |
-
-Drop the last row if the hosted project already signed with an asymmetric key.
+| Run    | Date       | Worker version            | Values (s)                       | Median (s)     |
+| ------ | ---------- | ------------------------- | -------------------------------- | -------------- |
+| Before | 2026-10-29 | `main` before this change | min 0.359, max 1.20              | _not recorded_ |
+| After  | 2026-10-29 | this change deployed      | mostly < 0.300, one outlier 1.20 | < 0.300        |
 
 ## Notes
 
-- Hosted JWT signing keys: _pending_ (legacy HS256 secret, or already on signing keys?)
-- `/auth/v1/user` on a page load after deploy: _pending_
-- Smart Placement in the Cloudflare dashboard: _pending_
+- Hosted JWT signing keys: already on ES256 (checked 2026-10-29); no migration needed, so the after run already reflects local JWT verification.
+- `/auth/v1/user` on a page load after deploy: none observed (2026-10-29)
+- Smart Placement in the Cloudflare dashboard: Smart (2026-10-29)
+- After vs before: the after median (< 0.300 s) is below the before minimum (0.359 s), so it is also below the before median. The single 1.20 s outlier matches the before maximum; likely causes are a Worker cold start, an access-token refresh (once per `jwt_expiry`, which still calls the auth server), or Smart Placement not yet settled.

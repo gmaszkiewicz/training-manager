@@ -326,7 +326,7 @@ No database migration. The signing-key rotation is a dashboard action that is in
 #### Manual
 
 - [x] 3.3 Before timing on production recorded in `timing.md` before the PR merges
-- [ ] 3.4 Hosted project checked for JWT signing keys and migrated to ES256 if it was on the legacy secret
-- [ ] 3.5 After deploy, a signed-in page load makes no `/auth/v1/user` request (Supabase auth logs or Workers observability subrequests)
-- [ ] 3.6 After timing recorded in `timing.md`, with a median below the before median
-- [ ] 3.7 Smart Placement shows as enabled for the Worker in the Cloudflare dashboard
+- [x] 3.4 Hosted project checked for JWT signing keys and migrated to ES256 if it was on the legacy secret
+- [x] 3.5 After deploy, a signed-in page load makes no `/auth/v1/user` request (Supabase auth logs or Workers observability subrequests)
+- [x] 3.6 After timing recorded in `timing.md`, with a median below the before median
+- [x] 3.7 Smart Placement shows as enabled for the Worker in the Cloudflare dashboard
