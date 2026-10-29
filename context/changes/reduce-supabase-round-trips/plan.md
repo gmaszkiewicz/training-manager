@@ -302,19 +302,19 @@ No database migration. The signing-key rotation is a dashboard action that is in
 
 #### Automated
 
-- [ ] 2.1 Type check passes: `npx astro check`
-- [ ] 2.2 Lint passes (no floating promises): `npm run lint`
-- [ ] 2.3 Unit tests pass: `npm test`
-- [ ] 2.4 Production build succeeds: `npm run build`
-- [ ] 2.5 Playwright suite passes, including `measurement-charts`, `measurement-prefill`, `measurements-menus` and `hub-collaborations`: `npx playwright test`
+- [x] 2.1 Type check passes: `npx astro check`
+- [x] 2.2 Lint passes (no floating promises): `npm run lint`
+- [x] 2.3 Unit tests pass: `npm test`
+- [x] 2.4 Production build succeeds: `npm run build`
+- [x] 2.5 Playwright suite passes, including `measurement-charts`, `measurement-prefill`, `measurements-menus` and `hub-collaborations`: `npx playwright test`
 
 #### Manual
 
-- [ ] 2.6 Trainee default view: list, page, month, Charts tile (with its remembered period and day picker) and the prefilled add form match the pre-change render
-- [ ] 2.7 `?edit=<id>` opens the edit form with the row and no charts; `?edit=<unknown id>` shows "Could not open that measurement"
-- [ ] 2.8 `?delete=<id>` shows the confirmation for the row; `?delete=<unknown id>` shows "Could not delete the measurement"
-- [ ] 2.9 Trainer preview with a selected trainee shows the same list and Charts tile; switching trainee still remembers the choice
-- [ ] 2.10 In the Network or Workers log, a trainee default load shows the days and previous-entry reads starting together with the page read, not after it
+- [x] 2.6 Trainee default view: list, page, month, Charts tile (with its remembered period and day picker) and the prefilled add form match the pre-change render
+- [x] 2.7 `?edit=<id>` opens the edit form with the row and no charts; `?edit=<unknown id>` shows "Could not open that measurement"
+- [x] 2.8 `?delete=<id>` shows the confirmation for the row; `?delete=<unknown id>` shows "Could not delete the measurement"
+- [x] 2.9 Trainer preview with a selected trainee shows the same list and Charts tile; switching trainee still remembers the choice
+- [x] 2.10 In the Network or Workers log, a trainee default load shows the days and previous-entry reads starting together with the page read, not after it
 
 ### Phase 3: Placement and production check
 
