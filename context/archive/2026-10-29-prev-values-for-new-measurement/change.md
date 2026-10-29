@@ -1,10 +1,10 @@
 ---
 change_id: prev-values-for-new-measurement
 title: Prefill a new measurement with weight and circumferences from the previous one
-status: impl_reviewed
+status: archived
 created: 2026-10-29
 updated: 2026-10-29
-archived_at: null
+archived_at: 2026-10-29T06:56:11Z
 ---
 
 ## Notes
