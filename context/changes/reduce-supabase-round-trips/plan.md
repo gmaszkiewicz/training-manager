@@ -320,8 +320,8 @@ No database migration. The signing-key rotation is a dashboard action that is in
 
 #### Automated
 
-- [ ] 3.1 Production build succeeds: `npm run build`
-- [ ] 3.2 Wrangler accepts the config: `npx wrangler deploy --dry-run`
+- [x] 3.1 Production build succeeds: `npm run build`
+- [x] 3.2 Wrangler accepts the config: `npx wrangler deploy --dry-run`
 
 #### Manual
 
