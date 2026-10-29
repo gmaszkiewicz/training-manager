@@ -284,19 +284,19 @@ No database migration. The signing-key rotation is a dashboard action that is in
 
 #### Automated
 
-- [ ] 1.1 Unit tests for `sessionUserFromClaims` cover valid claims, missing claims, missing or empty `sub`, non-string `email`, and absent `user_metadata`: `npm test`
-- [ ] 1.2 Type check passes with the narrowed `Locals.user`: `npx astro check`
-- [ ] 1.3 Lint passes: `npm run lint`
-- [ ] 1.4 Production build succeeds: `npm run build`
-- [ ] 1.5 Auth-flow smoke passes against the preview with local Supabase: `npm run smoke`
-- [ ] 1.6 Playwright suite passes: `npx playwright test`
+- [x] 1.1 Unit tests for `sessionUserFromClaims` cover valid claims, missing claims, missing or empty `sub`, non-string `email`, and absent `user_metadata`: `npm test`
+- [x] 1.2 Type check passes with the narrowed `Locals.user`: `npx astro check`
+- [x] 1.3 Lint passes: `npm run lint`
+- [x] 1.4 Production build succeeds: `npm run build`
+- [x] 1.5 Auth-flow smoke passes against the preview with local Supabase: `npm run smoke`
+- [x] 1.6 Playwright suite passes: `npx playwright test`
 
 #### Manual
 
-- [ ] 1.7 Signed in, `/measurements`, `/profile`, `/hub` and `/settings` load with the same greeting and data as before
-- [ ] 1.8 After sign-out, or with the auth cookie deleted or edited by hand, every protected route redirects to `/auth/signin`, and an API call (e.g. `POST /api/measurements`) is refused as it is today
-- [ ] 1.9 Password change on `/settings` still rejects a wrong current password, succeeds with the right one, and signs out other sessions
-- [ ] 1.10 A first-time trainer sign-up still gets the trainer role on the first `/measurements` visit (role read from `user_metadata` in the claims)
+- [x] 1.7 Signed in, `/measurements`, `/profile`, `/hub` and `/settings` load with the same greeting and data as before
+- [x] 1.8 After sign-out, or with the auth cookie deleted or edited by hand, every protected route redirects to `/auth/signin`, and an API call (e.g. `POST /api/measurements`) is refused as it is today
+- [x] 1.9 Password change on `/settings` still rejects a wrong current password, succeeds with the right one, and signs out other sessions
+- [x] 1.10 A first-time trainer sign-up still gets the trainer role on the first `/measurements` visit (role read from `user_metadata` in the claims)
 
 ### Phase 2: Parallel reads on /measurements
 
