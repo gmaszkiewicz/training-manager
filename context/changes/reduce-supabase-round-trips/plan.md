@@ -13,7 +13,7 @@ Signed-in pages, `/measurements` above all, wait on a chain of sequential Supaba
 - In the trainer branch ([src/pages/measurements.astro:201-240](../../../src/pages/measurements.astro)), `measurement_days` waits for the page read although it does not need it.
 - `readInitialChart` ([src/pages/measurements.astro:127-150](../../../src/pages/measurements.astro)) already runs range ‖ days with `Promise.all`; the service functions return `{ ok }` results instead of throwing.
 - `wrangler.jsonc` has no `placement` entry.
-- Local Supabase signs JWTs with the legacy HS256 secret (`signing_keys_path` is commented out in `supabase/config.toml`; `jwt_expiry = 3600`). `@supabase/auth-js` 2.117.3 provides `getClaims()`, which verifies locally only for asymmetric keys and otherwise falls back to an auth-server call.
+- Local Supabase signs JWTs with ES256 and serves its key at `/auth/v1/.well-known/jwks.json`, even though `signing_keys_path` is commented out in `supabase/config.toml` (`jwt_expiry = 3600`). The original assumption was the legacy HS256 secret; see the Addendum. `@supabase/auth-js` 2.117.3 provides `getClaims()`, which verifies locally only for asymmetric keys and otherwise falls back to an auth-server call.
 
 ## Desired End State
 
@@ -26,7 +26,7 @@ Signed-in pages, `/measurements` above all, wait on a chain of sequential Supaba
 ### Key Discoveries:
 
 - `getClaims()` reads the session through `getSession()`, which refreshes an expired access token and writes the refreshed cookies through the SSR client's `setAll`. This is the same refresh path the middleware relies on today.
-- Account-security actions are already server-verified without a middleware `getUser()`. [src/pages/api/auth/password.ts:45-59](../../../src/pages/api/auth/password.ts) proves the current password with `signInWithPassword` and changes it with `updateUser`, which the auth server checks against the live session. `reset-password/confirm.ts` also uses `updateUser`. The planning decision "account-security endpoints stay server-verified" is therefore met by the existing calls; no extra `getUser()` is added.
+- Account-security actions are already server-verified without a middleware `getUser()`. [src/pages/api/auth/password.ts:45-59](../../../src/pages/api/auth/password.ts) proves the current password with `signInWithPassword` and changes it with `updateUser`, which the auth server checks against the live session. `reset-password/confirm.ts` also uses `updateUser`. The planning decision "account-security endpoints stay server-verified" is met by the existing calls for the APIs. The `/settings` page also keeps a middleware `getUser()`, so a session signed out elsewhere ends there at once (see the Addendum).
 - `readMeasurementDays` is only consumed when the list loaded and the view is not `?edit=`. Starting it early must not change when its result is shown.
 
 ## What We're NOT Doing
@@ -77,6 +77,7 @@ Replace the middleware's `getUser()` with `getClaims()` and a tested mapping to 
 **Intent**: Turn verified JWT claims into a `SessionUser`, or `null` when there is no usable identity, so the middleware stays a thin wiring layer and the mapping is unit-tested.
 
 **Contract**: `sessionUserFromClaims(claims: unknown): SessionUser | null`:
+
 - returns `null` for missing claims, or when `sub` is not a non-empty string;
 - `email` is copied only when it is a string;
 - `user_metadata` falls back to `{}` when absent or not an object.
@@ -140,6 +141,7 @@ Start independent reads together in both the trainee and trainer branches of the
 **File**: `src/pages/measurements.astro`
 
 **Intent**: Right after `ensureProfile` reports `trainee`, start these together:
+
 - `readMeasurementPage`;
 - `readMeasurementDays`, only when `editId === null`;
 - `readPreviousMeasurement`, only when `editId === null`;
@@ -209,6 +211,7 @@ Enable Smart Placement and do the production-side steps: a timing baseline, the 
 **Intent**: Make `getClaims()` verify locally in production. With the legacy HS256 secret it still calls the auth server, which is correct but gains nothing.
 
 **Contract**: Supabase Dashboard → Project Settings → JWT Keys. If the project is still on the legacy secret:
+
 1. migrate to signing keys;
 2. create an ES256 standby key and rotate it in;
 3. leave the legacy key as "previously used" so tokens already issued stay valid until they expire.
@@ -242,7 +245,7 @@ Local Supabase stays on HS256; code paths are identical either way.
 
 ### Integration Tests:
 
-- Existing Playwright specs render every parallelized section (charts, prefill, menus, trainer preview) against local Supabase on the HS256 fallback path.
+- Existing Playwright specs render every parallelized section (charts, prefill, menus, trainer preview) against local Supabase, which signs ES256, so they exercise local claim verification. `/settings` exercises the `getUser()` path.
 - `npm run smoke` covers sign-up, sign-in, protected redirect and sign-out through the new middleware.
 
 ### Manual Testing Steps:
@@ -256,6 +259,7 @@ Local Supabase stays on HS256; code paths are identical either way.
 ## Performance Considerations
 
 After this change, a trainee default load runs about six sequential steps instead of nine:
+
 1. local claims check;
 2. profile read;
 3. the page read chain (months → page → older), with days and previous-entry running alongside;
@@ -275,6 +279,12 @@ No database migration. The signing-key rotation is a dashboard action that is in
 - Measurements reads: `src/pages/measurements.astro:127-240`
 - Existing parallel read pattern: `src/pages/measurements.astro:140-147`, `src/components/Topbar.astro:33-36`
 - Server-verified password change: `src/pages/api/auth/password.ts:45-59`
+
+## Addendum (2026-10-29): `/settings` stays server-verified
+
+Discovered during Phase 1 (commit 87cfb36). Local Supabase signs access tokens with ES256, not HS256, so `getClaims()` verifies them locally with no auth-server call. A session revoked server-side therefore stays valid until `jwt_expiry`. This broke the smoke step that expects the other session to end after a password change.
+
+Decision: the middleware keeps `auth.getUser()` for `SERVER_VERIFIED_ROUTES = ["/settings"]` and maps its user through `sessionUserFromClaims`. Every other route uses `getClaims()`. A session signed out elsewhere ends at once on `/settings`. On other pages and RLS-scoped reads it can last up to `jwt_expiry` (1 h), as accepted in Critical Implementation Details. Cost: one auth round trip per `/settings` load.
 
 ## Progress
 

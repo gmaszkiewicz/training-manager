@@ -23,6 +23,7 @@ Median = 3rd value after sorting.
 
 ## Notes
 
+- Recording gap: the individual values of both runs were not kept, so neither median is a measured number. The before run can't be repeated now that the change is deployed. Plan item 3.6 ("after median below the before median") rests on this: the after values were mostly below 0.300 s, under the before minimum of 0.359 s.
 - Hosted JWT signing keys: already on ES256 (checked 2026-10-29); no migration needed, so the after run already reflects local JWT verification.
 - `/auth/v1/user` on a page load after deploy: none observed (2026-10-29)
 - Smart Placement in the Cloudflare dashboard: Smart (2026-10-29)
