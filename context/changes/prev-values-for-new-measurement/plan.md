@@ -216,10 +216,10 @@ None. There is no schema or data change.
 
 #### Automated
 
-- [x] 2.1 The new spec passes on the production preview: `npx playwright test tests/e2e/measurement-prefill.spec.ts`
-- [x] 2.2 The full E2E suite still passes: `npx playwright test`
-- [x] 2.3 Lint passes: `npm run lint`
+- [x] 2.1 The new spec passes on the production preview: `npx playwright test tests/e2e/measurement-prefill.spec.ts` — 1623fa2
+- [x] 2.2 The full E2E suite still passes: `npx playwright test` — 1623fa2
+- [x] 2.3 Lint passes: `npm run lint` — 1623fa2
 
 #### Manual
 
-- [x] 2.4 After the spec runs, the trainee's journal has no leftover entry from it
+- [x] 2.4 After the spec runs, the trainee's journal has no leftover entry from it — 1623fa2
