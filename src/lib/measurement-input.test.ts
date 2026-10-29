@@ -4,6 +4,7 @@ import {
   createMeasurementInputSchema,
   DUPLICATE_MEASUREMENT_MESSAGE,
   duplicateMeasurementMessage,
+  latestMeasuredOnBound,
   measurementFieldMessage,
   measurementFieldRange,
   measuredOnPartRange,
@@ -352,6 +353,16 @@ describe("readUtcOffsetMinutes", () => {
     expect(readUtcOffsetMinutes("721")).toBeNull();
     expect(readUtcOffsetMinutes("12.5")).toBeNull();
     expect(readUtcOffsetMinutes("nope")).toBeNull();
+  });
+});
+
+describe("latestMeasuredOnBound", () => {
+  it("sits one minute past the latest wall-clock minute the furthest-ahead zone can save", () => {
+    const bound = latestMeasuredOnBound(now);
+
+    expect(bound).toBe("2026-09-29T02:01");
+    expect(parseMeasuredOn("2026-09-29T02:00", now, -840)).toBe("2026-09-29T02:00:00");
+    expect(parseMeasuredOn(bound, now, -840)).toBeNull();
   });
 });
 

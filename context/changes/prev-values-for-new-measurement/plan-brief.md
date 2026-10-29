@@ -19,7 +19,7 @@ A trainee with entries sees the add form filled with their latest entry's eight 
 | Decision | Choice | Why (1 sentence) | Source |
 | --- | --- | --- | --- |
 | What is "previous" | The latest entry, read when the page loads | New entries default to now and future times are rejected, so the latest entry is the entry before the default minute | Plan |
-| Date changed in the form | Values stay as loaded and are never rewritten; only the difference preview follows the date | Never overwrites typing and needs no per-field "touched" state | Plan |
+| Date changed in the form | Untyped fields refill from the entry before the picked minute (emptied when none); typed fields keep their value | User asked for it during Phase 1; replaces "never rewritten" | Scope change (plan.md) |
 | Note and date/time | Not prefilled | Change notes ask for weight and circumferences only | Change notes |
 | Look of prefilled values | Same as typed values, no marker and no Clear button | The existing `0.0` difference and "Against <date>" caption already signal it; the row layout is untouched | Plan |
 | Delivery | Server prop from `readPreviousMeasurement(user.id, now)` | No empty-field flash, and no late fetch overwriting typing | Plan |
@@ -37,7 +37,7 @@ A trainee with entries sees the add form filled with their latest entry's eight 
 
 **Out of scope:**
 
-- Re-prefilling on date change
+- ~~Re-prefilling on date change~~ (moved in scope during Phase 1 — see plan.md "Scope change (Phase 1)")
 - Prefilling the note or date
 - A visual marker or Clear button
 - Edit form, trainer preview, API or schema changes

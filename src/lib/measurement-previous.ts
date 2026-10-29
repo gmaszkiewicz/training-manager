@@ -1,3 +1,4 @@
+import { measurementFields } from "@/lib/measurement-input";
 import type { MeasurementEntry, MeasurementField } from "@/types";
 
 function sortsAfter(entry: MeasurementEntry, selected: MeasurementEntry): boolean {
@@ -23,19 +24,20 @@ export function previousMeasurement(entries: readonly MeasurementEntry[], measur
   return selected;
 }
 
+/** Only the measurement values of an entry, so nothing else is serialized into an island prop. */
+export function measurementValues(
+  entry: Pick<MeasurementEntry, MeasurementField>,
+): Pick<MeasurementEntry, MeasurementField> {
+  const values = Object.fromEntries(measurementFields.map((definition) => [definition.field, entry[definition.field]]));
+  return values as Pick<MeasurementEntry, MeasurementField>;
+}
+
 export function measurementFieldValues(
   entry: Pick<MeasurementEntry, MeasurementField> | null,
 ): Record<MeasurementField, string> {
-  return {
-    weight_kg: entry ? entry.weight_kg.toFixed(1) : "",
-    chest_cm: entry ? entry.chest_cm.toFixed(1) : "",
-    waist_cm: entry ? entry.waist_cm.toFixed(1) : "",
-    arms_cm: entry ? entry.arms_cm.toFixed(1) : "",
-    thigh_cm: entry ? entry.thigh_cm.toFixed(1) : "",
-    calf_cm: entry ? entry.calf_cm.toFixed(1) : "",
-    hips_cm: entry ? entry.hips_cm.toFixed(1) : "",
-    navel_cm: entry ? entry.navel_cm.toFixed(1) : "",
-  };
+  return Object.fromEntries(
+    measurementFields.map((definition) => [definition.field, entry ? entry[definition.field].toFixed(1) : ""]),
+  ) as Record<MeasurementField, string>;
 }
 
 export function prefillUntypedFields(

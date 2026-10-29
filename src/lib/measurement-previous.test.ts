@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { measurementFields } from "@/lib/measurement-input";
-import { measurementFieldValues, prefillUntypedFields, previousMeasurement } from "@/lib/measurement-previous";
+import {
+  measurementFieldValues,
+  measurementValues,
+  prefillUntypedFields,
+  previousMeasurement,
+} from "@/lib/measurement-previous";
 import type { MeasurementEntry } from "@/types";
 
 function entry(
@@ -184,6 +189,29 @@ describe("measurementFieldValues", () => {
     expect(keys.sort()).toEqual(measurementFields.map((definition) => definition.field).sort());
     expect(keys).not.toContain("note");
     expect(keys).not.toContain("measured_on");
+  });
+});
+
+describe("measurementValues", () => {
+  it("keeps the eight measurement values and drops every other column", () => {
+    const full = entry({
+      id: "full",
+      measured_on: "2026-10-06T09:00:00",
+      created_at: "2026-10-06T09:00:00.000Z",
+      weight_kg: 79,
+      note: "Felt good",
+    });
+
+    expect(measurementValues(full)).toEqual({
+      weight_kg: 79,
+      chest_cm: full.chest_cm,
+      waist_cm: full.waist_cm,
+      arms_cm: full.arms_cm,
+      thigh_cm: full.thigh_cm,
+      calf_cm: full.calf_cm,
+      hips_cm: full.hips_cm,
+      navel_cm: full.navel_cm,
+    });
   });
 });
 

@@ -18,7 +18,7 @@ When a trainee opens the add form on `/measurements`, weight and all seven circu
 
 - A trainee with at least one entry opens the add form and sees weight, chest, waist, arms, thigh, calf, hips and navel filled with their latest entry's values (one decimal place, like the edit form). The note is empty and the date and time is the current minute.
 - A trainee with no entries sees all eight fields empty, exactly as today.
-- Changing the date or time in the add form never rewrites the measurement fields. The difference preview still compares against the entry before the chosen minute.
+- ~~Changing the date or time in the add form never rewrites the measurement fields.~~ Superseded — see "Scope change (Phase 1)". The difference preview still compares against the entry before the chosen minute.
 - After Add, the reopened form is prefilled with the entry just saved.
 - The edit form is unchanged.
 
@@ -32,7 +32,7 @@ When a trainee opens the add form on `/measurements`, weight and all seven circu
 ## What We're NOT Doing
 
 - No prefill of the note or of the date and time.
-- No re-prefill when the date changes. The values come from the latest entry once, when the form loads. A back-dated entry starts from the newest values.
+- ~~No re-prefill when the date changes. The values come from the latest entry once, when the form loads. A back-dated entry starts from the newest values.~~ Superseded — see "Scope change (Phase 1)".
 - No visual marker for copied values (no muted style, no "Clear values" button). Prefilled values look the same as typed ones. The existing `0.0` difference and the "Against <date>" caption are the only cue.
 - No change to the edit form, the trainer preview, the `/api/measurements/previous` endpoint, or the database schema.
 - No client-side fetch for the prefill. It arrives as a server prop, so there is no flash of empty fields and no late response that overwrites typing.
@@ -190,6 +190,14 @@ None. There is no schema or data change.
 - Delta preview fetch: `src/components/measurements/MeasurementForm.tsx:707`
 - E2E patterns: `tests/e2e/measurements-narrow.spec.ts:30`, `tests/e2e/measurement-charts.spec.ts:71`
 
+## Scope change (Phase 1)
+
+Requested by the user during Phase 1 and shipped in 449b560. It replaces the "no re-prefill on date change" decision above.
+
+- **Date change refills the fields.** When the trainee picks a different minute in the add form, every measurement field they have not typed in takes the value of the entry before that minute (the same row the S-26 difference preview loads). Fields the trainee typed in keep their value. When no earlier entry exists, the untyped fields are emptied. The edit form never refills. Logic: `prefillUntypedFields` in `src/lib/measurement-previous.ts`; wiring through `followsDate` and `typedFields` in `MeasurementForm.tsx`.
+- **Page read bound.** `measured_on` stores the trainee's wall clock, which can run up to 14 hours ahead of UTC. The page reads the latest entry before `now + 14h + 1 min` (not `now.toISOString()`), so an entry saved at the trainee's current local minute counts as the latest.
+- **Known edge.** If a trainee has an entry later than their current local minute (for example after moving to a timezone further west), the initial prefill shows that entry. The difference preview compares against the entry before the browser minute, so the differences are not `0.0`. Accepted.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
@@ -208,6 +216,7 @@ None. There is no schema or data change.
 - [x] 1.5 As a trainee with entries, opening `/measurements` shows the add form prefilled with the latest entry's eight values, an empty note, the current minute, and `0.0` in every difference slot — 449b560
 - [x] 1.6 As a trainee with no entries, the add form fields are empty — 449b560
 - [x] 1.7 Moving the date earlier does not change the field values, and the difference slots update against the entry before the new date — 449b560
+  - Superseded by "Scope change (Phase 1)": moving the date earlier refills untyped fields from the entry before the new date and keeps typed fields. Re-check by hand against this wording.
 - [x] 1.8 After Add, the reopened form shows the values just saved — 449b560
 - [x] 1.9 The edit form (`/measurements?edit=<id>`) still shows that entry's own values — 449b560
 - [x] 1.10 `/kitchen-sink/journal` shows the prefilled Default state and the empty state — 449b560
