@@ -79,9 +79,16 @@ const chartEntries: MeasurementWithDeltas[] = withDeltas(
           TraineeJournal with measurements loaded, one sample entry (every field, note, and deltas), and no server
           error. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on screen. The sample row
           shows selection checkboxes, metric and note headers with an icon, and a row actions menu with Edit and Delete.
-          Form ids are unprefixed.
+          The add form starts with the sample entry's weight and circumferences; the note and the date and time stay
+          empty. Form ids are unprefixed.
         </p>
-        <TraineeJournal measurementsLoaded={true} entries={[sampleEntry]} serverError={null} today="2026-09-15" />
+        <TraineeJournal
+          measurementsLoaded={true}
+          entries={[sampleEntry]}
+          serverError={null}
+          today="2026-09-15"
+          previousEntry={sampleEntry}
+        />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-charts-default">
@@ -202,7 +209,7 @@ const chartEntries: MeasurementWithDeltas[] = withDeltas(
         <p class="text-muted-foreground text-sm">
           TraineeJournal with measurements loaded, empty entries, and{" "}
           <code class="text-foreground">idPrefix="empty-"</code> so "No measurements yet" shows under a second form
-          whose ids do not collide with Default.
+          whose ids do not collide with Default. With no earlier entry, the add form fields start empty.
         </p>
         <TraineeJournal measurementsLoaded={true} entries={[]} serverError={null} idPrefix="empty-" />
       </section>

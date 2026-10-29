@@ -192,6 +192,11 @@ function wallClockCeiling(now: Date, utcOffsetMinutes: number): string {
   return formatUtcMinute(new Date(now.getTime() - utcOffsetMinutes * 60 * 1000));
 }
 
+/** A bound for "newest entry before" reads that includes the latest minute any accepted offset can save. */
+export function latestMeasuredOnBound(now: Date): string {
+  return wallClockCeiling(new Date(now.getTime() + 60 * 1000), MIN_UTC_OFFSET_MINUTES);
+}
+
 export function measuredOnMax(now: Date): string {
   return `${latestMeasuredOn(now)}T23:59`;
 }
