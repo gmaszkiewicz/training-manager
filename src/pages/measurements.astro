@@ -125,13 +125,17 @@ function preferredChartsPeriod(accountUserId: string, subjectTraineeId: string):
   return parseChartPreference(cookieValue(chartsPeriodStorageKey(accountUserId, subjectTraineeId)));
 }
 
-// The tile's first render: the remembered period around the list's month, plus the days for its picker. A failed
-// read leaves both to the island's own fetch.
+type MeasurementDaysRead = ReturnType<typeof readMeasurementDays>;
+
+// The tile's first render: the remembered period around the list's month, plus the days for its picker. The days
+// read starts with the list, so only the range read waits for the list's month. A failed read leaves both to the
+// island's own fetch.
 async function readInitialChart(
   client: NonNullable<typeof supabase>,
   accountUserId: string,
   subjectTraineeId: string,
   listMonth: string,
+  daysRead: MeasurementDaysRead,
 ): Promise<void> {
   const preference = preferredChartsPeriod(accountUserId, subjectTraineeId);
   chartsPeriod = preference.period;
@@ -143,7 +147,7 @@ async function readInitialChart(
       anchor: chartsAnchor,
       years: lastYearsRange(today),
     }),
-    readMeasurementDays(client, subjectTraineeId),
+    daysRead,
   ]);
   chartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
   chartDays = days.ok ? days.days : null;
@@ -159,13 +163,22 @@ if (supabase && user) {
         traineeAccountId = user.id;
         const editId = Astro.url.searchParams.get("edit");
         const deleteId = Astro.url.searchParams.get("delete");
-        const listed = await readMeasurementPage(supabase, user.id, {
+        // The reads are independent, so they start together; their results apply in the order below.
+        const listedRead = readMeasurementPage(supabase, user.id, {
           month: preferredMonth(user.id, user.id),
           page: preferredJournalPage(user.id, user.id),
           pageSize: preferredPageSize(user.id),
           focusId: deleteId ?? editId,
           now,
         });
+        const daysRead = editId === null ? readMeasurementDays(supabase, user.id) : null;
+        // The add form starts from the trainee's latest entry; a failed read leaves the fields empty.
+        // measured_on is the trainee's wall clock, so the bound sits past the latest minute any zone can save.
+        const previousRead =
+          editId === null ? readPreviousMeasurement(supabase, user.id, latestMeasuredOnBound(now)) : null;
+        const editRead = editId !== null ? getMeasurement(supabase, user.id, editId) : null;
+        const deleteRead = deleteId !== null ? getMeasurement(supabase, user.id, deleteId) : null;
+        const listed = await listedRead;
         measurementsLoaded = listed.ok;
         if (listed.ok) {
           entries = listed.entries;
@@ -175,26 +188,27 @@ if (supabase && user) {
           pageSize = listed.pageSize;
           month = listed.month;
         }
-        if (listed.ok && editId === null) {
-          await readInitialChart(supabase, user.id, user.id, month);
+        if (listed.ok && daysRead !== null) {
+          await readInitialChart(supabase, user.id, user.id, month, daysRead);
+        } else if (daysRead !== null) {
+          // Without the list there is no chart, so the days are discarded.
+          await daysRead;
         }
-        if (editId === null) {
-          // The add form starts from the trainee's latest entry; a failed read leaves the fields empty.
-          // measured_on is the trainee's wall clock, so the bound sits past the latest minute any zone can save.
-          const read = await readPreviousMeasurement(supabase, user.id, latestMeasuredOnBound(now));
+        if (previousRead !== null) {
+          const read = await previousRead;
           if (read.ok && read.entry !== null) {
             previousEntry = measurementValues(read.entry);
           }
         }
-        if (editId !== null) {
-          const loaded = await getMeasurement(supabase, user.id, editId);
+        if (editRead !== null) {
+          const loaded = await editRead;
           editingEntry = loaded.ok ? loaded.entry : null;
           if (editingEntry === null) {
             traineeServerError = serverError ?? "Could not open that measurement";
           }
         }
-        if (deleteId !== null) {
-          const loaded = await getMeasurement(supabase, user.id, deleteId);
+        if (deleteRead !== null) {
+          const loaded = await deleteRead;
           confirmingEntry = loaded.ok ? loaded.entry : null;
           if (confirmingEntry === null) {
             traineeServerError = serverError ?? "Could not delete the measurement";
@@ -220,6 +234,7 @@ if (supabase && user) {
             });
           }
           if (selectedLink) {
+            const daysRead = readMeasurementDays(supabase, selectedLink.traineeId);
             const listed = await readMeasurementPage(supabase, selectedLink.traineeId, {
               month: preferredMonth(user.id, selectedLink.traineeId),
               page: preferredJournalPage(user.id, selectedLink.traineeId),
@@ -235,7 +250,10 @@ if (supabase && user) {
               pageCount = listed.pageCount;
               pageSize = listed.pageSize;
               month = listed.month;
-              await readInitialChart(supabase, user.id, selectedLink.traineeId, month);
+              await readInitialChart(supabase, user.id, selectedLink.traineeId, month, daysRead);
+            } else {
+              // Without the list there is no chart, so the days are discarded.
+              await daysRead;
             }
           }
         }

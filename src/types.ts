@@ -85,3 +85,10 @@ export interface NotificationBellData {
   unreadCount: number;
   latest: AppNotification[];
 }
+
+/** The signed-in user as read from verified session JWT claims. */
+export interface SessionUser {
+  id: string;
+  email?: string;
+  user_metadata: Record<string, unknown>;
+}
