@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { monthGrid, monthLabel } from "@/lib/journal-calendar";
 import { previewAgainst } from "@/lib/measurement-deltas";
+import { measurementFieldValues, prefillUntypedFields } from "@/lib/measurement-previous";
 import {
   createMeasurementInputSchema,
   DUPLICATE_MEASUREMENT_MESSAGE,
@@ -31,34 +32,12 @@ interface Props {
   serverError?: string | null;
   idPrefix?: string;
   entry?: MeasurementEntry | null;
+  /** The trainee's latest saved entry; a new entry starts from its values. Ignored when editing. */
+  previousEntry?: Pick<MeasurementEntry, MeasurementField> | null;
 }
 
 type ErrorField = "measured_on" | MeasurementField | "note";
 type FormErrors = Partial<Record<ErrorField, string>>;
-
-const emptyValues: Record<MeasurementField, string> = {
-  weight_kg: "",
-  chest_cm: "",
-  waist_cm: "",
-  arms_cm: "",
-  thigh_cm: "",
-  calf_cm: "",
-  hips_cm: "",
-  navel_cm: "",
-};
-
-function fieldValues(entry: MeasurementEntry): Record<MeasurementField, string> {
-  return {
-    weight_kg: entry.weight_kg.toFixed(1),
-    chest_cm: entry.chest_cm.toFixed(1),
-    waist_cm: entry.waist_cm.toFixed(1),
-    arms_cm: entry.arms_cm.toFixed(1),
-    thigh_cm: entry.thigh_cm.toFixed(1),
-    calf_cm: entry.calf_cm.toFixed(1),
-    hips_cm: entry.hips_cm.toFixed(1),
-    navel_cm: entry.navel_cm.toFixed(1),
-  };
-}
 
 function subscribeToNothing(): () => void {
   return () => undefined;
@@ -619,12 +598,17 @@ function FieldErrorToasts({
   );
 }
 
-export default function MeasurementForm({ serverError, idPrefix = "", entry = null }: Props) {
+export default function MeasurementForm({
+  serverError,
+  idPrefix = "",
+  entry = null,
+  previousEntry: prefillEntry = null,
+}: Props) {
   // SSR runs in UTC. A new entry defaults to the browser's local minute.
   const browserMinute = useSyncExternalStore(subscribeToNothing, localMinuteSnapshot, emptyTodaySnapshot);
   const entryMinute = entry ? toMeasuredOnLocalValue(entry.measured_on) : null;
   const [measuredOn, setMeasuredOn] = useState<string | null>(entryMinute);
-  const [values, setValues] = useState(entry ? fieldValues(entry) : emptyValues);
+  const [values, setValues] = useState(() => measurementFieldValues(entry ?? prefillEntry));
   const [note, setNote] = useState(entry?.note ?? "");
   const [errors, setErrors] = useState<FormErrors>(() => initialFormErrors(serverError));
   const [submitError, setSubmitError] = useState<string | null>(() => initialSubmitError(serverError));
@@ -638,6 +622,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
   const savingRef = useRef(false);
   const confirmedTaken = useRef<string[]>([]);
   const occupiedRequest = useRef(0);
+  // A new entry follows the entry before a picked minute; fields the trainee typed in keep their value.
+  const followsDate = useRef(false);
+  const typedFields = useRef(new Set<MeasurementField>());
   const dateValue = measuredOn ?? browserMinute;
   const minuteParts = measuredMinuteParts(dateValue);
   const editingId = entry?.id ?? null;
@@ -691,6 +678,9 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
         return;
       }
       setLoadedPrevious({ minute, entry: row });
+      if (editingId === null && followsDate.current) {
+        setValues((current) => prefillUntypedFields(current, row, typedFields.current));
+      }
     });
     return () => {
       active = false;
@@ -803,6 +793,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
     applyDuplicate(minute);
     setMeasuredOn(minute);
     if (minute !== dateValue) {
+      followsDate.current = true;
       clearError("measured_on");
       releaseErrorToast(`${idPrefix}measured_on-error`);
     }
@@ -1039,6 +1030,7 @@ export default function MeasurementForm({ serverError, idPrefix = "", entry = nu
                     label={`${field.label} ${field.unit}`}
                     value={typed}
                     onChange={(value) => {
+                      typedFields.current.add(field.field);
                       setValues((current) => ({ ...current, [field.field]: value }));
                       clearError(field.field);
                       releaseErrorToast(toastId);

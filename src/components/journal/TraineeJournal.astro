@@ -6,7 +6,7 @@ import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import MeasurementForm from "@/components/measurements/MeasurementForm";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import { addFormStartsOpen, addFormStorageKey, type PageSize } from "@/lib/measurement-page";
-import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
+import type { MeasurementEntry, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   measurementsLoaded: boolean;
@@ -15,6 +15,8 @@ interface Props {
   notice?: string | null;
   editingEntry?: MeasurementEntry | null;
   confirmingEntry?: MeasurementEntry | null;
+  /** The trainee's latest entry; the add form starts from its values. */
+  previousEntry?: Pick<MeasurementEntry, MeasurementField> | null;
   idPrefix?: string;
   accountUserId?: string;
   subjectTraineeId?: string;
@@ -40,6 +42,7 @@ const {
   notice = null,
   editingEntry = null,
   confirmingEntry = null,
+  previousEntry = null,
   idPrefix = "",
   accountUserId,
   subjectTraineeId,
@@ -100,7 +103,12 @@ const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
                 </svg>
               </summary>
               <div class="pt-3">
-                <MeasurementForm serverError={serverError} idPrefix={idPrefix} client:load />
+                <MeasurementForm
+                  serverError={serverError}
+                  idPrefix={idPrefix}
+                  previousEntry={previousEntry}
+                  client:load
+                />
               </div>
             </details>
             <script is:inline>

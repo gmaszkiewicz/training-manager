@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { previousMeasurement } from "@/lib/measurement-previous";
+import { measurementFields } from "@/lib/measurement-input";
+import { measurementFieldValues, prefillUntypedFields, previousMeasurement } from "@/lib/measurement-previous";
 import type { MeasurementEntry } from "@/types";
 
 function entry(
@@ -129,5 +130,104 @@ describe("previousMeasurement", () => {
     });
 
     expect(previousMeasurement([lowerId, evening, higherId], "2026-10-06T08:00:00")).toBe(higherId);
+  });
+});
+
+describe("measurementFieldValues", () => {
+  it("returns every field empty when there is no entry", () => {
+    expect(measurementFieldValues(null)).toEqual({
+      weight_kg: "",
+      chest_cm: "",
+      waist_cm: "",
+      arms_cm: "",
+      thigh_cm: "",
+      calf_cm: "",
+      hips_cm: "",
+      navel_cm: "",
+    });
+  });
+
+  it("returns each field of an entry to one decimal place", () => {
+    const values = measurementFieldValues({
+      weight_kg: 78,
+      chest_cm: 36.25,
+      waist_cm: 80.5,
+      arms_cm: 32.04,
+      thigh_cm: 55.96,
+      calf_cm: 38,
+      hips_cm: 99.9,
+      navel_cm: 84.1,
+    });
+
+    expect(values).toEqual({
+      weight_kg: "78.0",
+      chest_cm: (36.25).toFixed(1),
+      waist_cm: "80.5",
+      arms_cm: "32.0",
+      thigh_cm: "56.0",
+      calf_cm: "38.0",
+      hips_cm: "99.9",
+      navel_cm: "84.1",
+    });
+  });
+
+  it("returns exactly the measurement field keys, without note or date", () => {
+    const full = entry({
+      id: "full",
+      measured_on: "2026-10-06T09:00:00",
+      created_at: "2026-10-06T09:00:00.000Z",
+      weight_kg: 79,
+      note: "Felt good",
+    });
+    const keys = Object.keys(measurementFieldValues(full));
+
+    expect(keys.sort()).toEqual(measurementFields.map((definition) => definition.field).sort());
+    expect(keys).not.toContain("note");
+    expect(keys).not.toContain("measured_on");
+  });
+});
+
+describe("prefillUntypedFields", () => {
+  const current = {
+    weight_kg: "81.5",
+    chest_cm: "",
+    waist_cm: "70.0",
+    arms_cm: "30.0",
+    thigh_cm: "50.0",
+    calf_cm: "35.0",
+    hips_cm: "90.0",
+    navel_cm: "75.0",
+  };
+  const earlier = entry({
+    id: "earlier",
+    measured_on: "2026-10-29T05:15:00",
+    created_at: "2026-10-29T05:15:00.000Z",
+    weight_kg: 78,
+  });
+
+  it("replaces untyped fields with the earlier entry and keeps typed ones", () => {
+    expect(prefillUntypedFields(current, earlier, new Set(["weight_kg", "chest_cm"]))).toEqual({
+      weight_kg: "81.5",
+      chest_cm: "",
+      waist_cm: "50.0",
+      arms_cm: "50.0",
+      thigh_cm: "50.0",
+      calf_cm: "50.0",
+      hips_cm: "50.0",
+      navel_cm: "50.0",
+    });
+  });
+
+  it("empties untyped fields when there is no earlier entry", () => {
+    expect(prefillUntypedFields(current, null, new Set(["weight_kg"]))).toEqual({
+      weight_kg: "81.5",
+      chest_cm: "",
+      waist_cm: "",
+      arms_cm: "",
+      thigh_cm: "",
+      calf_cm: "",
+      hips_cm: "",
+      navel_cm: "",
+    });
   });
 });

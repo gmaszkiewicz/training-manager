@@ -37,12 +37,13 @@ import {
   readMeasurementDays,
   readMeasurementPage,
   readMeasurementRange,
+  readPreviousMeasurement,
 } from "@/lib/services/measurements";
 import { listTrainerLinks } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
 import { measurementNoticeMessage } from "@/lib/measurement-notice";
 import { preferredTraineeId, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
-import type { MeasurementEntry, MeasurementWithDeltas, Profile } from "@/types";
+import type { MeasurementEntry, MeasurementField, MeasurementWithDeltas, Profile } from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
@@ -75,6 +76,7 @@ let measurementsLoaded = false;
 let entries: MeasurementWithDeltas[] = [];
 let editingEntry: MeasurementEntry | null = null;
 let confirmingEntry: MeasurementEntry | null = null;
+let previousEntry: Pick<MeasurementEntry, MeasurementField> | null = null;
 let dates: string[] = [];
 let page = 1;
 let pageCount = 1;
@@ -174,6 +176,17 @@ if (supabase && user) {
         if (listed.ok && editId === null) {
           await readInitialChart(supabase, user.id, user.id, month);
         }
+        if (editId === null) {
+          // The add form starts from the trainee's latest entry; a failed read leaves the fields empty.
+          // measured_on is the trainee's wall clock, which can run up to 14 hours ahead of UTC,
+          // so the bound sits past the latest minute the save endpoint accepts.
+          const latestBound = new Date(now.getTime() + (14 * 60 + 1) * 60 * 1000).toISOString().slice(0, 19);
+          const read = await readPreviousMeasurement(supabase, user.id, latestBound);
+          if (read.ok && read.entry !== null) {
+            const { weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm } = read.entry;
+            previousEntry = { weight_kg, chest_cm, waist_cm, arms_cm, thigh_cm, calf_cm, hips_cm, navel_cm };
+          }
+        }
         if (editId !== null) {
           const loaded = await getMeasurement(supabase, user.id, editId);
           editingEntry = loaded.ok ? loaded.entry : null;
@@ -247,6 +260,7 @@ if (supabase && user) {
       notice={measurementNotice}
       editingEntry={editingEntry}
       confirmingEntry={confirmingEntry}
+      previousEntry={previousEntry}
       accountUserId={traineeAccountId}
       subjectTraineeId={traineeAccountId}
       addFormOpen={traineeAccountId ? preferredAddForm(traineeAccountId) : null}
