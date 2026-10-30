@@ -115,7 +115,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-40 | improvment-for-status-collaborations | user can see each collaboration's access per dashboard in an Access column of Hub → Collaborations — Measurements now, with Nutrition, Training, and Planning laid out for later — where finding a trainee asks for read access to measurements, a linked trainee reads Read, each dashboard has its own action button, access types that do not fit collapse to an access icon that opens a dialog, and Revoke replaces Unlink and Remove in the panel, notifications, and toasts | S-37, S-39 | MS-31 | done |
 | S-41 | visualization-of-measurements | user can open a collapsible Charts tile above the add form with eight line charts, one per measurement field, for the selected week, month, year, or years, hover a line to read each entry and its difference versus the previous entry, chart only the entries checked in the list with Visualize, return to the whole month with Clear, and find those choices kept by the browser | S-23, S-27, S-33 | MS-32 | done |
 | S-42 | prev-values-for-new-measurement | user can open the add form with weight and every circumference already filled from their previous entry, and find the fields empty when there is no earlier entry | S-02, S-26, S-33 | MS-33 | done |
-| S-43 | reduce-supabase-round-trips | user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before | S-24, S-42 | MS-34 | in-progress |
+| S-43 | reduce-supabase-round-trips | user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before | S-24, S-42 | MS-34 | done |
 
 ## Streams
 
@@ -666,7 +666,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** whether the hosted Supabase project already signs JWTs with asymmetric keys (`getClaims()` verifies locally only then; otherwise it still calls the auth server); how much Cloudflare Smart Placement saves for this Supabase region; whether the profile read shared by the page and the top bar is worth deduplicating here or later.
 - **Risk:** `getClaims()` trusts a token until it expires, so a session revoked on the server stays valid for up to `jwt_expiry` (1 hour); protected routes and API routes must still refuse a missing or invalid token. Running reads in parallel must keep each read's error handling and the page's current output, including the edit and delete views.
-- **Status:** planning
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -779,3 +779,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-40: user can see each collaboration's access per dashboard in an Access column of Hub → Collaborations — Measurements now, with Nutrition, Training, and Planning laid out for later — where finding a trainee asks for read access to measurements, a linked trainee reads Read, each dashboard has its own action button, access types that do not fit collapse to an access icon that opens a dialog, and Revoke replaces Unlink and Remove in the panel, notifications, and toasts** — Archived 2026-10-28 → `context/archive/2026-10-28-improvment-for-status-collaborations/`. Lesson: —.
 - **S-41: user can open a collapsible Charts tile above the add form with eight line charts, one per measurement field, for the selected week, month, year, or years, hover a line to read each entry and its difference versus the previous entry, chart only the entries checked in the list with Visualize, return to the whole month with Clear, and find those choices kept by the browser** — Archived 2026-10-28 → `context/archive/2026-10-28-visualization-of-measurements/`. Lesson: —.
 - **S-42: user can open the add form with weight and every circumference already filled from their previous entry, and find the fields empty when there is no earlier entry** — Archived 2026-10-29 → `context/archive/2026-10-29-prev-values-for-new-measurement/`. Lesson: —.
+- **S-43: user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before** — Archived 2026-10-29 → `context/archive/2026-10-29-reduce-supabase-round-trips/`. Lesson: —.

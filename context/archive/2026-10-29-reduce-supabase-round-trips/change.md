@@ -1,10 +1,10 @@
 ---
 change_id: reduce-supabase-round-trips
 title: Reduce sequential Supabase round trips per request
-status: impl_reviewed
+status: archived
 created: 2026-10-29
 updated: 2026-10-29
-archived_at: null
+archived_at: 2026-10-29T20:28:19Z
 ---
 
 ## Notes
