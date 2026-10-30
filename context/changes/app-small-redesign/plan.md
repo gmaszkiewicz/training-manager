@@ -315,19 +315,19 @@ None. No database or API changes.
 
 #### Automated
 
-- [ ] 3.1 Lint passes: `npm run lint`
-- [ ] 3.2 Token check passes: `npm run check:home-tokens`
-- [ ] 3.3 Type check passes: `npx astro check`
-- [ ] 3.4 Unit tests pass: `npm test`
-- [ ] 3.5 Build succeeds: `npm run build`
-- [ ] 3.6 Existing Playwright specs pass: `npx playwright test`
+- [x] 3.1 Lint passes: `npm run lint`
+- [x] 3.2 Token check passes: `npm run check:home-tokens`
+- [x] 3.3 Type check passes: `npx astro check`
+- [x] 3.4 Unit tests pass: `npm test`
+- [x] 3.5 Build succeeds: `npm run build`
+- [x] 3.6 Existing Playwright specs pass: `npx playwright test`
 
 #### Manual
 
-- [ ] 3.7 The switch shows as a guest on `/` and `/auth/signin`, and signed in on `/measurements`, at desktop width and at 360×800, without crowding the hamburger, bell and avatar
-- [ ] 3.8 Choosing Dark, Light and System updates the page immediately; System follows an OS change live
-- [ ] 3.9 Every screen (home, auth, measurements with charts, profile, settings, Hub, notifications, trainer preview) is readable in dark, including dropdowns, toasts, tables and chart colours
-- [ ] 3.10 No hydration warning appears in the console on load in dark
+- [x] 3.7 The switch shows as a guest on `/` and `/auth/signin`, and signed in on `/measurements`, at desktop width and at 360×800, without crowding the hamburger, bell and avatar
+- [x] 3.8 Choosing Dark, Light and System updates the page immediately; System follows an OS change live
+- [x] 3.9 Every screen (home, auth, measurements with charts, profile, settings, Hub, notifications, trainer preview) is readable in dark, including dropdowns, toasts, tables and chart colours
+- [x] 3.10 No hydration warning appears in the console on load in dark
 
 ### Phase 4: E2E coverage
 

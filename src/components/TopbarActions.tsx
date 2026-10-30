@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import NotificationBell from "@/components/NotificationBell";
+import ThemeSwitch from "@/components/ThemeSwitch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -169,6 +170,7 @@ export default function TopbarActions({ greeting, name, links, account }: Props)
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <ThemeSwitch />
         {account ? <NotificationBell notifications={account.notifications} /> : null}
         {account ? <AccountMenu account={account} /> : null}
       </div>
