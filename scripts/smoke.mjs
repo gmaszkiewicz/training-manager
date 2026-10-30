@@ -58,7 +58,8 @@ const profileEmail = `smoke-profile-${Date.now()}@example.com`;
 const profilePassword = "Smoke-Profile-Current1!";
 const profileNextPassword = "Smoke-Profile-Nextword1!";
 const profileFirstName = "Smoke";
-const profileLastName = "Trainee";
+// Not "Trainee": the read-only Role field on /profile renders value="Trainee".
+const profileLastName = "Tester";
 const jar = new Map();
 const jarA = new Map();
 const jarB = new Map();
@@ -115,7 +116,8 @@ function utcMinute(date) {
   return `${date.getUTCFullYear()}-${month}-${day}T${hour}:${minute}`;
 }
 
-const futureDate = utcDatePlusDays(2);
+// Past the date picker's grid, which runs up to six days into next month.
+const futureDate = utcDatePlusDays(40);
 const futureMeasuredOn = `${futureDate}T00:00`;
 const laterInstant = new Date();
 laterInstant.setUTCSeconds(0, 0);
