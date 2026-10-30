@@ -1,4 +1,15 @@
-import { Menu } from "lucide-react";
+import {
+  ChartNoAxesColumnIncreasing,
+  House,
+  LayoutGrid,
+  LogIn,
+  LogOut,
+  Menu,
+  Settings,
+  UserPlus,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 import NotificationBell from "@/components/NotificationBell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,10 +21,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { TopbarAccount, TopbarLink, TopbarModel } from "@/lib/topbar";
+import type { TopbarAccount, TopbarAccountItem, TopbarLink, TopbarModel } from "@/lib/topbar";
 import { cn } from "@/lib/utils";
 
 type Props = TopbarModel;
+
+// Measurements uses the bars from the logo and favicon; Sign in and Sign up match their form buttons.
+const sectionIcons: Record<TopbarLink["id"] | TopbarAccountItem["id"], LucideIcon> = {
+  home: House,
+  measurements: ChartNoAxesColumnIncreasing,
+  signin: LogIn,
+  signup: UserPlus,
+  profile: UserRound,
+  hub: LayoutGrid,
+  settings: Settings,
+};
+
+function SectionIcon({ id }: { id: TopbarLink["id"] | TopbarAccountItem["id"] }) {
+  const Icon = sectionIcons[id];
+  return <Icon aria-hidden="true" />;
+}
 
 function linkClassName(current: boolean): string | undefined {
   return cn(current && "text-card-foreground font-semibold");
@@ -23,6 +50,7 @@ function NavLink({ link }: { link: TopbarLink }) {
   return (
     <Button variant="ghost" asChild>
       <a href={link.href} aria-current={link.current ? "page" : undefined} className={linkClassName(link.current)}>
+        <SectionIcon id={link.id} />
         {link.label}
       </a>
     </Button>
@@ -77,6 +105,7 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
               aria-current={item.current ? "page" : undefined}
               className={linkClassName(item.current)}
             >
+              <SectionIcon id={item.id} />
               {item.label}
             </a>
           </DropdownMenuItem>
@@ -85,6 +114,7 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
         <form method="POST" action="/api/auth/signout">
           <DropdownMenuItem asChild>
             <button type="submit" className="w-full">
+              <LogOut aria-hidden="true" />
               Sign out
             </button>
           </DropdownMenuItem>
@@ -132,6 +162,7 @@ export default function TopbarActions({ greeting, name, links, account }: Props)
                   aria-current={link.current ? "page" : undefined}
                   className={linkClassName(link.current)}
                 >
+                  <SectionIcon id={link.id} />
                   {link.label}
                 </a>
               </DropdownMenuItem>

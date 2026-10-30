@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 
 const FILES = [
   "src/components/Welcome.astro",
+  "src/components/Logo.astro",
   "src/components/Topbar.astro",
   "src/pages/index.astro",
   "src/components/home/HomeActions.tsx",

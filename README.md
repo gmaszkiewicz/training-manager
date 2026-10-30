@@ -1,5 +1,3 @@
-# Training Manager
-
 ![](./public/template.png)
 
 A trainee records body measurements and sees the difference versus the previous entry. A trainer can preview a linked trainee's list.

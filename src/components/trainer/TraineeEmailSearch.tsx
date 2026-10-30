@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import { Button } from "@/components/ui/button";
@@ -166,22 +167,29 @@ export default function TraineeEmailSearch({ idPrefix, serverError = null }: Pro
 
   return (
     <div ref={rootRef} className="relative z-40 mb-2">
-      <Input
-        id={`${idPrefix}email`}
-        name="email"
-        type="text"
-        inputMode="email"
-        autoComplete="off"
-        aria-label="Email"
-        aria-invalid={invalid ? true : undefined}
-        placeholder="Find trainee by email"
-        value={email}
-        onFocus={reopenList}
-        onPointerDown={reopenList}
-        onChange={(event) => {
-          onEmailChange(event.currentTarget.value);
-        }}
-      />
+      <div className="relative">
+        <Input
+          id={`${idPrefix}email`}
+          name="email"
+          type="text"
+          inputMode="email"
+          autoComplete="off"
+          aria-label="Email"
+          aria-invalid={invalid ? true : undefined}
+          placeholder="Find trainee by email"
+          className="pr-9"
+          value={email}
+          onFocus={reopenList}
+          onPointerDown={reopenList}
+          onChange={(event) => {
+            onEmailChange(event.currentTarget.value);
+          }}
+        />
+        <Search
+          aria-hidden="true"
+          className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
+        />
+      </div>
       {open && emails.length > 0 ? (
         <div className="bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-full flex-col gap-2 rounded-md border p-2 shadow-md">
           {emails.map((match) => (

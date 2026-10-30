@@ -1,6 +1,7 @@
 ---
 import Topbar from "@/components/Topbar.astro";
 import HomeActions from "@/components/home/HomeActions";
+import Logo from "@/components/Logo.astro";
 
 const signedIn = Boolean(Astro.locals.user);
 ---
@@ -12,6 +13,7 @@ const signedIn = Boolean(Astro.locals.user);
 </div>
 <div class="flex justify-center px-4 pb-4">
   <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border px-4 py-8 text-center">
+    <Logo class="mx-auto mb-6" />
     <h1 class="mb-6 text-5xl leading-tight font-bold sm:text-6xl">Training Manager</h1>
     <p class:list={["text-muted-foreground mx-auto max-w-2xl text-lg sm:text-xl", !signedIn && "mb-10"]}>
       A trainee records body measurements and sees the up/down difference versus the previous entry. A trainer who

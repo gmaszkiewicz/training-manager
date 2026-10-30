@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Ellipsis } from "lucide-react";
+import { Check, Ellipsis, Trash2, X, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,6 +23,7 @@ interface Props {
 
 interface PostAction {
   label: string;
+  icon: LucideIcon;
   action: string;
   intent?: "cancel" | "decline";
 }
@@ -32,11 +33,11 @@ function postActionsFor(viewerRole: Props["viewerRole"], granted: boolean): Post
     return [];
   }
   if (viewerRole === "trainer") {
-    return [{ label: "Cancel request", action: "/api/collaborations/remove", intent: "cancel" }];
+    return [{ label: "Cancel request", icon: X, action: "/api/collaborations/remove", intent: "cancel" }];
   }
   return [
-    { label: "Accept request", action: "/api/collaborations/accept" },
-    { label: "Decline request", action: "/api/collaborations/remove", intent: "decline" },
+    { label: "Accept request", icon: Check, action: "/api/collaborations/accept" },
+    { label: "Decline request", icon: X, action: "/api/collaborations/remove", intent: "decline" },
   ];
 }
 
@@ -93,7 +94,10 @@ export default function CollaborationRowActions({
         <DropdownMenuContent align="end">
           {granted ? (
             <DropdownMenuItem asChild>
-              <a href={confirmHref}>Revoke</a>
+              <a href={confirmHref}>
+                <Trash2 aria-hidden="true" />
+                Revoke
+              </a>
             </DropdownMenuItem>
           ) : (
             postActions.map((item, index) => (
@@ -103,6 +107,7 @@ export default function CollaborationRowActions({
                   formRefs.current[index]?.requestSubmit();
                 }}
               >
+                <item.icon aria-hidden="true" />
                 {item.label}
               </DropdownMenuItem>
             ))

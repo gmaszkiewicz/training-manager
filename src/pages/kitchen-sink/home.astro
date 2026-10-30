@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import HomeActions from "@/components/home/HomeActions";
+import Logo from "@/components/Logo.astro";
 import ProfileDetailsForm from "@/components/profile/ProfileDetailsForm";
 import Topbar from "@/components/Topbar.astro";
 import { Button } from "@/components/ui/button";
@@ -359,9 +360,10 @@ const trainerRole: Profile["role"] = "trainer";
           Default
         </h2>
         <p class="text-muted-foreground text-sm">
-          Signed-out home: heading, paragraph, and HomeActions with signedIn false.
+          Signed-out home: logo, heading, paragraph, and HomeActions with signedIn false.
         </p>
         <div class="mx-auto flex w-full max-w-4xl flex-col items-center justify-center px-4 py-16 text-center">
+          <Logo class="mb-6" />
           <h1 class="mb-6 text-5xl leading-tight font-bold sm:text-6xl lg:text-7xl">Training Manager</h1>
           <p class="text-muted-foreground mb-10 max-w-2xl text-lg sm:text-xl">
             A trainee records body measurements and sees the up/down difference versus the previous entry. A trainer who

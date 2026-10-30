@@ -281,18 +281,18 @@ None. No database or API changes.
 
 #### Automated
 
-- [ ] 1.1 Lint passes: `npm run lint`
-- [ ] 1.2 Token check passes: `npm run check:home-tokens`
-- [ ] 1.3 Type check passes: `npx astro check`
-- [ ] 1.4 Unit tests pass: `npm test`
-- [ ] 1.5 Build succeeds: `npm run build`
-- [ ] 1.6 Existing Playwright specs pass: `npx playwright test`
+- [x] 1.1 Lint passes: `npm run lint`
+- [x] 1.2 Token check passes: `npm run check:home-tokens`
+- [x] 1.3 Type check passes: `npx astro check`
+- [x] 1.4 Unit tests pass: `npm test`
+- [x] 1.5 Build succeeds: `npm run build`
+- [x] 1.6 Existing Playwright specs pass: `npx playwright test`
 
 #### Manual
 
-- [ ] 1.7 Icons appear in the top bar links, avatar menu, phone hamburger menu, account tabs, Hub rows, notifications and measurement browser, aligned with their labels
-- [ ] 1.8 The Logo shows on the signed-out home card and in `/kitchen-sink/home`
-- [ ] 1.9 The browser tab shows the new favicon
+- [x] 1.7 Icons appear in the top bar links, avatar menu, phone hamburger menu, account tabs, Hub rows, notifications and measurement browser, aligned with their labels
+- [x] 1.8 The Logo shows on the signed-out home card and in `/kitchen-sink/home`
+- [x] 1.9 The browser tab shows the new favicon
 
 ### Phase 2: Theme engine
 

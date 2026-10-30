@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCheck, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -214,6 +214,7 @@ export default function NotificationsTable({ page, initialSelectedIds = [], init
         <form method="POST" action="/api/notifications/read">
           <HiddenSelection ids={visibleSelected} page={page} />
           <Button type="submit" variant="outline" size="sm" disabled={selectedCount === 0}>
+            <CheckCheck aria-hidden="true" />
             Mark as read
           </Button>
         </form>
@@ -227,6 +228,7 @@ export default function NotificationsTable({ page, initialSelectedIds = [], init
             setConfirmOpen(true);
           }}
         >
+          <Trash2 aria-hidden="true" />
           Delete
         </Button>
         <form method="GET" action="/hub/notifications" className="ml-auto">
