@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/db/database.types";
+import { parseProfileRole } from "@/lib/profile-role";
 import type { Profile, ProfileNames } from "@/types";
 
 export async function readProfileNames(
@@ -19,6 +20,31 @@ export async function readProfileNames(
     }
 
     return { firstName: data.first_name, lastName: data.last_name };
+  } catch {
+    return null;
+  }
+}
+
+// One read of the profile row for /profile: the names to edit and the read-only role.
+export async function readProfileDetails(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<{ names: ProfileNames; role: Profile["role"] | null } | null> {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("first_name, last_name, role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      names: { firstName: data.first_name, lastName: data.last_name },
+      role: parseProfileRole(data.role),
+    };
   } catch {
     return null;
   }
@@ -68,9 +94,8 @@ export async function readTopbarProfile(
       return null;
     }
 
-    const role = data.role === "trainee" || data.role === "trainer" ? data.role : null;
     return {
-      role,
+      role: parseProfileRole(data.role),
       names: { firstName: data.first_name, lastName: data.last_name },
       avatarPath: data.avatar_path,
     };

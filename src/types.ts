@@ -29,6 +29,7 @@ export interface ProfileDetails {
   email: string;
   firstName: string | null;
   lastName: string | null;
+  role: Profile["role"] | null;
 }
 
 export type ProfileNames = Pick<ProfileDetails, "firstName" | "lastName">;

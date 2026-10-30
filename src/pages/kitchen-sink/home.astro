@@ -1,8 +1,14 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import HomeActions from "@/components/home/HomeActions";
+import ProfileDetailsForm from "@/components/profile/ProfileDetailsForm";
 import Topbar from "@/components/Topbar.astro";
 import { Button } from "@/components/ui/button";
+import type { Profile } from "@/types";
+
+// Expressions, not string literals: jsx-a11y reads a literal `role` prop as an ARIA role.
+const traineeRole: Profile["role"] = "trainee";
+const trainerRole: Profile["role"] = "trainer";
 ---
 
 <Layout title="Kitchen sink — home">
@@ -316,6 +322,35 @@ import { Button } from "@/components/ui/button";
               },
             }}
           />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-profile-details">
+        <h2 id="state-profile-details" class="border-border border-b pb-2 text-lg font-semibold">
+          Profile details
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          The Details tab of <code class="text-foreground">/profile</code>: a read-only Role field above the read-only
+          Email field, both with the same muted look. Static props only; this sink does not read the session, and the
+          forms are inert so Save cannot write the viewer's names.
+        </p>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainee Ada Lovelace: Role reads "Trainee" with the PersonStanding icon.
+          </p>
+          <div class="border-border bg-card text-card-foreground max-w-measurement rounded-xl border p-4" inert>
+            <ProfileDetailsForm email="ada@example.com" role={traineeRole} firstName="Ada" lastName="Lovelace" />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <p class="text-muted-foreground text-sm">
+            Trainer Grace Hopper: Role reads "Trainer" with the Dumbbell icon.
+          </p>
+          <div class="border-border bg-card text-card-foreground max-w-measurement rounded-xl border p-4" inert>
+            <ProfileDetailsForm email="grace@example.com" role={trainerRole} firstName="Grace" lastName="Hopper" />
+          </div>
         </div>
       </section>
 

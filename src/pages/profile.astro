@@ -5,21 +5,22 @@ import ProfileDetailsForm from "@/components/profile/ProfileDetailsForm";
 import Topbar from "@/components/Topbar.astro";
 import { PROFILE_TABS } from "@/lib/profile-tabs";
 import { PROFILE_SAVED_NOTICE, PROFILE_UNAVAILABLE_ERROR, profilePageError } from "@/lib/profile-form";
-import { readProfileNames } from "@/lib/services/profile-details";
+import { readProfileDetails } from "@/lib/services/profile-details";
 import { createClient } from "@/lib/supabase";
 import type { ProfileDetails } from "@/types";
 
 const error = Astro.url.searchParams.get("error");
 const notice = Astro.url.searchParams.get("notice");
 const user = Astro.locals.user;
-const details: ProfileDetails = { email: user?.email ?? "", firstName: null, lastName: null };
+const details: ProfileDetails = { email: user?.email ?? "", firstName: null, lastName: null, role: null };
 let unavailable = false;
 if (user) {
   const supabase = createClient(Astro.request.headers, Astro.cookies);
-  const names = supabase ? await readProfileNames(supabase, user.id) : null;
-  if (names) {
-    details.firstName = names.firstName;
-    details.lastName = names.lastName;
+  const profile = supabase ? await readProfileDetails(supabase, user.id) : null;
+  if (profile) {
+    details.firstName = profile.names.firstName;
+    details.lastName = profile.names.lastName;
+    details.role = profile.role;
   } else {
     // Blank fields here would look like the saved state, and Save would wipe the stored names.
     unavailable = true;
@@ -39,6 +40,7 @@ const serverError = profilePageError(error) ?? (unavailable ? PROFILE_UNAVAILABL
       <AccountTabs tabs={PROFILE_TABS} current="details">
         <ProfileDetailsForm
           email={details.email}
+          role={details.role}
           firstName={details.firstName}
           lastName={details.lastName}
           serverError={serverError}
