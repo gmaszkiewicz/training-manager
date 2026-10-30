@@ -298,18 +298,18 @@ None. No database or API changes.
 
 #### Automated
 
-- [x] 2.1 Theme helper unit tests pass: `npm test`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Token check passes: `npm run check:home-tokens`
-- [x] 2.4 Type check passes: `npx astro check`
-- [x] 2.5 Build succeeds: `npm run build`
-- [x] 2.6 No hex colours remain in `src/components/Banner.astro`
+- [x] 2.1 Theme helper unit tests pass: `npm test` — 85c3e84
+- [x] 2.2 Lint passes: `npm run lint` — 85c3e84
+- [x] 2.3 Token check passes: `npm run check:home-tokens` — 85c3e84
+- [x] 2.4 Type check passes: `npx astro check` — 85c3e84
+- [x] 2.5 Build succeeds: `npm run build` — 85c3e84
+- [x] 2.6 No hex colours remain in `src/components/Banner.astro` — 85c3e84
 
 #### Manual
 
-- [x] 2.7 With the OS in dark mode and no stored value, every page loads dark with no light flash on hard reload
-- [x] 2.8 Setting `localStorage.theme = "light"` in devtools and reloading forces light while the OS is dark
-- [x] 2.9 The Banner (force a missing config locally) is readable in both themes
+- [x] 2.7 With the OS in dark mode and no stored value, every page loads dark with no light flash on hard reload — 85c3e84
+- [x] 2.8 Setting `localStorage.theme = "light"` in devtools and reloading forces light while the OS is dark — 85c3e84
+- [x] 2.9 The Banner (force a missing config locally) is readable in both themes — 85c3e84
 
 ### Phase 3: Theme switch
 

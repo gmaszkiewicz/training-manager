@@ -96,7 +96,7 @@ const requestNotice =
             <form method="POST" action="/api/trainer-links" class="space-y-3">
               {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
               <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
-              <Button type="submit" variant="smoke" className="w-full">
+              <Button type="submit" className="w-full">
                 Request read access
               </Button>
             </form>
