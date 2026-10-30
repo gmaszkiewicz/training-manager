@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Mail, Save, User } from "lucide-react";
+import { Dumbbell, Mail, PersonStanding, Save, User } from "lucide-react";
 import { FormErrorToasts, useFormErrors } from "@/components/auth/FormErrorToasts";
 import { FormField } from "@/components/auth/FormField";
 import { SubmitButton } from "@/components/auth/SubmitButton";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { submitAuthForm } from "@/lib/auth-form";
 import { FIRST_NAME_LONG_ERROR, LAST_NAME_LONG_ERROR, profileNamesSchema } from "@/lib/profile-form";
+import { profileRoleLabel } from "@/lib/profile-role";
+import type { Profile } from "@/types";
 
 type Field = "firstName" | "lastName";
 
@@ -22,6 +24,7 @@ function fieldForServerError(message: string | null | undefined): Field | null {
 
 interface Props {
   email: string;
+  role?: Profile["role"] | null;
   firstName: string | null;
   lastName: string | null;
   serverError?: string | null;
@@ -29,7 +32,15 @@ interface Props {
   unavailable?: boolean;
 }
 
-export default function ProfileDetailsForm({ email, firstName, lastName, serverError, notice, unavailable }: Props) {
+export default function ProfileDetailsForm({
+  email,
+  role,
+  firstName,
+  lastName,
+  serverError,
+  notice,
+  unavailable,
+}: Props) {
   const [first, setFirst] = useState(firstName ?? "");
   const [last, setLast] = useState(lastName ?? "");
   const [saving, setSaving] = useState(false);
@@ -82,6 +93,26 @@ export default function ProfileDetailsForm({ email, firstName, lastName, serverE
 
   return (
     <form method="POST" action="/api/profile" className="space-y-4" onSubmit={handleSubmit} noValidate>
+      {role ? (
+        <div>
+          <Label htmlFor="role" className="text-muted-foreground mb-1">
+            Role
+          </Label>
+          <div className="relative">
+            <span className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2">
+              {role === "trainer" ? <Dumbbell className="size-4" /> : <PersonStanding className="size-4" />}
+            </span>
+            <Input
+              id="role"
+              type="text"
+              value={profileRoleLabel(role)}
+              readOnly
+              className="bg-muted text-muted-foreground pl-10"
+            />
+          </div>
+        </div>
+      ) : null}
+
       <div>
         <Label htmlFor="email" className="text-muted-foreground mb-1">
           Email

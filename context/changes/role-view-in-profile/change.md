@@ -1,7 +1,7 @@
 ---
 change_id: role-view-in-profile
 title: Show the read-only app role above the email in Profile → Details
-status: planned
+status: implementing
 created: 2026-10-30
 updated: 2026-10-30
 archived_at: null

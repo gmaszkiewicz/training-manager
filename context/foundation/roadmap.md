@@ -117,7 +117,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-41 | visualization-of-measurements | user can open a collapsible Charts tile above the add form with eight line charts, one per measurement field, for the selected week, month, year, or years, hover a line to read each entry and its difference versus the previous entry, chart only the entries checked in the list with Visualize, return to the whole month with Clear, and find those choices kept by the browser | S-23, S-27, S-33 | MS-32 | done |
 | S-42 | prev-values-for-new-measurement | user can open the add form with weight and every circumference already filled from their previous entry, and find the fields empty when there is no earlier entry | S-02, S-26, S-33 | MS-33 | done |
 | S-43 | reduce-supabase-round-trips | user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before | S-24, S-42 | MS-34 | done |
-| S-44 | role-view-in-profile | user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons | S-35 | MS-35 | planning |
+| S-44 | role-view-in-profile | user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons | S-35 | MS-35 | in-progress |
 
 ## Streams
 
@@ -680,7 +680,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** the role's display copy ("Trainee"/"Trainer" or another wording); which lucide icon stands for each role beside the existing `Mail` and `User` icons.
 - **Risk:** The role must come from the server-side profile, not a form value, and the field must not be submitted with the Details form, so it cannot become a way to change the role.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Backlog Handoff
 

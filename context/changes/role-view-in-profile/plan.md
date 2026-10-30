@@ -179,15 +179,15 @@ None. `profiles.role` already exists.
 
 #### Automated
 
-- [ ] 1.1 Unit tests pass, including the new `profile-role.test.ts`: `npm test`
-- [ ] 1.2 Lint passes: `npm run lint`
-- [ ] 1.3 Type check passes: `npx astro check`
-- [ ] 1.4 Build passes: `npm run build`
+- [x] 1.1 Unit tests pass, including the new `profile-role.test.ts`: `npm test`
+- [x] 1.2 Lint passes: `npm run lint`
+- [x] 1.3 Type check passes: `npx astro check`
+- [x] 1.4 Build passes: `npm run build`
 
 #### Manual
 
-- [ ] 1.5 Signed in as a trainee, `/profile` shows Role "Trainee" with the PersonStanding icon directly above Email, styled the same as Email and not editable
-- [ ] 1.6 Saving names still works, and the DevTools request payload contains only `firstName` and `lastName`
+- [x] 1.5 Signed in as a trainee, `/profile` shows Role "Trainee" with the PersonStanding icon directly above Email, styled the same as Email and not editable
+- [x] 1.6 Saving names still works, and the DevTools request payload contains only `firstName` and `lastName`
 
 ### Phase 2: Browser and visual coverage
 
