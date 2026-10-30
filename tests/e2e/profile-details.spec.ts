@@ -15,12 +15,11 @@ test("the Details tab shows the trainee's role read-only above Email", async ({ 
   await expect(role).not.toHaveAttribute("name");
   await expect(email).toBeVisible();
 
-  // Role comes before Email in document order.
-  const roleHandle = await role.elementHandle();
-  const precedesEmail = await email.evaluate(
-    (emailInput, roleInput) =>
-      Boolean(emailInput.compareDocumentPosition(roleInput) & Node.DOCUMENT_POSITION_PRECEDING),
-    roleHandle,
-  );
-  expect(precedesEmail).toBe(true);
+  // Role sits above Email.
+  const roleBox = await role.boundingBox();
+  const emailBox = await email.boundingBox();
+  if (roleBox === null || emailBox === null) {
+    throw new Error("missing bounding box");
+  }
+  expect(roleBox.y).toBeLessThan(emailBox.y);
 });
