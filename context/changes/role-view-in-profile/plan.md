@@ -179,25 +179,25 @@ None. `profiles.role` already exists.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass, including the new `profile-role.test.ts`: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type check passes: `npx astro check`
-- [x] 1.4 Build passes: `npm run build`
+- [x] 1.1 Unit tests pass, including the new `profile-role.test.ts`: `npm test` — 786c13c
+- [x] 1.2 Lint passes: `npm run lint` — 786c13c
+- [x] 1.3 Type check passes: `npx astro check` — 786c13c
+- [x] 1.4 Build passes: `npm run build` — 786c13c
 
 #### Manual
 
-- [x] 1.5 Signed in as a trainee, `/profile` shows Role "Trainee" with the PersonStanding icon directly above Email, styled the same as Email and not editable
-- [x] 1.6 Saving names still works, and the DevTools request payload contains only `firstName` and `lastName`
+- [x] 1.5 Signed in as a trainee, `/profile` shows Role "Trainee" with the PersonStanding icon directly above Email, styled the same as Email and not editable — 786c13c
+- [x] 1.6 Saving names still works, and the DevTools request payload contains only `firstName` and `lastName` — 786c13c
 
 ### Phase 2: Browser and visual coverage
 
 #### Automated
 
-- [ ] 2.1 New spec passes: `npx playwright test tests/e2e/profile-details.spec.ts`
-- [ ] 2.2 Home token check passes: `npm run check:home-tokens`
-- [ ] 2.3 Lint passes: `npm run lint`
-- [ ] 2.4 Build passes: `npm run build`
+- [x] 2.1 New spec passes: `npx playwright test tests/e2e/profile-details.spec.ts`
+- [x] 2.2 Home token check passes: `npm run check:home-tokens`
+- [x] 2.3 Lint passes: `npm run lint`
+- [x] 2.4 Build passes: `npm run build`
 
 #### Manual
 
-- [ ] 2.5 `/kitchen-sink/home` shows Details for a trainee (PersonStanding, "Trainee") and a trainer (Dumbbell, "Trainer"), both matching the Email field's look in light and dark themes
+- [x] 2.5 `/kitchen-sink/home` shows Details for a trainee (PersonStanding, "Trainee") and a trainer (Dumbbell, "Trainer"), both matching the Email field's look in light and dark themes
