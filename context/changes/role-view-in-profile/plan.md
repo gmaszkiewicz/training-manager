@@ -193,11 +193,11 @@ None. `profiles.role` already exists.
 
 #### Automated
 
-- [x] 2.1 New spec passes: `npx playwright test tests/e2e/profile-details.spec.ts`
-- [x] 2.2 Home token check passes: `npm run check:home-tokens`
-- [x] 2.3 Lint passes: `npm run lint`
-- [x] 2.4 Build passes: `npm run build`
+- [x] 2.1 New spec passes: `npx playwright test tests/e2e/profile-details.spec.ts` — 7ce9cbf
+- [x] 2.2 Home token check passes: `npm run check:home-tokens` — 7ce9cbf
+- [x] 2.3 Lint passes: `npm run lint` — 7ce9cbf
+- [x] 2.4 Build passes: `npm run build` — 7ce9cbf
 
 #### Manual
 
-- [x] 2.5 `/kitchen-sink/home` shows Details for a trainee (PersonStanding, "Trainee") and a trainer (Dumbbell, "Trainer"), both matching the Email field's look in light and dark themes
+- [x] 2.5 `/kitchen-sink/home` shows Details for a trainee (PersonStanding, "Trainee") and a trainer (Dumbbell, "Trainer"), both matching the Email field's look in light and dark themes — 7ce9cbf
