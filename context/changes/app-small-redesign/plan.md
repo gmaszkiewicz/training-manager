@@ -281,35 +281,35 @@ None. No database or API changes.
 
 #### Automated
 
-- [x] 1.1 Lint passes: `npm run lint`
-- [x] 1.2 Token check passes: `npm run check:home-tokens`
-- [x] 1.3 Type check passes: `npx astro check`
-- [x] 1.4 Unit tests pass: `npm test`
-- [x] 1.5 Build succeeds: `npm run build`
-- [x] 1.6 Existing Playwright specs pass: `npx playwright test`
+- [x] 1.1 Lint passes: `npm run lint` — cab044f
+- [x] 1.2 Token check passes: `npm run check:home-tokens` — cab044f
+- [x] 1.3 Type check passes: `npx astro check` — cab044f
+- [x] 1.4 Unit tests pass: `npm test` — cab044f
+- [x] 1.5 Build succeeds: `npm run build` — cab044f
+- [x] 1.6 Existing Playwright specs pass: `npx playwright test` — cab044f
 
 #### Manual
 
-- [x] 1.7 Icons appear in the top bar links, avatar menu, phone hamburger menu, account tabs, Hub rows, notifications and measurement browser, aligned with their labels
-- [x] 1.8 The Logo shows on the signed-out home card and in `/kitchen-sink/home`
-- [x] 1.9 The browser tab shows the new favicon
+- [x] 1.7 Icons appear in the top bar links, avatar menu, phone hamburger menu, account tabs, Hub rows, notifications and measurement browser, aligned with their labels — cab044f
+- [x] 1.8 The Logo shows on the signed-out home card and in `/kitchen-sink/home` — cab044f
+- [x] 1.9 The browser tab shows the new favicon — cab044f
 
 ### Phase 2: Theme engine
 
 #### Automated
 
-- [ ] 2.1 Theme helper unit tests pass: `npm test`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Token check passes: `npm run check:home-tokens`
-- [ ] 2.4 Type check passes: `npx astro check`
-- [ ] 2.5 Build succeeds: `npm run build`
-- [ ] 2.6 No hex colours remain in `src/components/Banner.astro`
+- [x] 2.1 Theme helper unit tests pass: `npm test`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Token check passes: `npm run check:home-tokens`
+- [x] 2.4 Type check passes: `npx astro check`
+- [x] 2.5 Build succeeds: `npm run build`
+- [x] 2.6 No hex colours remain in `src/components/Banner.astro`
 
 #### Manual
 
-- [ ] 2.7 With the OS in dark mode and no stored value, every page loads dark with no light flash on hard reload
-- [ ] 2.8 Setting `localStorage.theme = "light"` in devtools and reloading forces light while the OS is dark
-- [ ] 2.9 The Banner (force a missing config locally) is readable in both themes
+- [x] 2.7 With the OS in dark mode and no stored value, every page loads dark with no light flash on hard reload
+- [x] 2.8 Setting `localStorage.theme = "light"` in devtools and reloading forces light while the OS is dark
+- [x] 2.9 The Banner (force a missing config locally) is readable in both themes
 
 ### Phase 3: Theme switch
 
