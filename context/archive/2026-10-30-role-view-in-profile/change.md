@@ -1,10 +1,10 @@
 ---
 change_id: role-view-in-profile
 title: Show the read-only app role above the email in Profile → Details
-status: impl_reviewed
+status: archived
 created: 2026-10-30
 updated: 2026-10-30
-archived_at: null
+archived_at: 2026-10-30T05:57:44Z
 ---
 
 ## Notes
