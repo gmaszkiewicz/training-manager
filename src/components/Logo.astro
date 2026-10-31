@@ -1,0 +1,18 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<!-- Progres mark: rising bars with a chart-2 trend arrow. public/favicon.svg is its 16 px cut. -->
+<svg viewBox="0 0 48 48" aria-hidden="true" class:list={cn("size-16 shrink-0", className)}>
+  <rect class="fill-primary" width="48" height="48" rx="11"></rect>
+  <g transform="translate(12 12)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="stroke-primary-foreground" d="M6 20v-4M12 20v-7M18 20V10"></path>
+    <path class="stroke-chart-2" d="M4 10l5-4 4 3 7-5M16 4h4v4"></path>
+  </g>
+</svg>

@@ -1,13 +1,15 @@
 import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import {
+  ChartLine,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   Ellipsis,
-  Ruler,
+  Eraser,
+  NotebookPen,
+  RulerDimensionLine,
   Scale,
-  StickyNote,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -151,13 +153,13 @@ const metricColumnClass = "w-measurement-saved-metric measurement-row:w-measurem
 const dateColumnClass = "w-28 measurement-row:w-measurement-date";
 const measurementHeaderIcon: Record<MeasurementField, LucideIcon> = {
   weight_kg: Scale,
-  chest_cm: Ruler,
-  waist_cm: Ruler,
-  arms_cm: Ruler,
-  thigh_cm: Ruler,
-  calf_cm: Ruler,
-  hips_cm: Ruler,
-  navel_cm: Ruler,
+  chest_cm: RulerDimensionLine,
+  waist_cm: RulerDimensionLine,
+  arms_cm: RulerDimensionLine,
+  thigh_cm: RulerDimensionLine,
+  calf_cm: RulerDimensionLine,
+  hips_cm: RulerDimensionLine,
+  navel_cm: RulerDimensionLine,
 };
 const stickyHeaderClass = "sticky z-10 bg-muted";
 const stickyBodyClass =
@@ -354,7 +356,7 @@ function NoteOpenButton({
       data-note-id={noteId}
       onClick={onClick}
     >
-      <StickyNote className="size-4" aria-hidden="true" />
+      <NotebookPen className="size-4" aria-hidden="true" />
     </Button>
   );
 }
@@ -383,7 +385,7 @@ function NoteIconSlot({
         )}
         aria-hidden="true"
       >
-        <StickyNote className="size-4" />
+        <NotebookPen className="size-4" />
         <span className="absolute top-1/2 left-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-current" />
       </span>
     );
@@ -440,7 +442,7 @@ function NoteRowCell({
         onClick={onClick}
       >
         <span className="text-fit-icon" aria-hidden="true">
-          <StickyNote className="size-4" />
+          <NotebookPen className="size-4" />
         </span>
         <span className="text-fit-text">{singleLine}</span>
       </Button>
@@ -1265,6 +1267,7 @@ export default function MeasurementBrowser({
               visualize();
             }}
           >
+            <ChartLine aria-hidden="true" />
             Visualize
           </Button>
           <Button
@@ -1276,6 +1279,7 @@ export default function MeasurementBrowser({
               clear();
             }}
           >
+            <Eraser aria-hidden="true" />
             Clear
           </Button>
           <p className="text-muted-foreground text-sm">
