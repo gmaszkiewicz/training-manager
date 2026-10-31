@@ -315,28 +315,28 @@ None. No database or API changes.
 
 #### Automated
 
-- [x] 3.1 Lint passes: `npm run lint`
-- [x] 3.2 Token check passes: `npm run check:home-tokens`
-- [x] 3.3 Type check passes: `npx astro check`
-- [x] 3.4 Unit tests pass: `npm test`
-- [x] 3.5 Build succeeds: `npm run build`
-- [x] 3.6 Existing Playwright specs pass: `npx playwright test`
+- [x] 3.1 Lint passes: `npm run lint` — 8d6ee8c
+- [x] 3.2 Token check passes: `npm run check:home-tokens` — 8d6ee8c
+- [x] 3.3 Type check passes: `npx astro check` — 8d6ee8c
+- [x] 3.4 Unit tests pass: `npm test` — 8d6ee8c
+- [x] 3.5 Build succeeds: `npm run build` — 8d6ee8c
+- [x] 3.6 Existing Playwright specs pass: `npx playwright test` — 8d6ee8c
 
 #### Manual
 
-- [x] 3.7 The switch shows as a guest on `/` and `/auth/signin`, and signed in on `/measurements`, at desktop width and at 360×800, without crowding the hamburger, bell and avatar
-- [x] 3.8 Choosing Dark, Light and System updates the page immediately; System follows an OS change live
-- [x] 3.9 Every screen (home, auth, measurements with charts, profile, settings, Hub, notifications, trainer preview) is readable in dark, including dropdowns, toasts, tables and chart colours
-- [x] 3.10 No hydration warning appears in the console on load in dark
+- [x] 3.7 The switch shows as a guest on `/` and `/auth/signin`, and signed in on `/measurements`, at desktop width and at 360×800, without crowding the hamburger, bell and avatar — 8d6ee8c
+- [x] 3.8 Choosing Dark, Light and System updates the page immediately; System follows an OS change live — 8d6ee8c
+- [x] 3.9 Every screen (home, auth, measurements with charts, profile, settings, Hub, notifications, trainer preview) is readable in dark, including dropdowns, toasts, tables and chart colours — 8d6ee8c
+- [x] 3.10 No hydration warning appears in the console on load in dark — 8d6ee8c
 
 ### Phase 4: E2E coverage
 
 #### Automated
 
-- [ ] 4.1 New spec passes: `npx playwright test tests/e2e/theme.spec.ts`
-- [ ] 4.2 Full Playwright suite passes: `npx playwright test`
-- [ ] 4.3 Lint passes: `npm run lint`
+- [x] 4.1 New spec passes: `npx playwright test tests/e2e/theme.spec.ts`
+- [x] 4.2 Full Playwright suite passes: `npx playwright test`
+- [x] 4.3 Lint passes: `npm run lint`
 
 #### Manual
 
-- [ ] 4.4 The spec fails when the head script in `Layout.astro` is temporarily removed (deliberate-break check)
+- [x] 4.4 The spec fails when the head script in `Layout.astro` is temporarily removed (deliberate-break check)
