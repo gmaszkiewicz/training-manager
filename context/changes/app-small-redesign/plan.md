@@ -333,10 +333,10 @@ None. No database or API changes.
 
 #### Automated
 
-- [x] 4.1 New spec passes: `npx playwright test tests/e2e/theme.spec.ts`
-- [x] 4.2 Full Playwright suite passes: `npx playwright test`
-- [x] 4.3 Lint passes: `npm run lint`
+- [x] 4.1 New spec passes: `npx playwright test tests/e2e/theme.spec.ts` — 1ea193c
+- [x] 4.2 Full Playwright suite passes: `npx playwright test` — 1ea193c
+- [x] 4.3 Lint passes: `npm run lint` — 1ea193c
 
 #### Manual
 
-- [x] 4.4 The spec fails when the head script in `Layout.astro` is temporarily removed (deliberate-break check)
+- [x] 4.4 The spec fails when the head script in `Layout.astro` is temporarily removed (deliberate-break check) — 1ea193c
