@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-10-30
+updated: 2026-10-31
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -119,7 +119,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-42 | prev-values-for-new-measurement | user can open the add form with weight and every circumference already filled from their previous entry, and find the fields empty when there is no earlier entry | S-02, S-26, S-33 | MS-33 | done |
 | S-43 | reduce-supabase-round-trips | user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before | S-24, S-42 | MS-34 | done |
 | S-44 | role-view-in-profile | user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons | S-35 | MS-35 | done |
-| S-45 | app-small-redesign | user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme | S-11, S-35 | MS-36 | in-progress |
+| S-45 | app-small-redesign | user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme | S-11, S-35 | MS-36 | done |
 
 ## Streams
 
@@ -695,7 +695,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** which icons change; where the theme switch sits (avatar menu, Settings, or the top bar); whether the default follows the system preference; whether the choice is saved per browser or on the profile.
 - **Risk:** `src/styles/global.css` already defines `.dark` tokens, but views that use literal colours or arbitrary values will not follow them, and the theme must be applied before first paint so a server-rendered page does not flash light.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -812,3 +812,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-42: user can open the add form with weight and every circumference already filled from their previous entry, and find the fields empty when there is no earlier entry** — Archived 2026-10-29 → `context/archive/2026-10-29-prev-values-for-new-measurement/`. Lesson: —.
 - **S-43: user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before** — Archived 2026-10-29 → `context/archive/2026-10-29-reduce-supabase-round-trips/`. Lesson: —.
 - **S-44: user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons** — Archived 2026-10-30 → `context/archive/2026-10-30-role-view-in-profile/`. Lesson: —.
+- **S-45: user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme** — Archived 2026-10-31 → `context/archive/2026-10-30-app-small-redesign/`. Lesson: —.
