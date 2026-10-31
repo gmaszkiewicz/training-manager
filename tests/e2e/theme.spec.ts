@@ -23,9 +23,15 @@ async function pickTheme(page: Page, name: "Light" | "Dark" | "System"): Promise
   await page.getByRole("menuitemradio", { name }).click();
 }
 
-// Read at domcontentloaded, before the islands hydrate, so only the inline head script can have set the class.
-async function hasDarkClass(page: Page): Promise<boolean> {
-  return page.evaluate(() => document.documentElement.classList.contains("dark"));
+const islandScripts = "**/_astro/*.js";
+
+// Loads with every bundled script aborted, so no island hydrates and only the inline head script can set the class.
+async function hasDarkClassWithoutIslands(page: Page, load: () => Promise<unknown>): Promise<boolean> {
+  await page.route(islandScripts, (route) => route.abort());
+  await load();
+  const dark = await page.evaluate(() => document.documentElement.classList.contains("dark"));
+  await page.unroute(islandScripts);
+  return dark;
 }
 
 for (const { name, storageState } of contexts) {
@@ -44,14 +50,13 @@ for (const { name, storageState } of contexts) {
         await pickTheme(page, "Dark");
         await expect(page.locator("html")).toContainClass("dark");
 
-        await page.reload({ waitUntil: "domcontentloaded" });
-        expect(await hasDarkClass(page)).toBe(true);
+        expect(await hasDarkClassWithoutIslands(page, () => page.reload())).toBe(true);
 
+        await page.reload();
         await pickTheme(page, "Light");
         await expect(page.locator("html")).not.toContainClass("dark");
 
-        await page.reload({ waitUntil: "domcontentloaded" });
-        expect(await hasDarkClass(page)).toBe(false);
+        expect(await hasDarkClassWithoutIslands(page, () => page.reload())).toBe(false);
       });
     });
 
@@ -59,8 +64,7 @@ for (const { name, storageState } of contexts) {
       test.use({ colorScheme: "dark" });
 
       test("a fresh load with no stored choice is dark before hydration", async ({ page }) => {
-        await page.goto("/", { waitUntil: "domcontentloaded" });
-        expect(await hasDarkClass(page)).toBe(true);
+        expect(await hasDarkClassWithoutIslands(page, () => page.goto("/"))).toBe(true);
       });
     });
   });

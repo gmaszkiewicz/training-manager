@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { writeStored } from "@/lib/browser-storage";
 import { parseThemePreference, resolveTheme, THEME_STORAGE_KEY, type ThemePreference } from "@/lib/theme";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
@@ -61,11 +62,7 @@ export function useTheme(): ThemeControl {
 
   const setPreference = useCallback((next: ThemePreference) => {
     memoryPreference = next;
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, next);
-    } catch {
-      // Storage can be unavailable (private mode, blocked site data); the choice still applies to this page.
-    }
+    writeStored(THEME_STORAGE_KEY, next);
     applyTheme(next);
     window.dispatchEvent(new Event(themeChangeEvent));
   }, []);

@@ -273,6 +273,10 @@ None. No database or API changes.
 - Top bar island: `src/components/TopbarActions.tsx:127`
 - Menu E2E pattern: `tests/e2e/account-menu.spec.ts:9`
 
+## Addendum: Request read access button (a4baa97)
+
+Not in the original plan. The trainer's Request read access button was the only caller of the `smoke` button variant, which reads as a faint green in dark mode. It now uses the default variant like the other primary buttons, and `/kitchen-sink/trainer` describes `hover:bg-primary/90`. The `smoke` variant (`src/components/ui/button.tsx:13`) and `--smoke` tokens now have no callers; removing them is left for a later change.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.

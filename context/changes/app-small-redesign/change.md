@@ -1,7 +1,7 @@
 ---
 change_id: app-small-redesign
 title: Small redesign with shadcn/ui and Lucide icons, plus a dark theme
-status: implemented
+status: impl_reviewed
 created: 2026-10-30
 updated: 2026-10-31
 archived_at: null
