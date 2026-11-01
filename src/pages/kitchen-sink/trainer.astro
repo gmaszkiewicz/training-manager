@@ -9,12 +9,18 @@ const sampleLink: TrainerLink = {
   traineeId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   email: "trainee@example.com",
   linkedAt: "2026-09-15T12:00:00.000Z",
+  // Both names: the headings read "… for A. Lovelace (trainee@example.com)".
+  firstName: "Ada",
+  lastName: "Lovelace",
 };
 
 const secondLink: TrainerLink = {
   traineeId: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
   email: "trainee-two@example.com",
   linkedAt: "2026-09-16T12:00:00.000Z",
+  // One saved name: "… for Grace (trainee-two@example.com)". The long list has no names: the email alone.
+  firstName: "Grace",
+  lastName: null,
 };
 
 function longListLink(letter: string): TrainerLink {
@@ -71,12 +77,14 @@ const sampleEntry: MeasurementWithDeltas = {
           Default
         </h2>
         <p class="text-muted-foreground text-sm">
-          TrainerPanel in trainer mode with links loaded, two trainees in a centered email field, the first array item
-          selected, the left arrow disabled, the right arrow linking to the second trainee, one sample measurement
-          entry, and no server error. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on
-          screen. The sample row has no Edit or Delete link. The Charts tile is its own card below the panel and its
-          read-only list, charting the sample entry in local mode, and the read-only Top changes tile sits below it,
-          with working period controls and "Circumferences" filter. Form ids are unprefixed.
+          TrainerPanel in trainer mode with links loaded, one sample measurement entry, and no server error. The
+          collapsible "Find trainee" tile holds the email search and Request read access. The collapsible "Choose
+          trainee" tile below it shows two trainees in a centered email field, the first array item selected, the left
+          arrow disabled and the right arrow linking to the second trainee. The collapsible "Measurements for" tile
+          holds the read-only list. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on
+          screen. The sample row has no Edit or Delete link. The Charts tile is its own card below, charting the sample
+          entry in local mode, and the read-only Top progression tile sits below it, with working period controls and
+          "Circumferences" filter. Form ids are unprefixed.
         </p>
         <TrainerPanel
           mode="trainer"

@@ -16,7 +16,7 @@ async function openAccountMenu(page: Page): Promise<void> {
 
 async function removeAvatar(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Remove" }).click();
-  await expect(page.getByText("Your avatar was removed.")).toBeVisible();
+  await expect(page.getByText("Your avatar was removed.", { exact: true })).toBeVisible();
 }
 
 // Leave no avatar behind for other specs, even when the test fails after the upload.
@@ -51,7 +51,7 @@ test("an uploaded avatar shows in the top bar and Remove restores the initials",
 
   await page.getByLabel("Image").setInputFiles(FIXTURE);
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByText("Your avatar was saved.")).toBeVisible();
+  await expect(page.getByText("Your avatar was saved.", { exact: true })).toBeVisible();
   await expect(account.locator("img")).toHaveAttribute("src", /\/storage\/v1\/object\/public\/avatars\//);
 
   await removeAvatar(page);

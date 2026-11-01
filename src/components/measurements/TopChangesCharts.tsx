@@ -29,15 +29,16 @@ import {
   utcToday,
 } from "@/lib/measurement-page";
 import { circumferenceFields, subPeriodTotals, topChangeScale } from "@/lib/measurement-top-changes";
+import { headingFor } from "@/lib/trainer-preview";
 import { namedId } from "@/lib/utils";
 import type { ChartBody, CircumferenceField, MeasurementField, MeasurementWithDeltas } from "@/types";
 
-/** The Top changes tile's id on its `CollapsibleChartTile`, so this island only rewrites its own heading. */
+/** The Top progression tile's id on its `CollapsibleTile`, so this island only rewrites its own heading. */
 export const topChangesTileId = "top-changes";
 
 /** The tile's summary heading: the title and the muted note naming the change measure. */
 export const topChangesHeading: ChartHeading = {
-  title: "Top changes",
+  title: "Top progression",
   note: "Summed changes versus the previous entry",
 };
 
@@ -61,11 +62,13 @@ interface Props {
   initialDays?: string[] | null;
   /** The circumferences from the preference cookie; all 7 when absent. */
   initialFields?: readonly CircumferenceField[];
+  /** Whose measurements the charts show, named after the title ("… for A. Lovelace (ada@example.com)"); the trainer only. */
+  subjectLabel?: string | null;
 }
 
 /** This island's own tile, found by tile id so another chart tile's heading is never touched. */
 function ownTile(root: HTMLElement | null): Element | null | undefined {
-  return root?.closest(`[data-chart-tile="${topChangesTileId}"]`);
+  return root?.closest(`[data-tile="${topChangesTileId}"]`);
 }
 
 function fieldLabel(field: CircumferenceField): string {
@@ -196,6 +199,7 @@ export default function TopChangesCharts({
   initialChart = null,
   initialDays = null,
   initialFields = circumferenceFields,
+  subjectLabel = null,
 }: Props) {
   const todayValue = today ?? utcToday(new Date());
   const accountId = namedId(accountUserId);
@@ -245,16 +249,16 @@ export default function TopChangesCharts({
   // measure, which no period changes, so the island writes them once to its own tile only.
   useEffect(() => {
     const tile = ownTile(rootRef.current);
-    const title = tile?.querySelector("[data-charts-title]");
-    const note = tile?.querySelector("[data-charts-note]");
+    const title = tile?.querySelector("[data-tile-title]");
+    const note = tile?.querySelector("[data-tile-note]");
     if (title instanceof HTMLElement) {
-      title.textContent = topChangesHeading.title;
+      title.textContent = headingFor(topChangesHeading.title, subjectLabel);
     }
     if (note instanceof HTMLElement) {
       note.textContent = topChangesHeading.note ?? "";
       note.hidden = topChangesHeading.note === null;
     }
-  }, []);
+  }, [subjectLabel]);
 
   let status: ReactNode;
   if (loading) {

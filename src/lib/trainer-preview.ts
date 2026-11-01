@@ -1,7 +1,25 @@
+import { topbarName } from "@/lib/topbar";
+
 export interface TrainerLink {
   traineeId: string;
   email: string;
   linkedAt: string;
+  firstName?: string | null;
+  lastName?: string | null;
+}
+
+/**
+ * The trainee as the trainer's tile headings name them: "A. Lovelace (ada@example.com)" with both names, the one saved
+ * name with the email ("Ada (ada@example.com)"), otherwise the email alone.
+ */
+export function traineeLabel(link: Pick<TrainerLink, "email" | "firstName" | "lastName">): string {
+  const name = topbarName({ firstName: link.firstName ?? null, lastName: link.lastName ?? null, email: link.email });
+  return name === link.email ? link.email : `${name} (${link.email})`;
+}
+
+/** A tile heading naming whose measurements it shows: "Weekly progression for A. Lovelace (ada@example.com)". */
+export function headingFor(title: string, subject: string | null | undefined): string {
+  return subject ? `${title} for ${subject}` : title;
 }
 
 export function preferredTraineeId(query: string | null, remembered: string | null): string | null {

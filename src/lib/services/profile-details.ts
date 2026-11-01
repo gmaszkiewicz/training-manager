@@ -1,8 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/db/database.types";
+import { resolveComponentSettings, storedComponentSettings } from "@/lib/components";
 import { parseProfileRole } from "@/lib/profile-role";
-import type { Profile, ProfileNames } from "@/types";
+import type { ComponentSettings, Profile, ProfileNames } from "@/types";
 
 export async function readProfileNames(
   supabase: SupabaseClient<Database>,
@@ -76,9 +77,11 @@ export interface TopbarProfile {
   role: Profile["role"] | null;
   names: ProfileNames;
   avatarPath: string | null;
+  components: ComponentSettings;
 }
 
-// One read of the profile row for the top bar: role for the greeting, names for the avatar initials, the avatar image path.
+// One read of the profile row for the top bar: role for the greeting, names for the avatar initials, the avatar image path,
+// and the resolved component choices.
 export async function readTopbarProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -86,7 +89,7 @@ export async function readTopbarProfile(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("role, first_name, last_name, avatar_path")
+      .select("role, first_name, last_name, avatar_path, component_settings")
       .eq("id", userId)
       .maybeSingle();
 
@@ -98,8 +101,74 @@ export async function readTopbarProfile(
       role: parseProfileRole(data.role),
       names: { firstName: data.first_name, lastName: data.last_name },
       avatarPath: data.avatar_path,
+      components: resolveComponentSettings(data.component_settings),
     };
   } catch {
     return null;
+  }
+}
+
+// The resolved component choices for the Settings page; `null` when the row cannot be read, so the page never offers
+// the defaults for saving over the stored choices.
+export async function readComponentSettings(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<ComponentSettings | null> {
+  try {
+    const { data, error } = await supabase.from("profiles").select("component_settings").eq("id", userId).maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return resolveComponentSettings(data.component_settings);
+  } catch {
+    return null;
+  }
+}
+
+// One read of the profile row for Settings → Components: the resolved choices and the role whose rows the form lists;
+// `null` when the row cannot be read or has no known role.
+export async function readComponentSettingsDetails(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<{ settings: ComponentSettings; role: Profile["role"] } | null> {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("role, component_settings")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const role = parseProfileRole(data.role);
+    return role ? { settings: resolveComponentSettings(data.component_settings), role } : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function updateComponentSettings(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  settings: ComponentSettings,
+): Promise<{ ok: true } | { ok: false }> {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ component_settings: storedComponentSettings(settings) })
+      .eq("id", userId)
+      .select("id");
+
+    if (error || data.length !== 1) {
+      return { ok: false };
+    }
+
+    return { ok: true };
+  } catch {
+    return { ok: false };
   }
 }

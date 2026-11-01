@@ -98,6 +98,19 @@ describe("topbarModel", () => {
     expect(result.account?.items).toEqual(accountItems(null));
   });
 
+  it("keeps the Measurements link when measurementsOn is true", () => {
+    const result = topbarModel({ ...signedIn, pathname: "/", measurementsOn: true });
+
+    expect(result.links).toEqual(signedInLinks("home"));
+  });
+
+  it("drops the Measurements link when measurementsOn is false", () => {
+    const result = topbarModel({ ...signedIn, pathname: "/", measurementsOn: false });
+
+    expect(result.links).toEqual([{ id: "home", label: "Home", href: "/", current: true }]);
+    expect(result.account?.items).toEqual(accountItems(null));
+  });
+
   it("marks Profile in the account menu on /profile", () => {
     const result = topbarModel({ ...signedIn, pathname: "/profile" });
 

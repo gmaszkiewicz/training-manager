@@ -100,10 +100,11 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
         </h2>
         <p class="text-muted-foreground text-sm">
           TraineeJournal with measurements loaded, one sample entry (every field, note, and deltas), and no server
-          error. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on screen. The sample row
-          shows selection checkboxes, metric and note headers with an icon, and a row actions menu with Edit and Delete.
-          The add form starts with the sample entry's weight and circumferences; the note and the date and time stay
-          empty. Form ids are unprefixed.
+          error. It renders two collapsible tiles: "New measurement" (the add form, open) and "Your measurements" (the
+          list, open). <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on screen. The
+          sample row shows selection checkboxes, metric and note headers with an icon, and a row actions menu with Edit
+          and Delete. The add form starts with the sample entry's weight and circumferences; the note and the date and
+          time stay empty. Form ids are unprefixed.
         </p>
         <TraineeJournal
           measurementsLoaded={true}
@@ -111,6 +112,25 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
           serverError={null}
           today="2026-09-15"
           previousEntry={sampleEntry}
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-edit">
+        <h2 id="state-edit" class="border-border border-b pb-2 text-lg font-semibold">
+          Edit
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TraineeJournal with <code class="text-foreground">editingEntry</code> set to the sample entry: a
+          non-collapsible "Edit measurement" card with the edit form takes the place of the New measurement tile, above
+          the Measurements tile. <code class="text-foreground">idPrefix="edit-"</code> keeps its ids off Default.
+        </p>
+        <TraineeJournal
+          measurementsLoaded={true}
+          entries={[sampleEntry]}
+          serverError={null}
+          today="2026-09-15"
+          editingEntry={sampleEntry}
+          idPrefix="edit-"
         />
       </section>
 
@@ -127,7 +147,7 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
           the same data. The period picker lists only the weeks, months and years that have entries, and Years shows a
           fixed, disabled "Last 5 years" box. Each point sits on its day, month or year tick, and the tooltip names the
           entry its difference is against. On <code class="text-foreground">/measurements</code> the tile is its own
-          card below the journal card.
+          card below the Measurements tile.
         </p>
         <ChartsTile readOnly={false} month="2026-09" today="2026-09-30" startsOpen={true} entries={chartEntries} />
       </section>
@@ -182,10 +202,10 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
 
       <section class="flex flex-col gap-4" aria-labelledby="state-top-default">
         <h2 id="state-top-default" class="border-border border-b pb-2 text-lg font-semibold">
-          Top changes, default
+          Top progression, default
         </h2>
         <p class="text-muted-foreground text-sm">
-          TopChangesTile open in local mode, headed "Top changes" with the muted note "Summed changes versus the
+          TopChangesTile open in local mode, headed "Top progression" with the muted note "Summed changes versus the
           previous entry", on the same six entries and <code class="text-foreground">today="2026-09-30"</code>, so
           September holds five changes per field, one per calendar week, the first one against 28 Aug. Four radar charts
           in a 2×2 grid on wide screens and one column on narrow ones: top weight gain and top circumference gain on
@@ -204,7 +224,7 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
 
       <section class="flex flex-col gap-4" aria-labelledby="state-top-closed">
         <h2 id="state-top-closed" class="border-border border-b pb-2 text-lg font-semibold">
-          Top changes, closed
+          Top progression, closed
         </h2>
         <p class="text-muted-foreground text-sm">
           TopChangesTile with <code class="text-foreground">{"startsOpen={false}"}</code>: only the summary and its
@@ -215,7 +235,7 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
 
       <section class="flex flex-col gap-4" aria-labelledby="state-top-empty">
         <h2 id="state-top-empty" class="border-border border-b pb-2 text-lg font-semibold">
-          Top changes, empty period
+          Top progression, empty period
         </h2>
         <p class="text-muted-foreground text-sm">
           The same entries with <code class="text-foreground">month="2026-11"</code> and{" "}
@@ -227,7 +247,7 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
 
       <section class="flex flex-col gap-4" aria-labelledby="state-top-losses">
         <h2 id="state-top-losses" class="border-border border-b pb-2 text-lg font-semibold">
-          Top changes, losses only
+          Top progression, losses only
         </h2>
         <p class="text-muted-foreground text-sm">
           Three October entries where every field drops, so both gain cards keep their title and say "No gains in this
@@ -239,7 +259,7 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
 
       <section class="flex flex-col gap-4" aria-labelledby="state-top-filtered">
         <h2 id="state-top-filtered" class="border-border border-b pb-2 text-lg font-semibold">
-          Top changes, filtered circumferences
+          Top progression, filtered circumferences
         </h2>
         <p class="text-muted-foreground text-sm">
           TopChangesTile with <code class="text-foreground">initialFields</code> set to waist, hips and navel, so both
@@ -258,7 +278,7 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
 
       <section class="flex flex-col gap-4" aria-labelledby="state-top-loading">
         <h2 id="state-top-loading" class="border-border border-b pb-2 text-lg font-semibold">
-          Top changes, loading
+          Top progression, loading
         </h2>
         <p class="text-muted-foreground text-sm">
           TopChangesTile with <code class="text-foreground">forceLoading</code>, showing "Loading charts…" as it does
@@ -312,8 +332,9 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
           Error
         </h2>
         <p class="text-muted-foreground text-sm">
-          TraineeJournal with measurements not loaded (toast "Could not load your measurements", form absent). FormField
-          with a field error; id is sink-scoped so it does not collide with the Default form.
+          TraineeJournal with measurements not loaded: a "New measurement" card with the toast "Could not load your
+          measurements", form and list absent. FormField with a field error; id is sink-scoped so it does not collide
+          with the Default form.
         </p>
         <TraineeJournal measurementsLoaded={false} entries={[]} serverError={null} />
         <JournalSinkStates client:load variant="error" />

@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   adjacentTrainerLinks,
+  headingFor,
   preferredTraineeId,
   selectTrainerPreview,
+  traineeLabel,
   type TrainerLink,
 } from "@/lib/trainer-preview";
 
@@ -138,5 +140,31 @@ describe("adjacentTrainerLinks", () => {
       previous: ada,
       next: cyd,
     });
+  });
+});
+
+describe("traineeLabel", () => {
+  const email = "ada@example.com";
+
+  it("uses the first initial and last name with the email when both names are saved", () => {
+    expect(traineeLabel({ email, firstName: "ada", lastName: "Lovelace" })).toBe("A. Lovelace (ada@example.com)");
+  });
+
+  it("uses the one saved name with the email", () => {
+    expect(traineeLabel({ email, firstName: "Ada", lastName: null })).toBe("Ada (ada@example.com)");
+    expect(traineeLabel({ email, firstName: " ", lastName: "Lovelace" })).toBe("Lovelace (ada@example.com)");
+  });
+
+  it("falls back to the email alone", () => {
+    expect(traineeLabel({ email, firstName: null, lastName: "" })).toBe(email);
+    expect(traineeLabel({ email })).toBe(email);
+  });
+});
+
+describe("headingFor", () => {
+  it("names the subject after the title, or keeps the title alone", () => {
+    expect(headingFor("Top progression", "Ada (ada@example.com)")).toBe("Top progression for Ada (ada@example.com)");
+    expect(headingFor("Weekly progression", null)).toBe("Weekly progression");
+    expect(headingFor("Weekly progression", undefined)).toBe("Weekly progression");
   });
 });

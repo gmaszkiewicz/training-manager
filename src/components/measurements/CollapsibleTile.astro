@@ -1,0 +1,134 @@
+---
+import PreviewBadge from "@/components/measurements/PreviewBadge";
+
+interface Props {
+  /** Where the open state is remembered (localStorage and cookie); `null` keeps it for this visit only. */
+  storageKey: string | null;
+  startsOpen: boolean;
+  title: string;
+  /** The muted line under the title; `null` renders it hidden for the island to fill, absent renders none. */
+  note?: string | null;
+  /** Written to `data-tile`, so each island finds only its own tile's title and note. */
+  tileId: string;
+  /**
+   * `false` keeps the server's open state for this load: the stored choice is not restored, and the first toggle the
+   * browser fires for an initially open tile is not saved over it (the add form after a server error).
+   */
+  restore?: boolean;
+  /** The tile's chosen version is a preview: a red "Preview" badge sits in the header, left of the chevron. */
+  preview?: boolean;
+}
+
+const { storageKey, startsOpen, title, note, tileId, restore = true, preview = false } = Astro.props;
+
+const headingId = `${tileId}-${crypto.randomUUID()}`;
+const hasNote = note !== undefined;
+---
+
+<div class="flex justify-center px-4 pb-4">
+  <div
+    class="border-border bg-card relative w-full max-w-measurement min-w-0 rounded-xl border p-4"
+    data-tile-card={tileId}
+  >
+    <details
+      class="group"
+      aria-labelledby={`${headingId}-title`}
+      data-tile={tileId}
+      data-storage-key={storageKey}
+      data-restore={restore ? "true" : undefined}
+      open={startsOpen}
+    >
+      <summary
+        aria-labelledby={`${headingId}-title`}
+        aria-describedby={hasNote ? `${headingId}-note` : undefined}
+        class:list={[
+          "flex cursor-pointer list-none justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden",
+          // With the badge, the chevron sits on the title line so the badge can line up beside it.
+          preview ? "items-start" : "items-center",
+        ]}
+      >
+        {/* The title column leaves room for the badge, so the chevron itself stays at the edge. */}
+        <span class:list={["flex min-w-0 flex-col", preview && "pr-20"]}>
+          <span id={`${headingId}-title`} data-tile-title>
+            {title}
+          </span>
+          {hasNote ? (
+            <span
+              id={`${headingId}-note`}
+              data-tile-note
+              class="text-sm font-normal text-muted-foreground"
+              hidden={note === null}
+            >
+              {note}
+            </span>
+          ) : null}
+        </span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class:list={["size-5 shrink-0 transition-transform group-open:rotate-180", preview && "mt-1"]}
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6"></path>
+        </svg>
+      </summary>
+      <div class="pt-3">
+        <slot />
+      </div>
+    </details>
+    <script is:inline>
+      (function () {
+        var script = document.currentScript;
+        var details = script && script.previousElementSibling;
+        if (!(details instanceof HTMLDetailsElement)) return;
+        var key = details.getAttribute("data-storage-key");
+        if (!key) return;
+        var restore = details.getAttribute("data-restore") === "true";
+        function remember(value) {
+          try {
+            localStorage.setItem(key, value);
+          } catch (error) {
+            // Storage can be blocked; the cookie still keeps the next visit.
+          }
+          try {
+            document.cookie =
+              encodeURIComponent(key) + "=" + encodeURIComponent(value) + "; Path=/; Max-Age=31536000; SameSite=Lax";
+          } catch (error) {
+            // The choice still stays for this visit.
+          }
+        }
+        var skipLoadToggle = !restore && details.open;
+        details.addEventListener("toggle", function () {
+          if (skipLoadToggle) {
+            skipLoadToggle = false;
+            return;
+          }
+          remember(details.open ? "open" : "closed");
+        });
+        if (!restore) return;
+        var stored = null;
+        try {
+          stored = localStorage.getItem(key);
+        } catch (error) {
+          stored = null;
+        }
+        if (stored === "open" || stored === "closed") {
+          details.open = stored === "open";
+          remember(stored);
+        }
+      })();
+    </script>
+    {/* Outside <details> (and after the script, which finds it as its previous sibling): never interactive content
+         inside <summary>, and still visible when the tile is closed. */}
+    {preview ? (
+      <div class="absolute top-4.5 right-12">
+        <PreviewBadge client:load />
+      </div>
+    ) : null}
+  </div>
+</div>

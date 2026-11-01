@@ -19,9 +19,10 @@ import {
 } from "@/lib/measurement-chart";
 import { measurementFields } from "@/lib/measurement-input";
 import { chartsPeriodStorageKey, utcToday } from "@/lib/measurement-page";
+import { headingFor } from "@/lib/trainer-preview";
 import type { ChartBody, MeasurementWithDeltas } from "@/types";
 
-/** The line tile's id on its `CollapsibleChartTile`, so this island only rewrites its own heading. */
+/** The line tile's id on its `CollapsibleTile`, so this island only rewrites its own heading. */
 export const chartsTileId = "charts";
 
 interface Props {
@@ -42,11 +43,13 @@ interface Props {
   initialChart?: ChartBody | null;
   /** The server's entry days for the period picker. */
   initialDays?: string[] | null;
+  /** Whose measurements the charts show, named after the title ("… for A. Lovelace (ada@example.com)"); the trainer only. */
+  subjectLabel?: string | null;
 }
 
 /** This island's own tile, found by tile id so another chart tile's heading is never touched. */
 function ownTile(root: HTMLElement | null): Element | null | undefined {
-  return root?.closest(`[data-chart-tile="${chartsTileId}"]`);
+  return root?.closest(`[data-tile="${chartsTileId}"]`);
 }
 
 function spansYears(points: readonly number[]): boolean {
@@ -113,6 +116,7 @@ export default function MeasurementCharts({
   initialAnchor = null,
   initialChart = null,
   initialDays = null,
+  subjectLabel = null,
 }: Props) {
   const todayValue = today ?? utcToday(new Date());
   // Clear returns the tile to a first visit: Month mode on the current month, whatever month the list shows.
@@ -153,22 +157,22 @@ export default function MeasurementCharts({
   // The summary heading belongs to the server-rendered tile around this island; keep it in step with the period.
   useEffect(() => {
     const tile = ownTile(rootRef.current);
-    const title = tile?.querySelector("[data-charts-title]");
-    const note = tile?.querySelector("[data-charts-note]");
+    const title = tile?.querySelector("[data-tile-title]");
+    const note = tile?.querySelector("[data-tile-note]");
     if (title instanceof HTMLElement) {
-      title.textContent = heading.title;
+      title.textContent = headingFor(heading.title, subjectLabel);
     }
     if (note instanceof HTMLElement) {
       note.textContent = heading.note ?? "";
       note.hidden = heading.note === null;
     }
-  }, [heading.title, heading.note]);
+  }, [heading.title, heading.note, subjectLabel]);
 
   // Hovering "Selected entries (n)" lists the charted entries, oldest first; a period heading has no hover text.
   const selectedHint =
     selected && body !== null ? body.entries.map((entry) => chartDateTimeLabel(entry.measured_on)).join("\n") : "";
   useEffect(() => {
-    const title = ownTile(rootRef.current)?.querySelector("[data-charts-title]");
+    const title = ownTile(rootRef.current)?.querySelector("[data-tile-title]");
     if (!(title instanceof HTMLElement)) {
       return;
     }

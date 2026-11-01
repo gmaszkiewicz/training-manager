@@ -32,7 +32,7 @@ async function showAddForm(page: Page): Promise<void> {
   if (await date.isVisible()) {
     return;
   }
-  await page.getByRole("button", { name: "Add your next measurement" }).click();
+  await page.getByRole("button", { name: "New measurement" }).click();
   await expect(date).toBeVisible();
 }
 

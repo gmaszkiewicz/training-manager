@@ -1,4 +1,4 @@
-import { Bell, Camera, IdCard, KeyRound, Users, type LucideIcon } from "lucide-react";
+import { Bell, Blocks, Camera, IdCard, KeyRound, Users, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ const tabIcons: Partial<Record<string, LucideIcon>> = {
   collaborations: Users,
   notifications: Bell,
   "change-password": KeyRound,
+  components: Blocks,
 };
 
 function TabIcon({ value }: { value: string }) {

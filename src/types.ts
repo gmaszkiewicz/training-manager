@@ -45,6 +45,34 @@ export type ProfileNames = Pick<ProfileDetails, "firstName" | "lastName">;
 
 export type Dashboard = "measurements" | "nutrition" | "training" | "planning";
 
+/** A module on the components screen; one per dashboard. */
+export type ModuleId = Dashboard;
+
+export type ComponentId =
+  | "new-measurement"
+  | "edit-measurement"
+  | "measurements"
+  | "find-trainee"
+  | "trainee-picker"
+  | "trainee-measurements"
+  | "progression"
+  | "top-changes";
+
+/** A user's resolved choices: every module on or off, every component at a version id or `"off"`. */
+export interface ComponentSettings {
+  modules: Record<ModuleId, boolean>;
+  components: Record<ComponentId, string>;
+}
+
+/** How a component's tile renders on `/measurements`: whether it shows, and whether its version is a preview. */
+export interface ComponentTile {
+  shown: boolean;
+  preview: boolean;
+}
+
+/** Per-component tile states; a missing key renders as shown and not a preview (the kitchen sinks). */
+export type ComponentTiles = Partial<Record<ComponentId, ComponentTile>>;
+
 export type AccessType = "read";
 
 /** One kind of access to a dashboard; `pending` until the trainee accepts the request. */

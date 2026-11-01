@@ -1,19 +1,25 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
-import type { Profile } from "@/types";
+import { defaultComponentSettings, resolveComponentSettings } from "@/lib/components";
+import type { ComponentSettings, Profile } from "@/types";
 
 const UNIQUE_VIOLATION = "23505";
 
 type ProfileRole = Profile["role"];
 
-type FindProfileResult = { status: "found"; profile: Profile } | { status: "missing" } | { status: "error" };
+type FindProfileResult =
+  { status: "found"; profile: Profile; components: ComponentSettings } | { status: "missing" } | { status: "error" };
 
 function isProfileRole(role: string): role is ProfileRole {
   return role === "trainee" || role === "trainer";
 }
 
 async function findProfile(supabase: SupabaseClient<Database>, userId: string): Promise<FindProfileResult> {
-  const { data, error } = await supabase.from("profiles").select("id, role").eq("id", userId).maybeSingle();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, role, component_settings")
+    .eq("id", userId)
+    .maybeSingle();
 
   if (error || !data) {
     return error ? { status: "error" } : { status: "missing" };
@@ -23,7 +29,11 @@ async function findProfile(supabase: SupabaseClient<Database>, userId: string): 
     return { status: "error" };
   }
 
-  return { status: "found", profile: { id: data.id, role: data.role } };
+  return {
+    status: "found",
+    profile: { id: data.id, role: data.role },
+    components: resolveComponentSettings(data.component_settings),
+  };
 }
 
 export async function readProfileRole(supabase: SupabaseClient<Database>, userId: string): Promise<ProfileRole | null> {
@@ -39,7 +49,7 @@ export async function ensureProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
   requestedRole: ProfileRole | null,
-): Promise<{ ok: true; role: ProfileRole } | { ok: false }> {
+): Promise<{ ok: true; role: ProfileRole; components: ComponentSettings } | { ok: false }> {
   try {
     const existing = await findProfile(supabase, userId);
 
@@ -48,14 +58,15 @@ export async function ensureProfile(
     }
 
     if (existing.status === "found") {
-      return { ok: true, role: existing.profile.role };
+      return { ok: true, role: existing.profile.role, components: existing.components };
     }
 
     const role = requestedRole ?? "trainee";
     const { error: insertError } = await supabase.from("profiles").insert({ id: userId, role });
 
     if (!insertError) {
-      return { ok: true, role };
+      // A new row has no stored choices yet.
+      return { ok: true, role, components: defaultComponentSettings() };
     }
 
     if (insertError.code !== UNIQUE_VIOLATION) {
@@ -67,7 +78,7 @@ export async function ensureProfile(
       return { ok: false };
     }
 
-    return { ok: true, role: raced.profile.role };
+    return { ok: true, role: raced.profile.role, components: raced.components };
   } catch {
     return { ok: false };
   }

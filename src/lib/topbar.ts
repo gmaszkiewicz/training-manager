@@ -11,6 +11,8 @@ export interface TopbarModelInput {
   avatarUrl: string | null;
   pathname: string;
   notifications?: NotificationBellData;
+  /** The signed-in user's Measurements module switch; the menu drops its link when off. Defaults to on. */
+  measurementsOn?: boolean;
 }
 
 export interface TopbarLink {
@@ -107,6 +109,7 @@ export function topbarModel({
   avatarUrl,
   pathname,
   notifications,
+  measurementsOn = true,
 }: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
@@ -132,7 +135,9 @@ export function topbarModel({
     links: withCurrent<Omit<TopbarLink, "current">>(
       [
         { id: "home", label: "Home", href: "/" },
-        { id: "measurements", label: "Measurements", href: "/measurements" },
+        ...(measurementsOn
+          ? [{ id: "measurements" as const, label: "Measurements" as const, href: "/measurements" }]
+          : []),
       ],
       pathname,
     ),

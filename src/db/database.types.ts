@@ -125,6 +125,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_path: string | null;
+          component_settings: Json | null;
           created_at: string;
           first_name: string | null;
           id: string;
@@ -134,6 +135,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           avatar_path?: string | null;
+          component_settings?: Json | null;
           created_at?: string;
           first_name?: string | null;
           id: string;
@@ -142,6 +144,7 @@ export type Database = {
         };
         Update: {
           avatar_path?: string | null;
+          component_settings?: Json | null;
           created_at?: string;
           first_name?: string | null;
           id?: string;
@@ -196,6 +199,16 @@ export type Database = {
     };
     Functions: {
       accept_trainer_link: { Args: { p_trainer_id: string }; Returns: boolean };
+      list_linked_trainees: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          email: string;
+          first_name: string;
+          last_name: string;
+          linked_at: string;
+          trainee_id: string;
+        }[];
+      };
       list_trainee_collaborations: {
         Args: { p_page: number; p_size: number };
         Returns: {

@@ -70,7 +70,7 @@ for (const { name, viewport } of widths) {
         await page.getByRole("menuitem", { name: "Sign out" }).click();
 
         await expect(page).toHaveURL(/\/$/);
-        await expect(page.getByText("Hello, guest")).toBeVisible();
+        await expect(page.getByText("Hello, guest", { exact: true })).toBeVisible();
         await expect(page.getByRole("button", { name: "Account menu" })).toHaveCount(0);
       });
     });

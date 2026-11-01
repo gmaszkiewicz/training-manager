@@ -1,12 +1,15 @@
 ---
 import ChartsTile from "@/components/measurements/ChartsTile.astro";
+import CollapsibleTile from "@/components/measurements/CollapsibleTile.astro";
+import ComponentsOffCard from "@/components/measurements/ComponentsOffCard.astro";
 import TopChangesTile from "@/components/measurements/TopChangesTile.astro";
-import type { ChartBody } from "@/types";
+import type { ChartBody, ComponentTiles } from "@/types";
 import type { ChartPeriod } from "@/lib/measurement-chart";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import MeasurementForm from "@/components/measurements/MeasurementForm";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
-import { addFormStartsOpen, addFormStorageKey, type PageSize } from "@/lib/measurement-page";
+import { tileOf } from "@/lib/components";
+import { addFormStartsOpen, addFormStorageKey, listOpenStorageKey, type PageSize } from "@/lib/measurement-page";
 import type { CircumferenceField, MeasurementEntry, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
@@ -28,6 +31,7 @@ interface Props {
   pageSize?: PageSize;
   month?: string;
   addFormOpen?: boolean | null;
+  listOpen?: boolean | null;
   chartsOpen?: boolean | null;
   chartsPeriod?: ChartPeriod;
   chartsAnchor?: string | null;
@@ -37,10 +41,12 @@ interface Props {
   topChartsOpen?: boolean | null;
   topChartsPeriod?: ChartPeriod;
   topChartsAnchor?: string | null;
-  /** The server's Top changes read for the tile's first render; its picker shares `chartDays`. */
+  /** The server's Top progression read for the tile's first render; its picker shares `chartDays`. */
   topChartInitial?: ChartBody | null;
   /** The circumferences from the preference cookie; all 7 when absent. */
   topChartsFields?: readonly CircumferenceField[];
+  /** Which tiles render and which carry the Preview badge, by the trainee's own settings; every tile when absent. */
+  shown?: ComponentTiles;
 }
 
 const {
@@ -61,6 +67,7 @@ const {
   pageSize,
   month,
   addFormOpen = null,
+  listOpen = null,
   chartsOpen = null,
   chartsPeriod,
   chartsAnchor = null,
@@ -71,111 +78,73 @@ const {
   topChartsAnchor = null,
   topChartInitial = null,
   topChartsFields,
+  shown = {},
 } = Astro.props;
 
 const formStartsOpen = addFormStartsOpen(serverError !== null, addFormOpen);
 const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
+const listKey = accountUserId ? listOpenStorageKey(accountUserId) : null;
+const listStartsOpen = addFormStartsOpen(false, listOpen);
 const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
 const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
+const newTile = tileOf(shown, "new-measurement");
+const editTile = tileOf(shown, "edit-measurement");
+const listTile = tileOf(shown, "measurements");
+const chartsTile = tileOf(shown, "progression");
+const topChartsTile = tileOf(shown, "top-changes");
+// Edit measurement has no tile of its own: it shows only as the Edit card, so with the rest off nothing renders.
+const editing = editingEntry !== null && editTile.shown;
+const everyComponentOff = !editing && !newTile.shown && !listTile.shown && !chartsTile.shown && !topChartsTile.shown;
+const chartsRender = measurementsLoaded && !editing;
 ---
 
-<div class="flex justify-center px-4 pb-4">
-  <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
-    {measurementsLoaded ? (
-      <>
-        {notice ? (
-          <PageErrorToasts messages={[notice]} tone="notice" clearParams={["notice", "measured_on"]} client:load />
-        ) : null}
-        {editingEntry ? (
-          <>
-            <h1 class="mb-3 text-xl font-bold text-foreground">Edit measurement</h1>
-            <MeasurementForm serverError={serverError} idPrefix={idPrefix} entry={editingEntry} client:load />
-          </>
-        ) : (
-          <>
-            <details
-              class="group"
-              data-add-form
-              data-storage-key={addFormKey}
-              data-restore={serverError === null ? "true" : undefined}
-              open={formStartsOpen}
-            >
-              <summary class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
-                <span>Add your next measurement</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="size-5 shrink-0 transition-transform group-open:rotate-180"
-                  aria-hidden="true"
-                >
-                  <path d="m6 9 6 6 6-6"></path>
-                </svg>
-              </summary>
-              <div class="pt-3">
-                <MeasurementForm
-                  serverError={serverError}
-                  idPrefix={idPrefix}
-                  previousEntry={previousEntry}
-                  client:load
-                />
-              </div>
-            </details>
-            <script is:inline>
-              (function () {
-                var script = document.currentScript;
-                var details = script && script.previousElementSibling;
-                if (!(details instanceof HTMLDetailsElement)) return;
-                var key = details.getAttribute("data-storage-key");
-                if (!key) return;
-                function remember(value) {
-                  try {
-                    localStorage.setItem(key, value);
-                  } catch (error) {
-                    // Storage can be blocked; the cookie still keeps the next visit.
-                  }
-                  try {
-                    document.cookie =
-                      encodeURIComponent(key) +
-                      "=" +
-                      encodeURIComponent(value) +
-                      "; Path=/; Max-Age=31536000; SameSite=Lax";
-                  } catch (error) {
-                    // The choice still stays for this visit.
-                  }
-                }
-                var skipLoadToggle = details.getAttribute("data-restore") !== "true" && details.open;
-                details.addEventListener("toggle", function () {
-                  if (skipLoadToggle) {
-                    skipLoadToggle = false;
-                    return;
-                  }
-                  remember(details.open ? "open" : "closed");
-                });
-                if (details.getAttribute("data-restore") === "true") {
-                  var stored = null;
-                  try {
-                    stored = localStorage.getItem(key);
-                  } catch (error) {
-                    stored = null;
-                  }
-                  if (stored === "open" || stored === "closed") {
-                    details.open = stored === "open";
-                    remember(stored);
-                  }
-                }
-              })();
-            </script>
-          </>
-        )}
+{everyComponentOff ? (
+  <>
+    {notice ? (
+      <PageErrorToasts messages={[notice]} tone="notice" clearParams={["notice", "measured_on"]} client:load />
+    ) : null}
+    <ComponentsOffCard />
+  </>
+) : measurementsLoaded ? (
+  <>
+    {notice ? (
+      <PageErrorToasts messages={[notice]} tone="notice" clearParams={["notice", "measured_on"]} client:load />
+    ) : null}
+    {editing ? (
+      <div class="flex justify-center px-4 pb-4">
+        <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
+          <h1 class="mb-3 text-xl font-bold text-foreground">Edit measurement</h1>
+          <MeasurementForm serverError={serverError} idPrefix={idPrefix} entry={editingEntry} client:load />
+        </div>
+      </div>
+    ) : newTile.shown ? (
+      <CollapsibleTile
+        storageKey={addFormKey}
+        startsOpen={formStartsOpen}
+        title="New measurement"
+        note="Report a new measurement"
+        tileId="new-measurement"
+        restore={serverError === null}
+        preview={newTile.preview}
+      >
+        <MeasurementForm serverError={serverError} idPrefix={idPrefix} previousEntry={previousEntry} client:load />
+      </CollapsibleTile>
+    ) : null}
+    {listTile.shown ? (
+      <CollapsibleTile
+        storageKey={listKey}
+        startsOpen={listStartsOpen}
+        title="Your measurements"
+        note="Measurements reported so far"
+        tileId="measurements"
+        preview={listTile.preview}
+      >
         <MeasurementBrowser
           entries={entries}
           readOnly={false}
-          editingId={editingEntry?.id}
+          editEnabled={editTile.shown}
+          visualizeEnabled={chartsTile.shown}
+          editingId={editing ? editingEntry.id : undefined}
           confirmingId={confirmingEntry?.id}
           accountUserId={accountUserId}
           subjectTraineeId={subjectTraineeId}
@@ -188,16 +157,18 @@ const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
           month={month}
           client:load
         />
-      </>
-    ) : (
-      <>
-        <h1 class="mb-3 text-xl font-bold text-foreground">Add your next measurement</h1>
-        <PageErrorToasts messages={["Could not load your measurements"]} client:load />
-      </>
-    )}
+      </CollapsibleTile>
+    ) : null}
+  </>
+) : (
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
+      <h1 class="mb-3 text-xl font-bold text-foreground">{newTile.shown ? "New measurement" : "Your measurements"}</h1>
+      <PageErrorToasts messages={["Could not load your measurements"]} client:load />
+    </div>
   </div>
-</div>
-{measurementsLoaded && !editingEntry && accountUserId && subjectTraineeId ? (
+)}
+{chartsRender && chartsTile.shown && accountUserId && subjectTraineeId ? (
   <ChartsTile
     accountUserId={accountUserId}
     subjectTraineeId={subjectTraineeId}
@@ -209,9 +180,10 @@ const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
     initialAnchor={chartsAnchor}
     initialChart={chartInitial}
     initialDays={chartDays}
+    preview={chartsTile.preview}
   />
 ) : null}
-{measurementsLoaded && !editingEntry && accountUserId && subjectTraineeId ? (
+{chartsRender && topChartsTile.shown && accountUserId && subjectTraineeId ? (
   <TopChangesTile
     accountUserId={accountUserId}
     subjectTraineeId={subjectTraineeId}
@@ -224,5 +196,6 @@ const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
     initialChart={topChartInitial}
     initialDays={chartDays}
     initialFields={topChartsFields}
+    preview={topChartsTile.preview}
   />
 ) : null}
