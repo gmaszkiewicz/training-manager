@@ -1,4 +1,5 @@
 import type { Database } from "@/db/database.types";
+import type { ChartWindow } from "@/lib/measurement-chart";
 import type { PageSize } from "@/lib/measurement-page";
 
 export interface Profile {
@@ -8,6 +9,8 @@ export interface Profile {
 
 export type MeasurementField =
   "weight_kg" | "chest_cm" | "waist_cm" | "arms_cm" | "thigh_cm" | "calf_cm" | "hips_cm" | "navel_cm";
+
+export type CircumferenceField = Exclude<MeasurementField, "weight_kg">;
 
 export type MeasurementEntry = Omit<Database["public"]["Tables"]["measurements"]["Row"], "trainee_id">;
 
@@ -24,6 +27,12 @@ export type MeasurementWithDeltas = MeasurementEntry & {
 export type ChartMeasurement = MeasurementWithDeltas & {
   previous_measured_on: string | null;
 };
+
+/** A chart read: the entries in the window and the window itself (`null` for a read by ids). */
+export interface ChartBody {
+  entries: ChartMeasurement[];
+  window: ChartWindow | null;
+}
 
 export interface ProfileDetails {
   email: string;

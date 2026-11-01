@@ -65,10 +65,13 @@ export function monthGrid(month: string): string[] {
   return cells;
 }
 
+/** The month's English name alone, e.g. `March` for `2026-03`. */
+export function monthName(month: string): string {
+  return ENGLISH_MONTHS[Number(month.slice(5, 7)) - 1];
+}
+
 export function monthLabel(month: string): string {
-  const year = month.slice(0, 4);
-  const monthNumber = Number(month.slice(5, 7));
-  return `${ENGLISH_MONTHS[monthNumber - 1]} ${year}`;
+  return `${monthName(month)} ${month.slice(0, 4)}`;
 }
 
 export function widestMonthLabel(month: string): string {

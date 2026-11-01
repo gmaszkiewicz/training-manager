@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import TraineeJournal from "@/components/journal/TraineeJournal.astro";
 import ChartsTile from "@/components/measurements/ChartsTile.astro";
+import TopChangesTile from "@/components/measurements/TopChangesTile.astro";
 import JournalSinkStates from "@/components/kitchen-sink/JournalSinkStates";
 import { withDeltas } from "@/lib/measurement-deltas";
 import { measurementFields } from "@/lib/measurement-input";
@@ -54,6 +55,28 @@ const chartEntries: MeasurementWithDeltas[] = withDeltas(
         definition.field,
         Math.round((fieldValues[definition.field] + chartWaves[(step + index) % chartWaves.length] - step * 0.3) * 10) /
           10,
+      ]),
+    ) as Record<MeasurementField, number>),
+  })),
+).reverse();
+
+// Three October entries where every field only drops, so the gain charts have nothing to show. Odd fields drop most
+// in the week of 12 Oct, even fields in the week of 19 Oct, so the loss series peak on different axes.
+const lossDays = ["2026-10-05T07:30:00", "2026-10-12T07:20:00", "2026-10-19T07:40:00"];
+const lossDrops = [
+  [0, 0.5, 1.5],
+  [0, 1.3, 1.6],
+];
+const lossEntries: MeasurementWithDeltas[] = withDeltas(
+  lossDays.map((measuredOn, step) => ({
+    id: `sink-loss-${String(step + 1)}`,
+    measured_on: measuredOn,
+    created_at: `${measuredOn}.000Z`,
+    note: null,
+    ...(Object.fromEntries(
+      measurementFields.map((definition, index) => [
+        definition.field,
+        Math.round((fieldValues[definition.field] - lossDrops[index % 2][step]) * 10) / 10,
       ]),
     ) as Record<MeasurementField, number>),
   })),
@@ -148,6 +171,100 @@ const chartEntries: MeasurementWithDeltas[] = withDeltas(
           the first chart read returns.
         </p>
         <ChartsTile
+          readOnly={false}
+          month="2026-09"
+          today="2026-09-30"
+          startsOpen={true}
+          entries={[]}
+          forceLoading={true}
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-default">
+        <h2 id="state-top-default" class="border-border border-b pb-2 text-lg font-semibold">
+          Top changes, default
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TopChangesTile open in local mode, headed "Top changes" with the muted note "Summed changes versus the
+          previous entry", on the same six entries and <code class="text-foreground">today="2026-09-30"</code>, so
+          September holds five changes per field, one per calendar week, the first one against 28 Aug. Four radar charts
+          in a 2×2 grid on wide screens and one column on narrow ones: top weight gain and top circumference gain on
+          top, top weight loss and top circumference loss below. Every radar has an axis per sub-period of the period:
+          here the calendar weeks of September clipped to the month (1–6 Sep … 28–30 Sep); a week has its 7 dates, a
+          year its 12 months, Years its 5 years. Each value is the sum of the gains (or drops) in that sub-period, 0
+          when none. A circumference radar overlays one series per selected field in its line-chart colour (
+          <code class="text-foreground">--chart-2..8</code>); a weight radar has one series in{" "}
+          <code class="text-foreground">--chart-1</code>. Each series' top sub-period gets a larger dot, and the legend
+          names every changed series with it and its signed value, e.g. "Waist · 14–20 Sep +1.2 cm". A gain and a loss
+          radar share one scale. The tooltip shows the sub-period and, per series, the signed value and how many changes
+          it adds up. The "Circumferences" menu filters both circumference charts; the last checked field is disabled.
+        </p>
+        <TopChangesTile readOnly={false} month="2026-09" today="2026-09-30" startsOpen={true} entries={chartEntries} />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-closed">
+        <h2 id="state-top-closed" class="border-border border-b pb-2 text-lg font-semibold">
+          Top changes, closed
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TopChangesTile with <code class="text-foreground">{"startsOpen={false}"}</code>: only the summary and its
+          chevron.
+        </p>
+        <TopChangesTile readOnly={false} month="2026-09" today="2026-09-30" startsOpen={false} entries={chartEntries} />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-empty">
+        <h2 id="state-top-empty" class="border-border border-b pb-2 text-lg font-semibold">
+          Top changes, empty period
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          The same entries with <code class="text-foreground">month="2026-11"</code> and{" "}
+          <code class="text-foreground">today="2026-11-15"</code>, so November shows "No measurements in this period"
+          once, in place of the grid.
+        </p>
+        <TopChangesTile readOnly={false} month="2026-11" today="2026-11-15" startsOpen={true} entries={chartEntries} />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-losses">
+        <h2 id="state-top-losses" class="border-border border-b pb-2 text-lg font-semibold">
+          Top changes, losses only
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Three October entries where every field drops, so both gain cards keep their title and say "No gains in this
+          period", while both loss radars show their series: weight and every other field drop most in the week of 19
+          Oct, the rest in the week of 12 Oct, and the legends name those weeks.
+        </p>
+        <TopChangesTile readOnly={false} month="2026-10" today="2026-10-31" startsOpen={true} entries={lossEntries} />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-filtered">
+        <h2 id="state-top-filtered" class="border-border border-b pb-2 text-lg font-semibold">
+          Top changes, filtered circumferences
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TopChangesTile with <code class="text-foreground">initialFields</code> set to waist, hips and navel, so both
+          circumference radars draw only those three series, rescaled to the pair's largest sum. Unchecking down to one
+          field disables its checkbox.
+        </p>
+        <TopChangesTile
+          readOnly={false}
+          month="2026-09"
+          today="2026-09-30"
+          startsOpen={true}
+          entries={chartEntries}
+          initialFields={["waist_cm", "hips_cm", "navel_cm"]}
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-loading">
+        <h2 id="state-top-loading" class="border-border border-b pb-2 text-lg font-semibold">
+          Top changes, loading
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TopChangesTile with <code class="text-foreground">forceLoading</code>, showing "Loading charts…" as it does
+          before the first chart read returns.
+        </p>
+        <TopChangesTile
           readOnly={false}
           month="2026-09"
           today="2026-09-30"

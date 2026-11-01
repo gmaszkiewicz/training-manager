@@ -1,5 +1,6 @@
 import { withDeltas } from "@/lib/measurement-deltas";
-import type { MeasurementEntry, MeasurementWithDeltas } from "@/types";
+import { circumferenceFields } from "@/lib/measurement-input";
+import type { CircumferenceField, MeasurementEntry, MeasurementWithDeltas } from "@/types";
 
 export const pageSizes = [5, 10, 15] as const;
 
@@ -95,6 +96,32 @@ export function chartsSelectionStorageKey(accountUserId: string, subjectTraineeI
 
 export function chartsVisualizedStorageKey(accountUserId: string, subjectTraineeId: string): string {
   return `tm.measurements.chartsVisualized.${accountUserId}.${subjectTraineeId}`;
+}
+
+export function topChartsOpenStorageKey(accountUserId: string): string {
+  return `tm.measurements.topCharts.${accountUserId}`;
+}
+
+export function topChartsPeriodStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.topChartsPeriod.${accountUserId}.${subjectTraineeId}`;
+}
+
+export function topChartsFieldsStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.topChartsFields.${accountUserId}.${subjectTraineeId}`;
+}
+
+/** Reads a stored comma-separated circumference selection in field order; nothing valid means all 7. */
+export function parseTopChartsFields(value: unknown): CircumferenceField[] {
+  if (typeof value !== "string") {
+    return [...circumferenceFields];
+  }
+  const names = value.split(",").map((name) => name.trim());
+  const fields = circumferenceFields.filter((field) => names.includes(field));
+  return fields.length > 0 ? fields : [...circumferenceFields];
+}
+
+export function topChartsFieldsValue(fields: readonly CircumferenceField[]): string {
+  return circumferenceFields.filter((field) => fields.includes(field)).join(",");
 }
 
 export function addFormStartsOpen(hasServerError: boolean, preference: boolean | null): boolean {
