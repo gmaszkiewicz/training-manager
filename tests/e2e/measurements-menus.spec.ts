@@ -11,7 +11,8 @@ test.describe("360×800 menus", () => {
     await ensureMeasurementRow(page);
     await page.goto("/measurements");
 
-    const menu = page.getByRole("button", { name: "Menu", exact: true });
+    // By its aria-label: Astro's dev toolbar, which `astro preview` can inject, has its own button named "Menu".
+    const menu = page.getByLabel("Menu", { exact: true });
     await expect(menu).toBeVisible();
     await menu.click();
     await expect(page.getByRole("menuitem", { name: "Home" })).toBeVisible();

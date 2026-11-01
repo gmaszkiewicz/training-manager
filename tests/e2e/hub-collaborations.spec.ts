@@ -264,7 +264,7 @@ for (const { name, viewport } of widths) {
         await expect(row).toHaveCount(1);
         await expect(measurementsAccess(row, "Read · Pending")).toBeVisible();
         await chooseRowAction(row, page, "Accept request");
-        await expect(page.getByText("Request accepted")).toBeVisible();
+        await expect(page.getByText("Request accepted", { exact: true })).toBeVisible();
         await expect(measurementsAccess(row, "Read")).toBeVisible();
       });
 
@@ -278,7 +278,7 @@ for (const { name, viewport } of widths) {
         const confirm = trainerPage.getByRole("alertdialog");
         await expect(confirm).toBeVisible();
         await confirm.getByRole("button", { name: "Revoke" }).click();
-        await expect(trainerPage.getByText("Access revoked")).toBeVisible();
+        await expect(trainerPage.getByText("Access revoked", { exact: true })).toBeVisible();
         await expect(row).toHaveCount(0);
       });
 
@@ -306,7 +306,7 @@ for (const { name, viewport } of widths) {
         await expect(row).toContainText("Unread");
         await check(trainerPage.getByRole("checkbox", { name: "Select all" }));
         await trainerPage.getByRole("button", { name: "Mark as read" }).click();
-        await expect(trainerPage.getByText("Notifications marked as read")).toBeVisible();
+        await expect(trainerPage.getByText("Notifications marked as read", { exact: true })).toBeVisible();
         await expect(row).not.toContainText("Unread");
 
         await trainerPage.reload();
@@ -323,9 +323,9 @@ for (const { name, viewport } of widths) {
         await expect(confirm).toBeVisible();
         await expect(confirm).toContainText("Delete 1 notification for good?");
         await confirm.getByRole("button", { name: "Delete", exact: true }).click();
-        await expect(trainerPage.getByText("Notifications deleted")).toBeVisible();
+        await expect(trainerPage.getByText("Notifications deleted", { exact: true })).toBeVisible();
         await expect(row).toHaveCount(0);
-        await expect(trainerPage.getByText("No notifications")).toBeVisible();
+        await expect(trainerPage.getByText("No notifications", { exact: true })).toBeVisible();
       });
     });
   });
