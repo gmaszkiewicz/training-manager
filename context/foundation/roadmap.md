@@ -121,7 +121,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-43 | reduce-supabase-round-trips | user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before | S-24, S-42 | MS-34 | done |
 | S-44 | role-view-in-profile | user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons | S-35 | MS-35 | done |
 | S-45 | app-small-redesign | user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme | S-11, S-35 | MS-36 | done |
-| S-46 | top-progress-charts | user can open a separate Top changes tile with four radial charts — top weight gain, top circumference gain, top weight loss, top circumference loss — for the selected week, month, year, or last 5 years, read each chart's legend, and filter which circumferences the circumference charts show | S-41, S-45 | MS-37 | in-progress |
+| S-46 | top-progress-charts | user can open a separate Top changes tile with four radial charts — top weight gain, top circumference gain, top weight loss, top circumference loss — for the selected week, month, year, or last 5 years, read each chart's legend, and filter which circumferences the circumference charts show | S-41, S-45 | MS-37 | done |
 
 ## Streams
 
@@ -710,7 +710,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** whether a "change" is between consecutive entries or first-to-last within the period; what "largest and smallest" means for a gain chart (top N gains, or the largest and smallest gain); how many items each radial chart shows; whether the period follows the line charts tile's choice or has its own control; whether a linked trainer sees the same tile; whether the tile collapses like the line charts tile and remembers its state.
 - **Risk:** A 5-year range reads many entries, so the top changes must be computed without walking the whole journal on each render (S-24 kept the list query lean). Gains and losses must use the same difference as the list's delta versus the previous entry. Radial chart colours must come from chart tokens so they follow the dark theme.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -829,3 +829,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-43: user can open a signed-in page, the measurements screen above all, noticeably faster because the request makes fewer sequential round trips to Supabase, and sees the same data as before** — Archived 2026-10-29 → `context/archive/2026-10-29-reduce-supabase-round-trips/`. Lesson: —.
 - **S-44: user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons** — Archived 2026-10-30 → `context/archive/2026-10-30-role-view-in-profile/`. Lesson: —.
 - **S-45: user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme** — Archived 2026-10-31 → `context/archive/2026-10-30-app-small-redesign/`. Lesson: —.
+- **S-46: user can open a separate Top changes tile with four radial charts — top weight gain, top circumference gain, top weight loss, top circumference loss — for the selected week, month, year, or last 5 years, read each chart's legend, and filter which circumferences the circumference charts show** — Archived 2026-11-01 → `context/archive/2026-11-01-top-progress-charts/`. Lesson: —.
