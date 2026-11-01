@@ -440,18 +440,18 @@ The nullable column with no backfill means `null` resolves to the defaults, so e
 
 #### Automated
 
-- [x] 4.1 Unit tests pass: `npm test` (topbar `measurementsOn`)
-- [x] 4.2 Lint, token check and type check pass: `npm run lint`, `npm run check:home-tokens`, `npx astro check`
-- [x] 4.3 E2E passes: `npx playwright test` (new `component-settings.spec.ts`, updated `top-changes-charts.spec.ts`)
-- [x] 4.4 Smoke passes: `npm run smoke`
-- [x] 4.5 Build succeeds: `npm run build`
+- [x] 4.1 Unit tests pass: `npm test` (topbar `measurementsOn`) — fe953ca
+- [x] 4.2 Lint, token check and type check pass: `npm run lint`, `npm run check:home-tokens`, `npx astro check` — fe953ca
+- [x] 4.3 E2E passes: `npx playwright test` (new `component-settings.spec.ts`, updated `top-changes-charts.spec.ts`) — fe953ca
+- [x] 4.4 Smoke passes: `npm run smoke` — fe953ca
+- [x] 4.5 Build succeeds: `npm run build` — fe953ca
 
 #### Manual
 
-- [x] 4.6 A fresh user sees New measurements, Measurements and Charts, and no Top changes tile
-- [x] 4.7 With Top changes v0.1 the tile shows the red Preview badge; the tooltip works on hover and focus; the badge click does not collapse the tile
-- [x] 4.8 With Measurements off: no menu link (desktop and hamburger); `/measurements` and sign-in land on Hub; back on restores everything
-- [x] 4.9 All components off shows the empty-state card linking to Settings → Components
-- [x] 4.10 A trainer's own Progression off hides their Charts tile without affecting the trainee
-- [x] 4.11 With Edit measurement off, row Edit is disabled with the "component is off" tooltip and Delete still works
-- [x] 4.12 Settings → Components lists only the role's rows (trainee: New/Edit measurement, Your measurements; trainer: Find trainee, Measurements for)
+- [x] 4.6 A fresh user sees New measurements, Measurements and Charts, and no Top changes tile — fe953ca
+- [x] 4.7 With Top changes v0.1 the tile shows the red Preview badge; the tooltip works on hover and focus; the badge click does not collapse the tile — fe953ca
+- [x] 4.8 With Measurements off: no menu link (desktop and hamburger); `/measurements` and sign-in land on Hub; back on restores everything — fe953ca
+- [x] 4.9 All components off shows the empty-state card linking to Settings → Components — fe953ca
+- [x] 4.10 A trainer's own Progression off hides their Charts tile without affecting the trainee — fe953ca
+- [x] 4.11 With Edit measurement off, row Edit is disabled with the "component is off" tooltip and Delete still works — fe953ca
+- [x] 4.12 Settings → Components lists only the role's rows (trainee: New/Edit measurement, Your measurements; trainer: Find trainee, Measurements for) — fe953ca
