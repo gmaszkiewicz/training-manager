@@ -685,6 +685,15 @@ const steps = [
     { status: 302, location: "/auth/signin", exactLocation: true },
   ],
   [
+    "component settings save redirects anonymous user",
+    () =>
+      request("/api/settings/components", {
+        method: "POST",
+        form: { "module.measurements": "on", "component.top-changes": "0.1" },
+      }),
+    { status: 302, location: "/auth/signin", exactLocation: true },
+  ],
+  [
     "avatar upload redirects anonymous user",
     () => request("/api/profile/avatar", { method: "POST", multipart: { intent: "upload", avatar: avatarPngFile() } }),
     { status: 302, location: "/auth/signin", exactLocation: true },

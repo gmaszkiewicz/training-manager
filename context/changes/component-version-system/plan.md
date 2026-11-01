@@ -410,31 +410,31 @@ The nullable column with no backfill means `null` resolves to the defaults, so e
 
 #### Automated
 
-- [x] 2.1 Migration applies cleanly on local Supabase: `npx supabase db reset`
-- [x] 2.2 Migration check passes: `npm run migration-check`
-- [x] 2.3 Types regenerate with no diff beyond the new column: `npm run db:types`
-- [x] 2.4 Unit tests pass: `npm test` (`components.test.ts`)
-- [x] 2.5 Lint and type check pass: `npm run lint`, `npx astro check`
+- [x] 2.1 Migration applies cleanly on local Supabase: `npx supabase db reset` — 5741991
+- [x] 2.2 Migration check passes: `npm run migration-check` — 5741991
+- [x] 2.3 Types regenerate with no diff beyond the new column: `npm run db:types` — 5741991
+- [x] 2.4 Unit tests pass: `npm test` (`components.test.ts`) — 5741991
+- [x] 2.5 Lint and type check pass: `npm run lint`, `npx astro check` — 5741991
 
 #### Manual
 
-- [x] 2.6 An authenticated user can update only their own `component_settings`; a non-object value is refused
+- [x] 2.6 An authenticated user can update only their own `component_settings`; a non-object value is refused — 5741991
 
 ### Phase 3: Settings → Components screen
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm test` (`component-settings-form.test.ts`)
-- [ ] 3.2 Lint and type check pass: `npm run lint`, `npx astro check`
-- [ ] 3.3 Smoke passes: `npm run smoke` (anonymous save redirects to sign-in)
-- [ ] 3.4 Build succeeds: `npm run build`
+- [x] 3.1 Unit tests pass: `npm test` (`component-settings-form.test.ts`)
+- [x] 3.2 Lint and type check pass: `npm run lint`, `npx astro check`
+- [x] 3.3 Smoke passes: `npm run smoke` (anonymous save redirects to sign-in)
+- [x] 3.4 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 3.5 Settings shows Change password and Components tabs; Components shows defaults and locked Nutrition, Training, Planning
-- [ ] 3.6 Choosing Top changes v0.1 and Save shows the toast and persists on reload
-- [ ] 3.7 Measurements switch off disables rows with values kept; switching back on restores the earlier versions
-- [ ] 3.8 Dark theme and phone width render correctly
+- [x] 3.5 Settings shows Change password and Components tabs; Components shows defaults and locked Nutrition, Training, Planning
+- [x] 3.6 Choosing Top changes v0.1 and Save shows the toast and persists on reload
+- [x] 3.7 Measurements switch off disables rows with values kept; switching back on restores the earlier versions
+- [x] 3.8 Dark theme and phone width render correctly
 
 ### Phase 4: Gating, preview badge and e2e
 

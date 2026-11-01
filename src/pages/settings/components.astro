@@ -1,0 +1,56 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AccountTabs from "@/components/account/AccountTabs";
+import ComponentsForm from "@/components/settings/ComponentsForm";
+import Topbar from "@/components/Topbar.astro";
+import { COMPONENTS_LOAD_ERROR, componentsPageError, componentsPageNotice } from "@/lib/component-settings-form";
+import { defaultComponentSettings } from "@/lib/components";
+import { readProfileRole } from "@/lib/services/ensure-profile";
+import { readComponentSettings } from "@/lib/services/profile-details";
+import { SETTINGS_TABS } from "@/lib/settings-tabs";
+import { createClient } from "@/lib/supabase";
+import type { ComponentSettings, Profile } from "@/types";
+
+const user = Astro.locals.user;
+let settings: ComponentSettings = defaultComponentSettings();
+let role: Profile["role"] | null = null;
+let unavailable = false;
+if (user) {
+  const supabase = createClient(Astro.request.headers, Astro.cookies);
+  const [stored, storedRole] = supabase
+    ? await Promise.all([readComponentSettings(supabase, user.id), readProfileRole(supabase, user.id)])
+    : [null, null];
+  if (stored && storedRole) {
+    settings = stored;
+    role = storedRole;
+  } else {
+    // The defaults here would look like the saved state, and Save would overwrite the stored choices.
+    unavailable = true;
+  }
+}
+const serverError =
+  componentsPageError(Astro.url.searchParams.get("error")) ?? (unavailable ? COMPONENTS_LOAD_ERROR : null);
+const notice = componentsPageNotice(Astro.url.searchParams.get("notice"));
+---
+
+<Layout title="Settings" measurementChrome>
+  <div class="flex justify-center px-4 pt-2">
+    <div class="w-full max-w-measurement">
+      <Topbar />
+    </div>
+  </div>
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4 text-card-foreground">
+      <AccountTabs tabs={SETTINGS_TABS} current="components" contentClassName="max-w-xl">
+        <ComponentsForm
+          settings={settings}
+          role={role}
+          serverError={serverError}
+          notice={notice}
+          unavailable={unavailable}
+          client:load
+        />
+      </AccountTabs>
+    </div>
+  </div>
+</Layout>
