@@ -1,5 +1,6 @@
 ---
 import ChartsTile from "@/components/measurements/ChartsTile.astro";
+import CollapsibleTile from "@/components/measurements/CollapsibleTile.astro";
 import TopChangesTile from "@/components/measurements/TopChangesTile.astro";
 import type { ChartBody } from "@/types";
 import type { ChartPeriod } from "@/lib/measurement-chart";
@@ -9,7 +10,12 @@ import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
 import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
 import { Button } from "@/components/ui/button";
 import { requestOutcomeMessage } from "@/lib/collaborations";
-import { addFormStartsOpen, type PageSize } from "@/lib/measurement-page";
+import {
+  addFormStartsOpen,
+  findTraineeOpenStorageKey,
+  listOpenStorageKey,
+  type PageSize,
+} from "@/lib/measurement-page";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { CircumferenceField, MeasurementWithDeltas } from "@/types";
 
@@ -30,6 +36,8 @@ interface Props {
   pageCount?: number;
   pageSize?: PageSize;
   month?: string;
+  findTraineeOpen?: boolean | null;
+  listOpen?: boolean | null;
   chartsOpen?: boolean | null;
   chartsPeriod?: ChartPeriod;
   chartsAnchor?: string | null;
@@ -39,7 +47,7 @@ interface Props {
   topChartsOpen?: boolean | null;
   topChartsPeriod?: ChartPeriod;
   topChartsAnchor?: string | null;
-  /** The server's Top changes read for the tile's first render; its picker shares `chartDays`. */
+  /** The server's Top progression read for the tile's first render; its picker shares `chartDays`. */
   topChartInitial?: ChartBody | null;
   /** The circumferences from the preference cookie; all 7 when absent. */
   topChartsFields?: readonly CircumferenceField[];
@@ -64,6 +72,8 @@ const {
   pageCount,
   pageSize,
   month,
+  findTraineeOpen = null,
+  listOpen = null,
   chartsOpen = null,
   chartsPeriod,
   chartsAnchor = null,
@@ -90,6 +100,10 @@ if (mode === "trainer" && trainerLinksLoaded && selectedLink !== null && !traine
 if (mode !== "trainer") {
   toastMessages.push("Could not open your journal");
 }
+const findTraineeKey = accountUserId ? findTraineeOpenStorageKey(accountUserId) : null;
+const findTraineeStartsOpen = addFormStartsOpen(serverError !== null, findTraineeOpen);
+const listKey = accountUserId ? listOpenStorageKey(accountUserId) : null;
+const listStartsOpen = addFormStartsOpen(false, listOpen);
 const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
 const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
 const showCharts = accountUserId !== undefined || chartEntries !== undefined;
@@ -97,61 +111,64 @@ const requestNotice =
   mode === "trainer" && requestedEmail !== null ? requestOutcomeMessage("sent", requestedEmail) : null;
 ---
 
-<div class="flex justify-center px-4 pb-4">
-  <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
-    {toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
-    {requestNotice !== null ? (
-      <PageErrorToasts messages={[requestNotice]} tone="notice" clearParams={["requested"]} client:load />
-    ) : null}
-    {mode === "trainer" ? (
-      <>
-        {trainerLinksLoaded ? (
-          <>
-            <form method="POST" action="/api/trainer-links" class="space-y-3">
-              {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
-              <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
-              <Button type="submit" className="w-full">
-                Request read access
-              </Button>
-            </form>
-            {trainerLinks.length > 0 ? (
-              <>
-                <h2 class="mt-6 mb-3 text-xl font-bold text-foreground">Body measurements</h2>
-                <div class="flex justify-center">
-                  {selectedLink ? (
-                    <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />
-                  ) : null}
-                </div>
-                {selectedLink ? (
-                  trainerMeasurementsLoaded ? (
-                    <MeasurementBrowser
-                      entries={entries}
-                      readOnly={true}
-                      accountUserId={accountUserId}
-                      subjectTraineeId={selectedLink.traineeId}
-                      idPrefix={idPrefix}
-                      today={today}
-                      dates={dates}
-                      page={page}
-                      pageCount={pageCount}
-                      pageSize={pageSize}
-                      month={month}
-                      client:load
-                    />
-                  ) : null
-                ) : null}
-              </>
-            ) : null}
-          </>
-        ) : null}
-      </>
-    ) : (
-      <>
-        <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Measurements</h1>
-      </>
-    )}
+{toastMessages.length > 0 ? <PageErrorToasts messages={toastMessages} client:load /> : null}
+{requestNotice !== null ? (
+  <PageErrorToasts messages={[requestNotice]} tone="notice" clearParams={["requested"]} client:load />
+) : null}
+{mode === "trainer" ? null : (
+  <div class="flex justify-center px-4 pb-4">
+    <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
+      <h1 class="mb-6 text-center text-2xl font-bold text-card-foreground">Measurements</h1>
+    </div>
   </div>
-</div>
+)}
+{mode === "trainer" && trainerLinksLoaded ? (
+  <CollapsibleTile
+    storageKey={findTraineeKey}
+    startsOpen={findTraineeStartsOpen}
+    title="Find trainee"
+    note="Request read access to a trainee's measurements"
+    tileId="find-trainee"
+    restore={serverError === null}
+  >
+    <form method="POST" action="/api/trainer-links" class="mt-3 space-y-3">
+      {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
+      <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
+      <Button type="submit" className="w-full">
+        Request read access
+      </Button>
+    </form>
+  </CollapsibleTile>
+) : null}
+{mode === "trainer" && trainerLinksLoaded && trainerLinks.length > 0 && selectedLink ? (
+  <CollapsibleTile
+    storageKey={listKey}
+    startsOpen={listStartsOpen}
+    title="Measurements for"
+    note="Measurements reported by the chosen trainee"
+    tileId="measurements"
+  >
+    <div class="mt-3 flex justify-center">
+      <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />
+    </div>
+    {trainerMeasurementsLoaded ? (
+      <MeasurementBrowser
+        entries={entries}
+        readOnly={true}
+        accountUserId={accountUserId}
+        subjectTraineeId={selectedLink.traineeId}
+        idPrefix={idPrefix}
+        today={today}
+        dates={dates}
+        page={page}
+        pageCount={pageCount}
+        pageSize={pageSize}
+        month={month}
+        client:load
+      />
+    ) : null}
+  </CollapsibleTile>
+) : null}
 {mode === "trainer" && trainerLinksLoaded && selectedLink && showCharts ? (
   <ChartsTile
     accountUserId={accountUserId}

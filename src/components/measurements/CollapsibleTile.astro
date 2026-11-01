@@ -4,15 +4,21 @@ interface Props {
   storageKey: string | null;
   startsOpen: boolean;
   title: string;
-  /** The muted line under the title; `null` renders it hidden for the island to fill. */
-  note: string | null;
-  /** Written to `data-chart-tile`, so each island finds only its own tile's title and note. */
+  /** The muted line under the title; `null` renders it hidden for the island to fill, absent renders none. */
+  note?: string | null;
+  /** Written to `data-tile`, so each island finds only its own tile's title and note. */
   tileId: string;
+  /**
+   * `false` keeps the server's open state for this load: the stored choice is not restored, and the first toggle the
+   * browser fires for an initially open tile is not saved over it (the add form after a server error).
+   */
+  restore?: boolean;
 }
 
-const { storageKey, startsOpen, title, note, tileId } = Astro.props;
+const { storageKey, startsOpen, title, note, tileId, restore = true } = Astro.props;
 
 const headingId = `${tileId}-${crypto.randomUUID()}`;
+const hasNote = note !== undefined;
 ---
 
 <div class="flex justify-center px-4 pb-4">
@@ -20,28 +26,30 @@ const headingId = `${tileId}-${crypto.randomUUID()}`;
     <details
       class="group"
       aria-labelledby={`${headingId}-title`}
-      data-charts-tile
-      data-chart-tile={tileId}
+      data-tile={tileId}
       data-storage-key={storageKey}
+      data-restore={restore ? "true" : undefined}
       open={startsOpen}
     >
       <summary
         aria-labelledby={`${headingId}-title`}
-        aria-describedby={`${headingId}-note`}
+        aria-describedby={hasNote ? `${headingId}-note` : undefined}
         class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden"
       >
         <span class="flex min-w-0 flex-col">
-          <span id={`${headingId}-title`} data-charts-title>
+          <span id={`${headingId}-title`} data-tile-title>
             {title}
           </span>
-          <span
-            id={`${headingId}-note`}
-            data-charts-note
-            class="text-sm font-normal text-muted-foreground"
-            hidden={note === null}
-          >
-            {note}
-          </span>
+          {hasNote ? (
+            <span
+              id={`${headingId}-note`}
+              data-tile-note
+              class="text-sm font-normal text-muted-foreground"
+              hidden={note === null}
+            >
+              {note}
+            </span>
+          ) : null}
         </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -68,6 +76,7 @@ const headingId = `${tileId}-${crypto.randomUUID()}`;
         if (!(details instanceof HTMLDetailsElement)) return;
         var key = details.getAttribute("data-storage-key");
         if (!key) return;
+        var restore = details.getAttribute("data-restore") === "true";
         function remember(value) {
           try {
             localStorage.setItem(key, value);
@@ -81,9 +90,15 @@ const headingId = `${tileId}-${crypto.randomUUID()}`;
             // The choice still stays for this visit.
           }
         }
+        var skipLoadToggle = !restore && details.open;
         details.addEventListener("toggle", function () {
+          if (skipLoadToggle) {
+            skipLoadToggle = false;
+            return;
+          }
           remember(details.open ? "open" : "closed");
         });
+        if (!restore) return;
         var stored = null;
         try {
           stored = localStorage.getItem(key);

@@ -3,13 +3,13 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Chromium exposes a <summary> as text inside the details group, not as a button, so the tile heading is found by text.
-const tileSummary = /progression$|^Selected entries \(\d+\)$/;
+const tileSummary = /^(Weekly|Monthly|Year) progression$|^Selected entries \(\d+\)$/;
 
 function tileHeading(page: Page, name: string | RegExp = tileSummary): Locator {
   return page.getByText(name, { exact: true });
 }
 
-/** The Charts tile itself, named by its title, so its controls are not confused with the Top changes tile's. */
+/** The Charts tile itself, named by its title, so its controls are not confused with the Top progression tile's. */
 function chartsTile(page: Page): Locator {
   return page.getByRole("group", { name: tileSummary });
 }

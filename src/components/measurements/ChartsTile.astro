@@ -1,5 +1,5 @@
 ---
-import CollapsibleChartTile from "@/components/measurements/CollapsibleChartTile.astro";
+import CollapsibleTile from "@/components/measurements/CollapsibleTile.astro";
 import MeasurementCharts, { chartsTileId } from "@/components/measurements/MeasurementCharts";
 import type { ChartBody } from "@/types";
 import { chartHeading, defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
@@ -45,7 +45,7 @@ const storageKey = accountUserId ? chartsOpenStorageKey(accountUserId) : null;
 const heading = chartHeading(initialPeriod);
 ---
 
-<CollapsibleChartTile
+<CollapsibleTile
   storageKey={storageKey}
   startsOpen={startsOpen}
   title={heading.title}
@@ -66,4 +66,4 @@ const heading = chartHeading(initialPeriod);
     initialDays={initialDays}
     client:load
   />
-</CollapsibleChartTile>
+</CollapsibleTile>

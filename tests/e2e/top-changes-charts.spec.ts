@@ -1,22 +1,22 @@
-// The Top changes tile on the production preview: it renders the seeded radar charts, its period controls change the
+// The Top progression tile on the production preview: it renders the seeded radar charts, its period controls change the
 // window and survive a reload, its circumference filter survives a reload, and its closed state survives a reload.
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const chartTitles = ["Top weight gain", "Top circumference gain", "Top weight loss", "Top circumference loss"];
 
-/** The Top changes tile itself, named by its title, so the Charts tile's controls above it are never matched. */
+/** The Top progression tile itself, named by its title, so the Charts tile's controls above it are never matched. */
 function topTile(page: Page): Locator {
-  return page.getByRole("group", { name: "Top changes", exact: true });
+  return page.getByRole("group", { name: "Top progression", exact: true });
 }
 
 /** The line Charts tile above it, named by its title. */
 function chartsTile(page: Page): Locator {
-  return page.getByRole("group", { name: /progression$/ });
+  return page.getByRole("group", { name: /^(Weekly|Monthly|Year) progression$/ });
 }
 
 // Chromium exposes a <summary> as text inside the details group, not as a button, so the heading is found by text.
 function topSummary(page: Page): Locator {
-  return topTile(page).getByText("Top changes", { exact: true });
+  return topTile(page).getByText("Top progression", { exact: true });
 }
 
 function periodButton(page: Page, name: string): Locator {
@@ -121,7 +121,7 @@ async function removeEntries(page: Page, measuredOn: readonly string[]): Promise
   }
 }
 
-test("the Top changes tile renders the seeded charts below the Charts tile", async ({ page }) => {
+test("the Top progression tile renders the seeded charts below the Charts tile", async ({ page }) => {
   const seeded = await seedEntries(page, 2);
   try {
     await page.goto("/measurements");
@@ -195,7 +195,7 @@ test("the circumference filter is remembered across a reload", async ({ page }) 
   await expect(page.getByRole("menuitemcheckbox", { name: "Waist", exact: true })).toBeChecked();
 });
 
-test("the Top changes summary toggles the tile and the closed state survives a reload", async ({ page }) => {
+test("the Top progression summary toggles the tile and the closed state survives a reload", async ({ page }) => {
   await page.goto("/measurements");
   const periods = topTile(page).getByRole("group", { name: "Chart period" });
   const chartsPeriods = chartsTile(page).getByRole("group", { name: "Chart period" });

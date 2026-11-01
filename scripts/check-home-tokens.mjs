@@ -33,7 +33,7 @@ const FILES = [
   "src/components/measurements/ChartsTile.astro",
   "src/components/measurements/MeasurementCharts.tsx",
   "src/components/measurements/MeasurementChart.tsx",
-  "src/components/measurements/CollapsibleChartTile.astro",
+  "src/components/measurements/CollapsibleTile.astro",
   "src/components/measurements/ChartPeriodControls.tsx",
   "src/components/hooks/useChartPeriodRead.ts",
   "src/components/measurements/TopChangeChart.tsx",

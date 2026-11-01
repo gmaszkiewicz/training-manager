@@ -21,7 +21,7 @@ function metric(page: Page, label: string, unit: string): Locator {
 async function showAddForm(page: Page): Promise<void> {
   const date = page.getByRole("button", { name: "Date and time", exact: true });
   if (!(await date.isVisible())) {
-    await page.getByRole("button", { name: "Add your next measurement" }).click();
+    await page.getByRole("button", { name: "New measurement" }).click();
     await expect(date).toBeVisible();
   }
   // The server renders the date empty; the browser minute shows once the island hydrates and takes input.
@@ -56,7 +56,7 @@ async function browserYesterday(page: Page): Promise<string> {
 
 /** Picks yesterday in the open date picker: the grid runs day by day, so it is the cell before the selected one. */
 async function pickYesterday(page: Page): Promise<void> {
-  const days = page.locator("details[data-add-form]").locator("button[aria-pressed]");
+  const days = page.locator('details[data-tile="new-measurement"]').locator("button[aria-pressed]");
   const selected = await days.evaluateAll((buttons) =>
     buttons.findIndex((button) => button.getAttribute("aria-pressed") === "true"),
   );
@@ -171,7 +171,9 @@ test("an entry added through the form is what the reopened form starts with", as
     await expect(page.getByRole("textbox", { name: "Note", exact: true })).toHaveValue("");
     for (const field of typed) {
       await expect(
-        page.locator("details[data-add-form]").locator(`[aria-label="${field.label} unchanged 0.0 ${field.unit}"]`),
+        page
+          .locator('details[data-tile="new-measurement"]')
+          .locator(`[aria-label="${field.label} unchanged 0.0 ${field.unit}"]`),
       ).toHaveText("0.0");
     }
   } finally {

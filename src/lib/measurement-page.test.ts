@@ -15,7 +15,11 @@ import {
   chartsSelectionStorageKey,
   chartsVisualizedStorageKey,
   journalPageStorageKey,
+  findTraineeOpenStorageKey,
+  listOpenStorageKey,
   parseChartsOpen,
+  parseFindTraineeOpen,
+  parseListOpen,
   parseAddFormOpen,
   parseJournalPage,
   measurementMonth,
@@ -153,6 +157,53 @@ describe("parseChartsOpen", () => {
     expect(parseChartsOpen("closed")).toBe(false);
     expect(parseChartsOpen(null)).toBeNull();
     expect(parseChartsOpen("true")).toBeNull();
+  });
+});
+
+describe("list open state", () => {
+  it("scopes the list tile to the account, apart from the add form and the chart tiles", () => {
+    expect(listOpenStorageKey("account-1")).toBe("tm.measurements.list.account-1");
+    expect(listOpenStorageKey("account-2")).not.toBe(listOpenStorageKey("account-1"));
+    expect(listOpenStorageKey("account-1")).not.toBe(addFormStorageKey("account-1"));
+    expect(listOpenStorageKey("account-1")).not.toBe(chartsOpenStorageKey("account-1"));
+    expect(listOpenStorageKey("account-1")).not.toBe(topChartsOpenStorageKey("account-1"));
+  });
+
+  it("keeps open and closed and ignores anything else", () => {
+    expect(parseListOpen("open")).toBe(true);
+    expect(parseListOpen("closed")).toBe(false);
+    expect(parseListOpen(null)).toBeNull();
+    expect(parseListOpen("")).toBeNull();
+    expect(parseListOpen("true")).toBeNull();
+  });
+
+  it("starts open when nothing is stored and follows a stored choice", () => {
+    expect(addFormStartsOpen(false, parseListOpen(null))).toBe(true);
+    expect(addFormStartsOpen(false, parseListOpen("closed"))).toBe(false);
+    expect(addFormStartsOpen(false, parseListOpen("open"))).toBe(true);
+  });
+});
+
+describe("find trainee open state", () => {
+  it("scopes the find trainee tile to the account, apart from the list and the chart tiles", () => {
+    expect(findTraineeOpenStorageKey("account-1")).toBe("tm.measurements.findTrainee.account-1");
+    expect(findTraineeOpenStorageKey("account-2")).not.toBe(findTraineeOpenStorageKey("account-1"));
+    expect(findTraineeOpenStorageKey("account-1")).not.toBe(listOpenStorageKey("account-1"));
+    expect(findTraineeOpenStorageKey("account-1")).not.toBe(chartsOpenStorageKey("account-1"));
+    expect(findTraineeOpenStorageKey("account-1")).not.toBe(topChartsOpenStorageKey("account-1"));
+  });
+
+  it("keeps open and closed and ignores anything else", () => {
+    expect(parseFindTraineeOpen("open")).toBe(true);
+    expect(parseFindTraineeOpen("closed")).toBe(false);
+    expect(parseFindTraineeOpen(null)).toBeNull();
+    expect(parseFindTraineeOpen("true")).toBeNull();
+  });
+
+  it("starts open when nothing is stored, and after a server error whatever is stored", () => {
+    expect(addFormStartsOpen(false, parseFindTraineeOpen(null))).toBe(true);
+    expect(addFormStartsOpen(false, parseFindTraineeOpen("closed"))).toBe(false);
+    expect(addFormStartsOpen(true, parseFindTraineeOpen("closed"))).toBe(true);
   });
 });
 

@@ -21,7 +21,7 @@ import { measurementFields } from "@/lib/measurement-input";
 import { chartsPeriodStorageKey, utcToday } from "@/lib/measurement-page";
 import type { ChartBody, MeasurementWithDeltas } from "@/types";
 
-/** The line tile's id on its `CollapsibleChartTile`, so this island only rewrites its own heading. */
+/** The line tile's id on its `CollapsibleTile`, so this island only rewrites its own heading. */
 export const chartsTileId = "charts";
 
 interface Props {
@@ -46,7 +46,7 @@ interface Props {
 
 /** This island's own tile, found by tile id so another chart tile's heading is never touched. */
 function ownTile(root: HTMLElement | null): Element | null | undefined {
-  return root?.closest(`[data-chart-tile="${chartsTileId}"]`);
+  return root?.closest(`[data-tile="${chartsTileId}"]`);
 }
 
 function spansYears(points: readonly number[]): boolean {
@@ -153,8 +153,8 @@ export default function MeasurementCharts({
   // The summary heading belongs to the server-rendered tile around this island; keep it in step with the period.
   useEffect(() => {
     const tile = ownTile(rootRef.current);
-    const title = tile?.querySelector("[data-charts-title]");
-    const note = tile?.querySelector("[data-charts-note]");
+    const title = tile?.querySelector("[data-tile-title]");
+    const note = tile?.querySelector("[data-tile-note]");
     if (title instanceof HTMLElement) {
       title.textContent = heading.title;
     }
@@ -168,7 +168,7 @@ export default function MeasurementCharts({
   const selectedHint =
     selected && body !== null ? body.entries.map((entry) => chartDateTimeLabel(entry.measured_on)).join("\n") : "";
   useEffect(() => {
-    const title = ownTile(rootRef.current)?.querySelector("[data-charts-title]");
+    const title = ownTile(rootRef.current)?.querySelector("[data-tile-title]");
     if (!(title instanceof HTMLElement)) {
       return;
     }

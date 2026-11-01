@@ -20,17 +20,17 @@ Add a Settings → Components screen where a signed-in user switches each module
 ## Desired End State
 
 - `/settings` shows two tabs: Change password and Components (`/settings/components`).
-- Components lists four module sections in `dashboards` order. Measurements has an on/off switch and a table of its four components (component name, then a select with "Off" or a version):
-  - New measurements: Off / v1.0 (default v1.0)
-  - Measurements: Off / v1.0 (default v1.0)
-  - Progression: Off / v1.0 (default v1.0)
-  - Top changes: Off / v0.1 (preview) (default Off)
+- Components lists four module sections in `dashboards` order. Measurements has an on/off switch and a table of the components **for the signed-in user's role** only (component name, then a select with "Off" or a version):
+  - Trainee: New measurement, Edit measurement, Your measurements, Progression: Off / v1.0 (default v1.0); Top progression: Off / v0.1 (preview) (default Off)
+  - Trainer: Find trainee, Measurements for, Progression: Off / v1.0 (default v1.0); Top progression: Off / v0.1 (preview) (default Off)
 - Nutrition, Training and Planning each show a switch that is off and disabled, a "Not available yet" note, and no table.
 - When the Measurements switch is off, its rows stay visible but disabled, and their chosen versions are kept on save.
 - One Save button under the tables saves everything and shows the "Components saved" toast. A failed save shows an error toast.
 - The menu shows Measurements only while the signed-in user's Measurements module is on. With it off, `/measurements` redirects to `/hub`, and that includes the landing after sign-in and sign-up.
-- On `/measurements`, each tile renders only when its component is on, by the **signed-in user's own** choices (a trainer's own settings gate the trainer's view; New measurements never applies to a trainer). If every component is off, one empty-state card says so and links to Settings → Components.
-- New measurements and Measurements are separate collapsible tiles. New measurements keeps the S-33 default (open) and its remembered open state. Measurements keeps five per page and Visualize/Clear. Edit mode shows a non-collapsible "Edit measurement" card above the Measurements tile, even when New measurements is off.
+- On `/measurements`, each tile renders only when its component is on, by the **signed-in user's own** choices (a trainer's own settings gate the trainer's view). New measurement and Edit measurement apply to trainees only; Find trainee and Measurements for apply to trainers only. If every component of the role is off, one empty-state card says so and links to Settings → Components.
+- Trainee tiles: New measurement and Your measurements are separate collapsible tiles. New measurement keeps the S-33 default (open) and its remembered open state. Your measurements keeps five per page and Visualize/Clear. Edit mode shows a non-collapsible "Edit measurement" card above the list tile, even when New measurement is off.
+- Trainer tiles: Find trainee (email search + Request read access) and Measurements for (the trainee picker under its title, then the read-only list) are separate collapsible tiles. There is no "Body measurements" heading.
+- When Edit measurement is off, the row Actions menu keeps Delete, and Edit stays visible but disabled, with a tooltip saying the Edit measurement component is off. An `?edit=` link falls back to the normal view.
 - A tile whose chosen version is a preview shows a red badge, "Preview", next to its title. Its tooltip reads that this is a preview version and may contain bugs.
 
 ### Key Discoveries:
@@ -94,13 +94,13 @@ Turn the shared add-form + list card into two collapsible tiles, New measurement
 
 **Contract**: Tile order is New measurements (or Edit measurement), Measurements, Progression charts, Top changes. A new `listOpenStorageKey(accountUserId)` plus parser in `src/lib/measurement-page.ts`, following `chartsOpenStorageKey` / `parseChartsOpen`, defaults to open.
 
-#### 3. Trainer panel list tile
+#### 3. Trainer panel tiles
 
 **File**: `src/components/trainer/TrainerPanel.astro`
 
-**Intent**: Put the trainer's read-only list in the same collapsible Measurements tile, so the trainee and the trainer share the tile contract. The picker and search stay above it.
+**Intent**: Split the trainer's card into two collapsible tiles: **Find trainee** (the email search and Request read access) and **Measurements for** (the trainee picker directly under the title, then the read-only list). Drop the "Body measurements" heading. Toasts stay; the unavailable state keeps its "Measurements" card.
 
-**Contract**: Same `listOpenStorageKey(trainerAccountId)`. `src/pages/measurements.astro` passes `listOpen` for both roles.
+**Contract**: Measurements for uses the same `listOpenStorageKey(trainerAccountId)`. Find trainee gets `findTraineeOpenStorageKey(accountUserId)` plus `parseFindTraineeOpen`, defaults to open, and after a server error starts open with `restore` false. Measurements for renders the picker even when the list failed to load. `src/pages/measurements.astro` passes `listOpen` for both roles and `findTraineeOpen` for the trainer.
 
 #### 4. Copy references
 
@@ -158,8 +158,9 @@ Introduce the registry and the per-user stored choices, and expose them through 
 
 **Contract**:
 - `componentModules`: the modules in `dashboards` order. Each has `id: Dashboard`, `label`, `built` (taken from `dashboards[].enabled`), `defaultOn`, and `components`.
-- Each component has `id` (`"new-measurement" | "measurements" | "progression" | "top-changes"`), `label` ("New measurements", "Measurements", "Progression", "Top changes"), `versions: { id: string; label: string; preview: boolean }[]` and `defaultVersion: string | "off"`.
-- The defaults are: Measurements module on; new-measurement, measurements and progression at `"1.0"`; top-changes `"off"`, its only version being `{ id: "0.1", preview: true }`.
+- Each component has `id` (`"new-measurement" | "edit-measurement" | "measurements" | "find-trainee" | "trainee-measurements" | "progression" | "top-changes"`), `label` ("New measurement", "Edit measurement", "Your measurements", "Find trainee", "Measurements for", "Progression", "Top progression"), `roles: Role[]` (trainee only: new-measurement, edit-measurement, measurements; trainer only: find-trainee, trainee-measurements; both: progression, top-changes), `versions: { id: string; label: string; preview: boolean }[]` and `defaultVersion: string | "off"`.
+- The defaults are: Measurements module on; every component at `"1.0"` except top-changes, which is `"off"`, its only version being `{ id: "0.1", preview: true }`.
+- `componentsForRole(moduleId, role)` returns the module's components that apply to the role, in registry order.
 - `resolveComponentSettings(raw: unknown): ComponentSettings` parses leniently and returns a value for every key. An unbuilt module always resolves to off.
 - `componentSettingsSchema` (zod) validates a submitted form: known keys only, versions in the registry, and module values `on`/`off` only for built modules.
 - `isComponentShown(settings, componentId)`: the module is on and the version is not `"off"`. `shownVersion(settings, componentId)` returns `{ label, preview } | null`. `isModuleOn(settings, moduleId)`.
@@ -181,7 +182,7 @@ Types `ComponentSettings`, `ComponentId` and `ModuleId` go in `src/types.ts`.
 - Migration applies cleanly on local Supabase: `npx supabase db reset`
 - Migration check passes: `npm run migration-check`
 - Types regenerate with no diff beyond the new column: `npm run db:types`
-- Unit tests pass: `npm test` (`components.test.ts` covers null → defaults, unknown keys ignored, an unknown version falling back to the default, an unbuilt module forced off, `isComponentShown` when the module is off, and schema rejection of an unknown version or a switch on an unbuilt module)
+- Unit tests pass: `npm test` (`components.test.ts` covers null → defaults, unknown keys ignored, an unknown version falling back to the default, an unbuilt module forced off, `isComponentShown` when the module is off, `componentsForRole` for each role, and schema rejection of an unknown version or a switch on an unbuilt module)
 - Lint and type check pass: `npm run lint`, `npx astro check`
 
 #### Manual Verification:
@@ -220,7 +221,7 @@ Add the Components tab, its form, and the save endpoint, following the Details s
 
 **Intent**: Server-render the tab with the user's resolved settings, a notice from `?notice=components-saved`, and errors from `?error=`. Use the same layout and card as `settings.astro`, with `contentClassName` widened to fit the table.
 
-**Contract**: Reads with `readComponentSettings`. If the read fails, mark the page unavailable and disable Save (same rule as Details: blank defaults must not be saved over the stored choices).
+**Contract**: Reads with `readComponentSettings`, and reads the user's role so the form lists only `componentsForRole(module, role)`. If the read fails, mark the page unavailable and disable Save (same rule as Details: blank defaults must not be saved over the stored choices). Saving keeps the stored values of the other role's components (the form never sends them; the endpoint merges the submitted fields over the stored settings).
 
 #### 4. Components form
 
@@ -280,7 +281,15 @@ Make the menu and `/measurements` follow the signed-in user's choices, mark prev
 
 **Intent**: Resolve the signed-in user's settings with the profile step. Redirect to `/hub` when the module is off. Skip the reads of off components. Pass a per-tile `shown` map to `TraineeJournal` and `TrainerPanel`.
 
-**Contract**: The redirect is `Astro.redirect("/hub", 302)`, which covers the sign-in and sign-up landing without either endpoint reading settings. For the trainee: New measurements ← `new-measurement` (the edit card ignores it), the list ← `measurements`, ChartsTile ← `progression`, TopChangesTile ← `top-changes`. For the trainer: the picker and search always render, and the list and both chart tiles follow the trainer's own settings.
+**Contract**: The redirect is `Astro.redirect("/hub", 302)`, which covers the sign-in and sign-up landing without either endpoint reading settings. For the trainee: New measurement ← `new-measurement`, the Edit measurement card and the row Edit action ← `edit-measurement`, Your measurements ← `measurements`, ChartsTile ← `progression`, TopChangesTile ← `top-changes`. For the trainer: Find trainee ← `find-trainee`, Measurements for (picker + list) ← `trainee-measurements`, and both chart tiles follow the trainer's own settings. With Measurements for off, the chart tiles still chart the selected trainee (the remembered or first linked one).
+
+#### 2a. Edit measurement off
+
+**Files**: the row Actions menu in `MeasurementBrowser` (and its row component), `src/pages/measurements.astro`
+
+**Intent**: With `edit-measurement` off, Edit stays in the row Actions menu but is disabled, and hover or focus shows a tooltip: "The Edit measurement component is off." Delete is unchanged. `?edit=` is ignored and the page renders the normal view.
+
+**Contract**: An `editEnabled` prop (default `true`) through the browser to the row menu. Uses the shadcn `Tooltip` added for the preview badge.
 
 #### 3. Empty state
 
@@ -381,21 +390,21 @@ The nullable column with no backfill means `null` resolves to the defaults, so e
 
 #### Automated
 
-- [ ] 1.1 Lint passes: `npm run lint`
-- [ ] 1.2 Type check passes: `npx astro check`
-- [ ] 1.3 Unit tests pass: `npm test` (including the new `listOpenStorageKey` parser test)
-- [ ] 1.4 E2E passes: `npx playwright test`
-- [ ] 1.5 Build succeeds: `npm run build`
+- [x] 1.1 Lint passes: `npm run lint`
+- [x] 1.2 Type check passes: `npx astro check`
+- [x] 1.3 Unit tests pass: `npm test` (including the new `listOpenStorageKey` parser test)
+- [x] 1.4 E2E passes: `npx playwright test`
+- [x] 1.5 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 1.6 Trainee sees separate New measurements and Measurements tiles; New measurements starts open; list shows five per page
-- [ ] 1.7 Each tile's collapsed state survives a reload independently
-- [ ] 1.8 After a failed save New measurements is open with the error and the stored choice is untouched
-- [ ] 1.9 Edit opens an Edit measurement card above the list; Cancel returns to New measurements
-- [ ] 1.10 Visualize/Clear under the list still drive the Charts tile
-- [ ] 1.11 Trainer's list sits in a Measurements tile under the picker
-- [ ] 1.12 Phone width: both tiles fit without horizontal scroll
+- [x] 1.6 Trainee sees separate New measurements and Measurements tiles; New measurements starts open; list shows five per page
+- [x] 1.7 Each tile's collapsed state survives a reload independently
+- [x] 1.8 After a failed save New measurements is open with the error and the stored choice is untouched
+- [x] 1.9 Edit opens an Edit measurement card above the list; Cancel returns to New measurements
+- [x] 1.10 Visualize/Clear under the list still drive the Charts tile
+- [x] 1.11 Trainer sees Find trainee (search + request) and Measurements for (picker under the title, then the list) as separate collapsible tiles, with no Body measurements heading
+- [x] 1.12 Phone width: both tiles fit without horizontal scroll
 
 ### Phase 2: Component registry and storage
 
@@ -444,3 +453,5 @@ The nullable column with no backfill means `null` resolves to the defaults, so e
 - [ ] 4.8 With Measurements off: no menu link (desktop and hamburger); `/measurements` and sign-in land on Hub; back on restores everything
 - [ ] 4.9 All components off shows the empty-state card linking to Settings → Components
 - [ ] 4.10 A trainer's own Progression off hides their Charts tile without affecting the trainee
+- [ ] 4.11 With Edit measurement off, row Edit is disabled with the "component is off" tooltip and Delete still works
+- [ ] 4.12 Settings → Components lists only the role's rows (trainee: New/Edit measurement, Your measurements; trainer: Find trainee, Measurements for)

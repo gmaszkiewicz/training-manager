@@ -13,7 +13,11 @@ import {
   defaultPageSize,
   journalMonth,
   journalPageStorageKey,
+  findTraineeOpenStorageKey,
+  listOpenStorageKey,
+  parseFindTraineeOpen,
   parseJournalPage,
+  parseListOpen,
   measurementMonth,
   pageSizeStorageKey,
   selectedTraineeStorageKey,
@@ -127,6 +131,14 @@ function preferredAddForm(accountUserId: string): boolean | null {
   return parseAddFormOpen(cookieValue(addFormStorageKey(accountUserId)));
 }
 
+function preferredListOpen(accountUserId: string): boolean | null {
+  return parseListOpen(cookieValue(listOpenStorageKey(accountUserId)));
+}
+
+function preferredFindTraineeOpen(accountUserId: string): boolean | null {
+  return parseFindTraineeOpen(cookieValue(findTraineeOpenStorageKey(accountUserId)));
+}
+
 function preferredChartsOpen(accountUserId: string): boolean | null {
   return parseChartsOpen(cookieValue(chartsOpenStorageKey(accountUserId)));
 }
@@ -178,7 +190,7 @@ async function readInitialChart(rangeRead: MeasurementRangeRead, daysRead: Measu
   chartDays = days.ok ? days.days : null;
 }
 
-// The Top changes tile's first render: its own remembered period's range. Its picker shares the Charts tile's days.
+// The Top progression tile's first render: its own remembered period's range. Its picker shares the Charts tile's days.
 async function readInitialTopChart(rangeRead: MeasurementRangeRead): Promise<void> {
   const range = await rangeRead;
   topChartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
@@ -337,6 +349,7 @@ if (supabase && user) {
       accountUserId={traineeAccountId}
       subjectTraineeId={traineeAccountId}
       addFormOpen={traineeAccountId ? preferredAddForm(traineeAccountId) : null}
+      listOpen={traineeAccountId ? preferredListOpen(traineeAccountId) : null}
       chartsOpen={traineeAccountId ? preferredChartsOpen(traineeAccountId) : null}
       chartsPeriod={chartsPeriod}
       chartsAnchor={chartsAnchor}
@@ -365,6 +378,8 @@ if (supabase && user) {
       trainerMeasurementsLoaded={trainerMeasurementsLoaded}
       entries={entries}
       accountUserId={trainerAccountId}
+      findTraineeOpen={trainerAccountId ? preferredFindTraineeOpen(trainerAccountId) : null}
+      listOpen={trainerAccountId ? preferredListOpen(trainerAccountId) : null}
       chartsOpen={trainerAccountId ? preferredChartsOpen(trainerAccountId) : null}
       chartsPeriod={chartsPeriod}
       chartsAnchor={chartsAnchor}
