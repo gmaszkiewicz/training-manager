@@ -9,6 +9,11 @@ function tileHeading(page: Page, name: string | RegExp = tileSummary): Locator {
   return page.getByText(name, { exact: true });
 }
 
+/** The Charts tile itself, named by its title, so its controls are not confused with the Top changes tile's. */
+function chartsTile(page: Page): Locator {
+  return page.getByRole("group", { name: tileSummary });
+}
+
 function pad(value: number): string {
   return String(value).padStart(2, "0");
 }
@@ -105,7 +110,7 @@ test("the Charts summary toggles the tile and the closed state survives a reload
   await page.goto("/measurements");
 
   const summary = tileHeading(page);
-  const periods = page.getByRole("group", { name: "Chart period" });
+  const periods = chartsTile(page).getByRole("group", { name: "Chart period" });
   await expect(summary).toBeVisible();
   await expect(periods).toBeVisible();
 
@@ -139,7 +144,7 @@ test("Visualize charts the checked rows across a reload and Clear unchecks them"
 
     await page.getByRole("button", { name: "Visualize", exact: true }).click();
     await expect(tileHeading(page, "Selected entries (2)")).toBeVisible();
-    await expect(page.getByRole("group", { name: "Chart period" })).toBeHidden();
+    await expect(chartsTile(page).getByRole("group", { name: "Chart period" })).toBeHidden();
 
     // Hovering the heading lists the two charted entries, one per line.
     await expect(tileHeading(page, "Selected entries (2)")).toHaveAttribute("title", /^[^\n]+\n[^\n]+$/);

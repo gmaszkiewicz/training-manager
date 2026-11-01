@@ -18,6 +18,10 @@ import {
   pageSizeStorageKey,
   selectedTraineeStorageKey,
   parsePageSize,
+  parseTopChartsFields,
+  topChartsFieldsStorageKey,
+  topChartsOpenStorageKey,
+  topChartsPeriodStorageKey,
   utcToday,
   type PageSize,
 } from "@/lib/measurement-page";
@@ -25,6 +29,7 @@ import { requestedNoticeEmail } from "@/lib/collaborations";
 import { ensureProfile } from "@/lib/services/ensure-profile";
 import type { ChartBody } from "@/components/measurements/MeasurementCharts";
 import {
+  chartWindow,
   defaultChartPeriod,
   lastYearsRange,
   monthAnchor,
@@ -44,8 +49,9 @@ import { createClient } from "@/lib/supabase";
 import { latestMeasuredOnBound } from "@/lib/measurement-input";
 import { measurementNoticeMessage } from "@/lib/measurement-notice";
 import { measurementValues } from "@/lib/measurement-previous";
+import { circumferenceFields } from "@/lib/measurement-top-changes";
 import { preferredTraineeId, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
-import type { MeasurementEntry, MeasurementField, MeasurementWithDeltas, Profile } from "@/types";
+import type { CircumferenceField, MeasurementEntry, MeasurementField, MeasurementWithDeltas, Profile } from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
@@ -93,6 +99,10 @@ let chartsPeriod: ChartPeriod = defaultChartPeriod;
 let chartsAnchor: string | null = null;
 let chartInitial: ChartBody | null = null;
 let chartDays: string[] | null = null;
+let topChartsPeriod: ChartPeriod = defaultChartPeriod;
+let topChartsAnchor: string | null = null;
+let topChartInitial: ChartBody | null = null;
+let topChartsFields: CircumferenceField[] = [...circumferenceFields];
 const now = new Date();
 const today = utcToday(now);
 let month = measurementMonth(today);
@@ -125,32 +135,78 @@ function preferredChartsPeriod(accountUserId: string, subjectTraineeId: string):
   return parseChartPreference(cookieValue(chartsPeriodStorageKey(accountUserId, subjectTraineeId)));
 }
 
-type MeasurementDaysRead = ReturnType<typeof readMeasurementDays>;
+function preferredTopChartsOpen(accountUserId: string): boolean | null {
+  return parseChartsOpen(cookieValue(topChartsOpenStorageKey(accountUserId)));
+}
 
-// The tile's first render: the remembered period around the list's month, plus the days for its picker. The days
-// read starts with the list, so only the range read waits for the list's month. A failed read leaves both to the
-// island's own fetch.
-async function readInitialChart(
+function preferredTopChartsPeriod(accountUserId: string, subjectTraineeId: string): ChartPreference {
+  return parseChartPreference(cookieValue(topChartsPeriodStorageKey(accountUserId, subjectTraineeId)));
+}
+
+function preferredTopChartsFields(accountUserId: string, subjectTraineeId: string): CircumferenceField[] {
+  return parseTopChartsFields(cookieValue(topChartsFieldsStorageKey(accountUserId, subjectTraineeId)));
+}
+
+type MeasurementDaysRead = ReturnType<typeof readMeasurementDays>;
+type MeasurementRangeRead = ReturnType<typeof readMeasurementRange>;
+
+function readChartRange(
+  client: NonNullable<typeof supabase>,
+  subjectTraineeId: string,
+  period: ChartPeriod,
+  anchor: string,
+): MeasurementRangeRead {
+  return readMeasurementRange(client, subjectTraineeId, { period, anchor, years: lastYearsRange(today) });
+}
+
+/** Both reads cover the same entries when the two periods resolve to the same window. */
+function sameChartWindow(period: ChartPeriod, anchor: string, otherPeriod: ChartPeriod, otherAnchor: string): boolean {
+  if (period !== otherPeriod) {
+    return false;
+  }
+  const years = lastYearsRange(today);
+  const window = chartWindow(period, anchor, years);
+  const other = chartWindow(otherPeriod, otherAnchor, years);
+  return window.start === other.start && window.end === other.end;
+}
+
+// The Charts tile's first render: its remembered period's range, plus the days for its picker. A failed read leaves
+// both to the island's own fetch.
+async function readInitialChart(rangeRead: MeasurementRangeRead, daysRead: MeasurementDaysRead): Promise<void> {
+  const [range, days] = await Promise.all([rangeRead, daysRead]);
+  chartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
+  chartDays = days.ok ? days.days : null;
+}
+
+// The Top changes tile's first render: its own remembered period's range. Its picker shares the Charts tile's days.
+async function readInitialTopChart(rangeRead: MeasurementRangeRead): Promise<void> {
+  const range = await rangeRead;
+  topChartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
+}
+
+// Both chart tiles' first render around the list's month. The days read starts with the list, so only the range reads
+// wait for the list's month; when both tiles name the same window they share one range read.
+async function readInitialCharts(
   client: NonNullable<typeof supabase>,
   accountUserId: string,
   subjectTraineeId: string,
   listMonth: string,
   daysRead: MeasurementDaysRead,
 ): Promise<void> {
+  // The charts keep their own week, month or year apart from the list; only a first visit starts from its month.
+  const firstAnchor = monthAnchor(listMonth, today);
   const preference = preferredChartsPeriod(accountUserId, subjectTraineeId);
   chartsPeriod = preference.period;
-  // The charts keep their own week, month or year apart from the list; only a first visit starts from its month.
-  chartsAnchor = preference.anchor ?? monthAnchor(listMonth, today);
-  const [range, days] = await Promise.all([
-    readMeasurementRange(client, subjectTraineeId, {
-      period: chartsPeriod,
-      anchor: chartsAnchor,
-      years: lastYearsRange(today),
-    }),
-    daysRead,
-  ]);
-  chartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
-  chartDays = days.ok ? days.days : null;
+  chartsAnchor = preference.anchor ?? firstAnchor;
+  const topPreference = preferredTopChartsPeriod(accountUserId, subjectTraineeId);
+  topChartsPeriod = topPreference.period;
+  topChartsAnchor = topPreference.anchor ?? firstAnchor;
+  topChartsFields = preferredTopChartsFields(accountUserId, subjectTraineeId);
+  const rangeRead = readChartRange(client, subjectTraineeId, chartsPeriod, chartsAnchor);
+  const topRangeRead = sameChartWindow(chartsPeriod, chartsAnchor, topChartsPeriod, topChartsAnchor)
+    ? rangeRead
+    : readChartRange(client, subjectTraineeId, topChartsPeriod, topChartsAnchor);
+  await Promise.all([readInitialChart(rangeRead, daysRead), readInitialTopChart(topRangeRead)]);
 }
 
 if (supabase && user) {
@@ -189,7 +245,7 @@ if (supabase && user) {
           month = listed.month;
         }
         if (listed.ok && daysRead !== null) {
-          await readInitialChart(supabase, user.id, user.id, month, daysRead);
+          await readInitialCharts(supabase, user.id, user.id, month, daysRead);
         } else if (daysRead !== null) {
           // Without the list there is no chart, so the days are discarded.
           await daysRead;
@@ -250,7 +306,7 @@ if (supabase && user) {
               pageCount = listed.pageCount;
               pageSize = listed.pageSize;
               month = listed.month;
-              await readInitialChart(supabase, user.id, selectedLink.traineeId, month, daysRead);
+              await readInitialCharts(supabase, user.id, selectedLink.traineeId, month, daysRead);
             } else {
               // Without the list there is no chart, so the days are discarded.
               await daysRead;
@@ -286,6 +342,11 @@ if (supabase && user) {
       chartsAnchor={chartsAnchor}
       chartInitial={chartInitial}
       chartDays={chartDays}
+      topChartsOpen={traineeAccountId ? preferredTopChartsOpen(traineeAccountId) : null}
+      topChartsPeriod={topChartsPeriod}
+      topChartsAnchor={topChartsAnchor}
+      topChartInitial={topChartInitial}
+      topChartsFields={topChartsFields}
       today={today}
       dates={dates}
       page={page}
@@ -309,6 +370,11 @@ if (supabase && user) {
       chartsAnchor={chartsAnchor}
       chartInitial={chartInitial}
       chartDays={chartDays}
+      topChartsOpen={trainerAccountId ? preferredTopChartsOpen(trainerAccountId) : null}
+      topChartsPeriod={topChartsPeriod}
+      topChartsAnchor={topChartsAnchor}
+      topChartInitial={topChartInitial}
+      topChartsFields={topChartsFields}
       today={today}
       dates={dates}
       page={page}

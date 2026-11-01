@@ -1,12 +1,13 @@
 ---
 import ChartsTile from "@/components/measurements/ChartsTile.astro";
+import TopChangesTile from "@/components/measurements/TopChangesTile.astro";
 import type { ChartBody } from "@/components/measurements/MeasurementCharts";
 import type { ChartPeriod } from "@/lib/measurement-chart";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import MeasurementForm from "@/components/measurements/MeasurementForm";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import { addFormStartsOpen, addFormStorageKey, type PageSize } from "@/lib/measurement-page";
-import type { MeasurementEntry, MeasurementField, MeasurementWithDeltas } from "@/types";
+import type { CircumferenceField, MeasurementEntry, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   measurementsLoaded: boolean;
@@ -33,6 +34,13 @@ interface Props {
   /** The server's chart read and entry days for the tile's first render. */
   chartInitial?: ChartBody | null;
   chartDays?: string[] | null;
+  topChartsOpen?: boolean | null;
+  topChartsPeriod?: ChartPeriod;
+  topChartsAnchor?: string | null;
+  /** The server's Top changes read for the tile's first render; its picker shares `chartDays`. */
+  topChartInitial?: ChartBody | null;
+  /** The circumferences from the preference cookie; all 7 when absent. */
+  topChartsFields?: readonly CircumferenceField[];
 }
 
 const {
@@ -58,11 +66,17 @@ const {
   chartsAnchor = null,
   chartInitial = null,
   chartDays = null,
+  topChartsOpen = null,
+  topChartsPeriod,
+  topChartsAnchor = null,
+  topChartInitial = null,
+  topChartsFields,
 } = Astro.props;
 
 const formStartsOpen = addFormStartsOpen(serverError !== null, addFormOpen);
 const addFormKey = accountUserId ? addFormStorageKey(accountUserId) : null;
 const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
+const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
 ---
 
 <div class="flex justify-center px-4 pb-4">
@@ -195,5 +209,20 @@ const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
     initialAnchor={chartsAnchor}
     initialChart={chartInitial}
     initialDays={chartDays}
+  />
+) : null}
+{measurementsLoaded && !editingEntry && accountUserId && subjectTraineeId ? (
+  <TopChangesTile
+    accountUserId={accountUserId}
+    subjectTraineeId={subjectTraineeId}
+    readOnly={false}
+    month={month}
+    today={today}
+    startsOpen={topChartsStartOpen}
+    initialPeriod={topChartsPeriod}
+    initialAnchor={topChartsAnchor}
+    initialChart={topChartInitial}
+    initialDays={chartDays}
+    initialFields={topChartsFields}
   />
 ) : null}

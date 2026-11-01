@@ -451,36 +451,36 @@ None. There are no schema or data changes, and the new preference keys fall back
 
 #### Automated
 
-- [x] 3.1 Unit tests pass
-- [x] 3.2 Lint passes
-- [x] 3.3 Token check passes
-- [x] 3.4 Types check
-- [x] 3.5 Build succeeds
+- [x] 3.1 Unit tests pass — 76ef581
+- [x] 3.2 Lint passes — 76ef581
+- [x] 3.3 Token check passes — 76ef581
+- [x] 3.4 Types check — 76ef581
+- [x] 3.5 Build succeeds — 76ef581
 
 #### Manual
 
-- [x] 3.6 Kitchen sink shows four radial charts in a responsive 2×2 grid with field colours in light and dark
-- [x] 3.7 Legends name field and signed value; tooltips show entry and previous dates
-- [x] 3.8 Circumference filter drives both charts, keeps one field, rings rescale
-- [x] 3.9 Empty-gain/loss cards and empty-window message render as specified
-- [x] 3.10 Controls row, buttons and dropdown match the line tile on mobile and desktop
+- [x] 3.6 Kitchen sink shows four radial charts in a responsive 2×2 grid with field colours in light and dark — 76ef581
+- [x] 3.7 Legends name field and signed value; tooltips show entry and previous dates — 76ef581
+- [x] 3.8 Circumference filter drives both charts, keeps one field, rings rescale — 76ef581
+- [x] 3.9 Empty-gain/loss cards and empty-window message render as specified — 76ef581
+- [x] 3.10 Controls row, buttons and dropdown match the line tile on mobile and desktop — 76ef581
 
 ### Phase 4: Wire into /measurements
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass
-- [ ] 4.2 Lint passes
-- [ ] 4.3 Token check passes
-- [ ] 4.4 Types check
-- [ ] 4.5 Build succeeds
-- [ ] 4.6 E2E passes
-- [ ] 4.7 Smoke passes against the preview
+- [x] 4.1 Unit tests pass
+- [x] 4.2 Lint passes
+- [x] 4.3 Token check passes
+- [x] 4.4 Types check
+- [x] 4.5 Build succeeds
+- [x] 4.6 E2E passes
+- [x] 4.7 Smoke passes against the preview
 
 #### Manual
 
-- [ ] 4.8 Tile hydrates on the production preview with no console errors
-- [ ] 4.9 Trainee top weight gain matches the list's largest up delta for the period, including the window's first entry
-- [ ] 4.10 Linked trainer sees the read-only tile with its own remembered period and filter
-- [ ] 4.11 Closed tile stays closed after reload with no flash; Years shows last 5 years
-- [ ] 4.12 Dark theme rings, track and legend stay readable
+- [x] 4.8 Tile hydrates on the production preview with no console errors
+- [x] 4.9 Trainee top weight gain matches the list's largest up delta for the period, including the window's first entry
+- [x] 4.10 Linked trainer sees the read-only tile with its own remembered period and filter
+- [x] 4.11 Closed tile stays closed after reload with no flash; Years shows last 5 years
+- [x] 4.12 Dark theme rings, track and legend stay readable

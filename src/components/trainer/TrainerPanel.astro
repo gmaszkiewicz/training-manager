@@ -1,5 +1,6 @@
 ---
 import ChartsTile from "@/components/measurements/ChartsTile.astro";
+import TopChangesTile from "@/components/measurements/TopChangesTile.astro";
 import type { ChartBody } from "@/components/measurements/MeasurementCharts";
 import type { ChartPeriod } from "@/lib/measurement-chart";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { requestOutcomeMessage } from "@/lib/collaborations";
 import { addFormStartsOpen, type PageSize } from "@/lib/measurement-page";
 import type { TrainerLink } from "@/lib/trainer-preview";
-import type { MeasurementWithDeltas } from "@/types";
+import type { CircumferenceField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   mode: "trainer" | "unavailable";
@@ -35,6 +36,13 @@ interface Props {
   /** The server's chart read and entry days for the tile's first render. */
   chartInitial?: ChartBody | null;
   chartDays?: string[] | null;
+  topChartsOpen?: boolean | null;
+  topChartsPeriod?: ChartPeriod;
+  topChartsAnchor?: string | null;
+  /** The server's Top changes read for the tile's first render; its picker shares `chartDays`. */
+  topChartInitial?: ChartBody | null;
+  /** The circumferences from the preference cookie; all 7 when absent. */
+  topChartsFields?: readonly CircumferenceField[];
   /** Kitchen-sink local mode for the charts tile. */
   chartEntries?: MeasurementWithDeltas[];
 }
@@ -61,6 +69,11 @@ const {
   chartsAnchor = null,
   chartInitial = null,
   chartDays = null,
+  topChartsOpen = null,
+  topChartsPeriod,
+  topChartsAnchor = null,
+  topChartInitial = null,
+  topChartsFields,
   chartEntries,
 } = Astro.props;
 
@@ -78,6 +91,7 @@ if (mode !== "trainer") {
   toastMessages.push("Could not open your journal");
 }
 const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
+const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
 const showCharts = accountUserId !== undefined || chartEntries !== undefined;
 const requestNotice =
   mode === "trainer" && requestedEmail !== null ? requestOutcomeMessage("sent", requestedEmail) : null;
@@ -150,6 +164,22 @@ const requestNotice =
     initialAnchor={chartsAnchor}
     initialChart={chartInitial}
     initialDays={chartDays}
+    entries={chartEntries}
+  />
+) : null}
+{mode === "trainer" && trainerLinksLoaded && selectedLink && showCharts ? (
+  <TopChangesTile
+    accountUserId={accountUserId}
+    subjectTraineeId={selectedLink.traineeId}
+    readOnly={true}
+    month={month}
+    today={today}
+    startsOpen={topChartsStartOpen}
+    initialPeriod={topChartsPeriod}
+    initialAnchor={topChartsAnchor}
+    initialChart={topChartInitial}
+    initialDays={chartDays}
+    initialFields={topChartsFields}
     entries={chartEntries}
   />
 ) : null}
