@@ -125,6 +125,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_path: string | null;
+          component_settings: Json | null;
           created_at: string;
           first_name: string | null;
           id: string;
@@ -134,6 +135,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           avatar_path?: string | null;
+          component_settings?: Json | null;
           created_at?: string;
           first_name?: string | null;
           id: string;
@@ -142,6 +144,7 @@ export type Database = {
         };
         Update: {
           avatar_path?: string | null;
+          component_settings?: Json | null;
           created_at?: string;
           first_name?: string | null;
           id?: string;

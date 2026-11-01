@@ -45,6 +45,24 @@ export type ProfileNames = Pick<ProfileDetails, "firstName" | "lastName">;
 
 export type Dashboard = "measurements" | "nutrition" | "training" | "planning";
 
+/** A module on the components screen; one per dashboard. */
+export type ModuleId = Dashboard;
+
+export type ComponentId =
+  | "new-measurement"
+  | "edit-measurement"
+  | "measurements"
+  | "find-trainee"
+  | "trainee-measurements"
+  | "progression"
+  | "top-changes";
+
+/** A user's resolved choices: every module on or off, every component at a version id or `"off"`. */
+export interface ComponentSettings {
+  modules: Record<ModuleId, boolean>;
+  components: Record<ComponentId, string>;
+}
+
 export type AccessType = "read";
 
 /** One kind of access to a dashboard; `pending` until the trainee accepts the request. */

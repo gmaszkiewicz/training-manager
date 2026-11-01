@@ -390,35 +390,35 @@ The nullable column with no backfill means `null` resolves to the defaults, so e
 
 #### Automated
 
-- [x] 1.1 Lint passes: `npm run lint`
-- [x] 1.2 Type check passes: `npx astro check`
-- [x] 1.3 Unit tests pass: `npm test` (including the new `listOpenStorageKey` parser test)
-- [x] 1.4 E2E passes: `npx playwright test`
-- [x] 1.5 Build succeeds: `npm run build`
+- [x] 1.1 Lint passes: `npm run lint` — b6c3af3
+- [x] 1.2 Type check passes: `npx astro check` — b6c3af3
+- [x] 1.3 Unit tests pass: `npm test` (including the new `listOpenStorageKey` parser test) — b6c3af3
+- [x] 1.4 E2E passes: `npx playwright test` — b6c3af3
+- [x] 1.5 Build succeeds: `npm run build` — b6c3af3
 
 #### Manual
 
-- [x] 1.6 Trainee sees separate New measurements and Measurements tiles; New measurements starts open; list shows five per page
-- [x] 1.7 Each tile's collapsed state survives a reload independently
-- [x] 1.8 After a failed save New measurements is open with the error and the stored choice is untouched
-- [x] 1.9 Edit opens an Edit measurement card above the list; Cancel returns to New measurements
-- [x] 1.10 Visualize/Clear under the list still drive the Charts tile
-- [x] 1.11 Trainer sees Find trainee (search + request) and Measurements for (picker under the title, then the list) as separate collapsible tiles, with no Body measurements heading
-- [x] 1.12 Phone width: both tiles fit without horizontal scroll
+- [x] 1.6 Trainee sees separate New measurements and Measurements tiles; New measurements starts open; list shows five per page — b6c3af3
+- [x] 1.7 Each tile's collapsed state survives a reload independently — b6c3af3
+- [x] 1.8 After a failed save New measurements is open with the error and the stored choice is untouched — b6c3af3
+- [x] 1.9 Edit opens an Edit measurement card above the list; Cancel returns to New measurements — b6c3af3
+- [x] 1.10 Visualize/Clear under the list still drive the Charts tile — b6c3af3
+- [x] 1.11 Trainer sees Find trainee (search + request) and Measurements for (picker under the title, then the list) as separate collapsible tiles, with no Body measurements heading — b6c3af3
+- [x] 1.12 Phone width: both tiles fit without horizontal scroll — b6c3af3
 
 ### Phase 2: Component registry and storage
 
 #### Automated
 
-- [ ] 2.1 Migration applies cleanly on local Supabase: `npx supabase db reset`
-- [ ] 2.2 Migration check passes: `npm run migration-check`
-- [ ] 2.3 Types regenerate with no diff beyond the new column: `npm run db:types`
-- [ ] 2.4 Unit tests pass: `npm test` (`components.test.ts`)
-- [ ] 2.5 Lint and type check pass: `npm run lint`, `npx astro check`
+- [x] 2.1 Migration applies cleanly on local Supabase: `npx supabase db reset`
+- [x] 2.2 Migration check passes: `npm run migration-check`
+- [x] 2.3 Types regenerate with no diff beyond the new column: `npm run db:types`
+- [x] 2.4 Unit tests pass: `npm test` (`components.test.ts`)
+- [x] 2.5 Lint and type check pass: `npm run lint`, `npx astro check`
 
 #### Manual
 
-- [ ] 2.6 An authenticated user can update only their own `component_settings`; a non-object value is refused
+- [x] 2.6 An authenticated user can update only their own `component_settings`; a non-object value is refused
 
 ### Phase 3: Settings → Components screen
 
