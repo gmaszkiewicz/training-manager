@@ -377,25 +377,25 @@ None. There are no schema or data changes, and the new preference keys fall back
 
 #### Automated
 
-- [x] 1.1 Unit tests pass, covering the worked example, the latest-wins tie, no gains, null deltas, sorting, filtering, the pair scale, keys and field parsing
-- [x] 1.2 Lint passes
-- [x] 1.3 Types check
+- [x] 1.1 Unit tests pass, covering the worked example, the latest-wins tie, no gains, null deltas, sorting, filtering, the pair scale, keys and field parsing — 9b47363
+- [x] 1.2 Lint passes — 9b47363
+- [x] 1.3 Types check — 9b47363
 
 ### Phase 2: Extract shared chart plumbing
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass
-- [ ] 2.2 Lint passes
-- [ ] 2.3 Token check passes
-- [ ] 2.4 Types check
-- [ ] 2.5 Build succeeds
-- [ ] 2.6 Existing line-chart E2E spec passes unchanged
+- [x] 2.1 Unit tests pass
+- [x] 2.2 Lint passes
+- [x] 2.3 Token check passes
+- [x] 2.4 Types check
+- [x] 2.5 Build succeeds
+- [x] 2.6 Existing line-chart E2E spec passes unchanged
 
 #### Manual
 
-- [ ] 2.7 Kitchen-sink line chart states look and behave exactly as before
-- [ ] 2.8 Line tile restores period and open state after reload; Visualize/Clear still work
+- [x] 2.7 Kitchen-sink line chart states look and behave exactly as before
+- [x] 2.8 Line tile restores period and open state after reload; Visualize/Clear still work
 
 ### Phase 3: Top changes island and tile
 
