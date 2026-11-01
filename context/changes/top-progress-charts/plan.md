@@ -1,8 +1,8 @@
-# Top Changes Radial Charts Implementation Plan
+# Top Changes Radar Charts Implementation Plan
 
 ## Overview
 
-Add a separate, collapsible **Top changes** tile on `/measurements` with four shadcn radial charts: top weight gain, top circumference gain, top weight loss and top circumference loss. Each one covers the selected week, month, year or last 5 years. The tile has its own period controls, which match the line charts tile. A remembered circumference filter drives both circumference charts, and every chart has a legend. Trainee and linked trainer share the component (S-46, MS-37).
+Add a separate, collapsible **Top changes** tile on `/measurements` with four shadcn radar charts: top weight gain, top circumference gain, top weight loss and top circumference loss. Each one covers the selected week, month, year or last 5 years. The tile has its own period controls, which match the line charts tile. A remembered circumference filter drives both circumference charts, and every chart has a legend. Trainee and linked trainer share the component (S-46, MS-37).
 
 ## Current State Analysis
 
@@ -17,12 +17,20 @@ Add a separate, collapsible **Top changes** tile on `/measurements` with four sh
 
 On `/measurements`, below the line charts tile, a trainee sees a **Top changes** card that starts open and remembers being closed. A linked trainer sees the same card, read-only, for the selected trainee. The card has the same Week/Month/Year/Years buttons and period picker as the line tile, remembered separately. It shows a 2×2 grid on wide screens (gains in the top row, losses in the bottom row) and one column on narrow screens:
 
-1. **Top weight gain**: one ring with the largest weight gain in the period and the value in the centre, e.g. `+1.5 kg`.
-2. **Top circumference gain**: one ring per selected circumference with that field's largest gain, longest first, each in its line-chart colour.
-3. **Top weight loss**: the same as 1, for the largest drop, e.g. `−0.5 kg`.
-4. **Top circumference loss**: the same as 2, for drops.
+1. **Top weight gain**: a radar whose axes are the sub-periods of the selected period: Week → the 7 dates of that week, Month → the calendar weeks (Mon–Sun, clipped to the month) of that month, Year → its 12 months, Years → the 5 years. Each axis is valued by the sum of the weight gains in that sub-period (0 when none). The top sub-period is named with its value, e.g. `3–9 Nov +1.5 kg`.
+2. **Top circumference gain**: a shadcn "Radar Chart - Multiple" on the same sub-period axes, with one series per selected circumference in its own line-chart colour, each valued by that field's summed gains per sub-period (e.g. Year: thigh +1 and +1 in March → March = +2). The legend names each field with its top sub-period and value, e.g. `Waist · March +2.0 cm`.
+3. **Top weight loss**: the same as 1, for summed drops, e.g. `−0.5 kg`.
+4. **Top circumference loss**: the same as 2, for summed drops.
 
-Every chart has a legend that names each ring's field and value. A ring's tooltip shows the entry date and the previous entry's date. A "Circumferences" dropdown with checkboxes filters charts 2 and 4 together and is remembered per account and trainee. Verify with the unit tests, the kitchen sinks, the E2E spec and a manual check on the production preview.
+Gains and drops are summed separately: a field that goes +1 then −1 shows 1 on both charts. An axis point's tooltip shows the sub-period, each series' signed value and how many changes it adds up.
+
+> **Re-plan (2026-11-01, during Phase 3):** the original rule (each ring = the single largest entry-vs-previous delta) was replaced by the sums above at the user's request. Phase 1's `topChanges` is replaced in Phase 3, change 0.
+>
+> **Re-plan 2 (2026-11-01, during Phase 3):** the charts are shadcn **radar** charts, not radial bar charts (Phase 3, change 0b). Weight radars show every sub-period as an axis, with the largest highlighted; the circumference filter keeps at least 3 fields. Progress row titles 3.6, 3.8 and 4.12 keep their original wording ("radial", "keeps one field", "rings") per the progress-format rule; read them as radar / keeps three fields / areas.
+>
+> **Re-plan 3 (2026-11-01, during Phase 3):** circumference charts become shadcn **Radar Chart - Multiple** (one series per field, own colour) on sub-period axes, and weight uses the same axes with one series. Month axes are calendar weeks, not days. The filter goes back to keeping at least 1 field (axes no longer depend on it). Phase 3 change 0c supersedes 0b and the radar parts of changes 1 and 2 where they conflict.
+
+A "Circumferences" dropdown with checkboxes filters charts 2 and 4 together and is remembered per account and trainee. Verify with the unit tests, the kitchen sinks, the E2E spec and a manual check on the production preview.
 
 ### Key Discoveries:
 
@@ -35,10 +43,10 @@ Every chart has a legend that names each ring's field and value. A ring's toolti
 ## What We're NOT Doing
 
 - Sharing or following the line tile's period, and reacting to Visualize ("Selected entries") mode. The top tile always shows its own period.
-- First-to-last (net) change, and skipping the first entry in the window. The change is the list delta for every entry inside the window.
-- Top-N rankings, "smallest change" rings, or more than one ring per field.
+- First-to-last (net) change, netting gains against drops, and skipping the first entry in the window. Every entry inside the window contributes its list delta to the gain or the loss sum.
+- Top-N rankings, "smallest change" highlights, or more than one series per radar.
 - Separate filters for the gain and loss charts, or a filter on the weight charts.
-- Showing every tied entry. On a tie, the latest entry wins.
+- Showing every tied sub-period. On a tie, the latest sub-period wins.
 - SQL aggregation, a new RPC, migrations, or any schema change.
 - New colour tokens, and good/bad (green/red) colouring.
 - Hiding empty chart cards. They stay in the grid with a sentence.
@@ -49,7 +57,7 @@ The math stays in pure, unit-tested helpers in `src/lib/`, following the `measur
 
 ## Critical Implementation Details
 
-- **Shared ring scale:** each pair shares one maximum: weight gain with weight loss, and circumference gain with circumference loss after filtering. A ring's length is `difference / pairMax`, so lengths compare across a pair. Use a `PolarAngleAxis` with `type="number"`, `domain=[0, pairMax]` and the tick hidden. The track background (`RadialBar background`) uses the `muted` role token, never a literal colour.
+- **Shared radar scale:** each pair shares one maximum: weight gain with weight loss, and circumference gain with circumference loss after filtering. Use a hidden `PolarRadiusAxis` with `domain=[0, pairMax]`, so areas compare across a pair. The grid (`PolarGrid`) uses role tokens (shadcn's `chart.tsx` styles), never a literal colour.
 - **Heading selectors:** today the line tile's island finds its own title through `closest("[data-charts-tile]")` ([MeasurementCharts.tsx:551-563](src/components/measurements/MeasurementCharts.tsx#L551-L563)). Once the shell is shared, each tile must keep a distinct root attribute (or the shell takes a tile id), so one island never rewrites the other tile's heading.
 - **Hydration:** a pre-mortem in the S-41 archive (`plan.md:40`) covers chart libraries breaking hydration on Workers under CommonJS and Auto Minify. Importing the recharts polar modules is new, so this has to be checked on the production preview (`npm run build && npm run preview`), not only `npm run dev`.
 
@@ -175,22 +183,62 @@ Pull the period plumbing and the collapsible shell out of the line tile so a sec
 
 ### Overview
 
-Build the new island and tile with the four radial charts, legends, filter and states, and show them in the kitchen sinks.
+Build the new island and tile with the four radar charts, legends, filter and states, and show them in the kitchen sinks.
 
 ### Changes Required:
 
-#### 1. Radial chart
+#### 0. Sum-based top changes logic (re-plan)
+
+**File**: `src/lib/measurement-top-changes.ts`, `src/lib/measurement-top-changes.test.ts`, `src/lib/measurement-chart.ts`
+
+**Intent**: Replace Phase 1's single-largest-delta rule with sums: per circumference, the sum of its gains (or drops) in the window; for weight, the sub-period (line-chart bucket) whose weight gains (or drops) add up to the most.
+
+**Contract**:
+- `fieldTotals(entries, fields, direction): FieldTotal[]`, `FieldTotal = { field, difference, count }`: `difference` is the sum of `deltas[field].difference` over entries whose `direction` matches, `count` the number of such entries. Fields with no match are omitted. Sorted by `difference` descending, then `measurementFields` order. Sums are rounded to 2 decimals to drop float drift.
+- `topWeightBucket(entries, period, direction): WeightBucketTotal | null`, `WeightBucketTotal = { bucket, label, difference, count }`: group matching weight deltas by the line chart's bucket of `measured_on` (day for week/month, month for year, year for years — export and reuse `bucketKey` from `measurement-chart.ts`), sum each, return the largest; a tie goes to the later bucket; `null` when nothing matches. `label` is a readable bucket name (e.g. `Tue 3 Nov`, `March 2026`, `2026`).
+- `topChangeScale` takes any lists of `{ difference }` and keeps its behaviour.
+- `topChanges`/`TopChange` are removed (no other consumers).
+- Tests: thigh +1 (Jan) +1 (Feb), chest 0 + 1 → thigh 2, chest 1, longest first; +1 then −1 counts 1 on both directions; `deltas: null` and `none` skipped; float sum rounding; weight bucket per period (week/month day, year month, years year), the worked example (Nov 3 +1.5 vs Nov 20 −0.5), a latest-bucket tie, `null` when no gains; `topChangeScale` across a pair.
+
+#### 0b. Radar data (re-plan 2)
+
+**File**: `src/lib/measurement-top-changes.ts`, `src/lib/measurement-top-changes.test.ts`
+
+**Intent**: Give the weight radar every sub-period of the window as an axis, not only the top one.
+
+**Contract**:
+- `weightBucketTotals(entries, period, window, direction): WeightBucketTotal[]`: one item per bucket in the window, in time order: a week has 7 days, a month every day of the month, a year 12 months and years every year of the span. `difference` is the summed weight `direction` deltas in that bucket (0 and `count` 0 when none). The window comes from the island's period and anchor (`chartWindow`/the years range the hook already uses).
+- `topWeightBucket` stays and picks the top of that list (largest, later bucket on a tie, `null` when all are 0).
+- Circumference radar data: every selected field in field order, with `fieldTotals`' sum or 0.
+- Tests: bucket counts for each period (7 / days in month / 12 / span), zeros filled, order, and that `topWeightBucket` agrees with the list.
+
+#### 0c. Sub-period radar data (re-plan 3)
+
+**File**: `src/lib/measurement-top-changes.ts`, `src/lib/measurement-top-changes.test.ts`, `src/lib/measurement-page.ts`, `src/lib/measurement-page.test.ts`
+
+**Intent**: One set of sub-period axes per period, shared by the weight and circumference radars, with summed gains or drops per field per axis.
+
+**Contract**:
+- Sub-period of an entry: week → its date; month → its calendar week (Mon–Sun, `calendarWeek`), clipped to the month; year → its month; years → its year. Axes cover every sub-period of the window in time order (7 / 4–6 / 12 / span), labelled for the axis (`Mon 3`, `3–9 Nov`, `Mar`, `2026`) and in full for tooltip and legend.
+- `subPeriodTotals(entries, fields, period, window, direction)`: one row per axis, `{ key, axisLabel, label, values: Record<field, { difference, count }> }`, sums rounded to 2 decimals, 0 where nothing matched. Used for weight (`["weight_kg"]`) and for the selected circumferences.
+- `topSubPeriod(rows, field)`: the axis with the largest sum for that field (later axis on a tie, `null` when all 0).
+- `parseTopChartsFields` falls back to all 7 only when empty/invalid again (minimum 1); `TOP_CHARTS_MIN_FIELDS` goes away or becomes 1.
+- Superseded helpers (`weightBucketTotals`, `topWeightBucket`, `fieldRadarTotals`, `fieldTotals` if unused) are removed; `topChangeScale` covers every value of every series in a pair.
+- Tests: the axes per period (week dates, month weeks incl. a month starting mid-week, 12 months, 5 years), summing per field per axis (thigh +1 +1 in one month = 2), gains/drops separate, `deltas: null`/`none` skipped, rounding, `topSubPeriod` tie and null, filter fallback to 1.
+
+#### 1. Radar chart
 
 **File**: `src/components/measurements/TopChangeChart.tsx` (new)
 
-**Intent**: Render one radial chart card: title, rings, centre label (weight only) and legend. The colours come from field tokens.
+**Intent**: Render one radar chart card: title, radar, legend. The colours come from field tokens.
 
 **Contract**:
-- Props: `title`, `changes: TopChange[]`, `scale: number`, `direction`, `emptyText`.
-- Uses `ChartContainer` with a `ChartConfig` keyed by field (`label`, `color: chartFieldColor(field)`), plus `RadialBarChart`/`RadialBar` with `fill="var(--color-<field>)"`, `ChartTooltip` and `ChartLegend` with `ChartLegendContent`.
-- The legend lists each ring's field label and its signed value with unit (e.g. `Waist +1.0 cm`).
-- The tooltip shows the value, the entry date and the previous entry's date, using the existing date-label helpers.
-- With no changes, it renders the title and `emptyText` ("No gains in this period" or "No losses in this period") in place of the chart.
+- Props: `title`, the radar points (circumference per-field totals, or weight per-bucket totals plus the top bucket), `scale: number`, `direction`, `emptyText`.
+- Uses `ChartContainer` and the shadcn radar pattern: `RadarChart`, `PolarGrid`, `PolarAngleAxis` (axis labels: field labels, or bucket labels thinned when there are many, e.g. a month's days), a hidden `PolarRadiusAxis` with `domain=[0, scale]`, and one `Radar` with `fillOpacity` and a dot per point. `ChartTooltip` and `ChartLegend` with `ChartLegendContent`.
+- Colour: the weight radar uses `chartFieldColor("weight_kg")`; the circumference radar uses one existing chart token for its area, and each axis point's dot uses that field's `chartFieldColor`, so fields still match the line charts. The same colours apply to gains and losses (no good/bad colouring).
+- The legend gives the signed value with unit: weight names the top sub-period (e.g. `March 2026 +1.5 kg`, also emphasised on its axis); circumferences list every non-zero field, largest first (e.g. `Waist +2.0 cm`).
+- The tooltip shows the value and how many changes it sums (e.g. `2 changes`); the weight tooltip also names the sub-period.
+- With no changes (every point 0), it renders the title and `emptyText` ("No gains in this period" or "No losses in this period") in place of the chart.
 - Values are signed with `+` for a gain and `−` for a loss. There is no good/bad colouring.
 
 #### 2. Top changes island
@@ -203,20 +251,21 @@ Build the new island and tile with the four radial charts, legends, filter and s
 - Props mirror `MeasurementCharts`, plus `initialFields`.
 - No Visualize/selection handling.
 - The grid uses `measurement-row:grid-cols-2 grid grid-cols-1 gap-4`, in the order weight gain, circumference gain, weight loss, circumference loss.
+- Data: `weightBucketTotals`/`topWeightBucket(body.entries, period, …)` and `fieldTotals(body.entries, selectedFields, …)` on the unbucketed entries.
 - Scales: `topChangeScale(weightGain, weightLoss)` and `topChangeScale(circGain, circLoss)`, computed after filtering.
 - Tile states:
   - loading: "Loading charts…"
   - error: "Could not load charts"
   - no entries in the window: "No measurements in this period" (shown once, in place of the grid)
 - Filter: a "Circumferences" `Button` (outline) opening a `DropdownMenu` of `DropdownMenuCheckboxItem`s for the 7 fields, placed in the controls' `extra` slot.
-  - The last checked item is disabled, so the selection is never empty.
+  - The last checked item is disabled, so the selection is never empty (re-plan 3).
   - The selection is restored from storage after hydration and persisted with `writePreference(topChartsFieldsStorageKey(...))`, like the period.
 
 #### 3. Tile wrapper
 
 **File**: `src/components/measurements/TopChangesTile.astro` (new)
 
-**Intent**: The Top changes card: `CollapsibleChartTile` with `topChartsOpenStorageKey` and title "Top changes". The muted note names the change measure, e.g. "Largest changes versus the previous entry". It wraps `TopChangesCharts` with `client:load`.
+**Intent**: The Top changes card: `CollapsibleChartTile` with `topChartsOpenStorageKey` and title "Top changes". The muted note names the change measure, e.g. "Summed changes versus the previous entry". It wraps `TopChangesCharts` with `client:load`.
 
 **Contract**: props match `ChartsTile`, plus `initialFields`, and include the kitchen-sink `entries`/`forceLoading` local mode.
 
@@ -249,9 +298,9 @@ Build the new island and tile with the four radial charts, legends, filter and s
 
 #### Manual Verification:
 
-- `/kitchen-sink/journal` shows four radial charts in a 2×2 grid on wide screens and one column on narrow screens, with ring colours matching the line charts for the same fields, in light and dark themes
-- Legends name each ring's field and signed value; tooltips show the entry and previous dates
-- The circumference filter changes both circumference charts together, cannot uncheck the last field, and its rings rescale
+- `/kitchen-sink/journal` shows four radar charts in a 2×2 grid on wide screens and one column on narrow screens, with colours matching the line charts for the same fields, in light and dark themes
+- Circumference radars draw one coloured series per field on sub-period axes (week dates, month weeks, year months, 5 years); legends name each series with its top sub-period and signed value; tooltips show the value and the number of summed changes
+- The circumference filter changes both circumference charts together, cannot uncheck the last field, and its radars rescale
 - Empty-gain/empty-loss cards keep their title and show the sentence; an empty window shows "No measurements in this period"
 - The controls row, buttons and dropdown match the line tile's look on mobile and desktop
 
@@ -312,10 +361,10 @@ Seed and mount the tile for the trainee and the linked trainer, cover it with E2
 #### Manual Verification:
 
 - On the production preview (`npm run build && npm run preview`), the Top changes tile hydrates and is interactive, with no console errors
-- As a trainee on `/measurements`, the top weight gain value matches the largest "up" weight delta badge in the list for that period, including the window's first entry versus an earlier entry
+- As a trainee on `/measurements`, the top weight gain equals the summed "up" weight delta badges in the list for its sub-period, and each circumference axis equals that field's summed badges for the period, including the window's first entry versus an earlier entry
 - As a linked trainer, the selected trainee's tile shows read-only, with its own remembered period and filter
 - A closed tile stays closed after a reload with no flash open; Years shows the last 5 years
-- Dark theme: rings, track and legend stay readable
+- Dark theme: radar areas, grid and legend stay readable
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 
@@ -325,9 +374,10 @@ Seed and mount the tile for the trainee and the linked trainer, cover it with E2
 
 ### Unit Tests:
 
-- `topChanges`:
+- `fieldTotals` / `topWeightBucket` (replacing `topChanges`, see Phase 3 change 0):
   - the worked example: Nov window; Oct 28 = 80.0, Nov 3 = 81.5, Nov 20 = 81.0 → gain 1.5 on Nov 3, loss 0.5 on Nov 20
-  - latest wins a tie
+  - thigh +1 +1 = 2, chest 0 + 1 = 1; +1 then −1 counts on both sides
+  - latest bucket wins a tie
   - no gains → `[]`
   - `deltas: null` is skipped
   - `none` direction is ignored
@@ -355,7 +405,7 @@ Seed and mount the tile for the trainee and the linked trainer, cover it with E2
 
 ## Performance Considerations
 
-There is no new database query shape. The tile reuses `GET /api/measurements/chart`, so a 5-year window costs the same read the line tile already makes, and the page seed runs in parallel (S-43). `topChanges` is one O(entries × fields) pass, run when the body or filter changes.
+There is no new database query shape. The tile reuses `GET /api/measurements/chart`, so a 5-year window costs the same read the line tile already makes, and the page seed runs in parallel (S-43). `fieldTotals` and `topWeightBucket` are one O(entries × fields) pass each, run when the body or filter changes.
 
 ## Migration Notes
 
@@ -385,35 +435,35 @@ None. There are no schema or data changes, and the new preference keys fall back
 
 #### Automated
 
-- [x] 2.1 Unit tests pass
-- [x] 2.2 Lint passes
-- [x] 2.3 Token check passes
-- [x] 2.4 Types check
-- [x] 2.5 Build succeeds
-- [x] 2.6 Existing line-chart E2E spec passes unchanged
+- [x] 2.1 Unit tests pass — 783a931
+- [x] 2.2 Lint passes — 783a931
+- [x] 2.3 Token check passes — 783a931
+- [x] 2.4 Types check — 783a931
+- [x] 2.5 Build succeeds — 783a931
+- [x] 2.6 Existing line-chart E2E spec passes unchanged — 783a931
 
 #### Manual
 
-- [x] 2.7 Kitchen-sink line chart states look and behave exactly as before
-- [x] 2.8 Line tile restores period and open state after reload; Visualize/Clear still work
+- [x] 2.7 Kitchen-sink line chart states look and behave exactly as before — 783a931
+- [x] 2.8 Line tile restores period and open state after reload; Visualize/Clear still work — 783a931
 
 ### Phase 3: Top changes island and tile
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass
-- [ ] 3.2 Lint passes
-- [ ] 3.3 Token check passes
-- [ ] 3.4 Types check
-- [ ] 3.5 Build succeeds
+- [x] 3.1 Unit tests pass
+- [x] 3.2 Lint passes
+- [x] 3.3 Token check passes
+- [x] 3.4 Types check
+- [x] 3.5 Build succeeds
 
 #### Manual
 
-- [ ] 3.6 Kitchen sink shows four radial charts in a responsive 2×2 grid with field colours in light and dark
-- [ ] 3.7 Legends name field and signed value; tooltips show entry and previous dates
-- [ ] 3.8 Circumference filter drives both charts, keeps one field, rings rescale
-- [ ] 3.9 Empty-gain/loss cards and empty-window message render as specified
-- [ ] 3.10 Controls row, buttons and dropdown match the line tile on mobile and desktop
+- [x] 3.6 Kitchen sink shows four radial charts in a responsive 2×2 grid with field colours in light and dark
+- [x] 3.7 Legends name field and signed value; tooltips show entry and previous dates
+- [x] 3.8 Circumference filter drives both charts, keeps one field, rings rescale
+- [x] 3.9 Empty-gain/loss cards and empty-window message render as specified
+- [x] 3.10 Controls row, buttons and dropdown match the line tile on mobile and desktop
 
 ### Phase 4: Wire into /measurements
 

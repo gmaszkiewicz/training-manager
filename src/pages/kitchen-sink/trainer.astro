@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import TrainerPanel from "@/components/trainer/TrainerPanel.astro";
+import TopChangesTile from "@/components/measurements/TopChangesTile.astro";
 import { measurementFields } from "@/lib/measurement-input";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { FieldDelta, MeasurementField, MeasurementWithDeltas } from "@/types";
@@ -91,6 +92,18 @@ const sampleEntry: MeasurementWithDeltas = {
           month="2026-09"
           chartEntries={[sampleEntry]}
         />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-changes">
+        <h2 id="state-top-changes" class="border-border border-b pb-2 text-lg font-semibold">
+          Top changes, read-only
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TopChangesTile with <code class="text-foreground">{"readOnly={true}"}</code>, as a linked trainer sees it for
+          the selected trainee, charting the sample entry in local mode. The period controls and the "Circumferences"
+          filter work as for the trainee; there is nothing to edit.
+        </p>
+        <TopChangesTile readOnly={true} month="2026-09" today="2026-09-15" startsOpen={true} entries={[sampleEntry]} />
       </section>
 
       <section class="flex flex-col gap-4" aria-labelledby="state-hover">

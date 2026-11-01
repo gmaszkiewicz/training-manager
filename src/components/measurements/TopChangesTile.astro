@@ -1,0 +1,73 @@
+---
+import CollapsibleChartTile from "@/components/measurements/CollapsibleChartTile.astro";
+import TopChangesCharts, { topChangesHeading, topChangesTileId } from "@/components/measurements/TopChangesCharts";
+import type { ChartBody } from "@/components/hooks/useChartPeriodRead";
+import { defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
+import { topChartsOpenStorageKey } from "@/lib/measurement-page";
+import { circumferenceFields } from "@/lib/measurement-top-changes";
+import type { CircumferenceField, MeasurementWithDeltas } from "@/types";
+
+interface Props {
+  accountUserId?: string;
+  subjectTraineeId?: string;
+  readOnly: boolean;
+  month?: string;
+  today?: string;
+  startsOpen: boolean;
+  /** Kitchen-sink local mode: chart these entries without a fetch. */
+  entries?: MeasurementWithDeltas[];
+  /** Kitchen-sink only: hold the loading state. */
+  forceLoading?: boolean;
+  /** The period from the preference cookie, so the charts are right on the first render. */
+  initialPeriod?: ChartPeriod;
+  /** The remembered week, month or year; `null` starts from the list's month. */
+  initialAnchor?: string | null;
+  /** The server's chart read for `initialPeriod`; `null` leaves the read to the island. */
+  initialChart?: ChartBody | null;
+  initialDays?: string[] | null;
+  /** The circumferences from the preference cookie; all 7 when absent. */
+  initialFields?: readonly CircumferenceField[];
+}
+
+const {
+  accountUserId,
+  subjectTraineeId,
+  readOnly,
+  month,
+  today,
+  startsOpen,
+  entries,
+  forceLoading = false,
+  initialPeriod = defaultChartPeriod,
+  initialAnchor = null,
+  initialChart = null,
+  initialDays = null,
+  initialFields = circumferenceFields,
+} = Astro.props;
+
+const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null;
+---
+
+<CollapsibleChartTile
+  storageKey={storageKey}
+  startsOpen={startsOpen}
+  title={topChangesHeading.title}
+  note={topChangesHeading.note}
+  tileId={topChangesTileId}
+>
+  <TopChangesCharts
+    accountUserId={accountUserId}
+    subjectTraineeId={subjectTraineeId}
+    readOnly={readOnly}
+    month={month}
+    today={today}
+    entries={entries}
+    forceLoading={forceLoading}
+    initialPeriod={initialPeriod}
+    initialAnchor={initialAnchor}
+    initialChart={initialChart}
+    initialDays={initialDays}
+    initialFields={initialFields}
+    client:load
+  />
+</CollapsibleChartTile>

@@ -330,7 +330,8 @@ export function compactChartPeriodLabel(period: ChartPeriod, anchorDay: string):
   return weekDays(anchorDay);
 }
 
-function bucketKey(ms: number, period: ChartPeriod): string {
+/** The bucket an instant falls in: `YYYY-MM-DD` for a week or month, `YYYY-MM` for a year, `YYYY` for a span of years. */
+export function bucketKey(ms: number, period: ChartPeriod): string {
   const date = new Date(ms);
   const year = String(date.getUTCFullYear()).padStart(4, "0");
   if (period === "years") {

@@ -135,6 +135,11 @@ describe("top changes preferences", () => {
     expect(parseTopChartsFields(["chest_cm"])).toEqual(all);
   });
 
+  it("keeps a single valid field", () => {
+    expect(parseTopChartsFields("waist_cm")).toEqual(["waist_cm"]);
+    expect(parseTopChartsFields("nope,hips_cm,weight_kg")).toEqual(["hips_cm"]);
+  });
+
   it("writes the selection in field order and reads it back", () => {
     expect(topChartsFieldsValue(["hips_cm", "chest_cm"])).toBe("chest_cm,hips_cm");
     expect(parseTopChartsFields(topChartsFieldsValue(["hips_cm", "chest_cm"]))).toEqual(["chest_cm", "hips_cm"]);
