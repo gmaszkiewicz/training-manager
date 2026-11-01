@@ -1,5 +1,5 @@
 import { withDeltas } from "@/lib/measurement-deltas";
-import { circumferenceFields } from "@/lib/measurement-top-changes";
+import { circumferenceFields } from "@/lib/measurement-input";
 import type { CircumferenceField, MeasurementEntry, MeasurementWithDeltas } from "@/types";
 
 export const pageSizes = [5, 10, 15] as const;

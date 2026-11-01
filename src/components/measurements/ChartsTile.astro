@@ -1,6 +1,7 @@
 ---
 import CollapsibleChartTile from "@/components/measurements/CollapsibleChartTile.astro";
-import MeasurementCharts, { chartsTileId, type ChartBody } from "@/components/measurements/MeasurementCharts";
+import MeasurementCharts, { chartsTileId } from "@/components/measurements/MeasurementCharts";
+import type { ChartBody } from "@/types";
 import { chartHeading, defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
 import { chartsOpenStorageKey } from "@/lib/measurement-page";
 import type { MeasurementWithDeltas } from "@/types";

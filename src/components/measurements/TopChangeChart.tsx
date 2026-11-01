@@ -74,10 +74,13 @@ export default function TopChangeChart({ title, rows, fields, scale, direction, 
     () => false,
   );
 
-  const changed = fields.flatMap((field) => {
-    const top = topSubPeriod(rows, field);
-    return top === null ? [] : [{ field, top }];
-  });
+  // Largest first for the legend; the sort is stable, so equal sums keep field order.
+  const changed = fields
+    .flatMap((field) => {
+      const top = topSubPeriod(rows, field);
+      return top === null ? [] : [{ field, top }];
+    })
+    .sort((a, b) => (b.top.values[b.field]?.difference ?? 0) - (a.top.values[a.field]?.difference ?? 0));
 
   if (changed.length === 0) {
     return (

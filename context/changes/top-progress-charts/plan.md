@@ -29,6 +29,12 @@ Gains and drops are summed separately: a field that goes +1 then −1 shows 1 on
 > **Re-plan 2 (2026-11-01, during Phase 3):** the charts are shadcn **radar** charts, not radial bar charts (Phase 3, change 0b). Weight radars show every sub-period as an axis, with the largest highlighted; the circumference filter keeps at least 3 fields. Progress row titles 3.6, 3.8 and 4.12 keep their original wording ("radial", "keeps one field", "rings") per the progress-format rule; read them as radar / keeps three fields / areas.
 >
 > **Re-plan 3 (2026-11-01, during Phase 3):** circumference charts become shadcn **Radar Chart - Multiple** (one series per field, own colour) on sub-period axes, and weight uses the same axes with one series. Month axes are calendar weeks, not days. The filter goes back to keeping at least 1 field (axes no longer depend on it). Phase 3 change 0c supersedes 0b and the radar parts of changes 1 and 2 where they conflict.
+>
+> **Addendum (2026-11-01, impl review F1):** light `--chart-8` (navel) changed from green (150) to blue (255), because green was hard to tell from chest's teal (184) on the radars. This is a value change, not a new token, and it avoids red and green. The dark palette is unchanged.
+>
+> **Addendum (2026-11-01, impl review F3):** `tests/e2e/measurement-charts.spec.ts` gained a `chartsTile()` helper that scopes its "Chart period" lookups to the line tile, because the second tile's period row otherwise breaks Playwright's strict mode and `toBeHidden`. The assertions are unchanged.
+>
+> **Addendum (2026-11-01, impl review F4):** `TopChangeChart` draws its legend as a list below the plot instead of `ChartLegendContent`, because the in-SVG legend overlapped the radar. The legend lists series largest first. The hidden radius axis uses `[0, scale × 1.15]` for headroom, so the top point's larger dot is not clipped.
 
 A "Circumferences" dropdown with checkboxes filters charts 2 and 4 together and is remembered per account and trainee. Verify with the unit tests, the kitchen sinks, the E2E spec and a manual check on the production preview.
 

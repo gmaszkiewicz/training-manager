@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
-import { useChartPeriodRead, type ChartBody } from "@/components/hooks/useChartPeriodRead";
+import { useChartPeriodRead } from "@/components/hooks/useChartPeriodRead";
 import { useMeasurementChartSelection } from "@/components/hooks/useMeasurementChartSelection";
 import ChartPeriodControls from "@/components/measurements/ChartPeriodControls";
 import MeasurementChart, { type ChartPoint } from "@/components/measurements/MeasurementChart";
@@ -19,9 +19,7 @@ import {
 } from "@/lib/measurement-chart";
 import { measurementFields } from "@/lib/measurement-input";
 import { chartsPeriodStorageKey, utcToday } from "@/lib/measurement-page";
-import type { MeasurementWithDeltas } from "@/types";
-
-export type { ChartBody } from "@/components/hooks/useChartPeriodRead";
+import type { ChartBody, MeasurementWithDeltas } from "@/types";
 
 /** The line tile's id on its `CollapsibleChartTile`, so this island only rewrites its own heading. */
 export const chartsTileId = "charts";

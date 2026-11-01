@@ -142,26 +142,38 @@ test("the Top changes tile renders the seeded charts below the Charts tile", asy
 });
 
 test("the period controls change the window and the choice survives a reload", async ({ page }) => {
-  await page.goto("/measurements");
-  const lastFiveYears = topTile(page).getByRole("button", { name: "Last 5 years", exact: true });
+  const seeded = await seedEntries(page, 2);
+  try {
+    await page.goto("/measurements");
+    const lastFiveYears = topTile(page).getByRole("button", { name: "Last 5 years", exact: true });
+    const weightLoss = topTile(page).getByRole("figure", { name: "Top weight loss", exact: true });
+    // The legend names the top sub-period: a year only on the Years axes, never a month's week like `3–9 Nov`.
+    const yearInLegend = /Weight · \d{4}\s/;
+    await expect(weightLoss).toContainText("Weight · ");
+    await expect(weightLoss).not.toContainText(yearInLegend);
 
-  await press(periodButton(page, "Years"));
-  // Years is fixed to the last five years: the picker names them and cannot step.
-  await expect(lastFiveYears).toBeDisabled();
-  await expect(topTile(page).getByRole("button", { name: "Previous period", exact: true })).toBeDisabled();
-  await expect(topTile(page).getByRole("button", { name: "Next period", exact: true })).toBeDisabled();
-  // The Charts tile keeps its own period.
-  await expect(
-    chartsTile(page).getByRole("group", { name: "Chart period" }).getByRole("button", { name: "Month", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+    await press(periodButton(page, "Years"));
+    // Years is fixed to the last five years: the picker names them and cannot step.
+    await expect(lastFiveYears).toBeDisabled();
+    await expect(topTile(page).getByRole("button", { name: "Previous period", exact: true })).toBeDisabled();
+    await expect(topTile(page).getByRole("button", { name: "Next period", exact: true })).toBeDisabled();
+    await expect(weightLoss).toContainText(yearInLegend);
+    // The Charts tile keeps its own period.
+    await expect(
+      chartsTile(page).getByRole("group", { name: "Chart period" }).getByRole("button", { name: "Month", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
 
-  await page.reload();
-  await expect(periodButton(page, "Years")).toHaveAttribute("aria-pressed", "true");
-  await expect(lastFiveYears).toBeVisible();
+    await page.reload();
+    await expect(periodButton(page, "Years")).toHaveAttribute("aria-pressed", "true");
+    await expect(lastFiveYears).toBeVisible();
+    await expect(weightLoss).toContainText(yearInLegend);
 
-  await press(periodButton(page, "Week"));
-  await expect(periodButton(page, "Years")).toHaveAttribute("aria-pressed", "false");
-  await expect(lastFiveYears).toHaveCount(0);
+    await press(periodButton(page, "Week"));
+    await expect(periodButton(page, "Years")).toHaveAttribute("aria-pressed", "false");
+    await expect(lastFiveYears).toHaveCount(0);
+  } finally {
+    await removeEntries(page, seeded);
+  }
 });
 
 test("the circumference filter is remembered across a reload", async ({ page }) => {

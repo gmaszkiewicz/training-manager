@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { MeasurementField } from "@/types";
+import type { CircumferenceField, MeasurementField } from "@/types";
 
 export const NOTE_MAX_LENGTH = 1000;
 
@@ -36,6 +36,11 @@ export const measurementFields = [
   hipsField,
   navelField,
 ] as const;
+
+/** The 7 circumferences, in `measurementFields` order. */
+export const circumferenceFields: readonly CircumferenceField[] = measurementFields.flatMap((definition) =>
+  definition.field === "weight_kg" ? [] : [definition.field],
+);
 
 function reject(ctx: z.RefinementCtx, message: string): never {
   ctx.addIssue(message);

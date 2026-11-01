@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 
-import { useChartPeriodRead, type ChartBody } from "@/components/hooks/useChartPeriodRead";
+import { useChartPeriodRead } from "@/components/hooks/useChartPeriodRead";
 import ChartPeriodControls from "@/components/measurements/ChartPeriodControls";
 import TopChangeChart from "@/components/measurements/TopChangeChart";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,8 @@ import {
   utcToday,
 } from "@/lib/measurement-page";
 import { circumferenceFields, subPeriodTotals, topChangeScale } from "@/lib/measurement-top-changes";
-import type { CircumferenceField, MeasurementField, MeasurementWithDeltas } from "@/types";
+import { namedId } from "@/lib/utils";
+import type { ChartBody, CircumferenceField, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 /** The Top changes tile's id on its `CollapsibleChartTile`, so this island only rewrites its own heading. */
 export const topChangesTileId = "top-changes";
@@ -65,13 +66,6 @@ interface Props {
 /** This island's own tile, found by tile id so another chart tile's heading is never touched. */
 function ownTile(root: HTMLElement | null): Element | null | undefined {
   return root?.closest(`[data-chart-tile="${topChangesTileId}"]`);
-}
-
-function namedId(id: string | null | undefined): string | null {
-  if (id === null || id === undefined || id === "") {
-    return null;
-  }
-  return id;
 }
 
 function fieldLabel(field: CircumferenceField): string {
@@ -135,13 +129,21 @@ function TopChangesGrid({
   fields: readonly CircumferenceField[];
 }) {
   // Every entry in the window counts, before any bucketing, so no change is lost. Both pairs share the sub-period axes.
-  const weightGain = subPeriodTotals(body.entries, weightSeries, period, window, "up");
-  const weightLoss = subPeriodTotals(body.entries, weightSeries, period, window, "down");
-  const circumferenceGain = subPeriodTotals(body.entries, fields, period, window, "up");
-  const circumferenceLoss = subPeriodTotals(body.entries, fields, period, window, "down");
-  // Each pair shares one radar scale over every series, so a gain and a loss compare.
-  const weightScale = topChangeScale(weightGain, weightLoss);
-  const circumferenceScale = topChangeScale(circumferenceGain, circumferenceLoss);
+  // Memoised on the window's bounds, not its object, which the caller may rebuild on every render.
+  const { start, end } = window;
+  const { weightGain, weightLoss, weightScale } = useMemo(() => {
+    const bounds = { start, end };
+    const gain = subPeriodTotals(body.entries, weightSeries, period, bounds, "up");
+    const loss = subPeriodTotals(body.entries, weightSeries, period, bounds, "down");
+    // Each pair shares one radar scale over every series, so a gain and a loss compare.
+    return { weightGain: gain, weightLoss: loss, weightScale: topChangeScale(gain, loss) };
+  }, [body, period, start, end]);
+  const { circumferenceGain, circumferenceLoss, circumferenceScale } = useMemo(() => {
+    const bounds = { start, end };
+    const gain = subPeriodTotals(body.entries, fields, period, bounds, "up");
+    const loss = subPeriodTotals(body.entries, fields, period, bounds, "down");
+    return { circumferenceGain: gain, circumferenceLoss: loss, circumferenceScale: topChangeScale(gain, loss) };
+  }, [body, fields, period, start, end]);
 
   return (
     <div className="measurement-row:grid-cols-2 grid grid-cols-1 gap-4">

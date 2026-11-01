@@ -19,12 +19,8 @@ import {
 } from "@/lib/measurement-chart";
 import { readStored, writePreference } from "@/lib/browser-storage";
 import { journalMonth, measurementMonth, utcToday } from "@/lib/measurement-page";
-import type { ChartMeasurement, MeasurementWithDeltas } from "@/types";
-
-export interface ChartBody {
-  entries: ChartMeasurement[];
-  window: ChartWindow | null;
-}
+import { namedId } from "@/lib/utils";
+import type { ChartBody, ChartMeasurement, MeasurementWithDeltas } from "@/types";
 
 /** The tile charts a period, or exactly the entries the caller asked for by id. */
 type ChartView = { kind: "period" } | { kind: "selected"; ids: readonly string[] };
@@ -74,13 +70,6 @@ export interface ChartPeriodRead {
   setAnchor: (anchor: string) => void;
   /** Set the period without moving the anchor (a reset to a first visit). */
   setPeriod: (period: ChartPeriod) => void;
-}
-
-function namedId(id: string | null | undefined): string | null {
-  if (id === null || id === undefined || id === "") {
-    return null;
-  }
-  return id;
 }
 
 function readWindow(value: unknown): ChartWindow | null | undefined {

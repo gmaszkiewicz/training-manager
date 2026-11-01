@@ -1,7 +1,7 @@
 ---
 change_id: top-progress-charts
 title: Radial charts panel for top weight and circumference gains and losses
-status: implemented
+status: impl_reviewed
 created: 2026-11-01
 updated: 2026-11-01
 archived_at: null

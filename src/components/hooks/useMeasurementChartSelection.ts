@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { readStored, writeStored } from "@/lib/browser-storage";
 import { CHART_SELECTION_LIMIT, limitSelection } from "@/lib/measurement-chart";
 import { chartsSelectionStorageKey, chartsVisualizedStorageKey } from "@/lib/measurement-page";
+import { namedId } from "@/lib/utils";
 
 /** Sent on `window` after every write, so the list and the charts tile (separate islands) re-read the selection. */
 export const chartSelectionEvent = "tm:measurements:chart-selection";
@@ -38,13 +39,6 @@ interface Options {
 
 const emptySelection: Selection = { checked: [], visualized: [] };
 const emptySnapshot = "\n";
-
-function namedId(id: string | null | undefined): string | null {
-  if (id === null || id === undefined || id === "") {
-    return null;
-  }
-  return id;
-}
 
 function parseIds(value: string | null): string[] {
   if (value === null || value === "") {

@@ -1,4 +1,5 @@
 import type { Database } from "@/db/database.types";
+import type { ChartWindow } from "@/lib/measurement-chart";
 import type { PageSize } from "@/lib/measurement-page";
 
 export interface Profile {
@@ -26,6 +27,12 @@ export type MeasurementWithDeltas = MeasurementEntry & {
 export type ChartMeasurement = MeasurementWithDeltas & {
   previous_measured_on: string | null;
 };
+
+/** A chart read: the entries in the window and the window itself (`null` for a read by ids). */
+export interface ChartBody {
+  entries: ChartMeasurement[];
+  window: ChartWindow | null;
+}
 
 export interface ProfileDetails {
   email: string;

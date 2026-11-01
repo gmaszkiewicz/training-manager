@@ -1,4 +1,4 @@
-import { monthLabel } from "@/lib/journal-calendar";
+import { monthName } from "@/lib/journal-calendar";
 import {
   bucketKey,
   calendarWeek,
@@ -6,9 +6,10 @@ import {
   measuredOnMs,
   type ChartPeriod,
   type ChartWindow,
+  YEARS_SPAN_LIMIT,
 } from "@/lib/measurement-chart";
-import { measurementFields } from "@/lib/measurement-input";
-import type { CircumferenceField, MeasurementField, MeasurementWithDeltas } from "@/types";
+import { circumferenceFields } from "@/lib/measurement-input";
+import type { MeasurementField, MeasurementWithDeltas } from "@/types";
 
 export type TopChangeDirection = "up" | "down";
 
@@ -33,15 +34,12 @@ export interface SubPeriodRow {
   values: Partial<Record<MeasurementField, SubPeriodValue>>;
 }
 
-/** The 7 circumferences, in `measurementFields` order. */
-export const circumferenceFields: readonly CircumferenceField[] = measurementFields.flatMap((definition) =>
-  definition.field === "weight_kg" ? [] : [definition.field],
-);
+export { circumferenceFields };
 
 const SHORT_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
-// A window is at most a 5-year span of days; this only stops a malformed window from looping on.
-const MAX_WINDOW_DAYS = 2000;
+// A window is at most a `YEARS_SPAN_LIMIT`-year span of days; this only stops a malformed window from looping on.
+const MAX_WINDOW_DAYS = (YEARS_SPAN_LIMIT + 1) * 366;
 
 /** Drops the float drift of adding tenths, e.g. 0.1 + 0.2. */
 function roundSum(value: number): number {
@@ -84,7 +82,7 @@ function subPeriodLabels(
   if (period === "year") {
     return {
       axisLabel: chartTickLabel(measuredOnMs(`${key}-01`), "month"),
-      label: monthLabel(key).split(" ")[0],
+      label: monthName(key),
     };
   }
   const ms = measuredOnMs(first);

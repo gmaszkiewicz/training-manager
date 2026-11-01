@@ -43,7 +43,7 @@ import {
   type PageSize,
 } from "@/lib/measurement-page";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { cn, namedId } from "@/lib/utils";
 import type { FieldDelta, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
@@ -80,13 +80,6 @@ interface MeasurementPageBody {
 }
 
 const textActionClassName = "text-primary focus-visible:ring-ring underline focus-visible:ring-2";
-
-function namedId(id: string | null): string | null {
-  if (id === null || id === "") {
-    return null;
-  }
-  return id;
-}
 
 function formatMeasurement(value: number): string {
   return value.toFixed(1);
