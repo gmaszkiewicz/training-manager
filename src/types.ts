@@ -63,6 +63,15 @@ export interface ComponentSettings {
   components: Record<ComponentId, string>;
 }
 
+/** How a component's tile renders on `/measurements`: whether it shows, and whether its version is a preview. */
+export interface ComponentTile {
+  shown: boolean;
+  preview: boolean;
+}
+
+/** Per-component tile states; a missing key renders as shown and not a preview (the kitchen sinks). */
+export type ComponentTiles = Partial<Record<ComponentId, ComponentTile>>;
+
 export type AccessType = "read";
 
 /** One kind of access to a dashboard; `pending` until the trainee accepts the request. */

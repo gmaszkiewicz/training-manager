@@ -25,6 +25,8 @@ interface Props {
   /** The server's chart read for `initialPeriod`; `null` leaves the read to the island. */
   initialChart?: ChartBody | null;
   initialDays?: string[] | null;
+  /** The chosen version is a preview: the tile carries the Preview badge. */
+  preview?: boolean;
   /** The circumferences from the preference cookie; all 7 when absent. */
   initialFields?: readonly CircumferenceField[];
 }
@@ -42,6 +44,7 @@ const {
   initialAnchor = null,
   initialChart = null,
   initialDays = null,
+  preview = false,
   initialFields = circumferenceFields,
 } = Astro.props;
 
@@ -53,6 +56,7 @@ const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null
   startsOpen={startsOpen}
   title={topChangesHeading.title}
   note={topChangesHeading.note}
+  preview={preview}
   tileId={topChangesTileId}
 >
   <TopChangesCharts

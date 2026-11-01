@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { dashboards } from "@/lib/dashboards";
-import type { ComponentId, ComponentSettings, ModuleId, Profile } from "@/types";
+import type { ComponentId, ComponentSettings, ComponentTile, ComponentTiles, ModuleId, Profile } from "@/types";
 
 export const COMPONENT_OFF = "off";
 
@@ -230,4 +230,21 @@ export function shownVersion(
     (candidate) => candidate.id === settings.components[componentId],
   );
   return version ? { label: version.label, preview: version.preview } : null;
+}
+
+/** Every component's tile state for the given settings: shown when on, and a preview when its version is one. */
+export function componentTiles(settings: ComponentSettings): Required<ComponentTiles> {
+  const tiles = {} as Required<ComponentTiles>;
+  for (const component of allComponents) {
+    const version = shownVersion(settings, component.id);
+    tiles[component.id] = { shown: version !== null, preview: version?.preview ?? false };
+  }
+  return tiles;
+}
+
+const defaultTile: ComponentTile = { shown: true, preview: false };
+
+/** A tile's state from a partial map; a missing key is shown and not a preview. */
+export function tileOf(tiles: ComponentTiles, componentId: ComponentId): ComponentTile {
+  return tiles[componentId] ?? defaultTile;
 }

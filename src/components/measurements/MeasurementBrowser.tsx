@@ -43,12 +43,15 @@ import {
   type PageSize,
 } from "@/lib/measurement-page";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, namedId } from "@/lib/utils";
 import type { FieldDelta, MeasurementField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   entries: MeasurementWithDeltas[];
   readOnly: boolean;
+  /** `false` keeps the row Edit action visible but disabled (the Edit measurement component is off). */
+  editEnabled?: boolean;
   editingId?: string | null;
   confirmingId?: string | null;
   accountUserId?: string | null;
@@ -443,14 +446,40 @@ function NoteRowCell({
   );
 }
 
+export const EDIT_OFF_TOOLTIP = "The Edit measurement component is off.";
+
+// Disabled through aria-disabled, not Radix's `disabled`, so the item still takes hover and focus for its tooltip.
+function DisabledEditItem() {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuItem
+            aria-disabled="true"
+            className="cursor-not-allowed opacity-50"
+            onSelect={(event) => {
+              event.preventDefault();
+            }}
+          >
+            Edit
+          </DropdownMenuItem>
+        </TooltipTrigger>
+        <TooltipContent side="left">{EDIT_OFF_TOOLTIP}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function RowActions({
   displayText,
   editHref,
   deleteHref,
+  editEnabled,
 }: {
   displayText: string;
   editHref: string;
   deleteHref: string;
+  editEnabled: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -466,9 +495,13 @@ function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <a href={editHref}>Edit</a>
-        </DropdownMenuItem>
+        {editEnabled ? (
+          <DropdownMenuItem asChild>
+            <a href={editHref}>Edit</a>
+          </DropdownMenuItem>
+        ) : (
+          <DisabledEditItem />
+        )}
         <DropdownMenuItem asChild>
           <a href={deleteHref}>Delete</a>
         </DropdownMenuItem>
@@ -480,6 +513,7 @@ function RowActions({
 function MeasurementEntry({
   entry,
   readOnly,
+  editEnabled,
   openEditingId,
   noteOpen,
   selected,
@@ -490,6 +524,7 @@ function MeasurementEntry({
 }: {
   entry: MeasurementWithDeltas;
   readOnly: boolean;
+  editEnabled: boolean;
   openEditingId: string | null;
   noteOpen: boolean;
   selected: boolean;
@@ -535,6 +570,7 @@ function MeasurementEntry({
                 displayText={display.text}
                 editHref={measurementEditHref(entry.id)}
                 deleteHref={measurementDeleteHref(entry.id, openEditingId)}
+                editEnabled={editEnabled}
               />
             </div>
           )}
@@ -572,6 +608,7 @@ function MeasurementEntry({
                 displayText={display.text}
                 editHref={measurementEditHref(entry.id)}
                 deleteHref={measurementDeleteHref(entry.id, openEditingId)}
+                editEnabled={editEnabled}
               />
             </div>
           </TableCell>
@@ -720,6 +757,7 @@ async function fetchMeasurementPage(query: PageQuery): Promise<MeasurementPageBo
 export default function MeasurementBrowser({
   entries,
   readOnly,
+  editEnabled = true,
   editingId = null,
   confirmingId = null,
   accountUserId = null,
@@ -1200,6 +1238,7 @@ export default function MeasurementBrowser({
                     key={entry.id}
                     entry={entry}
                     readOnly={readOnly}
+                    editEnabled={editEnabled}
                     openEditingId={openEditingId}
                     noteOpen={openNoteId === entry.id}
                     selected={selectedIds.has(entry.id)}

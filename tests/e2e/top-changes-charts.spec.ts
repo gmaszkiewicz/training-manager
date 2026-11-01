@@ -1,6 +1,19 @@
 // The Top progression tile on the production preview: it renders the seeded radar charts, its period controls change the
 // window and survive a reload, its circumference filter survives a reload, and its closed state survives a reload.
+// The tile is off by default, so each test first chooses its v0.1 preview and restores the defaults afterwards.
 import { expect, test, type Locator, type Page } from "@playwright/test";
+
+import { restoreDefaultComponents, saveComponents } from "./component-settings-helpers";
+
+test.describe.configure({ mode: "serial" });
+
+test.beforeEach(async ({ page }) => {
+  await saveComponents(page, { measurements: true, components: { "top-changes": "0.1" } });
+});
+
+test.afterEach(async ({ page }) => {
+  await restoreDefaultComponents(page);
+});
 
 const chartTitles = ["Top weight gain", "Top circumference gain", "Top weight loss", "Top circumference loss"];
 

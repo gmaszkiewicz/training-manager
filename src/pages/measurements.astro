@@ -30,6 +30,7 @@ import {
   type PageSize,
 } from "@/lib/measurement-page";
 import { requestedNoticeEmail } from "@/lib/collaborations";
+import { componentTiles, isModuleOn } from "@/lib/components";
 import { ensureProfile } from "@/lib/services/ensure-profile";
 import type { ChartBody } from "@/types";
 import {
@@ -55,7 +56,14 @@ import { measurementNoticeMessage } from "@/lib/measurement-notice";
 import { measurementValues } from "@/lib/measurement-previous";
 import { circumferenceFields } from "@/lib/measurement-top-changes";
 import { preferredTraineeId, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
-import type { CircumferenceField, MeasurementEntry, MeasurementField, MeasurementWithDeltas, Profile } from "@/types";
+import type {
+  CircumferenceField,
+  ComponentTiles,
+  MeasurementEntry,
+  MeasurementField,
+  MeasurementWithDeltas,
+  Profile,
+} from "@/types";
 
 const { user } = Astro.locals;
 const supabase = createClient(Astro.request.headers, Astro.cookies);
@@ -107,6 +115,7 @@ let topChartsPeriod: ChartPeriod = defaultChartPeriod;
 let topChartsAnchor: string | null = null;
 let topChartInitial: ChartBody | null = null;
 let topChartsFields: CircumferenceField[] = [...circumferenceFields];
+let tiles: ComponentTiles = {};
 const now = new Date();
 const today = utcToday(now);
 let month = measurementMonth(today);
@@ -183,10 +192,10 @@ function sameChartWindow(period: ChartPeriod, anchor: string, otherPeriod: Chart
 }
 
 // The Charts tile's first render: its remembered period's range, plus the days for its picker. A failed read leaves
-// both to the island's own fetch.
-async function readInitialChart(rangeRead: MeasurementRangeRead, daysRead: MeasurementDaysRead): Promise<void> {
+// both to the island's own fetch. Without the Charts tile only the days are read (the Top progression picker).
+async function readInitialChart(rangeRead: MeasurementRangeRead | null, daysRead: MeasurementDaysRead): Promise<void> {
   const [range, days] = await Promise.all([rangeRead, daysRead]);
-  chartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
+  chartInitial = range?.ok ? { entries: range.entries, window: range.window } : null;
   chartDays = days.ok ? days.days : null;
 }
 
@@ -196,14 +205,16 @@ async function readInitialTopChart(rangeRead: MeasurementRangeRead): Promise<voi
   topChartInitial = range.ok ? { entries: range.entries, window: range.window } : null;
 }
 
-// Both chart tiles' first render around the list's month. The days read starts with the list, so only the range reads
-// wait for the list's month; when both tiles name the same window they share one range read.
+// The shown chart tiles' first render around the list's month. The days read starts with the list, so only the range
+// reads wait for the list's month; when both tiles name the same window they share one range read. A tile that is off
+// skips its range read.
 async function readInitialCharts(
   client: NonNullable<typeof supabase>,
   accountUserId: string,
   subjectTraineeId: string,
   listMonth: string,
   daysRead: MeasurementDaysRead,
+  shownCharts: { charts: boolean; topCharts: boolean },
 ): Promise<void> {
   // The charts keep their own week, month or year apart from the list; only a first visit starts from its month.
   const firstAnchor = monthAnchor(listMonth, today);
@@ -214,41 +225,65 @@ async function readInitialCharts(
   topChartsPeriod = topPreference.period;
   topChartsAnchor = topPreference.anchor ?? firstAnchor;
   topChartsFields = preferredTopChartsFields(accountUserId, subjectTraineeId);
-  const rangeRead = readChartRange(client, subjectTraineeId, chartsPeriod, chartsAnchor);
-  const topRangeRead = sameChartWindow(chartsPeriod, chartsAnchor, topChartsPeriod, topChartsAnchor)
-    ? rangeRead
-    : readChartRange(client, subjectTraineeId, topChartsPeriod, topChartsAnchor);
-  await Promise.all([readInitialChart(rangeRead, daysRead), readInitialTopChart(topRangeRead)]);
+  const rangeRead = shownCharts.charts ? readChartRange(client, subjectTraineeId, chartsPeriod, chartsAnchor) : null;
+  let topRangeRead: MeasurementRangeRead | null = null;
+  if (shownCharts.topCharts) {
+    topRangeRead =
+      rangeRead !== null && sameChartWindow(chartsPeriod, chartsAnchor, topChartsPeriod, topChartsAnchor)
+        ? rangeRead
+        : readChartRange(client, subjectTraineeId, topChartsPeriod, topChartsAnchor);
+  }
+  await Promise.all([
+    readInitialChart(rangeRead, daysRead),
+    topRangeRead !== null ? readInitialTopChart(topRangeRead) : null,
+  ]);
 }
 
 if (supabase && user) {
   const requestedRole = requestedRoleFromMetadata(user.user_metadata);
   if (requestedRole !== "reject") {
     const ensured = await ensureProfile(supabase, user.id, requestedRole);
+    // The signed-in user's own choices: with the module off the page sends them to Hub (also the sign-in landing).
+    if (ensured.ok && !isModuleOn(ensured.components, "measurements")) {
+      return Astro.redirect("/hub", 302);
+    }
     if (ensured.ok) {
       role = ensured.role;
+      const shownTiles = componentTiles(ensured.components);
+      tiles = shownTiles;
+      const shownCharts = { charts: shownTiles.progression.shown, topCharts: shownTiles["top-changes"].shown };
+      const chartsShown = shownCharts.charts || shownCharts.topCharts;
       if (role === "trainee") {
         traineeAccountId = user.id;
-        const editId = Astro.url.searchParams.get("edit");
-        const deleteId = Astro.url.searchParams.get("delete");
+        const listShown = shownTiles.measurements.shown;
+        // With Edit measurement off `?edit=` falls back to the normal view; the delete prompt lives in the list.
+        const editId = shownTiles["edit-measurement"].shown ? Astro.url.searchParams.get("edit") : null;
+        const deleteId = listShown ? Astro.url.searchParams.get("delete") : null;
+        // The charts start from the list's month, so the list is read whenever the list, a chart or the Edit card shows.
+        const listNeeded = listShown || chartsShown || editId !== null;
         // The reads are independent, so they start together; their results apply in the order below.
-        const listedRead = readMeasurementPage(supabase, user.id, {
-          month: preferredMonth(user.id, user.id),
-          page: preferredJournalPage(user.id, user.id),
-          pageSize: preferredPageSize(user.id),
-          focusId: deleteId ?? editId,
-          now,
-        });
-        const daysRead = editId === null ? readMeasurementDays(supabase, user.id) : null;
+        const listedRead = listNeeded
+          ? readMeasurementPage(supabase, user.id, {
+              month: preferredMonth(user.id, user.id),
+              page: preferredJournalPage(user.id, user.id),
+              pageSize: preferredPageSize(user.id),
+              focusId: deleteId ?? editId,
+              now,
+            })
+          : null;
+        const daysRead = editId === null && chartsShown ? readMeasurementDays(supabase, user.id) : null;
         // The add form starts from the trainee's latest entry; a failed read leaves the fields empty.
         // measured_on is the trainee's wall clock, so the bound sits past the latest minute any zone can save.
         const previousRead =
-          editId === null ? readPreviousMeasurement(supabase, user.id, latestMeasuredOnBound(now)) : null;
+          editId === null && shownTiles["new-measurement"].shown
+            ? readPreviousMeasurement(supabase, user.id, latestMeasuredOnBound(now))
+            : null;
         const editRead = editId !== null ? getMeasurement(supabase, user.id, editId) : null;
         const deleteRead = deleteId !== null ? getMeasurement(supabase, user.id, deleteId) : null;
-        const listed = await listedRead;
-        measurementsLoaded = listed.ok;
-        if (listed.ok) {
+        // Nothing to load when no tile needs the list.
+        const listed = listedRead !== null ? await listedRead : null;
+        measurementsLoaded = listed === null || listed.ok;
+        if (listed?.ok) {
           entries = listed.entries;
           dates = listed.dates;
           page = listed.page;
@@ -256,8 +291,8 @@ if (supabase && user) {
           pageSize = listed.pageSize;
           month = listed.month;
         }
-        if (listed.ok && daysRead !== null) {
-          await readInitialCharts(supabase, user.id, user.id, month, daysRead);
+        if (listed?.ok && daysRead !== null) {
+          await readInitialCharts(supabase, user.id, user.id, month, daysRead, shownCharts);
         } else if (daysRead !== null) {
           // Without the list there is no chart, so the days are discarded.
           await daysRead;
@@ -301,8 +336,12 @@ if (supabase && user) {
               httpOnly: true,
             });
           }
-          if (selectedLink) {
-            const daysRead = readMeasurementDays(supabase, selectedLink.traineeId);
+          // The charts start from the list's month, so the list is read whenever the list or a chart shows; with
+          // Measurements for off the charts still follow the selected (remembered or first linked) trainee.
+          if (selectedLink && !shownTiles["trainee-measurements"].shown && !chartsShown) {
+            trainerMeasurementsLoaded = true;
+          } else if (selectedLink) {
+            const daysRead = chartsShown ? readMeasurementDays(supabase, selectedLink.traineeId) : null;
             const listed = await readMeasurementPage(supabase, selectedLink.traineeId, {
               month: preferredMonth(user.id, selectedLink.traineeId),
               page: preferredJournalPage(user.id, selectedLink.traineeId),
@@ -318,8 +357,10 @@ if (supabase && user) {
               pageCount = listed.pageCount;
               pageSize = listed.pageSize;
               month = listed.month;
-              await readInitialCharts(supabase, user.id, selectedLink.traineeId, month, daysRead);
-            } else {
+              if (daysRead !== null) {
+                await readInitialCharts(supabase, user.id, selectedLink.traineeId, month, daysRead, shownCharts);
+              }
+            } else if (daysRead !== null) {
               // Without the list there is no chart, so the days are discarded.
               await daysRead;
             }
@@ -366,6 +407,7 @@ if (supabase && user) {
       pageCount={pageCount}
       pageSize={pageSize}
       month={month}
+      shown={tiles}
     />
   ) : (
     <TrainerPanel
@@ -396,6 +438,7 @@ if (supabase && user) {
       pageCount={pageCount}
       pageSize={pageSize}
       month={month}
+      shown={tiles}
     />
   )}
 </Layout>

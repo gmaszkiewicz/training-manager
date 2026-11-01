@@ -4,6 +4,7 @@ import {
   componentModules,
   componentSettingsSchema,
   componentsForRole,
+  componentTiles,
   defaultComponentSettings,
   isComponentShown,
   isModuleOn,
@@ -11,6 +12,7 @@ import {
   resolveComponentSettings,
   shownVersion,
   storedComponentSettings,
+  tileOf,
 } from "@/lib/components";
 
 const DEFAULTS = {
@@ -171,6 +173,38 @@ describe("storedComponentSettings", () => {
     expect(storedComponentSettings(defaultComponentSettings())).toEqual({
       modules: { measurements: true },
       components: DEFAULTS.components,
+    });
+  });
+});
+
+describe("componentTiles", () => {
+  it("shows the default components, hides Top progression and marks no preview", () => {
+    const tiles = componentTiles(defaultComponentSettings());
+
+    expect(tiles.progression).toEqual({ shown: true, preview: false });
+    expect(tiles["new-measurement"]).toEqual({ shown: true, preview: false });
+    expect(tiles["top-changes"]).toEqual({ shown: false, preview: false });
+  });
+
+  it("marks the Top progression preview once chosen", () => {
+    const tiles = componentTiles(resolveComponentSettings({ components: { "top-changes": "0.1" } }));
+
+    expect(tiles["top-changes"]).toEqual({ shown: true, preview: true });
+  });
+
+  it("hides every tile when the module is off", () => {
+    const tiles = componentTiles(resolveComponentSettings({ modules: { measurements: false } }));
+
+    expect(Object.values(tiles).every((tile) => !tile.shown)).toBe(true);
+  });
+});
+
+describe("tileOf", () => {
+  it("treats a missing key as shown and not a preview", () => {
+    expect(tileOf({}, "progression")).toEqual({ shown: true, preview: false });
+    expect(tileOf({ progression: { shown: false, preview: false } }, "progression")).toEqual({
+      shown: false,
+      preview: false,
     });
   });
 });

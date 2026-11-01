@@ -24,6 +24,8 @@ interface Props {
   /** The server's chart read for `initialPeriod`; `null` leaves the read to the island. */
   initialChart?: ChartBody | null;
   initialDays?: string[] | null;
+  /** The chosen version is a preview: the tile carries the Preview badge. */
+  preview?: boolean;
 }
 
 const {
@@ -39,6 +41,7 @@ const {
   initialAnchor = null,
   initialChart = null,
   initialDays = null,
+  preview = false,
 } = Astro.props;
 
 const storageKey = accountUserId ? chartsOpenStorageKey(accountUserId) : null;
@@ -50,6 +53,7 @@ const heading = chartHeading(initialPeriod);
   startsOpen={startsOpen}
   title={heading.title}
   note={heading.note}
+  preview={preview}
   tileId={chartsTileId}
 >
   <MeasurementCharts

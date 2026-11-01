@@ -424,34 +424,34 @@ The nullable column with no backfill means `null` resolves to the defaults, so e
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm test` (`component-settings-form.test.ts`)
-- [x] 3.2 Lint and type check pass: `npm run lint`, `npx astro check`
-- [x] 3.3 Smoke passes: `npm run smoke` (anonymous save redirects to sign-in)
-- [x] 3.4 Build succeeds: `npm run build`
+- [x] 3.1 Unit tests pass: `npm test` (`component-settings-form.test.ts`) — a25e7b7
+- [x] 3.2 Lint and type check pass: `npm run lint`, `npx astro check` — a25e7b7
+- [x] 3.3 Smoke passes: `npm run smoke` (anonymous save redirects to sign-in) — a25e7b7
+- [x] 3.4 Build succeeds: `npm run build` — a25e7b7
 
 #### Manual
 
-- [x] 3.5 Settings shows Change password and Components tabs; Components shows defaults and locked Nutrition, Training, Planning
-- [x] 3.6 Choosing Top changes v0.1 and Save shows the toast and persists on reload
-- [x] 3.7 Measurements switch off disables rows with values kept; switching back on restores the earlier versions
-- [x] 3.8 Dark theme and phone width render correctly
+- [x] 3.5 Settings shows Change password and Components tabs; Components shows defaults and locked Nutrition, Training, Planning — a25e7b7
+- [x] 3.6 Choosing Top changes v0.1 and Save shows the toast and persists on reload — a25e7b7
+- [x] 3.7 Measurements switch off disables rows with values kept; switching back on restores the earlier versions — a25e7b7
+- [x] 3.8 Dark theme and phone width render correctly — a25e7b7
 
 ### Phase 4: Gating, preview badge and e2e
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass: `npm test` (topbar `measurementsOn`)
-- [ ] 4.2 Lint, token check and type check pass: `npm run lint`, `npm run check:home-tokens`, `npx astro check`
-- [ ] 4.3 E2E passes: `npx playwright test` (new `component-settings.spec.ts`, updated `top-changes-charts.spec.ts`)
-- [ ] 4.4 Smoke passes: `npm run smoke`
-- [ ] 4.5 Build succeeds: `npm run build`
+- [x] 4.1 Unit tests pass: `npm test` (topbar `measurementsOn`)
+- [x] 4.2 Lint, token check and type check pass: `npm run lint`, `npm run check:home-tokens`, `npx astro check`
+- [x] 4.3 E2E passes: `npx playwright test` (new `component-settings.spec.ts`, updated `top-changes-charts.spec.ts`)
+- [x] 4.4 Smoke passes: `npm run smoke`
+- [x] 4.5 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 4.6 A fresh user sees New measurements, Measurements and Charts, and no Top changes tile
-- [ ] 4.7 With Top changes v0.1 the tile shows the red Preview badge; the tooltip works on hover and focus; the badge click does not collapse the tile
-- [ ] 4.8 With Measurements off: no menu link (desktop and hamburger); `/measurements` and sign-in land on Hub; back on restores everything
-- [ ] 4.9 All components off shows the empty-state card linking to Settings → Components
-- [ ] 4.10 A trainer's own Progression off hides their Charts tile without affecting the trainee
-- [ ] 4.11 With Edit measurement off, row Edit is disabled with the "component is off" tooltip and Delete still works
-- [ ] 4.12 Settings → Components lists only the role's rows (trainee: New/Edit measurement, Your measurements; trainer: Find trainee, Measurements for)
+- [x] 4.6 A fresh user sees New measurements, Measurements and Charts, and no Top changes tile
+- [x] 4.7 With Top changes v0.1 the tile shows the red Preview badge; the tooltip works on hover and focus; the badge click does not collapse the tile
+- [x] 4.8 With Measurements off: no menu link (desktop and hamburger); `/measurements` and sign-in land on Hub; back on restores everything
+- [x] 4.9 All components off shows the empty-state card linking to Settings → Components
+- [x] 4.10 A trainer's own Progression off hides their Charts tile without affecting the trainee
+- [x] 4.11 With Edit measurement off, row Edit is disabled with the "component is off" tooltip and Delete still works
+- [x] 4.12 Settings → Components lists only the role's rows (trainee: New/Edit measurement, Your measurements; trainer: Find trainee, Measurements for)
