@@ -377,9 +377,9 @@ None. There are no schema or data changes, and the new preference keys fall back
 
 #### Automated
 
-- [ ] 1.1 Unit tests pass, covering the worked example, the latest-wins tie, no gains, null deltas, sorting, filtering, the pair scale, keys and field parsing
-- [ ] 1.2 Lint passes
-- [ ] 1.3 Types check
+- [x] 1.1 Unit tests pass, covering the worked example, the latest-wins tie, no gains, null deltas, sorting, filtering, the pair scale, keys and field parsing
+- [x] 1.2 Lint passes
+- [x] 1.3 Types check
 
 ### Phase 2: Extract shared chart plumbing
 

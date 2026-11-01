@@ -25,6 +25,11 @@ import {
   pageSizes,
   pageSlice,
   parsePageSize,
+  parseTopChartsFields,
+  topChartsFieldsStorageKey,
+  topChartsFieldsValue,
+  topChartsOpenStorageKey,
+  topChartsPeriodStorageKey,
   utcToday,
   viewOf,
   type PageSize,
@@ -97,6 +102,43 @@ describe("storage keys", () => {
     expect(chartsSelectionStorageKey("account-2", "trainee-2")).not.toBe(
       chartsSelectionStorageKey("account-1", "trainee-2"),
     );
+  });
+});
+
+describe("top changes preferences", () => {
+  const all = ["chest_cm", "waist_cm", "arms_cm", "thigh_cm", "calf_cm", "hips_cm", "navel_cm"];
+
+  it("scopes the top changes tile to the account and its period and fields to the account and trainee", () => {
+    expect(topChartsOpenStorageKey("account-1")).toBe("tm.measurements.topCharts.account-1");
+    expect(topChartsPeriodStorageKey("account-1", "trainee-2")).toBe(
+      "tm.measurements.topChartsPeriod.account-1.trainee-2",
+    );
+    expect(topChartsFieldsStorageKey("account-1", "trainee-2")).toBe(
+      "tm.measurements.topChartsFields.account-1.trainee-2",
+    );
+    expect(topChartsOpenStorageKey("account-1")).not.toBe(chartsOpenStorageKey("account-1"));
+    expect(topChartsPeriodStorageKey("account-1", "trainee-2")).not.toBe(
+      chartsPeriodStorageKey("account-1", "trainee-2"),
+    );
+  });
+
+  it("reads stored fields in field order, dropping unknown names and duplicates", () => {
+    expect(parseTopChartsFields("navel_cm,chest_cm")).toEqual(["chest_cm", "navel_cm"]);
+    expect(parseTopChartsFields("waist_cm,weight_kg,nope,waist_cm")).toEqual(["waist_cm"]);
+  });
+
+  it("falls back to all 7 circumferences for a missing, empty or invalid value", () => {
+    expect(parseTopChartsFields(null)).toEqual(all);
+    expect(parseTopChartsFields(undefined)).toEqual(all);
+    expect(parseTopChartsFields("")).toEqual(all);
+    expect(parseTopChartsFields("weight_kg,nope")).toEqual(all);
+    expect(parseTopChartsFields(["chest_cm"])).toEqual(all);
+  });
+
+  it("writes the selection in field order and reads it back", () => {
+    expect(topChartsFieldsValue(["hips_cm", "chest_cm"])).toBe("chest_cm,hips_cm");
+    expect(parseTopChartsFields(topChartsFieldsValue(["hips_cm", "chest_cm"]))).toEqual(["chest_cm", "hips_cm"]);
+    expect(parseTopChartsFields(topChartsFieldsValue(parseTopChartsFields(null)))).toEqual(all);
   });
 });
 

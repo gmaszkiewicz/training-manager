@@ -9,6 +9,8 @@ export interface Profile {
 export type MeasurementField =
   "weight_kg" | "chest_cm" | "waist_cm" | "arms_cm" | "thigh_cm" | "calf_cm" | "hips_cm" | "navel_cm";
 
+export type CircumferenceField = Exclude<MeasurementField, "weight_kg">;
+
 export type MeasurementEntry = Omit<Database["public"]["Tables"]["measurements"]["Row"], "trainee_id">;
 
 export interface FieldDelta {
