@@ -469,18 +469,18 @@ None. There are no schema or data changes, and the new preference keys fall back
 
 #### Automated
 
-- [x] 4.1 Unit tests pass
-- [x] 4.2 Lint passes
-- [x] 4.3 Token check passes
-- [x] 4.4 Types check
-- [x] 4.5 Build succeeds
-- [x] 4.6 E2E passes
-- [x] 4.7 Smoke passes against the preview
+- [x] 4.1 Unit tests pass — cca1bb4
+- [x] 4.2 Lint passes — cca1bb4
+- [x] 4.3 Token check passes — cca1bb4
+- [x] 4.4 Types check — cca1bb4
+- [x] 4.5 Build succeeds — cca1bb4
+- [x] 4.6 E2E passes — cca1bb4
+- [x] 4.7 Smoke passes against the preview — cca1bb4
 
 #### Manual
 
-- [x] 4.8 Tile hydrates on the production preview with no console errors
-- [x] 4.9 Trainee top weight gain matches the list's largest up delta for the period, including the window's first entry
-- [x] 4.10 Linked trainer sees the read-only tile with its own remembered period and filter
-- [x] 4.11 Closed tile stays closed after reload with no flash; Years shows last 5 years
-- [x] 4.12 Dark theme rings, track and legend stay readable
+- [x] 4.8 Tile hydrates on the production preview with no console errors — cca1bb4
+- [x] 4.9 Trainee top weight gain matches the list's largest up delta for the period, including the window's first entry — cca1bb4
+- [x] 4.10 Linked trainer sees the read-only tile with its own remembered period and filter — cca1bb4
+- [x] 4.11 Closed tile stays closed after reload with no flash; Years shows last 5 years — cca1bb4
+- [x] 4.12 Dark theme rings, track and legend stay readable — cca1bb4
