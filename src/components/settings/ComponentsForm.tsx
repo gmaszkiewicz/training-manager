@@ -113,7 +113,9 @@ export default function ComponentsForm({ settings, role, serverError, notice, un
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value={COMPONENT_OFF}>{OFF_OPTION_LABEL}</SelectItem>
+                                  {component.required ? null : (
+                                    <SelectItem value={COMPONENT_OFF}>{OFF_OPTION_LABEL}</SelectItem>
+                                  )}
                                   {component.versions.map((version) => (
                                     <SelectItem key={version.id} value={version.id}>
                                       {versionOptionLabel(version)}

@@ -53,6 +53,7 @@ export type ComponentId =
   | "edit-measurement"
   | "measurements"
   | "find-trainee"
+  | "trainee-picker"
   | "trainee-measurements"
   | "progression"
   | "top-changes";

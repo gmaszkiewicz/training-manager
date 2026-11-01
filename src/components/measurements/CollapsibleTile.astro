@@ -15,7 +15,7 @@ interface Props {
    * browser fires for an initially open tile is not saved over it (the add form after a server error).
    */
   restore?: boolean;
-  /** The tile's chosen version is a preview: a red "Preview" badge sits next to the title. */
+  /** The tile's chosen version is a preview: a red "Preview" badge sits in the header, left of the chevron. */
   preview?: boolean;
 }
 
@@ -26,7 +26,10 @@ const hasNote = note !== undefined;
 ---
 
 <div class="flex justify-center px-4 pb-4">
-  <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4">
+  <div
+    class="border-border bg-card relative w-full max-w-measurement min-w-0 rounded-xl border p-4"
+    data-tile-card={tileId}
+  >
     <details
       class="group"
       aria-labelledby={`${headingId}-title`}
@@ -38,21 +41,17 @@ const hasNote = note !== undefined;
       <summary
         aria-labelledby={`${headingId}-title`}
         aria-describedby={hasNote ? `${headingId}-note` : undefined}
-        class="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden"
+        class:list={[
+          "flex cursor-pointer list-none justify-between gap-2 rounded-md text-xl font-bold text-foreground select-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden",
+          // With the badge, the chevron sits on the title line so the badge can line up beside it.
+          preview ? "items-start" : "items-center",
+        ]}
       >
-        <span class="flex min-w-0 flex-col">
-          {preview ? (
-            <span class="flex flex-wrap items-center gap-2">
-              <span id={`${headingId}-title`} data-tile-title>
-                {title}
-              </span>
-              <PreviewBadge client:load />
-            </span>
-          ) : (
-            <span id={`${headingId}-title`} data-tile-title>
-              {title}
-            </span>
-          )}
+        {/* The title column leaves room for the badge, so the chevron itself stays at the edge. */}
+        <span class:list={["flex min-w-0 flex-col", preview && "pr-20"]}>
+          <span id={`${headingId}-title`} data-tile-title>
+            {title}
+          </span>
           {hasNote ? (
             <span
               id={`${headingId}-note`}
@@ -72,7 +71,7 @@ const hasNote = note !== undefined;
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="size-5 shrink-0 transition-transform group-open:rotate-180"
+          class:list={["size-5 shrink-0 transition-transform group-open:rotate-180", preview && "mt-1"]}
           aria-hidden="true"
         >
           <path d="m6 9 6 6 6-6"></path>
@@ -124,5 +123,12 @@ const hasNote = note !== undefined;
         }
       })();
     </script>
+    {/* Outside <details> (and after the script, which finds it as its previous sibling): never interactive content
+         inside <summary>, and still visible when the tile is closed. */}
+    {preview ? (
+      <div class="absolute top-4.5 right-12">
+        <PreviewBadge client:load />
+      </div>
+    ) : null}
   </div>
 </div>

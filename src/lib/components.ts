@@ -18,6 +18,8 @@ export interface ComponentConfig {
   versions: readonly ComponentVersion[];
   /** A version id from `versions`, or `"off"`. */
   defaultVersion: string;
+  /** The component cannot be switched off: `"off"` is never offered, accepted or resolved. */
+  required?: boolean;
 }
 
 export interface ComponentModule {
@@ -45,6 +47,14 @@ const MODULE_COMPONENTS: Record<ModuleId, { defaultOn: boolean; components: read
       },
       { id: "measurements", label: "Your measurements", roles: ["trainee"], versions: STABLE, defaultVersion: "1.0" },
       { id: "find-trainee", label: "Find trainee", roles: ["trainer"], versions: STABLE, defaultVersion: "1.0" },
+      {
+        id: "trainee-picker",
+        label: "Choose trainee",
+        roles: ["trainer"],
+        versions: STABLE,
+        defaultVersion: "1.0",
+        required: true,
+      },
       {
         id: "trainee-measurements",
         label: "Measurements for",
@@ -94,7 +104,7 @@ function componentConfig(componentId: ComponentId): ComponentConfig & { moduleId
 }
 
 function isKnownChoice(component: ComponentConfig, value: unknown): value is string {
-  return value === COMPONENT_OFF || component.versions.some((version) => version.id === value);
+  return (value === COMPONENT_OFF && !component.required) || component.versions.some((version) => version.id === value);
 }
 
 export function componentsForRole(moduleId: ModuleId, role: Profile["role"]): ComponentConfig[] {
@@ -141,7 +151,8 @@ export interface ComponentSettingsUpdate {
 const builtModules = componentModules.filter((module) => module.built);
 
 function choiceSchema(component: ComponentConfig) {
-  const [first, ...rest] = [...component.versions.map((version) => version.id), COMPONENT_OFF];
+  const versionIds = component.versions.map((version) => version.id);
+  const [first, ...rest] = component.required ? versionIds : [...versionIds, COMPONENT_OFF];
   return z.enum([first, ...rest]);
 }
 

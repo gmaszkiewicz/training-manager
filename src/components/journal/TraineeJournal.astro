@@ -143,6 +143,7 @@ const chartsRender = measurementsLoaded && !editing;
           entries={entries}
           readOnly={false}
           editEnabled={editTile.shown}
+          visualizeEnabled={chartsTile.shown}
           editingId={editing ? editingEntry.id : undefined}
           confirmingId={confirmingEntry?.id}
           accountUserId={accountUserId}

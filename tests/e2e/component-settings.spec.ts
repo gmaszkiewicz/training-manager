@@ -63,6 +63,7 @@ test("the screen shows the trainee's defaults", async ({ page }) => {
   await expect(versionSelect(page, "Top progression")).toHaveText("Off");
   // Only the trainee's rows.
   await expect(versionSelect(page, "Find trainee")).toHaveCount(0);
+  await expect(versionSelect(page, "Choose trainee")).toHaveCount(0);
   await expect(versionSelect(page, "Measurements for")).toHaveCount(0);
   for (const locked of ["Nutrition", "Training", "Planning"]) {
     const lockedSwitch = page.getByRole("switch", { name: locked, exact: true });
@@ -81,12 +82,15 @@ test("Top progression is hidden by default and its preview carries the badge", a
   await save(page);
 
   await page.goto("/measurements");
-  const badge = topTile(page).getByRole("button", { name: "Preview", exact: true });
+  // The badge sits in the tile's card, outside its <details>, so it is found through the card.
+  const badge = page.locator('[data-tile-card="top-changes"]').getByRole("button", { name: "Preview", exact: true });
   const periods = topTile(page).getByRole("group", { name: "Chart period" });
   await expect(badge).toBeVisible();
   await expect(periods).toBeVisible();
   // The line charts are not a preview.
-  await expect(chartsTile(page).getByRole("button", { name: "Preview", exact: true })).toHaveCount(0);
+  await expect(
+    page.locator('[data-tile-card="charts"]').getByRole("button", { name: "Preview", exact: true }),
+  ).toHaveCount(0);
 
   const tooltip = page.getByRole("tooltip");
   await expect(async () => {
@@ -114,6 +118,14 @@ test("Progression off hides the Charts tile", async ({ page }) => {
   await page.goto("/measurements");
   await expect(page.getByRole("group", { name: "Your measurements", exact: true })).toBeVisible();
   await expect(chartsTile(page)).toHaveCount(0);
+
+  // Visualize stays under the list, disabled, and says why on hover.
+  const visualize = page.getByRole("button", { name: "Visualize", exact: true });
+  await expect(visualize).toHaveAttribute("aria-disabled", "true");
+  await expect(async () => {
+    await visualize.hover();
+    await expect(page.getByRole("tooltip")).toHaveText("The Progression component is off.", { timeout: 1_000 });
+  }).toPass();
 });
 
 test("every component off shows the empty-state card linking to Settings → Components", async ({ page }) => {

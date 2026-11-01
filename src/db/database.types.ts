@@ -199,6 +199,16 @@ export type Database = {
     };
     Functions: {
       accept_trainer_link: { Args: { p_trainer_id: string }; Returns: boolean };
+      list_linked_trainees: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          email: string;
+          first_name: string;
+          last_name: string;
+          linked_at: string;
+          trainee_id: string;
+        }[];
+      };
       list_trainee_collaborations: {
         Args: { p_page: number; p_size: number };
         Returns: {

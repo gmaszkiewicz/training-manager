@@ -5,8 +5,7 @@ import ComponentsForm from "@/components/settings/ComponentsForm";
 import Topbar from "@/components/Topbar.astro";
 import { COMPONENTS_LOAD_ERROR, componentsPageError, componentsPageNotice } from "@/lib/component-settings-form";
 import { defaultComponentSettings } from "@/lib/components";
-import { readProfileRole } from "@/lib/services/ensure-profile";
-import { readComponentSettings } from "@/lib/services/profile-details";
+import { readComponentSettingsDetails } from "@/lib/services/profile-details";
 import { SETTINGS_TABS } from "@/lib/settings-tabs";
 import { createClient } from "@/lib/supabase";
 import type { ComponentSettings, Profile } from "@/types";
@@ -17,12 +16,10 @@ let role: Profile["role"] | null = null;
 let unavailable = false;
 if (user) {
   const supabase = createClient(Astro.request.headers, Astro.cookies);
-  const [stored, storedRole] = supabase
-    ? await Promise.all([readComponentSettings(supabase, user.id), readProfileRole(supabase, user.id)])
-    : [null, null];
-  if (stored && storedRole) {
-    settings = stored;
-    role = storedRole;
+  const stored = supabase ? await readComponentSettingsDetails(supabase, user.id) : null;
+  if (stored) {
+    settings = stored.settings;
+    role = stored.role;
   } else {
     // The defaults here would look like the saved state, and Save would overwrite the stored choices.
     unavailable = true;

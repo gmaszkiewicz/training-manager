@@ -18,6 +18,8 @@ import {
   parseFindTraineeOpen,
   parseJournalPage,
   parseListOpen,
+  parseTraineePickerOpen,
+  traineePickerOpenStorageKey,
   measurementMonth,
   pageSizeStorageKey,
   selectedTraineeStorageKey,
@@ -146,6 +148,10 @@ function preferredListOpen(accountUserId: string): boolean | null {
 
 function preferredFindTraineeOpen(accountUserId: string): boolean | null {
   return parseFindTraineeOpen(cookieValue(findTraineeOpenStorageKey(accountUserId)));
+}
+
+function preferredTraineePickerOpen(accountUserId: string): boolean | null {
+  return parseTraineePickerOpen(cookieValue(traineePickerOpenStorageKey(accountUserId)));
 }
 
 function preferredChartsOpen(accountUserId: string): boolean | null {
@@ -421,6 +427,7 @@ if (supabase && user) {
       entries={entries}
       accountUserId={trainerAccountId}
       findTraineeOpen={trainerAccountId ? preferredFindTraineeOpen(trainerAccountId) : null}
+      traineePickerOpen={trainerAccountId ? preferredTraineePickerOpen(trainerAccountId) : null}
       listOpen={trainerAccountId ? preferredListOpen(trainerAccountId) : null}
       chartsOpen={trainerAccountId ? preferredChartsOpen(trainerAccountId) : null}
       chartsPeriod={chartsPeriod}

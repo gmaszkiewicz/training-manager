@@ -1,5 +1,6 @@
 ---
 import CollapsibleTile from "@/components/measurements/CollapsibleTile.astro";
+import { headingFor } from "@/lib/trainer-preview";
 import TopChangesCharts, { topChangesHeading, topChangesTileId } from "@/components/measurements/TopChangesCharts";
 import type { ChartBody } from "@/types";
 import { defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
@@ -27,6 +28,8 @@ interface Props {
   initialDays?: string[] | null;
   /** The chosen version is a preview: the tile carries the Preview badge. */
   preview?: boolean;
+  /** Whose measurements the tile shows, named after its title; the trainer only. */
+  subjectLabel?: string | null;
   /** The circumferences from the preference cookie; all 7 when absent. */
   initialFields?: readonly CircumferenceField[];
 }
@@ -46,6 +49,7 @@ const {
   initialDays = null,
   preview = false,
   initialFields = circumferenceFields,
+  subjectLabel = null,
 } = Astro.props;
 
 const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null;
@@ -54,7 +58,7 @@ const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null
 <CollapsibleTile
   storageKey={storageKey}
   startsOpen={startsOpen}
-  title={topChangesHeading.title}
+  title={headingFor(topChangesHeading.title, subjectLabel)}
   note={topChangesHeading.note}
   preview={preview}
   tileId={topChangesTileId}
@@ -71,6 +75,7 @@ const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null
     initialAnchor={initialAnchor}
     initialChart={initialChart}
     initialDays={initialDays}
+    subjectLabel={subjectLabel}
     initialFields={initialFields}
     client:load
   />

@@ -25,6 +25,7 @@ Add a Settings → Components screen where a signed-in user switches each module
   - Trainer: Find trainee, Measurements for, Progression: Off / v1.0 (default v1.0); Top progression: Off / v0.1 (preview) (default Off)
 - Nutrition, Training and Planning each show a switch that is off and disabled, a "Not available yet" note, and no table.
 - When the Measurements switch is off, its rows stay visible but disabled, and their chosen versions are kept on save.
+  - _Addendum (impl review F1):_ as built, a switched-off module **collapses** its component list (`hidden`) instead of showing disabled rows. The rows stay mounted, so their hidden fields still keep the chosen versions on save.
 - One Save button under the tables saves everything and shows the "Components saved" toast. A failed save shows an error toast.
 - The menu shows Measurements only while the signed-in user's Measurements module is on. With it off, `/measurements` redirects to `/hub`, and that includes the landing after sign-in and sign-up.
 - On `/measurements`, each tile renders only when its component is on, by the **signed-in user's own** choices (a trainer's own settings gate the trainer's view). New measurement and Edit measurement apply to trainees only; Find trainee and Measurements for apply to trainers only. If every component of the role is off, one empty-state card says so and links to Settings → Components.
@@ -32,6 +33,12 @@ Add a Settings → Components screen where a signed-in user switches each module
 - Trainer tiles: Find trainee (email search + Request read access) and Measurements for (the trainee picker under its title, then the read-only list) are separate collapsible tiles. There is no "Body measurements" heading.
 - When Edit measurement is off, the row Actions menu keeps Delete, and Edit stays visible but disabled, with a tooltip saying the Edit measurement component is off. An `?edit=` link falls back to the normal view.
 - A tile whose chosen version is a preview shows a red badge, "Preview", next to its title. Its tooltip reads that this is a preview version and may contain bugs.
+
+- _Addendum (impl review F4):_ the registry labels are the canonical tile titles: "New measurement", "Edit measurement", "Your measurements", "Find trainee", "Choose trainee", "Measurements for", "Progression" and "Top progression". Where Phase 1 says "New measurements" or "Measurements", read the registry label.
+- _Addendum (impl review F5):_ the trainer's trainee picker is its own collapsible tile, **Choose trainee** (`trainee-picker`), under Find trainee. Measurements for holds only the list. The picker is a `required` registry component: Settings → Components lists its version (v1.0) with no "Off" option, and the schema and resolver never accept `"off"` for it.
+- _Addendum (after the impl review):_ the trainer's list and chart headings name the chosen trainee: "Measurements for …", "Weekly/Monthly/Year progression for …" (and "Selected entries (n) for …"), "Top progression for …". The name is "A. Lovelace (email)" with both names, the one saved name with the email, otherwise the email alone (`traineeLabel`). The names come from a new `list_linked_trainees()` RPC (migration `20261101130000_list_linked_trainees.sql`, additive), which replaces the direct `trainer_links` read, so there is no extra round trip. The Preview badge sits left of the chevron, which stays at the tile's edge.
+- _Addendum (after the impl review):_ with Progression off, Visualize under the list (trainee and trainer) stays visible but disabled, with the tooltip "The Progression component is off." (`visualizeEnabled`, like `editEnabled`).
+- _Addendum (impl review F2):_ when no switchable trainer tile can render (every one is off, or Find trainee is off and there is no trainee yet), one card points to Settings → Components.
 
 ### Key Discoveries:
 
@@ -433,7 +440,7 @@ The nullable column with no backfill means `null` resolves to the defaults, so e
 
 - [x] 3.5 Settings shows Change password and Components tabs; Components shows defaults and locked Nutrition, Training, Planning — a25e7b7
 - [x] 3.6 Choosing Top changes v0.1 and Save shows the toast and persists on reload — a25e7b7
-- [x] 3.7 Measurements switch off disables rows with values kept; switching back on restores the earlier versions — a25e7b7
+- [x] 3.7 Measurements switch off disables rows with values kept; switching back on restores the earlier versions — a25e7b7 (as built: the rows collapse, see the F1 addendum)
 - [x] 3.8 Dark theme and phone width render correctly — a25e7b7
 
 ### Phase 4: Gating, preview badge and e2e

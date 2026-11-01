@@ -22,6 +22,7 @@ const DEFAULTS = {
     "edit-measurement": "1.0",
     measurements: "1.0",
     "find-trainee": "1.0",
+    "trainee-picker": "1.0",
     "trainee-measurements": "1.0",
     progression: "1.0",
     "top-changes": "off",
@@ -53,6 +54,7 @@ describe("componentsForRole", () => {
   it("returns the trainer components in registry order", () => {
     expect(componentsForRole("measurements", "trainer").map((component) => component.label)).toEqual([
       "Find trainee",
+      "Choose trainee",
       "Measurements for",
       "Progression",
       "Top progression",
@@ -92,6 +94,12 @@ describe("resolveComponentSettings", () => {
     const settings = resolveComponentSettings({ components: { progression: "9.9", "top-changes": "1.0" } });
     expect(settings.components.progression).toBe("1.0");
     expect(settings.components["top-changes"]).toBe("off");
+  });
+
+  it("never resolves a required component to off", () => {
+    expect(resolveComponentSettings({ components: { "trainee-picker": "off" } }).components["trainee-picker"]).toBe(
+      "1.0",
+    );
   });
 
   it("forces an unbuilt module off", () => {
@@ -137,8 +145,13 @@ describe("componentSettingsSchema", () => {
     expect(componentSettingsSchema.parse({})).toEqual({ modules: {}, components: {} });
   });
 
-  it("accepts off for any component", () => {
+  it("accepts off for any component that is not required", () => {
     expect(componentSettingsSchema.safeParse({ components: { "new-measurement": "off" } }).success).toBe(true);
+  });
+
+  it("rejects off for a required component", () => {
+    expect(componentSettingsSchema.safeParse({ components: { "trainee-picker": "off" } }).success).toBe(false);
+    expect(componentSettingsSchema.safeParse({ components: { "trainee-picker": "1.0" } }).success).toBe(true);
   });
 
   it("rejects an unknown version", () => {

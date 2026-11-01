@@ -7,6 +7,7 @@ type ComponentKey =
   | "edit-measurement"
   | "measurements"
   | "find-trainee"
+  | "trainee-picker"
   | "trainee-measurements"
   | "progression"
   | "top-changes";
@@ -17,6 +18,7 @@ export const DEFAULT_COMPONENTS: Record<ComponentKey, string> = {
   "edit-measurement": "1.0",
   measurements: "1.0",
   "find-trainee": "1.0",
+  "trainee-picker": "1.0",
   "trainee-measurements": "1.0",
   progression: "1.0",
   "top-changes": "off",

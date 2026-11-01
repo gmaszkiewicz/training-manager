@@ -19,10 +19,8 @@ export async function listTrainerLinks(
   supabase: SupabaseClient<Database>,
 ): Promise<{ ok: true; links: TrainerLink[] } | { ok: false }> {
   try {
-    const { data, error } = await supabase
-      .from("trainer_links")
-      .select("trainee_id, email, linked_at")
-      .eq("status", "accepted");
+    // The accepted links with each trainee's names, which a trainer cannot read from profiles directly.
+    const { data, error } = await supabase.rpc("list_linked_trainees");
 
     if (error) {
       return { ok: false };
@@ -34,6 +32,8 @@ export async function listTrainerLinks(
         traineeId: row.trainee_id,
         email: row.email,
         linkedAt: row.linked_at,
+        firstName: row.first_name,
+        lastName: row.last_name,
       })),
     };
   } catch {

@@ -16,9 +16,10 @@ import {
   addFormStartsOpen,
   findTraineeOpenStorageKey,
   listOpenStorageKey,
+  traineePickerOpenStorageKey,
   type PageSize,
 } from "@/lib/measurement-page";
-import type { TrainerLink } from "@/lib/trainer-preview";
+import { traineeLabel, type TrainerLink } from "@/lib/trainer-preview";
 import type { CircumferenceField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
@@ -39,6 +40,7 @@ interface Props {
   pageSize?: PageSize;
   month?: string;
   findTraineeOpen?: boolean | null;
+  traineePickerOpen?: boolean | null;
   listOpen?: boolean | null;
   chartsOpen?: boolean | null;
   chartsPeriod?: ChartPeriod;
@@ -77,6 +79,7 @@ const {
   pageSize,
   month,
   findTraineeOpen = null,
+  traineePickerOpen = null,
   listOpen = null,
   chartsOpen = null,
   chartsPeriod,
@@ -107,19 +110,32 @@ if (mode !== "trainer") {
 }
 const findTraineeKey = accountUserId ? findTraineeOpenStorageKey(accountUserId) : null;
 const findTraineeStartsOpen = addFormStartsOpen(serverError !== null, findTraineeOpen);
+const pickerKey = accountUserId ? traineePickerOpenStorageKey(accountUserId) : null;
+const pickerStartsOpen = addFormStartsOpen(false, traineePickerOpen);
 const listKey = accountUserId ? listOpenStorageKey(accountUserId) : null;
 const listStartsOpen = addFormStartsOpen(false, listOpen);
 const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
 const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
 const showCharts = accountUserId !== undefined || chartEntries !== undefined;
 const findTile = tileOf(shown, "find-trainee");
+const pickerTile = tileOf(shown, "trainee-picker");
 const listTile = tileOf(shown, "trainee-measurements");
 const chartsTile = tileOf(shown, "progression");
 const topChartsTile = tileOf(shown, "top-changes");
-const everyComponentOff =
-  mode === "trainer" && !findTile.shown && !listTile.shown && !chartsTile.shown && !topChartsTile.shown;
-// With every component on, the tiles render as before; with every one off, a single card replaces them.
-const tilesRender = mode === "trainer" && trainerLinksLoaded && !everyComponentOff;
+const tilesRender = mode === "trainer" && trainerLinksLoaded;
+const hasTrainee = trainerLinks.length > 0 && selectedLink !== null;
+// The list and chart headings name the chosen trainee: "Measurements for A. Lovelace (ada@example.com)".
+const subjectLabel = selectedLink ? traineeLabel(selectedLink) : null;
+// Each tile renders only when it is on and has something to show; the picker cannot be switched off.
+const findRenders = tilesRender && findTile.shown;
+const pickerRenders = tilesRender && pickerTile.shown && hasTrainee;
+const listRenders = tilesRender && listTile.shown && hasTrainee;
+const chartsRender = tilesRender && chartsTile.shown && selectedLink !== null && showCharts;
+const topChartsRender = tilesRender && topChartsTile.shown && selectedLink !== null && showCharts;
+const everyComponentOff = !findTile.shown && !listTile.shown && !chartsTile.shown && !topChartsTile.shown;
+// When none of the switchable tiles can render, one card points to Settings → Components: every component is off, or
+// Find trainee is off and there is no trainee yet whose list or charts could show.
+const nothingRenders = tilesRender && !findRenders && !listRenders && !chartsRender && !topChartsRender;
 const requestNotice =
   mode === "trainer" && requestedEmail !== null ? requestOutcomeMessage("sent", requestedEmail) : null;
 ---
@@ -135,16 +151,7 @@ const requestNotice =
     </div>
   </div>
 )}
-{everyComponentOff ? (
-  <ComponentsOffCard>
-    {trainerLinksLoaded && trainerLinks.length > 0 && selectedLink ? (
-      <div class="mb-3 flex justify-center">
-        <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />
-      </div>
-    ) : null}
-  </ComponentsOffCard>
-) : null}
-{tilesRender && findTile.shown ? (
+{findRenders ? (
   <CollapsibleTile
     storageKey={findTraineeKey}
     startsOpen={findTraineeStartsOpen}
@@ -163,22 +170,44 @@ const requestNotice =
     </form>
   </CollapsibleTile>
 ) : null}
-{tilesRender && listTile.shown && trainerLinks.length > 0 && selectedLink ? (
+{pickerRenders ? (
   <CollapsibleTile
-    storageKey={listKey}
-    startsOpen={listStartsOpen}
-    title="Measurements for"
-    note="Measurements reported by the chosen trainee"
-    tileId="measurements"
-    preview={listTile.preview}
+    storageKey={pickerKey}
+    startsOpen={pickerStartsOpen}
+    title="Choose trainee"
+    note="Whose measurements the tiles below show"
+    tileId="trainee-picker"
+    preview={pickerTile.preview}
   >
     <div class="mt-3 flex justify-center">
       <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />
     </div>
+  </CollapsibleTile>
+) : null}
+{nothingRenders ? (
+  everyComponentOff ? (
+    <ComponentsOffCard />
+  ) : (
+    <ComponentsOffCard
+      title="Find trainee is off"
+      message="Request access to a trainee after switching Find trainee on in"
+    />
+  )
+) : null}
+{listRenders ? (
+  <CollapsibleTile
+    storageKey={listKey}
+    startsOpen={listStartsOpen}
+    title={subjectLabel ? `Measurements for ${subjectLabel}` : "Measurements for"}
+    note="Measurements reported by the chosen trainee"
+    tileId="measurements"
+    preview={listTile.preview}
+  >
     {trainerMeasurementsLoaded ? (
       <MeasurementBrowser
         entries={entries}
         readOnly={true}
+        visualizeEnabled={chartsTile.shown}
         accountUserId={accountUserId}
         subjectTraineeId={selectedLink.traineeId}
         idPrefix={idPrefix}
@@ -193,7 +222,7 @@ const requestNotice =
     ) : null}
   </CollapsibleTile>
 ) : null}
-{tilesRender && chartsTile.shown && selectedLink && showCharts ? (
+{chartsRender ? (
   <ChartsTile
     accountUserId={accountUserId}
     subjectTraineeId={selectedLink.traineeId}
@@ -207,9 +236,10 @@ const requestNotice =
     initialDays={chartDays}
     entries={chartEntries}
     preview={chartsTile.preview}
+    subjectLabel={subjectLabel}
   />
 ) : null}
-{tilesRender && topChartsTile.shown && selectedLink && showCharts ? (
+{topChartsRender ? (
   <TopChangesTile
     accountUserId={accountUserId}
     subjectTraineeId={selectedLink.traineeId}
@@ -224,5 +254,6 @@ const requestNotice =
     initialFields={topChartsFields}
     entries={chartEntries}
     preview={topChartsTile.preview}
+    subjectLabel={subjectLabel}
   />
 ) : null}

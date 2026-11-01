@@ -29,6 +29,7 @@ import {
   utcToday,
 } from "@/lib/measurement-page";
 import { circumferenceFields, subPeriodTotals, topChangeScale } from "@/lib/measurement-top-changes";
+import { headingFor } from "@/lib/trainer-preview";
 import { namedId } from "@/lib/utils";
 import type { ChartBody, CircumferenceField, MeasurementField, MeasurementWithDeltas } from "@/types";
 
@@ -61,6 +62,8 @@ interface Props {
   initialDays?: string[] | null;
   /** The circumferences from the preference cookie; all 7 when absent. */
   initialFields?: readonly CircumferenceField[];
+  /** Whose measurements the charts show, named after the title ("… for A. Lovelace (ada@example.com)"); the trainer only. */
+  subjectLabel?: string | null;
 }
 
 /** This island's own tile, found by tile id so another chart tile's heading is never touched. */
@@ -196,6 +199,7 @@ export default function TopChangesCharts({
   initialChart = null,
   initialDays = null,
   initialFields = circumferenceFields,
+  subjectLabel = null,
 }: Props) {
   const todayValue = today ?? utcToday(new Date());
   const accountId = namedId(accountUserId);
@@ -248,13 +252,13 @@ export default function TopChangesCharts({
     const title = tile?.querySelector("[data-tile-title]");
     const note = tile?.querySelector("[data-tile-note]");
     if (title instanceof HTMLElement) {
-      title.textContent = topChangesHeading.title;
+      title.textContent = headingFor(topChangesHeading.title, subjectLabel);
     }
     if (note instanceof HTMLElement) {
       note.textContent = topChangesHeading.note ?? "";
       note.hidden = topChangesHeading.note === null;
     }
-  }, []);
+  }, [subjectLabel]);
 
   let status: ReactNode;
   if (loading) {

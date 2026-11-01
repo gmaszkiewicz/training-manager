@@ -20,6 +20,8 @@ import {
   parseChartsOpen,
   parseFindTraineeOpen,
   parseListOpen,
+  parseTraineePickerOpen,
+  traineePickerOpenStorageKey,
   parseAddFormOpen,
   parseJournalPage,
   measurementMonth,
@@ -204,6 +206,22 @@ describe("find trainee open state", () => {
     expect(addFormStartsOpen(false, parseFindTraineeOpen(null))).toBe(true);
     expect(addFormStartsOpen(false, parseFindTraineeOpen("closed"))).toBe(false);
     expect(addFormStartsOpen(true, parseFindTraineeOpen("closed"))).toBe(true);
+  });
+});
+
+describe("trainee picker open state", () => {
+  it("scopes the picker tile to the account, apart from the other trainer tiles", () => {
+    expect(traineePickerOpenStorageKey("account-1")).toBe("tm.measurements.traineePicker.account-1");
+    expect(traineePickerOpenStorageKey("account-2")).not.toBe(traineePickerOpenStorageKey("account-1"));
+    expect(traineePickerOpenStorageKey("account-1")).not.toBe(findTraineeOpenStorageKey("account-1"));
+    expect(traineePickerOpenStorageKey("account-1")).not.toBe(listOpenStorageKey("account-1"));
+  });
+
+  it("keeps open and closed, ignores anything else, and starts open when nothing is stored", () => {
+    expect(parseTraineePickerOpen("open")).toBe(true);
+    expect(parseTraineePickerOpen("closed")).toBe(false);
+    expect(parseTraineePickerOpen("true")).toBeNull();
+    expect(addFormStartsOpen(false, parseTraineePickerOpen(null))).toBe(true);
   });
 });
 

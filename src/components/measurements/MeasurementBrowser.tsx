@@ -52,6 +52,8 @@ interface Props {
   readOnly: boolean;
   /** `false` keeps the row Edit action visible but disabled (the Edit measurement component is off). */
   editEnabled?: boolean;
+  /** `false` keeps Visualize visible but disabled (the Progression component is off, so there is no chart to fill). */
+  visualizeEnabled?: boolean;
   editingId?: string | null;
   confirmingId?: string | null;
   accountUserId?: string | null;
@@ -447,6 +449,30 @@ function NoteRowCell({
 }
 
 export const EDIT_OFF_TOOLTIP = "The Edit measurement component is off.";
+export const VISUALIZE_OFF_TOOLTIP = "The Progression component is off.";
+
+// Disabled through aria-disabled, not `disabled`, so the button still takes hover and focus for its tooltip.
+function DisabledVisualizeButton() {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-disabled="true"
+            className="cursor-not-allowed opacity-50"
+          >
+            <ChartLine aria-hidden="true" />
+            Visualize
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{VISUALIZE_OFF_TOOLTIP}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 // Disabled through aria-disabled, not Radix's `disabled`, so the item still takes hover and focus for its tooltip.
 function DisabledEditItem() {
@@ -758,6 +784,7 @@ export default function MeasurementBrowser({
   entries,
   readOnly,
   editEnabled = true,
+  visualizeEnabled = true,
   editingId = null,
   confirmingId = null,
   accountUserId = null,
@@ -1290,18 +1317,22 @@ export default function MeasurementBrowser({
       )}
       {noMeasurementsYet ? null : (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={checkedIds.length === 0}
-            onClick={() => {
-              visualize();
-            }}
-          >
-            <ChartLine aria-hidden="true" />
-            Visualize
-          </Button>
+          {visualizeEnabled ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={checkedIds.length === 0}
+              onClick={() => {
+                visualize();
+              }}
+            >
+              <ChartLine aria-hidden="true" />
+              Visualize
+            </Button>
+          ) : (
+            <DisabledVisualizeButton />
+          )}
           <Button
             type="button"
             variant="outline"

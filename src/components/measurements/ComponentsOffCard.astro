@@ -2,16 +2,22 @@
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// The one card `/measurements` renders when every Measurements component of the role is off. The default slot sits
-// above the message (the trainer's picker).
+interface Props {
+  title?: string;
+  /** The text before the Settings → Components link. */
+  message?: string;
+}
+
+// The one card `/measurements` renders when no Measurements tile of the role can show: every component is off, or
+// (for a trainer without trainees) the ones still on have nothing to show.
+const { title = "Every Measurements component is off", message = "Switch them on in" } = Astro.props;
 ---
 
 <div class="flex justify-center px-4 pb-4">
   <div class="border-border bg-card w-full max-w-measurement min-w-0 rounded-xl border p-4" data-components-off>
-    <slot />
-    <h1 class="text-xl font-bold text-foreground">Every Measurements component is off</h1>
+    <h1 class="text-xl font-bold text-foreground">{title}</h1>
     <p class="mt-1 text-sm text-muted-foreground">
-      Switch them on in
+      {message}
       <a href="/settings/components" class:list={[cn(buttonVariants({ variant: "link" }), "h-auto p-0")]}>
         Settings → Components
       </a>

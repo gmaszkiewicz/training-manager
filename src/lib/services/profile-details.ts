@@ -127,6 +127,30 @@ export async function readComponentSettings(
   }
 }
 
+// One read of the profile row for Settings → Components: the resolved choices and the role whose rows the form lists;
+// `null` when the row cannot be read or has no known role.
+export async function readComponentSettingsDetails(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<{ settings: ComponentSettings; role: Profile["role"] } | null> {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("role, component_settings")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const role = parseProfileRole(data.role);
+    return role ? { settings: resolveComponentSettings(data.component_settings), role } : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function updateComponentSettings(
   supabase: SupabaseClient<Database>,
   userId: string,

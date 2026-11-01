@@ -102,6 +102,14 @@ export function parseFindTraineeOpen(value: unknown): boolean | null {
   return parseAddFormOpen(value);
 }
 
+export function traineePickerOpenStorageKey(accountUserId: string): string {
+  return `tm.measurements.traineePicker.${accountUserId}`;
+}
+
+export function parseTraineePickerOpen(value: unknown): boolean | null {
+  return parseAddFormOpen(value);
+}
+
 export function chartsPeriodStorageKey(accountUserId: string, subjectTraineeId: string): string {
   return `tm.measurements.chartsPeriod.${accountUserId}.${subjectTraineeId}`;
 }
