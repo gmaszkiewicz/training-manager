@@ -52,7 +52,7 @@ export const GET: APIRoute = async (context) => {
     return json({ error: "Could not search trainees" }, 500);
   }
 
-  return json({ emails: searched.emails }, 200);
+  return json({ trainees: searched.trainees }, 200);
 };
 
 type RequestAnswerOutcome = LinkRequestOutcome | "empty" | "failed";

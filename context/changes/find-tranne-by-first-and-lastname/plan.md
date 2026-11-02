@@ -345,15 +345,15 @@ The migration is additive: the extension, the helper and the new function. The p
 
 #### Automated
 
-- [ ] 1.1 Migration applies on a fresh local stack: `npx supabase db reset`
-- [ ] 1.2 Migration check passes: `npm run migration-check`
-- [ ] 1.3 Unit tests pass: `npm test`
-- [ ] 1.4 Lint and types pass: `npm run lint` and `npx astro check`
+- [x] 1.1 Migration applies on a fresh local stack: `npx supabase db reset`
+- [x] 1.2 Migration check passes: `npm run migration-check`
+- [x] 1.3 Unit tests pass: `npm test`
+- [x] 1.4 Lint and types pass: `npm run lint` and `npx astro check`
 
 #### Manual
 
-- [ ] 1.5 With local Supabase, calling the RPC as a trainer returns Ada Lovelace for "ada love", "lovelace ada" and "ADA@EX", and returns Łukasz Żółty for "lukasz zolty"
-- [ ] 1.6 The RPC returns nothing for a trainee caller and nothing for an already-linked trainee
+- [x] 1.5 With local Supabase, calling the RPC as a trainer returns Ada Lovelace for "ada love", "lovelace ada" and "ADA@EX", and returns Łukasz Żółty for "lukasz zolty"
+- [x] 1.6 The RPC returns nothing for a trainee caller and nothing for an already-linked trainee
 
 ### Phase 2: Find trainee dialog
 

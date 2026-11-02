@@ -15,15 +15,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
+function hasEmail(value: unknown): value is { email: string } {
+  return isRecord(value) && typeof value.email === "string";
 }
 
 function readEmails(value: unknown): string[] {
-  if (!isRecord(value) || !isStringArray(value.emails)) {
+  if (!isRecord(value) || !Array.isArray(value.trainees)) {
     return [];
   }
-  return value.emails;
+  const trainees: unknown[] = value.trainees;
+  if (!trainees.every(hasEmail)) {
+    return [];
+  }
+  return trainees.map((trainee) => trainee.email);
 }
 
 function traineeSearchUrl(query: string): string {
