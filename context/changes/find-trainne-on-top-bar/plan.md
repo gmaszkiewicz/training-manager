@@ -346,15 +346,15 @@ No schema change. The POST redirect branch stays, so a page loaded before the de
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm test`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Type and Astro checks pass: `npx astro check`
-- [x] 3.4 Production build passes: `npm run build`
-- [x] 3.5 Smoke passes against the preview with local Supabase: `npm run smoke`
-- [x] 3.6 E2E passes, including `find-trainee.spec.ts` and the updated Hub flow: `npx playwright test`
+- [x] 3.1 Unit tests pass: `npm test` — 7aa8ac3
+- [x] 3.2 Lint passes: `npm run lint` — 7aa8ac3
+- [x] 3.3 Type and Astro checks pass: `npx astro check` — 7aa8ac3
+- [x] 3.4 Production build passes: `npm run build` — 7aa8ac3
+- [x] 3.5 Smoke passes against the preview with local Supabase: `npm run smoke` — 7aa8ac3
+- [x] 3.6 E2E passes, including `find-trainee.spec.ts` and the updated Hub flow: `npx playwright test` — 7aa8ac3
 
 #### Manual
 
-- [x] 3.7 `/measurements` as a trainer shows no Find trainee tile; with no trainees it shows the No trainees yet card pointing to the top bar
-- [x] 3.8 With Find trainee off and no trainees the card points to Settings → Components
-- [x] 3.9 Requesting from `/hub/collaborations` keeps the trainer on that page and the new pending row appears after reload
+- [x] 3.7 `/measurements` as a trainer shows no Find trainee tile; with no trainees it shows the No trainees yet card pointing to the top bar — 7aa8ac3
+- [x] 3.8 With Find trainee off and no trainees the card points to Settings → Components — 7aa8ac3
+- [x] 3.9 Requesting from `/hub/collaborations` keeps the trainer on that page and the new pending row appears after reload — 7aa8ac3
