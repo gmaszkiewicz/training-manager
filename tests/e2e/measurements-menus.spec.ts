@@ -1,11 +1,11 @@
-// Phone-width menus on /measurements: one click opens the hamburger (Home, Measurements), the avatar (Profile, Hub,
-// Settings, Sign out), and row Edit/Delete.
+// Phone-width menus on /measurements: one click opens the hamburger (Home, Measurements), the avatar (the user's name,
+// Hub, Settings, Theme, Sign out), and row Edit/Delete.
 import { expect, test, type Page } from "@playwright/test";
 
 test.describe("360×800 menus", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
-  test("one click opens Menu with Home and Measurements, the avatar with Profile, Hub, Settings and Sign out, and row Actions with Edit and Delete", async ({
+  test("one click opens Menu with Home and Measurements, the avatar with the name item, Hub, Settings, Theme and Sign out, and row Actions with Edit and Delete", async ({
     page,
   }) => {
     await ensureMeasurementRow(page);
@@ -24,9 +24,11 @@ test.describe("360×800 menus", () => {
     const account = page.getByRole("button", { name: "Account menu" });
     await expect(account).toBeVisible();
     await account.click();
-    await expect(page.getByRole("menuitem", { name: "Profile" })).toBeVisible();
+    // The first item names the user and links to Profile; other specs may change the name.
+    await expect(page.getByRole("menu").getByRole("menuitem").first()).toHaveAttribute("href", "/profile");
     await expect(page.getByRole("menuitem", { name: "Hub" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Theme" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Sign out" })).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("menuitem", { name: "Sign out" })).toHaveCount(0);

@@ -5,7 +5,6 @@ import type { NotificationBellData } from "@/types";
 export interface TopbarModelInput {
   signedIn: boolean;
   email: string;
-  role: "trainee" | "trainer" | null;
   firstName: string | null;
   lastName: string | null;
   avatarUrl: string | null;
@@ -23,13 +22,21 @@ export interface TopbarLink {
 }
 
 export interface TopbarAccountItem {
-  id: "profile" | "hub" | "settings";
-  label: "Profile" | "Hub" | "Settings";
+  id: "hub" | "settings";
+  label: "Hub" | "Settings";
   href: string;
   current: boolean;
 }
 
+/** The menu's first entry: the user's name, linking to Profile. */
+export interface TopbarProfileEntry {
+  name: string;
+  href: "/profile";
+  current: boolean;
+}
+
 export interface TopbarAccount {
+  profile: TopbarProfileEntry;
   initials: string;
   imageUrl: string | null;
   label: string;
@@ -50,10 +57,12 @@ export interface TopbarNotifications {
 }
 
 export interface TopbarModel {
-  greeting: "Hello, guest" | "Hello," | null;
-  name: string | null;
   links: TopbarLink[];
   account: TopbarAccount | null;
+}
+
+function isCurrent(href: string, pathname: string, matchSubpaths: boolean): boolean {
+  return href === pathname || (matchSubpaths && pathname.startsWith(`${href}/`));
 }
 
 function withCurrent<T extends { href: string }>(
@@ -63,7 +72,7 @@ function withCurrent<T extends { href: string }>(
 ): (T & { current: boolean })[] {
   return items.map((item) => ({
     ...item,
-    current: item.href === pathname || (matchSubpaths && pathname.startsWith(`${item.href}/`)),
+    current: isCurrent(item.href, pathname, matchSubpaths),
   }));
 }
 
@@ -103,7 +112,6 @@ function topbarNotifications(bell: NotificationBellData | undefined): TopbarNoti
 export function topbarModel({
   signedIn,
   email,
-  role,
   firstName,
   lastName,
   avatarUrl,
@@ -113,8 +121,6 @@ export function topbarModel({
 }: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
-      greeting: "Hello, guest",
-      name: null,
       account: null,
       links: withCurrent<Omit<TopbarLink, "current">>(
         [
@@ -127,11 +133,7 @@ export function topbarModel({
     };
   }
 
-  const greeting = role === "trainee" || role === "trainer" ? "Hello," : null;
-
   return {
-    greeting,
-    name: topbarName({ firstName, lastName, email }),
     links: withCurrent<Omit<TopbarLink, "current">>(
       [
         { id: "home", label: "Home", href: "/" },
@@ -142,12 +144,16 @@ export function topbarModel({
       pathname,
     ),
     account: {
+      profile: {
+        name: topbarName({ firstName, lastName, email }),
+        href: "/profile",
+        current: isCurrent("/profile", pathname, true),
+      },
       initials: avatarInitials({ firstName, lastName, email }),
       imageUrl: avatarUrl,
       label: "Account menu",
       items: withCurrent<Omit<TopbarAccountItem, "current">>(
         [
-          { id: "profile", label: "Profile", href: "/profile" },
           { id: "hub", label: "Hub", href: "/hub" },
           { id: "settings", label: "Settings", href: "/settings" },
         ],

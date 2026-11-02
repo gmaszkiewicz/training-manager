@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import NotificationBell from "@/components/NotificationBell";
-import ThemeSwitch from "@/components/ThemeSwitch";
+import ThemeSwitch, { ThemeIcon, ThemeRadioItems } from "@/components/ThemeSwitch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { TopbarAccount, TopbarAccountItem, TopbarLink, TopbarModel } from "@/lib/topbar";
@@ -33,7 +36,6 @@ const sectionIcons: Record<TopbarLink["id"] | TopbarAccountItem["id"], LucideIco
   measurements: ChartNoAxesColumnIncreasing,
   signin: LogIn,
   signup: UserPlus,
-  profile: UserRound,
   hub: LayoutGrid,
   settings: Settings,
 };
@@ -98,7 +100,18 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="max-w-xs">
+        <DropdownMenuItem asChild>
+          <a
+            href={account.profile.href}
+            aria-current={account.profile.current ? "page" : undefined}
+            className={linkClassName(account.profile.current)}
+          >
+            <UserRound aria-hidden="true" />
+            <span className="min-w-0 truncate">{account.profile.name}</span>
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         {account.items.map((item) => (
           <DropdownMenuItem key={item.id} asChild>
             <a
@@ -111,6 +124,16 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
             </a>
           </DropdownMenuItem>
         ))}
+        {/* A sub trigger, not an item: picking Theme opens the choices instead of closing the menu. */}
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <ThemeIcon />
+            Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <ThemeRadioItems />
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <form method="POST" action="/api/auth/signout">
           <DropdownMenuItem asChild>
@@ -125,18 +148,9 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
   );
 }
 
-export default function TopbarActions({ greeting, name, links, account }: Props) {
+export default function TopbarActions({ links, account }: Props) {
   return (
-    <div className="flex w-full items-center justify-between gap-3">
-      <div className="min-w-0">
-        {greeting != null || name != null ? (
-          <span className="block truncate">
-            {greeting}
-            {greeting != null && name != null ? " " : null}
-            {name}
-          </span>
-        ) : null}
-      </div>
+    <div className="flex w-full items-center justify-end gap-3">
       <div className="flex shrink-0 items-center gap-3">
         <div className="measurement-row:flex hidden flex-wrap items-center gap-3">
           {links.map((link) => (
@@ -170,7 +184,7 @@ export default function TopbarActions({ greeting, name, links, account }: Props)
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <ThemeSwitch />
+        {account ? null : <ThemeSwitch />}
         {account ? <NotificationBell notifications={account.notifications} /> : null}
         {account ? <AccountMenu account={account} /> : null}
       </div>

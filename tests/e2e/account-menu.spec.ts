@@ -1,10 +1,16 @@
-// Avatar account menu in the top bar: Profile, Hub, Settings, Sign out at desktop width and at 360×800.
-import { expect, test, type Page } from "@playwright/test";
+// Avatar account menu in the top bar: the user's name (to Profile), Hub, Settings, Theme, Sign out at desktop width and
+// at 360×800.
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const widths = [
   { name: "desktop", viewport: { width: 1280, height: 800 } },
   { name: "360×800", viewport: { width: 360, height: 800 } },
 ];
+
+// The first item names the user (initial and last name, a single name, or the email), which other specs may change.
+function nameItem(page: Page): Locator {
+  return page.getByRole("menu").getByRole("menuitem").first();
+}
 
 async function openAccountMenu(page: Page): Promise<void> {
   const account = page.getByRole("button", { name: "Account menu" });
@@ -12,10 +18,12 @@ async function openAccountMenu(page: Page): Promise<void> {
   // A click before the island hydrates opens nothing. Retry until the menu shows.
   await expect(async () => {
     await account.click();
-    await expect(page.getByRole("menuitem", { name: "Profile" })).toBeVisible({ timeout: 1_000 });
+    await expect(nameItem(page)).toBeVisible({ timeout: 1_000 });
   }).toPass();
+  await expect(nameItem(page)).toHaveAttribute("href", "/profile");
   await expect(page.getByRole("menuitem", { name: "Hub" })).toBeVisible();
   await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Theme" })).toBeVisible();
   await expect(page.getByRole("menuitem", { name: "Sign out" })).toBeVisible();
 }
 
@@ -23,17 +31,17 @@ for (const { name, viewport } of widths) {
   test.describe(`account menu at ${name}`, () => {
     test.use({ viewport });
 
-    test("Profile opens the Details tab, Settings the Change password tab, and Hub the Collaborations tab", async ({
+    test("the name item opens the Profile Details tab, Settings the Change password tab, and Hub the Collaborations tab", async ({
       page,
     }) => {
       await page.goto("/");
       await openAccountMenu(page);
-      await page.getByRole("menuitem", { name: "Profile" }).click();
+      await nameItem(page).click();
       await expect(page).toHaveURL(/\/profile\/?$/);
       await expect(page.getByRole("tab", { name: "Details", selected: true })).toBeVisible();
 
       await openAccountMenu(page);
-      await expect(page.getByRole("menuitem", { name: "Profile" })).toHaveAttribute("aria-current", "page");
+      await expect(nameItem(page)).toHaveAttribute("aria-current", "page");
       await page.getByRole("menuitem", { name: "Settings" }).click();
       await expect(page).toHaveURL(/\/settings\/?$/);
       await expect(page.getByRole("tab", { name: "Change password", selected: true })).toBeVisible();
@@ -70,7 +78,8 @@ for (const { name, viewport } of widths) {
         await page.getByRole("menuitem", { name: "Sign out" }).click();
 
         await expect(page).toHaveURL(/\/$/);
-        await expect(page.getByText("Hello, guest", { exact: true })).toBeVisible();
+        // The standalone Theme button renders only for guests, and shows at both widths.
+        await expect(page.getByRole("button", { name: "Theme" })).toBeVisible();
         await expect(page.getByRole("button", { name: "Account menu" })).toHaveCount(0);
       });
     });

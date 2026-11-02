@@ -1,8 +1,13 @@
 // Avatar tab: an uploaded image reaches the top-bar account button, and Remove brings the initials back.
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const FIXTURE = fileURLToPath(new URL("./fixtures/avatar.png", import.meta.url));
+
+// The first item names the user and links to Profile; other specs may change the name.
+function nameItem(page: Page): Locator {
+  return page.getByRole("menu").getByRole("menuitem").first();
+}
 
 async function openAccountMenu(page: Page): Promise<void> {
   const account = page.getByRole("button", { name: "Account menu" });
@@ -10,7 +15,7 @@ async function openAccountMenu(page: Page): Promise<void> {
   // A click before the island hydrates opens nothing. Retry until the menu shows.
   await expect(async () => {
     await account.click();
-    await expect(page.getByRole("menuitem", { name: "Profile" })).toBeVisible({ timeout: 1_000 });
+    await expect(nameItem(page)).toBeVisible({ timeout: 1_000 });
   }).toPass();
 }
 
@@ -34,7 +39,7 @@ test("an uploaded avatar shows in the top bar and Remove restores the initials",
   const initials = account.locator('[data-slot="avatar-fallback"]');
 
   await openAccountMenu(page);
-  await page.getByRole("menuitem", { name: "Profile" }).click();
+  await nameItem(page).click();
   await expect(page).toHaveURL(/\/profile\/?$/);
   await page.getByRole("tab", { name: "Avatar" }).click();
   await expect(page).toHaveURL(/\/profile\/avatar\/?$/);
@@ -46,7 +51,7 @@ test("an uploaded avatar shows in the top bar and Remove restores the initials",
   }
 
   await openAccountMenu(page);
-  await expect(page.getByRole("menuitem", { name: "Profile" })).toHaveAttribute("aria-current", "page");
+  await expect(nameItem(page)).toHaveAttribute("aria-current", "page");
   await page.keyboard.press("Escape");
 
   await page.getByLabel("Image").setInputFiles(FIXTURE);

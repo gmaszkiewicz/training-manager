@@ -27,24 +27,23 @@ const trainerRole: Profile["role"] = "trainer";
           Topbar
         </h2>
         <p class="text-muted-foreground text-sm">
-          Preview bars for the twelve product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
+          Preview bars for the eleven product outcomes. Each uses <code class="text-foreground">Topbar</code> with{" "}
           <code class="text-foreground">preview</code> so this sink stays session-free. Below the measurement-row width
           the links sit in a Menu button with the avatar to its right. At that width they stay in the bar before the
-          avatar. The avatar opens Profile, Hub, Settings, and Sign out at every width. A signed-in bar always has a
-          bell right before the avatar; it carries a badge only while something is unread. Every bar, guest or signed
-          in, has the Theme switch after the links or Menu button and before the bell: Sun in light, Moon in dark,
-          opening Light, Dark and System.
+          avatar. The bar has no greeting. The avatar opens, at every width, the user's name (linking to Profile), Hub,
+          Settings, Theme and Sign out; Theme opens a submenu with Light, Dark and System. A signed-in bar always has a
+          bell right before the avatar; it carries a badge only while something is unread. A guest bar has the Theme
+          button after the links or Menu button instead: Sun in light, Moon in dark, opening Light, Dark and System.
         </p>
 
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
-            Guest on <code class="text-foreground">/</code>: "Hello, guest", Home marked.
+            Guest on <code class="text-foreground">/</code>: Home marked, Theme button, no avatar.
           </p>
           <Topbar
             preview={{
               signedIn: false,
               email: "",
-              role: null,
               firstName: null,
               lastName: null,
               avatarUrl: null,
@@ -61,7 +60,6 @@ const trainerRole: Profile["role"] = "trainer";
             preview={{
               signedIn: false,
               email: "",
-              role: null,
               firstName: null,
               lastName: null,
               avatarUrl: null,
@@ -73,14 +71,13 @@ const trainerRole: Profile["role"] = "trainer";
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
             Trainee <code class="text-foreground">ada@example.com</code> named Ada Lovelace on{" "}
-            <code class="text-foreground">/</code>: "Hello, A. Lovelace", Home marked, Home and Measurements links,
-            avatar "AL" opening Profile, Hub, Settings, Sign out.
+            <code class="text-foreground">/</code>: Home marked, Home and Measurements links, avatar "AL" opening "A.
+            Lovelace", Hub, Settings, Theme and Sign out.
           </p>
           <Topbar
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
               avatarUrl: null,
@@ -92,15 +89,14 @@ const trainerRole: Profile["role"] = "trainer";
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
             Trainer <code class="text-foreground">ada@example.com</code> with no saved name on{" "}
-            <code class="text-foreground">/measurements</code>: "Hello, ada@example.com", Measurements marked, href{" "}
-            <code class="text-foreground">/measurements</code>, avatar "A" from the email. This is the bar for{" "}
-            <code class="text-foreground">/measurements?trainee=abc</code>.
+            <code class="text-foreground">/measurements</code>: Measurements marked, href{" "}
+            <code class="text-foreground">/measurements</code>, avatar "A" from the email; the menu's first entry reads
+            "ada@example.com". This is the bar for <code class="text-foreground">/measurements?trainee=abc</code>.
           </p>
           <Topbar
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainer",
               firstName: null,
               lastName: null,
               avatarUrl: null,
@@ -118,7 +114,6 @@ const trainerRole: Profile["role"] = "trainer";
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
               avatarUrl: null,
@@ -130,32 +125,13 @@ const trainerRole: Profile["role"] = "trainer";
 
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
-            Signed in, role null, email <code class="text-foreground">ada@example.com</code>, pathname{" "}
-            <code class="text-foreground">/measurements</code>: the email only, Measurements marked, no Hello line.
+            Trainee Ada Lovelace on <code class="text-foreground">/profile</code>: no bar link marked; "A. Lovelace" is
+            marked inside the avatar menu.
           </p>
           <Topbar
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: null,
-              firstName: null,
-              lastName: null,
-              avatarUrl: null,
-              pathname: "/measurements",
-            }}
-          />
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <p class="text-muted-foreground text-sm">
-            Trainee Ada Lovelace on <code class="text-foreground">/profile</code>: no bar link marked; Profile is marked
-            inside the avatar menu.
-          </p>
-          <Topbar
-            preview={{
-              signedIn: true,
-              email: "ada@example.com",
-              role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
               avatarUrl: null,
@@ -173,7 +149,6 @@ const trainerRole: Profile["role"] = "trainer";
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainee",
               firstName: null,
               lastName: null,
               avatarUrl: null,
@@ -185,13 +160,12 @@ const trainerRole: Profile["role"] = "trainer";
         <div class="flex flex-col gap-2">
           <p class="text-muted-foreground text-sm">
             Trainee Ada Lovelace with a saved avatar on <code class="text-foreground">/profile/avatar</code>: the avatar
-            shows the image instead of "AL"; Profile is marked inside the avatar menu.
+            shows the image instead of "AL"; "A. Lovelace" is marked inside the avatar menu.
           </p>
           <Topbar
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
               avatarUrl: "/kitchen-sink/avatar.png",
@@ -208,7 +182,6 @@ const trainerRole: Profile["role"] = "trainer";
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
               avatarUrl: null,
@@ -229,7 +202,6 @@ const trainerRole: Profile["role"] = "trainer";
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainee",
               firstName: "Ada",
               lastName: "Lovelace",
               avatarUrl: null,
@@ -282,7 +254,6 @@ const trainerRole: Profile["role"] = "trainer";
             preview={{
               signedIn: true,
               email: "ada@example.com",
-              role: "trainer",
               firstName: "Ada",
               lastName: "Lovelace",
               avatarUrl: null,

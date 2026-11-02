@@ -74,14 +74,13 @@ export async function updateProfileNames(
 }
 
 export interface TopbarProfile {
-  role: Profile["role"] | null;
   names: ProfileNames;
   avatarPath: string | null;
   components: ComponentSettings;
 }
 
-// One read of the profile row for the top bar: role for the greeting, names for the avatar initials, the avatar image path,
-// and the resolved component choices.
+// One read of the profile row for the top bar: names for the avatar initials and the menu's name entry, the avatar image
+// path, and the resolved component choices.
 export async function readTopbarProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -89,7 +88,7 @@ export async function readTopbarProfile(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("role, first_name, last_name, avatar_path, component_settings")
+      .select("first_name, last_name, avatar_path, component_settings")
       .eq("id", userId)
       .maybeSingle();
 
@@ -98,7 +97,6 @@ export async function readTopbarProfile(
     }
 
     return {
-      role: parseProfileRole(data.role),
       names: { firstName: data.first_name, lastName: data.last_name },
       avatarPath: data.avatar_path,
       components: resolveComponentSettings(data.component_settings),
