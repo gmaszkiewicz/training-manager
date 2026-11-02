@@ -55,7 +55,7 @@ describe("componentsForRole", () => {
     expect(componentsForRole("measurements", "trainer").map((component) => component.label)).toEqual([
       "Find trainee",
       "Choose trainee",
-      "Measurements for",
+      "Measurements",
       "Progression",
       "Top progression",
     ]);

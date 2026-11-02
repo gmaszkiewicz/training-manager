@@ -96,6 +96,13 @@ export interface CollaborationPage {
   pageSize: 5;
 }
 
+/** One unlinked trainee matching a trainer's name or email search. */
+export interface TraineeMatch {
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+}
+
 export type LinkRequestOutcome = "sent" | "pending" | "granted" | "not_found";
 
 export type NotificationKind = "link_requested" | "link_accepted" | "link_declined" | "link_cancelled" | "link_removed";

@@ -243,6 +243,14 @@ export type Database = {
       remove_trainer_link: { Args: { p_other_id: string }; Returns: boolean };
       request_trainee_link: { Args: { p_email: string }; Returns: string };
       search_unlinked_trainee_emails: { Args: { p_query: string }; Returns: string[] };
+      search_unlinked_trainees: {
+        Args: { p_query: string };
+        Returns: {
+          email: string;
+          first_name: string | null;
+          last_name: string | null;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

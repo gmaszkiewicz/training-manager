@@ -11,6 +11,8 @@ export const prerender = false;
 
 const emailSchema = z.string().trim().min(1).max(320);
 const traineeSchema = z.uuid();
+// Every word of the query is matched against every trainee row, so a long query is answered with no trainees.
+const searchQuerySchema = z.string().trim().max(100);
 
 function measurementsError(context: Parameters<APIRoute>[0], message: string, trainee?: string) {
   const error = encodeURIComponent(message);
@@ -46,13 +48,17 @@ export const GET: APIRoute = async (context) => {
     return json({ error: "Could not search trainees" }, 403);
   }
 
-  const query = new URL(context.request.url).searchParams.get("q") ?? "";
-  const searched = await searchUnlinkedTrainees(supabase, query);
+  const query = searchQuerySchema.safeParse(new URL(context.request.url).searchParams.get("q") ?? "");
+  if (!query.success) {
+    return json({ trainees: [] }, 200);
+  }
+
+  const searched = await searchUnlinkedTrainees(supabase, query.data);
   if (!searched.ok) {
     return json({ error: "Could not search trainees" }, 500);
   }
 
-  return json({ emails: searched.emails }, 200);
+  return json({ trainees: searched.trainees }, 200);
 };
 
 type RequestAnswerOutcome = LinkRequestOutcome | "empty" | "failed";

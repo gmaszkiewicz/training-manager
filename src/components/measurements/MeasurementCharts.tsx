@@ -19,7 +19,6 @@ import {
 } from "@/lib/measurement-chart";
 import { measurementFields } from "@/lib/measurement-input";
 import { chartsPeriodStorageKey, utcToday } from "@/lib/measurement-page";
-import { headingFor } from "@/lib/trainer-preview";
 import type { ChartBody, MeasurementWithDeltas } from "@/types";
 
 /** The line tile's id on its `CollapsibleTile`, so this island only rewrites its own heading. */
@@ -43,8 +42,6 @@ interface Props {
   initialChart?: ChartBody | null;
   /** The server's entry days for the period picker. */
   initialDays?: string[] | null;
-  /** Whose measurements the charts show, named after the title ("… for A. Lovelace (ada@example.com)"); the trainer only. */
-  subjectLabel?: string | null;
 }
 
 /** This island's own tile, found by tile id so another chart tile's heading is never touched. */
@@ -116,7 +113,6 @@ export default function MeasurementCharts({
   initialAnchor = null,
   initialChart = null,
   initialDays = null,
-  subjectLabel = null,
 }: Props) {
   const todayValue = today ?? utcToday(new Date());
   // Clear returns the tile to a first visit: Month mode on the current month, whatever month the list shows.
@@ -160,13 +156,13 @@ export default function MeasurementCharts({
     const title = tile?.querySelector("[data-tile-title]");
     const note = tile?.querySelector("[data-tile-note]");
     if (title instanceof HTMLElement) {
-      title.textContent = headingFor(heading.title, subjectLabel);
+      title.textContent = heading.title;
     }
     if (note instanceof HTMLElement) {
       note.textContent = heading.note ?? "";
       note.hidden = heading.note === null;
     }
-  }, [heading.title, heading.note, subjectLabel]);
+  }, [heading.title, heading.note]);
 
   // Hovering "Selected entries (n)" lists the charted entries, oldest first; a period heading has no hover text.
   const selectedHint =

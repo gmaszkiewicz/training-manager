@@ -2,8 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/db/database.types";
 import { collaborationPageSize, pageCountFor, toCollaboration, type CollaborationRow } from "@/lib/collaborations";
+import { isSearchableTraineeQuery } from "@/lib/find-trainee";
 import type { TrainerLink } from "@/lib/trainer-preview";
-import type { CollaborationPage, LinkRequestOutcome, Profile } from "@/types";
+import type { CollaborationPage, LinkRequestOutcome, Profile, TraineeMatch } from "@/types";
 
 // The RPC's own vocabulary is a database contract; its `linked` is translated to `granted` below.
 const RPC_REQUEST_OUTCOMES = ["sent", "pending", "linked", "not_found"] as const;
@@ -180,20 +181,48 @@ export async function removeTrainerLink(
 export async function searchUnlinkedTrainees(
   supabase: SupabaseClient<Database>,
   query: string,
-): Promise<{ ok: true; emails: string[] } | { ok: false }> {
-  if (query.trim() === "") {
-    return { ok: true, emails: [] };
+): Promise<{ ok: true; trainees: TraineeMatch[] } | { ok: false }> {
+  if (!isSearchableTraineeQuery(query)) {
+    return { ok: true, trainees: [] };
   }
 
   try {
-    const { data, error } = await supabase.rpc("search_unlinked_trainee_emails", { p_query: query });
+    const { data, error } = await supabase.rpc("search_unlinked_trainees", { p_query: query });
 
-    if (error || !Array.isArray(data) || data.some((email) => typeof email !== "string")) {
+    const rows: unknown = data;
+    if (error || !Array.isArray(rows) || !rows.every(isTraineeMatchRow)) {
       return { ok: false };
     }
 
-    return { ok: true, emails: data };
+    return {
+      ok: true,
+      trainees: rows.map((row) => ({
+        email: row.email,
+        firstName: row.first_name,
+        lastName: row.last_name,
+      })),
+    };
   } catch {
     return { ok: false };
   }
+}
+
+type TraineeMatchRow = Database["public"]["Functions"]["search_unlinked_trainees"]["Returns"][number];
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isTraineeMatchRow(value: unknown): value is TraineeMatchRow {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  return (
+    "email" in value &&
+    typeof value.email === "string" &&
+    "first_name" in value &&
+    isNullableString(value.first_name) &&
+    "last_name" in value &&
+    isNullableString(value.last_name)
+  );
 }
