@@ -140,7 +140,8 @@ export default function FindTraineeDialog({ compactLabel = false }: Props) {
             className="text-muted-foreground min-w-0 justify-start"
           >
             <Search aria-hidden="true" />
-            <span data-find-trainee-label className={cn("truncate", compactLabel && "hidden")}>
+            {/* Inside the top bar's left slot (a container), the label hides when the slot is narrower than the token. */}
+            <span data-find-trainee-label className={cn("@max-find-trainee:hidden truncate", compactLabel && "hidden")}>
               {findTraineeTriggerLabel}
             </span>
           </Button>

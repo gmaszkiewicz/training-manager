@@ -77,10 +77,11 @@ export interface TopbarProfile {
   names: ProfileNames;
   avatarPath: string | null;
   components: ComponentSettings;
+  role: Profile["role"] | null;
 }
 
 // One read of the profile row for the top bar: names for the avatar initials and the menu's name entry, the avatar image
-// path, and the resolved component choices.
+// path, the resolved component choices, and the role that decides whether Find trainee shows.
 export async function readTopbarProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -88,7 +89,7 @@ export async function readTopbarProfile(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("first_name, last_name, avatar_path, component_settings")
+      .select("first_name, last_name, avatar_path, component_settings, role")
       .eq("id", userId)
       .maybeSingle();
 
@@ -100,6 +101,7 @@ export async function readTopbarProfile(
       names: { firstName: data.first_name, lastName: data.last_name },
       avatarPath: data.avatar_path,
       components: resolveComponentSettings(data.component_settings),
+      role: parseProfileRole(data.role),
     };
   } catch {
     return null;

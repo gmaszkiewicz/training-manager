@@ -33,6 +33,7 @@ describe("topbarModel", () => {
   it("returns the guest bar with no account and marks Home on /", () => {
     expect(topbarModel({ ...guest, email: "ada@example.com", pathname: "/" })).toEqual({
       account: null,
+      findTrainee: false,
       links: [
         { id: "home", label: "Home", href: "/", current: true },
         { id: "signin", label: "Sign in", href: "/auth/signin", current: false },
@@ -64,6 +65,7 @@ describe("topbarModel", () => {
 
   it("returns Home and Measurements links and the account menu headed by the email on /", () => {
     expect(topbarModel({ ...signedIn, pathname: "/" })).toEqual({
+      findTrainee: false,
       links: signedInLinks("home"),
       account: {
         profile: { name: "ada@example.com", href: "/profile", current: false },
@@ -235,6 +237,20 @@ describe("topbarModel notifications", () => {
     const result = topbarModel({ ...guest, pathname: "/", notifications: { unreadCount: 3, latest: [unread(1)] } });
 
     expect(result.account).toBeNull();
+  });
+});
+
+describe("topbarModel findTrainee", () => {
+  it("never shows Find trainee to a guest", () => {
+    expect(topbarModel({ ...guest, pathname: "/", findTraineeOn: true }).findTrainee).toBe(false);
+  });
+
+  it("hides Find trainee from a signed-in user by default", () => {
+    expect(topbarModel({ ...signedIn, pathname: "/" }).findTrainee).toBe(false);
+  });
+
+  it("shows Find trainee to a signed-in user when findTraineeOn is true", () => {
+    expect(topbarModel({ ...signedIn, pathname: "/", findTraineeOn: true }).findTrainee).toBe(true);
   });
 });
 

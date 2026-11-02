@@ -99,6 +99,9 @@
   --spacing-measurement-saved-metric: 4.875rem;
   /* Figma wide frame is 1240px. The one-line measurement row starts there. */
   --breakpoint-measurement-row: 77.5rem;
+  /* The top bar's left slot keeps the Find trainee label from this width (fits beside Menu, bell and avatar at 375px,
+     not at 320px); below it only the magnifier shows. */
+  --container-find-trainee: 9rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

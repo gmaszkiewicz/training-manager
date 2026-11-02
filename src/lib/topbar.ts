@@ -12,6 +12,8 @@ export interface TopbarModelInput {
   notifications?: NotificationBellData;
   /** The signed-in user's Measurements module switch; the menu drops its link when off. Defaults to on. */
   measurementsOn?: boolean;
+  /** A trainer whose Measurements module and Find trainee component are on; shows Find trainee. Defaults to off. */
+  findTraineeOn?: boolean;
 }
 
 export interface TopbarLink {
@@ -59,6 +61,8 @@ export interface TopbarNotifications {
 export interface TopbarModel {
   links: TopbarLink[];
   account: TopbarAccount | null;
+  /** Renders the Find trainee trigger at the top left; never for a guest. */
+  findTrainee: boolean;
 }
 
 function isCurrent(href: string, pathname: string, matchSubpaths: boolean): boolean {
@@ -118,10 +122,12 @@ export function topbarModel({
   pathname,
   notifications,
   measurementsOn = true,
+  findTraineeOn = false,
 }: TopbarModelInput): TopbarModel {
   if (!signedIn) {
     return {
       account: null,
+      findTrainee: false,
       links: withCurrent<Omit<TopbarLink, "current">>(
         [
           { id: "home", label: "Home", href: "/" },
@@ -134,6 +140,7 @@ export function topbarModel({
   }
 
   return {
+    findTrainee: findTraineeOn,
     links: withCurrent<Omit<TopbarLink, "current">>(
       [
         { id: "home", label: "Home", href: "/" },

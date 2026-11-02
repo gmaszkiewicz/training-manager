@@ -13,6 +13,7 @@ import {
 import { useCallback, useState } from "react";
 import NotificationBell from "@/components/NotificationBell";
 import ThemeSwitch, { ThemeIcon, ThemeRadioItems } from "@/components/ThemeSwitch";
+import FindTraineeDialog from "@/components/trainer/FindTraineeDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -148,9 +149,11 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
   );
 }
 
-export default function TopbarActions({ links, account }: Props) {
+export default function TopbarActions({ links, account, findTrainee }: Props) {
   return (
-    <div className="flex w-full items-center justify-end gap-3">
+    <div className="flex w-full items-center justify-between gap-3">
+      {/* The left slot takes the free width and is a container, so the trigger drops its label when that width is short. */}
+      <div className="@container flex min-w-0 flex-1 items-center">{findTrainee ? <FindTraineeDialog /> : null}</div>
       <div className="flex shrink-0 items-center gap-3">
         <div className="measurement-row:flex hidden flex-wrap items-center gap-3">
           {links.map((link) => (

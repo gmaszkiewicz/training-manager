@@ -312,35 +312,35 @@ No schema change. The POST redirect branch stays, so a page loaded before the de
 
 #### Automated
 
-- [x] 1.1 Unit tests for `find-trainee.ts` pass (options order and enabled flags, `canRequestAccess` with none / measurements / only disabled ids, `readRequestAnswer` for each outcome and malformed input): `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type and Astro checks pass: `npx astro check`
-- [x] 1.4 Production build passes: `npm run build`
-- [x] 1.5 Smoke passes unchanged against the preview (redirect branch intact): `npm run smoke`
+- [x] 1.1 Unit tests for `find-trainee.ts` pass (options order and enabled flags, `canRequestAccess` with none / measurements / only disabled ids, `readRequestAnswer` for each outcome and malformed input): `npm test` — cd8cc55
+- [x] 1.2 Lint passes: `npm run lint` — cd8cc55
+- [x] 1.3 Type and Astro checks pass: `npx astro check` — cd8cc55
+- [x] 1.4 Production build passes: `npm run build` — cd8cc55
+- [x] 1.5 Smoke passes unchanged against the preview (redirect branch intact): `npm run smoke` — cd8cc55
 
 #### Manual
 
-- [x] 1.6 On `/kitchen-sink/trainer` the trigger opens a centered dialog with Find trainee, the subtitle, the search with the new placeholder, Request for with only Measurements enabled, and Request access
-- [x] 1.7 Esc and a click on the overlay close the dialog and focus returns to the trigger
-- [x] 1.8 Unchecking Measurements disables Request access; checking it again enables it
-- [x] 1.9 Signed in as a trainer, sending a real trainee email closes the dialog and shows the sent toast without leaving the page; an unknown email keeps the dialog open with "No trainee with that email"
+- [x] 1.6 On `/kitchen-sink/trainer` the trigger opens a centered dialog with Find trainee, the subtitle, the search with the new placeholder, Request for with only Measurements enabled, and Request access — cd8cc55
+- [x] 1.7 Esc and a click on the overlay close the dialog and focus returns to the trigger — cd8cc55
+- [x] 1.8 Unchecking Measurements disables Request access; checking it again enables it — cd8cc55
+- [x] 1.9 Signed in as a trainer, sending a real trainee email closes the dialog and shows the sent toast without leaving the page; an unknown email keeps the dialog open with "No trainee with that email" — cd8cc55
 
 ### Phase 2: Top bar entry point
 
 #### Automated
 
-- [ ] 2.1 Topbar model tests for the `findTrainee` flag pass: `npm test`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Home token check passes: `npm run check:home-tokens`
-- [ ] 2.4 Type and Astro checks pass: `npx astro check`
-- [ ] 2.5 Production build passes: `npm run build`
+- [x] 2.1 Topbar model tests for the `findTrainee` flag pass: `npm test`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Home token check passes: `npm run check:home-tokens`
+- [x] 2.4 Type and Astro checks pass: `npx astro check`
+- [x] 2.5 Production build passes: `npm run build`
 
 #### Manual
 
-- [ ] 2.6 A trainer sees Find trainee at the top left on `/`, `/measurements`, `/hub`, `/profile` and `/settings`; a trainee and a guest do not
-- [ ] 2.7 Switching Find trainee off in Settings → Components (or the Measurements module off) hides the trigger; switching it on shows it again
-- [ ] 2.8 At 390 px and 375 px wide the trigger keeps its label beside the hamburger, bell and avatar; at 320 px only the magnifier shows and still opens the dialog
-- [ ] 2.9 Hamburger and avatar menus still open on the first tap on iOS Safari
+- [x] 2.6 A trainer sees Find trainee at the top left on `/`, `/measurements`, `/hub`, `/profile` and `/settings`; a trainee and a guest do not
+- [x] 2.7 Switching Find trainee off in Settings → Components (or the Measurements module off) hides the trigger; switching it on shows it again
+- [x] 2.8 At 390 px and 375 px wide the trigger keeps its label beside the hamburger, bell and avatar; at 320 px only the magnifier shows and still opens the dialog
+- [x] 2.9 Hamburger and avatar menus still open on the first tap on iOS Safari
 
 ### Phase 3: Remove the tile and move tests
 
