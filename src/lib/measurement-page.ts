@@ -94,14 +94,6 @@ export function parseListOpen(value: unknown): boolean | null {
   return parseAddFormOpen(value);
 }
 
-export function findTraineeOpenStorageKey(accountUserId: string): string {
-  return `tm.measurements.findTrainee.${accountUserId}`;
-}
-
-export function parseFindTraineeOpen(value: unknown): boolean | null {
-  return parseAddFormOpen(value);
-}
-
 export function traineePickerOpenStorageKey(accountUserId: string): string {
   return `tm.measurements.traineePicker.${accountUserId}`;
 }

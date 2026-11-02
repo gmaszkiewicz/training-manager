@@ -309,7 +309,7 @@ function multipartBody(fields) {
 }
 
 // `multipart` sends a FormData body; fetch sets its own multipart Content-Type with the boundary.
-async function requestWith(cookieJar, path, { method = "GET", form, multipart } = {}) {
+async function requestWith(cookieJar, path, { method = "GET", form, multipart, accept } = {}) {
   const response = await fetch(BASE_URL + path, {
     method,
     redirect: "manual",
@@ -317,6 +317,7 @@ async function requestWith(cookieJar, path, { method = "GET", form, multipart } 
       Cookie: cookieHeaderFrom(cookieJar),
       Origin: BASE_URL,
       ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+      ...(accept ? { Accept: accept } : {}),
     },
     body: multipart ? multipartBody(multipart) : form ? new URLSearchParams(form).toString() : undefined,
   });
@@ -823,7 +824,7 @@ const steps = [
   [
     "trainer measurements confirms the role",
     rememberTrainer(() => request("/measurements")),
-    { status: 200, body: "Find trainee by email", forbid: "No measurements yet" },
+    { status: 200, body: "data-find-trainee-trigger", forbid: "No measurements yet" },
   ],
   [
     "trainer measurement is rejected",
@@ -877,6 +878,11 @@ const steps = [
     { status: 302, location: "/measurements?error=" },
   ],
   ["unknown email shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
+  [
+    "unknown email JSON request answers not found",
+    () => request("/api/trainer-links", { method: "POST", form: { email: unknownEmail }, accept: "application/json" }),
+    { status: 404, body: ['"outcome":"not_found"', "No trainee with that email"] },
+  ],
   [
     "trainer email link is rejected",
     rememberRedirect(() => request("/api/trainer-links", { method: "POST", form: { email: trainerEmail } })),
@@ -941,6 +947,11 @@ const steps = [
     { status: 302, location: "/measurements?error=" },
   ],
   ["trainee link shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
+  [
+    "trainee JSON link is forbidden",
+    () => request("/api/trainer-links", { method: "POST", form: { email }, accept: "application/json" }),
+    { status: 403, body: ['"outcome":"failed"', "Only trainers can request access to a trainee"] },
+  ],
   [
     "trainee request rpc is not found",
     () => rpcWith(jar, "request_trainee_link", { p_email: email }),
@@ -1525,7 +1536,7 @@ const steps = [
   [
     "trainee journal still renders after the role field",
     () => request("/measurements"),
-    { status: 200, body: ["Add measurement", earlierNote], forbid: "Find trainee by email" },
+    { status: 200, body: ["Add measurement", earlierNote], forbid: "data-find-trainee-trigger" },
   ],
   [
     "profile empty fields clear the names",

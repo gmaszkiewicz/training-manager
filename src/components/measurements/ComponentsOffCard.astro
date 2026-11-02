@@ -6,11 +6,17 @@ interface Props {
   title?: string;
   /** The text before the Settings → Components link. */
   message?: string;
+  /** False renders the message alone, without the Settings → Components link. */
+  settingsLink?: boolean;
 }
 
 // The one card `/measurements` renders when no Measurements tile of the role can show: every component is off, or
 // (for a trainer without trainees) the ones still on have nothing to show.
-const { title = "Every Measurements component is off", message = "Switch them on in" } = Astro.props;
+const {
+  title = "Every Measurements component is off",
+  message = "Switch them on in",
+  settingsLink = true,
+} = Astro.props;
 ---
 
 <div class="flex justify-center px-4 pb-4">
@@ -18,9 +24,13 @@ const { title = "Every Measurements component is off", message = "Switch them on
     <h1 class="text-xl font-bold text-foreground">{title}</h1>
     <p class="mt-1 text-sm text-muted-foreground">
       {message}
-      <a href="/settings/components" class:list={[cn(buttonVariants({ variant: "link" }), "h-auto p-0")]}>
-        Settings → Components
-      </a>
+      {/* Astro drops the whitespace between two expressions, so the space before the link is explicit. */}
+      {settingsLink ? " " : null}
+      {settingsLink ? (
+        <a href="/settings/components" class:list={[cn(buttonVariants({ variant: "link" }), "h-auto p-0")]}>
+          Settings → Components
+        </a>
+      ) : null}
     </p>
   </div>
 </div>

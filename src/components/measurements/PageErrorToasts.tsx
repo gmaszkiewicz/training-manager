@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ErrorToastCard, ERROR_TOAST_MS } from "@/components/measurements/ErrorToastCard";
+import { cn } from "@/lib/utils";
 
 function restackPageErrorToasts() {
   const nodes = [...document.querySelectorAll<HTMLElement>("[data-error-toast-stack]")];
@@ -55,11 +57,17 @@ export default function PageErrorToasts({
   onDismiss,
   tone = "error",
   clearParams,
+  portal = false,
 }: {
   messages: string[];
   onDismiss?: (message: string) => void;
   tone?: "error" | "notice";
   clearParams?: string[];
+  /**
+   * Renders the stack into `document.body` on the client, for toasts raised inside a dialog: its transform would
+   * otherwise pin the `fixed` stack to the dialog instead of the bottom corner of the screen.
+   */
+  portal?: boolean;
 }) {
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
   const onDismissRef = useRef(onDismiss);
@@ -103,10 +111,14 @@ export default function PageErrorToasts({
     return null;
   }
 
-  return (
+  const stack = (
     <div
       data-error-toast-stack
-      className="fixed right-4 bottom-4 z-50 flex w-[min(24rem,calc(100%-2rem))] flex-col gap-2"
+      // A modal dialog turns off pointer events on the body; the portaled stack keeps its close buttons clickable.
+      className={cn(
+        "fixed right-4 bottom-4 z-50 flex w-[min(24rem,calc(100%-2rem))] flex-col gap-2",
+        portal && "pointer-events-auto",
+      )}
     >
       {items.map((item) => (
         <PageErrorToast
@@ -132,4 +144,6 @@ export default function PageErrorToasts({
       ))}
     </div>
   );
+
+  return portal && typeof document !== "undefined" ? createPortal(stack, document.body) : stack;
 }

@@ -5,6 +5,7 @@ import { requestFailedMessage, requestOutcomeMessage } from "@/lib/collaboration
 import { readProfileRole } from "@/lib/services/ensure-profile";
 import { requestTraineeLink, searchUnlinkedTrainees } from "@/lib/services/trainer-links";
 import { createClient } from "@/lib/supabase";
+import type { LinkRequestOutcome } from "@/types";
 
 export const prerender = false;
 
@@ -54,33 +55,68 @@ export const GET: APIRoute = async (context) => {
   return json({ emails: searched.emails }, 200);
 };
 
+type RequestAnswerOutcome = LinkRequestOutcome | "empty" | "failed";
+
+const ANSWER_STATUS = {
+  sent: 200,
+  empty: 400,
+  not_found: 404,
+  pending: 409,
+  granted: 409,
+  failed: 500,
+} as const satisfies Record<RequestAnswerOutcome, number>;
+
+// The find dialog asks for JSON so the trainer stays on the current page; a plain form post still redirects.
+function wantsJson(request: Request): boolean {
+  return (request.headers.get("Accept") ?? "").includes("application/json");
+}
+
+function answer(outcome: RequestAnswerOutcome, message: string): Response {
+  return json({ outcome, message }, ANSWER_STATUS[outcome]);
+}
+
 export const POST: APIRoute = async (context) => {
+  const asJson = wantsJson(context.request);
   const user = context.locals.user;
   if (!user) {
-    return context.redirect("/auth/signin");
+    return asJson ? json({ outcome: "failed", message: "Sign in required" }, 401) : context.redirect("/auth/signin");
   }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return measurementsError(context, "Supabase is not configured");
+    const message = "Supabase is not configured";
+    return asJson ? answer("failed", message) : measurementsError(context, message);
   }
 
+  // The form may carry an optional `dashboards` field; only read access to measurements is requested for now.
+  // Read it before any early answer: an unread body breaks the next request on a kept-alive connection.
   const form = await context.request.formData();
+
+  // As GET does. The redirect branch keeps relying on the RPC, which answers not_found to anyone but a trainer.
+  if (asJson && (await readProfileRole(supabase, user.id)) !== "trainer") {
+    return json({ outcome: "failed", message: "Only trainers can request access to a trainee" }, 403);
+  }
   const submitted = form.get("email");
   if (typeof submitted !== "string" || submitted.trim() === "") {
-    return measurementsError(context, "Enter an email address");
+    const message = "Enter an email address";
+    return asJson ? answer("empty", message) : measurementsError(context, message);
   }
 
   const trainee = preservedTrainee(form.get("trainee"));
   const parsed = emailSchema.safeParse(submitted);
   if (!parsed.success) {
-    return measurementsError(context, requestOutcomeMessage("not_found", submitted.trim()), trainee);
+    const message = requestOutcomeMessage("not_found", submitted.trim());
+    return asJson ? answer("not_found", message) : measurementsError(context, message, trainee);
   }
 
   const email = parsed.data;
   const requested = await requestTraineeLink(supabase, email);
   if (!requested.ok) {
-    return measurementsError(context, requestFailedMessage, trainee);
+    return asJson ? answer("failed", requestFailedMessage) : measurementsError(context, requestFailedMessage, trainee);
+  }
+
+  if (asJson) {
+    return answer(requested.outcome, requestOutcomeMessage(requested.outcome, email));
   }
 
   if (requested.outcome !== "sent") {

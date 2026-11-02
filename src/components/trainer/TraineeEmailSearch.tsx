@@ -8,7 +8,7 @@ const EMPTY_EMAIL_MESSAGE = "Enter an email address";
 
 interface Props {
   idPrefix: string;
-  serverError?: string | null;
+  placeholder?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -45,13 +45,12 @@ async function fetchTraineeEmails(query: string): Promise<string[]> {
   }
 }
 
-export default function TraineeEmailSearch({ idPrefix, serverError = null }: Props) {
-  const arrivedEmpty = serverError === EMPTY_EMAIL_MESSAGE;
+export default function TraineeEmailSearch({ idPrefix, placeholder = "Find trainee by email" }: Props) {
   const [email, setEmail] = useState("");
   const [emails, setEmails] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
-  const [invalid, setInvalid] = useState(arrivedEmpty);
-  const [emptyToast, setEmptyToast] = useState(arrivedEmpty);
+  const [invalid, setInvalid] = useState(false);
+  const [emptyToast, setEmptyToast] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const requestSerial = useRef(0);
   // The address written by choosing a row. That write must not search again.
@@ -176,7 +175,7 @@ export default function TraineeEmailSearch({ idPrefix, serverError = null }: Pro
           autoComplete="off"
           aria-label="Email"
           aria-invalid={invalid ? true : undefined}
-          placeholder="Find trainee by email"
+          placeholder={placeholder}
           className="pr-9"
           value={email}
           onFocus={reopenList}
@@ -209,6 +208,7 @@ export default function TraineeEmailSearch({ idPrefix, serverError = null }: Pro
       ) : null}
       {emptyToast ? (
         <PageErrorToasts
+          portal
           messages={[EMPTY_EMAIL_MESSAGE]}
           onDismiss={() => {
             clearEmptyError();

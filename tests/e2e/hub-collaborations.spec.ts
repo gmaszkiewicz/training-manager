@@ -1,7 +1,7 @@
-// Hub collaborations: a throwaway trainer requests read access from /measurements, the seeded trainee accepts it in the
-// Hub, and the trainer revokes it after confirming. Each side's notifications are checked on the way: the trainee opens the
-// request from the bell, and the trainer marks the "accepted" notification read and deletes it in the Hub. Runs at
-// desktop width and at 360×800. The Hub tab content is as narrow as Profile and Settings, so row actions sit behind
+// Hub collaborations: a throwaway trainer requests read access through Find trainee in the top bar, the seeded trainee
+// accepts it in the Hub, and the trainer revokes it after confirming. Each side's notifications are checked on the way:
+// the trainee opens the request from the bell, and the trainer marks the "accepted" notification read and deletes it in
+// the Hub. Runs at desktop width and at 360×800. The Hub tab content is as narrow as Profile and Settings, so row actions sit behind
 // the "Measurements actions for …" menu at every width.
 import { expect, test, type BrowserContext, type Locator, type Page } from "@playwright/test";
 
@@ -211,24 +211,33 @@ for (const { name, viewport } of widths) {
         "Sign-up needs email confirmation on this Supabase; the Hub flow needs a signed-in throwaway trainer.",
       );
 
-      await test.step("the trainer requests read access from /measurements", async () => {
+      await test.step("the trainer requests read access through Find trainee in the top bar", async () => {
         await trainerPage.goto("/measurements");
-        const email = trainerPage.getByRole("textbox", { name: "Email" });
+        const trigger = trainerPage.getByRole("button", { name: "Find trainee", exact: true });
+        const dialog = trainerPage.getByRole("dialog", { name: "Find trainee" });
+        await expect(trigger).toBeVisible();
+        // A click before the island hydrates opens nothing. Retry until the dialog shows.
+        await expect(async () => {
+          await trigger.click();
+          await expect(dialog).toBeVisible({ timeout: 1_000 });
+        }).toPass();
+        const email = dialog.getByRole("textbox", { name: "Email" });
         // A React island drops input typed before it hydrates, and then no suggestion opens. Retry until the seeded
         // trainee's address shows as a match. Clear first: re-filling the same value fires no change event.
-        const match = trainerPage.getByRole("button", { name: traineeEmail, exact: true });
+        const match = dialog.getByRole("button", { name: traineeEmail, exact: true });
         await expect(async () => {
           await email.fill("");
           await email.fill(traineeEmail);
           await expect(match).toBeVisible({ timeout: 2_000 });
         }).toPass();
-        // Choosing the match closes the list, so it no longer covers Request read access.
+        // Choosing the match closes the list, so it no longer covers Request access.
         await match.click();
         await expect(match).toHaveCount(0);
-        await trainerPage.getByRole("button", { name: "Request read access" }).click();
+        await dialog.getByRole("button", { name: "Request access", exact: true }).click();
         await expect(
           trainerPage.getByText(`Your request for read access to measurements has been sent to ${traineeEmail}`),
         ).toBeVisible();
+        await expect(dialog).toHaveCount(0);
       });
 
       await test.step("stale trainers from earlier runs are cleared from the trainee's list", async () => {

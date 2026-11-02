@@ -8,13 +8,10 @@ import type { ChartPeriod } from "@/lib/measurement-chart";
 import MeasurementBrowser from "@/components/measurements/MeasurementBrowser";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import LinkedTraineeField from "@/components/trainer/LinkedTraineeField";
-import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
-import { Button } from "@/components/ui/button";
 import { requestOutcomeMessage } from "@/lib/collaborations";
 import { tileOf } from "@/lib/components";
 import {
   addFormStartsOpen,
-  findTraineeOpenStorageKey,
   listOpenStorageKey,
   traineePickerOpenStorageKey,
   type PageSize,
@@ -39,7 +36,6 @@ interface Props {
   pageCount?: number;
   pageSize?: PageSize;
   month?: string;
-  findTraineeOpen?: boolean | null;
   traineePickerOpen?: boolean | null;
   listOpen?: boolean | null;
   chartsOpen?: boolean | null;
@@ -78,7 +74,6 @@ const {
   pageCount,
   pageSize,
   month,
-  findTraineeOpen = null,
   traineePickerOpen = null,
   listOpen = null,
   chartsOpen = null,
@@ -96,7 +91,7 @@ const {
 } = Astro.props;
 
 const toastMessages: string[] = [];
-if (serverError !== null && serverError !== "Enter an email address") {
+if (serverError !== null) {
   toastMessages.push(serverError);
 }
 if (mode === "trainer" && !trainerLinksLoaded) {
@@ -108,8 +103,6 @@ if (mode === "trainer" && trainerLinksLoaded && selectedLink !== null && !traine
 if (mode !== "trainer") {
   toastMessages.push("Could not open your journal");
 }
-const findTraineeKey = accountUserId ? findTraineeOpenStorageKey(accountUserId) : null;
-const findTraineeStartsOpen = addFormStartsOpen(serverError !== null, findTraineeOpen);
 const pickerKey = accountUserId ? traineePickerOpenStorageKey(accountUserId) : null;
 const pickerStartsOpen = addFormStartsOpen(false, traineePickerOpen);
 const listKey = accountUserId ? listOpenStorageKey(accountUserId) : null;
@@ -117,7 +110,8 @@ const listStartsOpen = addFormStartsOpen(false, listOpen);
 const chartsStartOpen = addFormStartsOpen(false, chartsOpen);
 const topChartsStartOpen = addFormStartsOpen(false, topChartsOpen);
 const showCharts = accountUserId !== undefined || chartEntries !== undefined;
-const findTile = tileOf(shown, "find-trainee");
+// Find trainee lives in the top bar; its setting only decides where the no-trainee card points.
+const findTraineeShown = tileOf(shown, "find-trainee").shown;
 const pickerTile = tileOf(shown, "trainee-picker");
 const listTile = tileOf(shown, "trainee-measurements");
 const chartsTile = tileOf(shown, "progression");
@@ -127,15 +121,16 @@ const hasTrainee = trainerLinks.length > 0 && selectedLink !== null;
 // The list and chart headings name the chosen trainee: "Measurements for A. Lovelace (ada@example.com)".
 const subjectLabel = selectedLink ? traineeLabel(selectedLink) : null;
 // Each tile renders only when it is on and has something to show; the picker cannot be switched off.
-const findRenders = tilesRender && findTile.shown;
 const pickerRenders = tilesRender && pickerTile.shown && hasTrainee;
 const listRenders = tilesRender && listTile.shown && hasTrainee;
 const chartsRender = tilesRender && chartsTile.shown && selectedLink !== null && showCharts;
 const topChartsRender = tilesRender && topChartsTile.shown && selectedLink !== null && showCharts;
-const everyComponentOff = !findTile.shown && !listTile.shown && !chartsTile.shown && !topChartsTile.shown;
-// When none of the switchable tiles can render, one card points to Settings → Components: every component is off, or
-// Find trainee is off and there is no trainee yet whose list or charts could show.
-const nothingRenders = tilesRender && !findRenders && !listRenders && !chartsRender && !topChartsRender;
+const everyComponentOff = !findTraineeShown && !listTile.shown && !chartsTile.shown && !topChartsTile.shown;
+// When none of the switchable tiles can render, one card says why: every component is off (→ Settings → Components),
+// or there is no trainee yet whose list or charts could show (→ Find trainee in the top bar, or Settings when it is off).
+const nothingRenders = tilesRender && !listRenders && !chartsRender && !topChartsRender;
+const componentsOffCard = nothingRenders && everyComponentOff;
+const noTraineeCard = nothingRenders && !everyComponentOff && !hasTrainee;
 const requestNotice =
   mode === "trainer" && requestedEmail !== null ? requestOutcomeMessage("sent", requestedEmail) : null;
 ---
@@ -151,25 +146,6 @@ const requestNotice =
     </div>
   </div>
 )}
-{findRenders ? (
-  <CollapsibleTile
-    storageKey={findTraineeKey}
-    startsOpen={findTraineeStartsOpen}
-    title="Find trainee"
-    note="Request read access to a trainee's measurements"
-    tileId="find-trainee"
-    restore={serverError === null}
-    preview={findTile.preview}
-  >
-    <form method="POST" action="/api/trainer-links" class="mt-3 space-y-3">
-      {selectedLink ? <input type="hidden" name="trainee" value={selectedLink.traineeId} /> : null}
-      <TraineeEmailSearch idPrefix={idPrefix} serverError={serverError} client:load />
-      <Button type="submit" className="w-full">
-        Request read access
-      </Button>
-    </form>
-  </CollapsibleTile>
-) : null}
 {pickerRenders ? (
   <CollapsibleTile
     storageKey={pickerKey}
@@ -184,12 +160,17 @@ const requestNotice =
     </div>
   </CollapsibleTile>
 ) : null}
-{nothingRenders ? (
-  everyComponentOff ? (
-    <ComponentsOffCard />
+{componentsOffCard ? <ComponentsOffCard /> : null}
+{noTraineeCard ? (
+  findTraineeShown ? (
+    <ComponentsOffCard
+      title="No trainees yet"
+      message="Request access to a trainee with Find trainee in the top bar."
+      settingsLink={false}
+    />
   ) : (
     <ComponentsOffCard
-      title="Find trainee is off"
+      title="No trainees yet"
       message="Request access to a trainee after switching Find trainee on in"
     />
   )

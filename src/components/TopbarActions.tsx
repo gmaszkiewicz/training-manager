@@ -10,7 +10,7 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import NotificationBell from "@/components/NotificationBell";
 import ThemeSwitch, { ThemeIcon, ThemeRadioItems } from "@/components/ThemeSwitch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -27,6 +27,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { TopbarAccount, TopbarAccountItem, TopbarLink, TopbarModel } from "@/lib/topbar";
 import { cn } from "@/lib/utils";
+
+// Loaded on its own, so the menus hydrate (and open on the first tap) without waiting for the dialog's code.
+const FindTraineeDialog = lazy(() => import("@/components/trainer/FindTraineeDialog"));
 
 type Props = TopbarModel;
 
@@ -148,9 +151,17 @@ function AccountMenu({ account }: { account: TopbarAccount }) {
   );
 }
 
-export default function TopbarActions({ links, account }: Props) {
+export default function TopbarActions({ links, account, findTrainee }: Props) {
   return (
-    <div className="flex w-full items-center justify-end gap-3">
+    <div className="flex w-full items-center justify-between gap-3">
+      {/* The left slot takes the free width and is a container, so the trigger drops its label when that width is short. */}
+      <div className="@container flex min-w-0 flex-1 items-center">
+        {findTrainee ? (
+          <Suspense fallback={null}>
+            <FindTraineeDialog />
+          </Suspense>
+        ) : null}
+      </div>
       <div className="flex shrink-0 items-center gap-3">
         <div className="measurement-row:flex hidden flex-wrap items-center gap-3">
           {links.map((link) => (
