@@ -329,32 +329,32 @@ No schema change. The POST redirect branch stays, so a page loaded before the de
 
 #### Automated
 
-- [x] 2.1 Topbar model tests for the `findTrainee` flag pass: `npm test`
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Home token check passes: `npm run check:home-tokens`
-- [x] 2.4 Type and Astro checks pass: `npx astro check`
-- [x] 2.5 Production build passes: `npm run build`
+- [x] 2.1 Topbar model tests for the `findTrainee` flag pass: `npm test` — e400cbf
+- [x] 2.2 Lint passes: `npm run lint` — e400cbf
+- [x] 2.3 Home token check passes: `npm run check:home-tokens` — e400cbf
+- [x] 2.4 Type and Astro checks pass: `npx astro check` — e400cbf
+- [x] 2.5 Production build passes: `npm run build` — e400cbf
 
 #### Manual
 
-- [x] 2.6 A trainer sees Find trainee at the top left on `/`, `/measurements`, `/hub`, `/profile` and `/settings`; a trainee and a guest do not
-- [x] 2.7 Switching Find trainee off in Settings → Components (or the Measurements module off) hides the trigger; switching it on shows it again
-- [x] 2.8 At 390 px and 375 px wide the trigger keeps its label beside the hamburger, bell and avatar; at 320 px only the magnifier shows and still opens the dialog
-- [x] 2.9 Hamburger and avatar menus still open on the first tap on iOS Safari
+- [x] 2.6 A trainer sees Find trainee at the top left on `/`, `/measurements`, `/hub`, `/profile` and `/settings`; a trainee and a guest do not — e400cbf
+- [x] 2.7 Switching Find trainee off in Settings → Components (or the Measurements module off) hides the trigger; switching it on shows it again — e400cbf
+- [x] 2.8 At 390 px and 375 px wide the trigger keeps its label beside the hamburger, bell and avatar; at 320 px only the magnifier shows and still opens the dialog — e400cbf
+- [x] 2.9 Hamburger and avatar menus still open on the first tap on iOS Safari — e400cbf
 
 ### Phase 3: Remove the tile and move tests
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm test`
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 Type and Astro checks pass: `npx astro check`
-- [ ] 3.4 Production build passes: `npm run build`
-- [ ] 3.5 Smoke passes against the preview with local Supabase: `npm run smoke`
-- [ ] 3.6 E2E passes, including `find-trainee.spec.ts` and the updated Hub flow: `npx playwright test`
+- [x] 3.1 Unit tests pass: `npm test`
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 Type and Astro checks pass: `npx astro check`
+- [x] 3.4 Production build passes: `npm run build`
+- [x] 3.5 Smoke passes against the preview with local Supabase: `npm run smoke`
+- [x] 3.6 E2E passes, including `find-trainee.spec.ts` and the updated Hub flow: `npx playwright test`
 
 #### Manual
 
-- [ ] 3.7 `/measurements` as a trainer shows no Find trainee tile; with no trainees it shows the No trainees yet card pointing to the top bar
-- [ ] 3.8 With Find trainee off and no trainees the card points to Settings → Components
-- [ ] 3.9 Requesting from `/hub/collaborations` keeps the trainer on that page and the new pending row appears after reload
+- [x] 3.7 `/measurements` as a trainer shows no Find trainee tile; with no trainees it shows the No trainees yet card pointing to the top bar
+- [x] 3.8 With Find trainee off and no trainees the card points to Settings → Components
+- [x] 3.9 Requesting from `/hub/collaborations` keeps the trainer on that page and the new pending row appears after reload

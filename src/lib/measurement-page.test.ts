@@ -15,10 +15,8 @@ import {
   chartsSelectionStorageKey,
   chartsVisualizedStorageKey,
   journalPageStorageKey,
-  findTraineeOpenStorageKey,
   listOpenStorageKey,
   parseChartsOpen,
-  parseFindTraineeOpen,
   parseListOpen,
   parseTraineePickerOpen,
   traineePickerOpenStorageKey,
@@ -186,34 +184,10 @@ describe("list open state", () => {
   });
 });
 
-describe("find trainee open state", () => {
-  it("scopes the find trainee tile to the account, apart from the list and the chart tiles", () => {
-    expect(findTraineeOpenStorageKey("account-1")).toBe("tm.measurements.findTrainee.account-1");
-    expect(findTraineeOpenStorageKey("account-2")).not.toBe(findTraineeOpenStorageKey("account-1"));
-    expect(findTraineeOpenStorageKey("account-1")).not.toBe(listOpenStorageKey("account-1"));
-    expect(findTraineeOpenStorageKey("account-1")).not.toBe(chartsOpenStorageKey("account-1"));
-    expect(findTraineeOpenStorageKey("account-1")).not.toBe(topChartsOpenStorageKey("account-1"));
-  });
-
-  it("keeps open and closed and ignores anything else", () => {
-    expect(parseFindTraineeOpen("open")).toBe(true);
-    expect(parseFindTraineeOpen("closed")).toBe(false);
-    expect(parseFindTraineeOpen(null)).toBeNull();
-    expect(parseFindTraineeOpen("true")).toBeNull();
-  });
-
-  it("starts open when nothing is stored, and after a server error whatever is stored", () => {
-    expect(addFormStartsOpen(false, parseFindTraineeOpen(null))).toBe(true);
-    expect(addFormStartsOpen(false, parseFindTraineeOpen("closed"))).toBe(false);
-    expect(addFormStartsOpen(true, parseFindTraineeOpen("closed"))).toBe(true);
-  });
-});
-
 describe("trainee picker open state", () => {
   it("scopes the picker tile to the account, apart from the other trainer tiles", () => {
     expect(traineePickerOpenStorageKey("account-1")).toBe("tm.measurements.traineePicker.account-1");
     expect(traineePickerOpenStorageKey("account-2")).not.toBe(traineePickerOpenStorageKey("account-1"));
-    expect(traineePickerOpenStorageKey("account-1")).not.toBe(findTraineeOpenStorageKey("account-1"));
     expect(traineePickerOpenStorageKey("account-1")).not.toBe(listOpenStorageKey("account-1"));
   });
 

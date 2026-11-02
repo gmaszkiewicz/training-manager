@@ -46,11 +46,16 @@ async function sendRequest(form: HTMLFormElement): Promise<RequestAnswer> {
   }
 }
 
-// Mounted only while the dialog is open, so every reopen starts from an empty email, Measurements checked and no message.
-function FindTraineeForm({ onSent }: { onSent: (message: string) => void }) {
+// Mounted only while the dialog is open, so every reopen starts from an empty email and Measurements checked.
+function FindTraineeForm({
+  onSent,
+  onFailed,
+}: {
+  onSent: (message: string) => void;
+  onFailed: (message: string | null) => void;
+}) {
   const [selected, setSelected] = useState<Dashboard[]>(["measurements"]);
   const [sending, setSending] = useState(false);
-  const [message, setMessage] = useState("");
 
   function toggle(id: Dashboard, checked: boolean) {
     setSelected((current) => {
@@ -70,14 +75,14 @@ function FindTraineeForm({ onSent }: { onSent: (message: string) => void }) {
     }
     const form = event.currentTarget;
     setSending(true);
-    setMessage("");
+    onFailed(null);
     void sendRequest(form).then((answer) => {
       setSending(false);
       if (answer.kind === "sent") {
         onSent(answer.message);
         return;
       }
-      setMessage(answer.message);
+      onFailed(answer.message);
     });
   }
 
@@ -107,10 +112,7 @@ function FindTraineeForm({ onSent }: { onSent: (message: string) => void }) {
           );
         })}
       </fieldset>
-      <div className="flex items-center gap-4">
-        <p aria-live="polite" className="text-destructive min-w-0 flex-1 text-sm">
-          {message}
-        </p>
+      <div className="flex justify-end">
         <Button type="submit" disabled={!canRequestAccess(selected) || sending}>
           {requestAccessLabel}
         </Button>
@@ -127,6 +129,7 @@ interface Props {
 export default function FindTraineeDialog({ compactLabel = false }: Props) {
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState<{ id: number; message: string } | null>(null);
+  const [failed, setFailed] = useState<{ id: number; message: string } | null>(null);
 
   return (
     <>
@@ -156,6 +159,9 @@ export default function FindTraineeDialog({ compactLabel = false }: Props) {
               setOpen(false);
               setSent((current) => ({ id: (current?.id ?? 0) + 1, message }));
             }}
+            onFailed={(message) => {
+              setFailed((current) => (message === null ? null : { id: (current?.id ?? 0) + 1, message }));
+            }}
           />
         </DialogContent>
       </Dialog>
@@ -166,6 +172,17 @@ export default function FindTraineeDialog({ compactLabel = false }: Props) {
           tone="notice"
           onDismiss={() => {
             setSent(null);
+          }}
+        />
+      ) : null}
+      {/* Raised while the modal is open, so portaled: clickable over the dialog and in the bottom corner of the screen. */}
+      {failed ? (
+        <PageErrorToasts
+          key={failed.id}
+          portal
+          messages={[failed.message]}
+          onDismiss={() => {
+            setFailed(null);
           }}
         />
       ) : null}

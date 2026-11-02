@@ -82,9 +82,9 @@ const sampleEntry: MeasurementWithDeltas = {
           subtitle "Request access to a trainee's dashboards", the email search with the placeholder "Find trainee by
           email, first name or last name", the "Request for" group (Measurements checked, Nutrition, Training and
           Planning disabled) and Request access. Default: Measurements checked and the button enabled. Unchecking
-          Measurements disables Request access. A not found, pending, granted or failed answer stays in the dialog as a
-          message above the button; a sent answer closes the dialog and shows the notice toast. Esc or a click on the
-          overlay closes it and focus returns to the trigger. Field ids use{" "}
+          Measurements disables Request access. A not found, pending, granted or failed answer keeps the dialog open and
+          shows an error toast in the bottom corner of the screen; a sent answer closes the dialog and shows the notice
+          toast. Esc or a click on the overlay closes it and focus returns to the trigger. Field ids use{" "}
           <code class="text-foreground">find-trainee-</code>.
         </p>
         <div>
@@ -97,13 +97,13 @@ const sampleEntry: MeasurementWithDeltas = {
           Default
         </h2>
         <p class="text-muted-foreground text-sm">
-          TrainerPanel in trainer mode with links loaded, one sample measurement entry, and no server error. The
-          collapsible "Find trainee" tile holds the email search and Request read access. The collapsible "Choose
-          trainee" tile below it shows two trainees in a centered email field, the first array item selected, the left
-          arrow disabled and the right arrow linking to the second trainee. The collapsible "Measurements for" tile
-          holds the read-only list. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on
-          screen. The sample row has no Edit or Delete link. The Charts tile is its own card below, charting the sample
-          entry in local mode, and the read-only Top progression tile sits below it, with working period controls and
+          TrainerPanel in trainer mode with links loaded, one sample measurement entry, and no server error. Find
+          trainee is not a tile: it lives in the top bar (see Find trainee dialog above). The collapsible "Choose
+          trainee" tile shows two trainees in a centered email field, the first array item selected, the left arrow
+          disabled and the right arrow linking to the second trainee. The collapsible "Measurements for" tile holds the
+          read-only list. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on screen. The
+          sample row has no Edit or Delete link. The Charts tile is its own card below, charting the sample entry in
+          local mode, and the read-only Top progression tile sits below it, with working period controls and
           "Circumferences" filter. Form ids are unprefixed.
         </p>
         <TrainerPanel
@@ -127,7 +127,7 @@ const sampleEntry: MeasurementWithDeltas = {
           Hover
         </h2>
         <p class="text-muted-foreground text-sm">
-          In the Default panel above, Request read access uses Button{" "}
+          In the Find trainee dialog above, Request access uses Button{" "}
           <code class="text-foreground">hover:bg-primary/90</code>. The email button and list rows use Button outline
           and default hover.
         </p>
@@ -184,7 +184,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Empty, zero links
         </h2>
         <p class="text-muted-foreground text-sm">
-          Links loaded with an empty trainee list and no selected link. No empty-list sentence. Form ids use{" "}
+          Links loaded with an empty trainee list and no selected link, with Find trainee on: the "No trainees yet" card
+          says "Request access to a trainee with Find trainee in the top bar." and has no Settings link. Form ids use{" "}
           <code class="text-foreground">idPrefix="links-"</code>.
         </p>
         <TrainerPanel
@@ -197,6 +198,29 @@ const sampleEntry: MeasurementWithDeltas = {
           trainerMeasurementsLoaded={true}
           entries={[]}
           idPrefix="links-"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-empty-links-find-off">
+        <h2 id="state-empty-links-find-off" class="border-border border-b pb-2 text-lg font-semibold">
+          Empty, zero links, Find trainee off
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Same as Empty, zero links with <code class="text-foreground">find-trainee</code> switched off: the "No
+          trainees yet" card says "Request access to a trainee after switching Find trainee on in" and links to Settings
+          → Components. Form ids use <code class="text-foreground">idPrefix="links-off-"</code>.
+        </p>
+        <TrainerPanel
+          mode="trainer"
+          serverError={null}
+          requestedEmail={null}
+          trainerLinksLoaded={true}
+          trainerLinks={[]}
+          selectedLink={null}
+          trainerMeasurementsLoaded={true}
+          entries={[]}
+          idPrefix="links-off-"
+          shown={{ "find-trainee": { shown: false, preview: false } }}
         />
       </section>
 
@@ -250,7 +274,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Error, query
         </h2>
         <p class="text-muted-foreground text-sm">
-          Same as Default with <code class="text-foreground">serverError="No trainee with that email"</code>,{" "}
+          Same as Default with <code class="text-foreground">serverError="No trainee with that email"</code> (the
+          redirect answer of a request without JavaScript), shown as an error toast,{" "}
           <code class="text-foreground">today="2026-09-15"</code>, and{" "}
           <code class="text-foreground">idPrefix="error-query-"</code>.
         </p>
@@ -295,8 +320,8 @@ const sampleEntry: MeasurementWithDeltas = {
           Error, trainees
         </h2>
         <p class="text-muted-foreground text-sm">
-          <code class="text-foreground">{"trainerLinksLoaded={false}"}</code> so the form is absent and a toast shows
-          "Could not load trainees".
+          <code class="text-foreground">{"trainerLinksLoaded={false}"}</code> so no tile or card renders and a toast
+          shows "Could not load trainees".
         </p>
         <TrainerPanel
           mode="trainer"

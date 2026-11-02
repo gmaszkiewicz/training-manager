@@ -214,6 +214,7 @@ export default function TraineeEmailSearch({
       ) : null}
       {emptyToast ? (
         <PageErrorToasts
+          portal
           messages={[EMPTY_EMAIL_MESSAGE]}
           onDismiss={() => {
             clearEmptyError();
