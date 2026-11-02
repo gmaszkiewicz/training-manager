@@ -56,4 +56,4 @@
 - **Location**: src/pages/kitchen-sink/home.astro:126-141
 - **Detail**: With `role` gone from `TopbarModelInput`, the "Signed in, role null" preview has exactly the same input as the "Trainer with no saved name on /measurements" preview (lines 89-105), and its caption still names a role the bar no longer reads.
 - **Fix**: Remove the "role null" preview block (the trainer preview already covers an email-only name on /measurements).
-- **Decision**: FIXED — duplicate preview block removed.
+- **Decision**: FIXED — duplicate preview block removed; the intro's "twelve product outcomes" became "eleven".
