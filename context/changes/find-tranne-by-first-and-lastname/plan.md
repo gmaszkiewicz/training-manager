@@ -359,29 +359,29 @@ The migration is additive: the extension, the helper and the new function. The p
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build`
-- [x] 2.3 E2E passes: `npx playwright test tests/e2e/find-trainee.spec.ts`
+- [x] 2.1 Unit tests pass: `npm test` — 044694f
+- [x] 2.2 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build` — 044694f
+- [x] 2.3 E2E passes: `npx playwright test tests/e2e/find-trainee.spec.ts` — 044694f
 
 #### Manual
 
-- [x] 2.4 In the dialog, "ada love" lists Ada Lovelace over ada@example.com, and a trainee without names shows the email alone
-- [x] 2.5 On a phone width the match rows truncate without horizontal scroll, and Request for shows two columns
-- [x] 2.6 Typing "Ada" and pressing Request access shows "Choose a trainee from the list" and keeps the dialog open
+- [x] 2.4 In the dialog, "ada love" lists Ada Lovelace over ada@example.com, and a trainee without names shows the email alone — 044694f
+- [x] 2.5 On a phone width the match rows truncate without horizontal scroll, and Request for shows two columns — 044694f
+- [x] 2.6 Typing "Ada" and pressing Request access shows "Choose a trainee from the list" and keeps the dialog open — 044694f
 
 ### Phase 3: Choose trainee and headings
 
 #### Automated
 
-- [ ] 3.1 No `headingFor`, `traineeLabel` or `"Measurements for"` remains in `src/` or `tests/`: `git grep -nE "headingFor|traineeLabel|Measurements for" -- src tests` returns nothing
-- [ ] 3.2 Unit tests pass: `npm test`
-- [ ] 3.3 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build`
-- [ ] 3.4 Full E2E passes: `npx playwright test`
+- [x] 3.1 No `headingFor`, `traineeLabel` or `"Measurements for"` remains in `src/` or `tests/`: `git grep -nE "headingFor|traineeLabel|Measurements for" -- src tests` returns nothing
+- [x] 3.2 Unit tests pass: `npm test`
+- [x] 3.3 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build`
+- [x] 3.4 Full E2E passes: `npx playwright test`
 
 #### Manual
 
-- [ ] 3.5 On `/measurements` as a trainer with two named trainees, Choose trainee lists them by last name in two-line rows, and the arrows follow that order
-- [ ] 3.6 With the picker collapsed, its note shows "Ada Lovelace · ada@example.com"
-- [ ] 3.7 Headings read "Measurements", "Weekly progression" and "Top progression" with no name, on desktop and on a phone
-- [ ] 3.8 Settings → Components lists "Measurements" for the trainer list tile
-- [ ] 3.9 `/kitchen-sink/trainer` shows the new picker rows and note
+- [x] 3.5 On `/measurements` as a trainer with two named trainees, Choose trainee lists them by last name in two-line rows, and the arrows follow that order
+- [x] 3.6 With the picker collapsed, its note shows "Ada Lovelace · ada@example.com"
+- [x] 3.7 Headings read "Measurements", "Weekly progression" and "Top progression" with no name, on desktop and on a phone
+- [x] 3.8 Settings → Components lists "Measurements" for the trainer list tile
+- [x] 3.9 `/kitchen-sink/trainer` shows the new picker rows and note

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { adjacentTrainerLinks, type TrainerLink } from "@/lib/trainer-preview";
+import TraineeInlineLabel from "@/components/trainer/TraineeInlineLabel";
+import { adjacentTrainerLinks, traineeName, type TrainerLink } from "@/lib/trainer-preview";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -11,6 +12,12 @@ interface Props {
 
 function traineeMeasurementsHref(traineeId: string): string {
   return `/measurements?trainee=${encodeURIComponent(traineeId)}`;
+}
+
+/** The name and the email, read in full even where the row shows the email alone. */
+function accessibleLabel(link: TrainerLink): string {
+  const name = traineeName(link);
+  return name === link.email ? link.email : `${name}, ${link.email}`;
 }
 
 export default function LinkedTraineeField({ links, selectedTraineeId }: Props) {
@@ -79,15 +86,20 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
         <Button
           type="button"
           variant="outline"
-          className="w-full max-w-full min-w-0 flex-1 shrink"
+          className="w-full max-w-full min-w-0 flex-1 shrink py-0"
           aria-expanded={open}
-          aria-label={selected.email}
+          aria-label={accessibleLabel(selected)}
           onClick={() => {
             setOpen((current) => !current);
           }}
         >
           <ChevronDown className="invisible shrink-0" aria-hidden="true" />
-          <span className="min-w-0 flex-1 truncate text-center">{selected.email}</span>
+          <TraineeInlineLabel
+            email={selected.email}
+            firstName={selected.firstName}
+            lastName={selected.lastName}
+            className="flex-1 text-center"
+          />
           <ChevronDown className={cn("shrink-0", open && "rotate-180")} aria-hidden="true" />
         </Button>
         {next === null ? (
@@ -117,10 +129,19 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
                 key={link.traineeId}
                 asChild
                 variant={current ? "default" : "outline"}
-                className="w-full max-w-full min-w-0 shrink"
+                className="w-full max-w-full min-w-0 shrink justify-start py-0"
               >
-                <a href={traineeMeasurementsHref(link.traineeId)} aria-current={current ? "page" : undefined}>
-                  <span className="min-w-0 truncate">{link.email}</span>
+                <a
+                  href={traineeMeasurementsHref(link.traineeId)}
+                  aria-current={current ? "page" : undefined}
+                  aria-label={accessibleLabel(link)}
+                >
+                  <TraineeInlineLabel
+                    email={link.email}
+                    firstName={link.firstName}
+                    lastName={link.lastName}
+                    className="w-full text-left"
+                  />
                 </a>
               </Button>
             );

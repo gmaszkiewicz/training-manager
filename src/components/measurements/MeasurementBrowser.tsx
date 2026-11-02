@@ -1108,7 +1108,7 @@ export default function MeasurementBrowser({
 
   return (
     <div className="w-full">
-      <div className="measurement-row:flex-nowrap measurement-row:gap-4 mt-6 flex w-full flex-wrap items-center gap-1 gap-y-2">
+      <div className="measurement-row:flex-nowrap measurement-row:gap-4 flex w-full flex-wrap items-center gap-1 gap-y-2">
         <div ref={monthFieldRef} className="relative z-20 w-auto min-w-0 flex-none">
           <div className="measurement-row:gap-2 flex min-w-0 items-center gap-1" role="group" aria-label="Month">
             <Button
@@ -1132,6 +1132,7 @@ export default function MeasurementBrowser({
               className="measurement-row:px-4 grid w-auto max-w-none min-w-0 flex-none shrink-0 overflow-visible px-2"
               aria-expanded={monthListOpen}
               aria-label={monthLabel(month)}
+              disabled={noMeasurementsYet}
               onClick={() => {
                 setMonthListOpen((open) => !open);
               }}

@@ -16,7 +16,7 @@ import {
   traineePickerOpenStorageKey,
   type PageSize,
 } from "@/lib/measurement-page";
-import { traineeLabel, type TrainerLink } from "@/lib/trainer-preview";
+import { traineeName, type TrainerLink } from "@/lib/trainer-preview";
 import type { CircumferenceField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
@@ -118,8 +118,12 @@ const chartsTile = tileOf(shown, "progression");
 const topChartsTile = tileOf(shown, "top-changes");
 const tilesRender = mode === "trainer" && trainerLinksLoaded;
 const hasTrainee = trainerLinks.length > 0 && selectedLink !== null;
-// The list and chart headings name the chosen trainee: "Measurements for A. Lovelace (ada@example.com)".
-const subjectLabel = selectedLink ? traineeLabel(selectedLink) : null;
+// The picker's note names the chosen trainee: "Ada Lovelace · ada@example.com", or the email alone with no saved name.
+let pickerNote: string | undefined;
+if (selectedLink !== null) {
+  const name = traineeName(selectedLink);
+  pickerNote = name === selectedLink.email ? selectedLink.email : `${name} · ${selectedLink.email}`;
+}
 // Each tile renders only when it is on and has something to show; the picker cannot be switched off.
 const pickerRenders = tilesRender && pickerTile.shown && hasTrainee;
 const listRenders = tilesRender && listTile.shown && hasTrainee;
@@ -151,7 +155,7 @@ const requestNotice =
     storageKey={pickerKey}
     startsOpen={pickerStartsOpen}
     title="Choose trainee"
-    note="Whose measurements the tiles below show"
+    note={pickerNote}
     tileId="trainee-picker"
     preview={pickerTile.preview}
   >
@@ -179,7 +183,7 @@ const requestNotice =
   <CollapsibleTile
     storageKey={listKey}
     startsOpen={listStartsOpen}
-    title={subjectLabel ? `Measurements for ${subjectLabel}` : "Measurements for"}
+    title="Measurements"
     note="Measurements reported by the chosen trainee"
     tileId="measurements"
     preview={listTile.preview}
@@ -217,7 +221,6 @@ const requestNotice =
     initialDays={chartDays}
     entries={chartEntries}
     preview={chartsTile.preview}
-    subjectLabel={subjectLabel}
   />
 ) : null}
 {topChartsRender ? (
@@ -235,6 +238,5 @@ const requestNotice =
     initialFields={topChartsFields}
     entries={chartEntries}
     preview={topChartsTile.preview}
-    subjectLabel={subjectLabel}
   />
 ) : null}

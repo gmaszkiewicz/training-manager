@@ -57,7 +57,7 @@ const MODULE_COMPONENTS: Record<ModuleId, { defaultOn: boolean; components: read
       },
       {
         id: "trainee-measurements",
-        label: "Measurements for",
+        label: "Measurements",
         roles: ["trainer"],
         versions: STABLE,
         defaultVersion: "1.0",

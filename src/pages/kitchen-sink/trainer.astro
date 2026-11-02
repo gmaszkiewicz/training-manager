@@ -10,7 +10,7 @@ const sampleLink: TrainerLink = {
   traineeId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   email: "trainee@example.com",
   linkedAt: "2026-09-15T12:00:00.000Z",
-  // Both names: the headings read "… for A. Lovelace (trainee@example.com)".
+  // Both names: the picker row reads "Ada Lovelace" over the email, and its note "Ada Lovelace · trainee@example.com".
   firstName: "Ada",
   lastName: "Lovelace",
 };
@@ -19,7 +19,7 @@ const secondLink: TrainerLink = {
   traineeId: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
   email: "trainee-two@example.com",
   linkedAt: "2026-09-16T12:00:00.000Z",
-  // One saved name: "… for Grace (trainee-two@example.com)". The long list has no names: the email alone.
+  // One saved name: "Grace" over the email, sorted after Lovelace. The long list has no names: the email alone.
   firstName: "Grace",
   lastName: null,
 };
@@ -99,12 +99,14 @@ const sampleEntry: MeasurementWithDeltas = {
         <p class="text-muted-foreground text-sm">
           TrainerPanel in trainer mode with links loaded, one sample measurement entry, and no server error. Find
           trainee is not a tile: it lives in the top bar (see Find trainee dialog above). The collapsible "Choose
-          trainee" tile shows two trainees in a centered email field, the first array item selected, the left arrow
-          disabled and the right arrow linking to the second trainee. The collapsible "Measurements for" tile holds the
-          read-only list. <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on screen. The
-          sample row has no Edit or Delete link. The Charts tile is its own card below, charting the sample entry in
-          local mode, and the read-only Top progression tile sits below it, with working period controls and
-          "Circumferences" filter. Form ids are unprefixed.
+          trainee" tile shows two trainees in name order, each on one line as the bold name with the email in brackets
+          (the email alone where that does not fit), with the first selected; its note reads "Ada Lovelace ·
+          trainee@example.com". The left arrow is disabled and the right arrow links to the second trainee. The
+          collapsible "Measurements" tile holds the read-only list.{" "}
+          <code class="text-foreground">today="2026-09-15"</code> keeps the sample row on screen. The sample row has no
+          Edit or Delete link. The Charts tile is its own card below, charting the sample entry in local mode, and the
+          read-only Top progression tile sits below it, with working period controls and "Circumferences" filter. Form
+          ids are unprefixed.
         </p>
         <TrainerPanel
           mode="trainer"
@@ -128,7 +130,7 @@ const sampleEntry: MeasurementWithDeltas = {
         </h2>
         <p class="text-muted-foreground text-sm">
           In the Find trainee dialog above, Request access uses Button{" "}
-          <code class="text-foreground">hover:bg-primary/90</code>. The email button and list rows use Button outline
+          <code class="text-foreground">hover:bg-primary/90</code>. The trainee button and list rows use Button outline
           and default hover.
         </p>
       </section>
@@ -138,7 +140,7 @@ const sampleEntry: MeasurementWithDeltas = {
           Focus-visible
         </h2>
         <p class="text-muted-foreground text-sm">
-          Tab reaches the email button and an enabled arrow in the Default panel above. The ring is the shared{" "}
+          Tab reaches the trainee button and an enabled arrow in the Default panel above. The ring is the shared{" "}
           <code class="text-foreground">--ring</code> from Button. A disabled arrow is not in the tab order.
         </p>
       </section>

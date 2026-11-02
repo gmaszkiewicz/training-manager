@@ -337,7 +337,7 @@ if (supabase && user) {
             });
           }
           // The charts start from the list's month, so the list is read whenever the list or a chart shows; with
-          // Measurements for off the charts still follow the selected (remembered or first linked) trainee.
+          // the Measurements list off the charts still follow the selected (remembered or first linked) trainee.
           if (selectedLink && !shownTiles["trainee-measurements"].shown && !chartsShown) {
             trainerMeasurementsLoaded = true;
           } else if (selectedLink) {

@@ -5,6 +5,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { restoreDefaultComponents, saveComponents, TRAINEE_COMPONENTS_OFF } from "./component-settings-helpers";
+import { removeEntries, seedEntries } from "./measurement-seed-helpers";
 
 test.describe.configure({ mode: "serial" });
 
@@ -64,7 +65,7 @@ test("the screen shows the trainee's defaults", async ({ page }) => {
   // Only the trainee's rows.
   await expect(versionSelect(page, "Find trainee")).toHaveCount(0);
   await expect(versionSelect(page, "Choose trainee")).toHaveCount(0);
-  await expect(versionSelect(page, "Measurements for")).toHaveCount(0);
+  await expect(versionSelect(page, "Measurements")).toHaveCount(0);
   for (const locked of ["Nutrition", "Training", "Planning"]) {
     const lockedSwitch = page.getByRole("switch", { name: locked, exact: true });
     await expect(lockedSwitch).toBeDisabled();
@@ -114,18 +115,23 @@ test("Top progression is hidden by default and its preview carries the badge", a
 
 test("Progression off hides the Charts tile", async ({ page }) => {
   await saveComponents(page, { components: { progression: "off" } });
+  // Visualize shows only under a non-empty list, so the test brings its own entry.
+  const seeded = await seedEntries(page, 1, "e2e-settings");
+  try {
+    await page.goto("/measurements");
+    await expect(page.getByRole("group", { name: "Your measurements", exact: true })).toBeVisible();
+    await expect(chartsTile(page)).toHaveCount(0);
 
-  await page.goto("/measurements");
-  await expect(page.getByRole("group", { name: "Your measurements", exact: true })).toBeVisible();
-  await expect(chartsTile(page)).toHaveCount(0);
-
-  // Visualize stays under the list, disabled, and says why on hover.
-  const visualize = page.getByRole("button", { name: "Visualize", exact: true });
-  await expect(visualize).toHaveAttribute("aria-disabled", "true");
-  await expect(async () => {
-    await visualize.hover();
-    await expect(page.getByRole("tooltip")).toHaveText("The Progression component is off.", { timeout: 1_000 });
-  }).toPass();
+    // Visualize stays under the list, disabled, and says why on hover.
+    const visualize = page.getByRole("button", { name: "Visualize", exact: true });
+    await expect(visualize).toHaveAttribute("aria-disabled", "true");
+    await expect(async () => {
+      await visualize.hover();
+      await expect(page.getByRole("tooltip")).toHaveText("The Progression component is off.", { timeout: 1_000 });
+    }).toPass();
+  } finally {
+    await removeEntries(page, seeded);
+  }
 });
 
 test("every component off shows the empty-state card linking to Settings → Components", async ({ page }) => {
