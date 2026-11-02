@@ -24,7 +24,6 @@ if (preview) {
   const signedIn = Boolean(user);
   const email = user?.email ?? "";
   const pathname = Astro.url.pathname;
-  let role: TopbarModelInput["role"] = null;
   let firstName: string | null = null;
   let lastName: string | null = null;
   let avatarUrl: string | null = null;
@@ -38,7 +37,6 @@ if (preview) {
         readTopbarProfile(supabase, user.id),
         readNotificationBell(supabase, user.id),
       ]);
-      role = profile?.role ?? null;
       firstName = profile?.names.firstName ?? null;
       lastName = profile?.names.lastName ?? null;
       // A missing profile row resolves to the default (on).
@@ -53,7 +51,6 @@ if (preview) {
   model = topbarModel({
     signedIn,
     email,
-    role,
     firstName,
     lastName,
     avatarUrl,
@@ -65,6 +62,6 @@ if (preview) {
 ---
 
 <div class="border-border bg-card text-muted-foreground mb-4 flex items-center justify-between rounded-xl border px-4 py-2 text-sm">
-  <TopbarActions client:load greeting={model.greeting} name={model.name} links={model.links} account={model.account} />
+  <TopbarActions client:load links={model.links} account={model.account} />
 </div>
 {bellFailed ? <PageErrorToasts messages={["Could not load notifications"]} client:load /> : null}

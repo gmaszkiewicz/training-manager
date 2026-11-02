@@ -6,7 +6,6 @@ import type { AppNotification } from "@/types";
 const signedIn: Omit<TopbarModelInput, "pathname"> = {
   signedIn: true,
   email: "ada@example.com",
-  role: "trainee",
   firstName: null,
   lastName: null,
   avatarUrl: null,
@@ -15,7 +14,6 @@ const signedIn: Omit<TopbarModelInput, "pathname"> = {
 const guest: Omit<TopbarModelInput, "pathname"> = {
   signedIn: false,
   email: "",
-  role: null,
   firstName: null,
   lastName: null,
   avatarUrl: null,
@@ -26,17 +24,14 @@ const signedInLinks = (current: "home" | "measurements" | null) => [
   { id: "measurements", label: "Measurements", href: "/measurements", current: current === "measurements" },
 ];
 
-const accountItems = (current: "profile" | "hub" | "settings" | null) => [
-  { id: "profile", label: "Profile", href: "/profile", current: current === "profile" },
+const accountItems = (current: "hub" | "settings" | null) => [
   { id: "hub", label: "Hub", href: "/hub", current: current === "hub" },
   { id: "settings", label: "Settings", href: "/settings", current: current === "settings" },
 ];
 
 describe("topbarModel", () => {
   it("returns the guest bar with no account and marks Home on /", () => {
-    expect(topbarModel({ ...guest, email: "ada@example.com", role: "trainee", pathname: "/" })).toEqual({
-      greeting: "Hello, guest",
-      name: null,
+    expect(topbarModel({ ...guest, email: "ada@example.com", pathname: "/" })).toEqual({
       account: null,
       links: [
         { id: "home", label: "Home", href: "/", current: true },
@@ -67,12 +62,11 @@ describe("topbarModel", () => {
     ]);
   });
 
-  it("returns Hello with email, Home and Measurements links, and the account menu on /", () => {
+  it("returns Home and Measurements links and the account menu headed by the email on /", () => {
     expect(topbarModel({ ...signedIn, pathname: "/" })).toEqual({
-      greeting: "Hello,",
-      name: "ada@example.com",
       links: signedInLinks("home"),
       account: {
+        profile: { name: "ada@example.com", href: "/profile", current: false },
         initials: "A",
         imageUrl: null,
         label: "Account menu",
@@ -80,15 +74,6 @@ describe("topbarModel", () => {
         notifications: { unreadCount: 0, items: [], allHref: "/hub/notifications" },
       },
     });
-  });
-
-  it("returns Hello with email for a trainer", () => {
-    const result = topbarModel({ ...signedIn, role: "trainer", pathname: "/" });
-
-    expect(result.greeting).toBe("Hello,");
-    expect(result.name).toBe("ada@example.com");
-    expect(result.links).toEqual(signedInLinks("home"));
-    expect(result.account?.items).toEqual(accountItems(null));
   });
 
   it("marks Measurements on /measurements with href /measurements and no query", () => {
@@ -111,23 +96,26 @@ describe("topbarModel", () => {
     expect(result.account?.items).toEqual(accountItems(null));
   });
 
-  it("marks Profile in the account menu on /profile", () => {
+  it("marks the Profile entry in the account menu on /profile", () => {
     const result = topbarModel({ ...signedIn, pathname: "/profile" });
 
     expect(result.links).toEqual(signedInLinks(null));
-    expect(result.account?.items).toEqual(accountItems("profile"));
+    expect(result.account?.profile.current).toBe(true);
+    expect(result.account?.items).toEqual(accountItems(null));
   });
 
-  it("marks Profile and not Settings in the account menu on /profile/avatar", () => {
+  it("marks the Profile entry and not Settings in the account menu on /profile/avatar", () => {
     const result = topbarModel({ ...signedIn, pathname: "/profile/avatar" });
 
     expect(result.links).toEqual(signedInLinks(null));
-    expect(result.account?.items).toEqual(accountItems("profile"));
+    expect(result.account?.profile.current).toBe(true);
+    expect(result.account?.items).toEqual(accountItems(null));
   });
 
-  it("does not mark Profile on a path that only shares its prefix", () => {
+  it("does not mark the Profile entry on a path that only shares its prefix", () => {
     const result = topbarModel({ ...signedIn, pathname: "/profiles" });
 
+    expect(result.account?.profile.current).toBe(false);
     expect(result.account?.items).toEqual(accountItems(null));
   });
 
@@ -155,6 +143,7 @@ describe("topbarModel", () => {
     const result = topbarModel({ ...signedIn, pathname: "/settings" });
 
     expect(result.links).toEqual(signedInLinks(null));
+    expect(result.account?.profile.current).toBe(false);
     expect(result.account?.items).toEqual(accountItems("settings"));
   });
 
@@ -162,6 +151,7 @@ describe("topbarModel", () => {
     const result = topbarModel({ ...signedIn, pathname: "/auth/signin" });
 
     expect(result.links.every((link) => !link.current)).toBe(true);
+    expect(result.account?.profile.current).toBe(false);
     expect(result.account?.items.every((item) => !item.current)).toBe(true);
   });
 
@@ -188,21 +178,6 @@ describe("topbarModel", () => {
 
   it("keeps the account image null when there is no avatar", () => {
     expect(topbarModel({ ...signedIn, pathname: "/" }).account?.imageUrl).toBeNull();
-  });
-
-  it("returns email-only with greeting null when role is null", () => {
-    expect(topbarModel({ ...signedIn, role: null, pathname: "/" })).toEqual({
-      greeting: null,
-      name: "ada@example.com",
-      links: signedInLinks("home"),
-      account: {
-        initials: "A",
-        imageUrl: null,
-        label: "Account menu",
-        items: accountItems(null),
-        notifications: { unreadCount: 0, items: [], allHref: "/hub/notifications" },
-      },
-    });
   });
 });
 
@@ -284,10 +259,17 @@ describe("topbarName", () => {
 });
 
 describe("topbarModel name", () => {
-  it("greets a signed-in user by the saved names", () => {
+  it("heads the account menu with the saved names", () => {
     const result = topbarModel({ ...signedIn, firstName: "Ada", lastName: "Lovelace", pathname: "/" });
 
-    expect(result.greeting).toBe("Hello,");
-    expect(result.name).toBe("A. Lovelace");
+    expect(result.account?.profile.name).toBe("A. Lovelace");
+  });
+
+  it("heads the account menu with the one saved name alone", () => {
+    expect(topbarModel({ ...signedIn, lastName: "Lovelace", pathname: "/" }).account?.profile.name).toBe("Lovelace");
+  });
+
+  it("heads the account menu with the email when no name is saved", () => {
+    expect(topbarModel({ ...signedIn, pathname: "/" }).account?.profile.name).toBe("ada@example.com");
   });
 });

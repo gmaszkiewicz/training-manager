@@ -47,7 +47,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Design tokens live in `src/styles/global.css`.
 - Shared UI components live in `src/components/ui`. Check that directory before creating a component; add a missing one with `npx shadcn@latest add [name]`.
 - Do not use literal colours or arbitrary values in views — use role tokens and shared components.
-- Greeting copy lives in `src/lib/topbar.ts`: a guest reads "Hello, guest"; a signed-in trainee or trainer reads "Hello," and their name (first initial and last name, e.g. "A. Lovelace"; the one saved name alone; otherwise their email), with no role word. The measurements screen and its redirects live at `/measurements`.
+- Top bar copy lives in `src/lib/topbar.ts`. The top bar shows no greeting. The avatar menu's first item is the user's name (first initial and last name, e.g. "A. Lovelace"; the one saved name alone; otherwise their email) with a profile icon, linking to Profile. Guests keep a standalone Theme button; signed-in users switch the theme from the avatar menu's Theme submenu. The measurements screen and its redirects live at `/measurements`.
 - Home kitchen sink: `/kitchen-sink/home`.
 - Auth kitchen sink: `/kitchen-sink/auth`.
 - Journal kitchen sink: `/kitchen-sink/journal`.

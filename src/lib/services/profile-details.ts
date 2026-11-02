@@ -80,8 +80,8 @@ export interface TopbarProfile {
   components: ComponentSettings;
 }
 
-// One read of the profile row for the top bar: role for the greeting, names for the avatar initials, the avatar image path,
-// and the resolved component choices.
+// One read of the profile row for the top bar: the role, names for the avatar initials and the menu's name entry, the avatar
+// image path, and the resolved component choices.
 export async function readTopbarProfile(
   supabase: SupabaseClient<Database>,
   userId: string,
