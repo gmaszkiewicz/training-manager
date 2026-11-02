@@ -325,10 +325,10 @@ None. There is no schema or storage change, and the theme localStorage key is un
 
 #### Automated
 
-- [x] 3.1 E2E suite passes: `npx playwright test`
-- [x] 3.2 No spec references the removed item or greeting
-- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 E2E suite passes: `npx playwright test` — e719495
+- [x] 3.2 No spec references the removed item or greeting — e719495
+- [x] 3.3 Linting passes: `npm run lint` — e719495
 
 #### Manual
 
-- [ ] 3.4 CI e2e job is green on the PR
+- [x] 3.4 CI e2e job is green on the PR
