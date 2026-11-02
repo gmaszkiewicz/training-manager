@@ -293,41 +293,41 @@ None. There is no schema or storage change, and the theme localStorage key is un
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Type checking passes: `npx astro check`
-- [x] 1.3 Linting passes: `npm run lint`
-- [x] 1.4 No greeting strings remain in `src/`
+- [x] 1.1 Unit tests pass: `npm test` — a840721
+- [x] 1.2 Type checking passes: `npx astro check` — a840721
+- [x] 1.3 Linting passes: `npm run lint` — a840721
+- [x] 1.4 No greeting strings remain in `src/` — a840721
 
 #### Manual
 
-- [x] 1.5 CLAUDE.md UI section describes the name item and the theme placement
+- [x] 1.5 CLAUDE.md UI section describes the name item and the theme placement — a840721
 
 ### Phase 2: Avatar menu UI
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npx astro check`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Token check passes: `npm run check:home-tokens`
-- [x] 2.4 Unit tests pass: `npm test`
-- [x] 2.5 Build succeeds: `npm run build`
+- [x] 2.1 Type checking passes: `npx astro check` — a840721
+- [x] 2.2 Linting passes: `npm run lint` — a840721
+- [x] 2.3 Token check passes: `npm run check:home-tokens` — a840721
+- [x] 2.4 Unit tests pass: `npm test` — a840721
+- [x] 2.5 Build succeeds: `npm run build` — a840721
 
 #### Manual
 
-- [x] 2.6 Signed-in desktop bar and avatar menu order are correct
-- [x] 2.7 Name opens Profile and is marked on /profile subpaths
-- [x] 2.8 Theme submenu applies and persists by mouse and keyboard
-- [x] 2.9 At 360px / iOS Safari the menu and submenu open on first tap
-- [x] 2.10 Guest bar has no greeting and a working Theme button
-- [x] 2.11 Kitchen sink previews and captions match in light and dark
+- [x] 2.6 Signed-in desktop bar and avatar menu order are correct — a840721
+- [x] 2.7 Name opens Profile and is marked on /profile subpaths — a840721
+- [x] 2.8 Theme submenu applies and persists by mouse and keyboard — a840721
+- [x] 2.9 At 360px / iOS Safari the menu and submenu open on first tap — a840721
+- [x] 2.10 Guest bar has no greeting and a working Theme button — a840721
+- [x] 2.11 Kitchen sink previews and captions match in light and dark — a840721
 
 ### Phase 3: E2E specs
 
 #### Automated
 
-- [ ] 3.1 E2E suite passes: `npx playwright test`
-- [ ] 3.2 No spec references the removed item or greeting
-- [ ] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 E2E suite passes: `npx playwright test`
+- [x] 3.2 No spec references the removed item or greeting
+- [x] 3.3 Linting passes: `npm run lint`
 
 #### Manual
 

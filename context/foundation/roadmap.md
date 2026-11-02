@@ -125,7 +125,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-45 | app-small-redesign | user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme | S-11, S-35 | MS-36 | done |
 | S-46 | top-progress-charts | user can open a separate Top changes tile with four radial charts — top weight gain, top circumference gain, top weight loss, top circumference loss — for the selected week, month, year, or last 5 years, read each chart's legend, and filter which circumferences the circumference charts show | S-41, S-45 | MS-37 | done |
 | S-47 | component-version-system | user can open a Components screen beside Change password in Settings, switch each module — Measurements now, Nutrition, Training, and Planning off until built — on or off to show or hide it in the menu, pick off or a version for each component in one table saved with one button and a toast, and see a red preview badge with a warning tooltip on a preview tile; the add form and the entries list are separate New measurements and Measurements tiles | S-35, S-41, S-46 | MS-38 | done |
-| S-48 | reorganization-of-component-placement | user can open the avatar menu, read their name with a profile icon as its first item above a separator and click it to open Profile, which replaces the separate Profile item, switch the theme from a Theme item with an icon above Sign out, set off by a separator, and no longer sees a Hello greeting on the left of the top bar | S-35, S-45 | MS-39 | ready |
+| S-48 | reorganization-of-component-placement | user can open the avatar menu, read their name with a profile icon as its first item above a separator and click it to open Profile, which replaces the separate Profile item, switch the theme from a Theme item with an icon above Sign out, set off by a separator, and no longer sees a Hello greeting on the left of the top bar | S-35, S-45 | MS-39 | in-progress |
 
 ## Streams
 
@@ -739,7 +739,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** whether the Theme item toggles in place or opens a light/dark/system choice; whether the first menu item shows the same name format as today's greeting (first initial and last name, the one saved name, otherwise the email) and also the email or role; what a guest sees in place of the greeting, since a guest has no avatar menu; how the phone hamburger menu carries the same order; whether the profile icon is a Lucide user icon or the avatar image itself.
 - **Risk:** CLAUDE.md and `src/lib/topbar.ts` define the greeting copy, so both must change together, and e2e or smoke checks that read "Hello" must be updated. The menu must keep the S-34 first-tap open fix on iOS Safari, and the theme choice must persist as it does today. Tests and e2e steps that open Profile through the Profile menu item must click the name instead, and the name item must stay reachable and labelled for keyboard and screen-reader users.
-- **Status:** ready
+- **Status:** in-progress
 
 ## Backlog Handoff
 
