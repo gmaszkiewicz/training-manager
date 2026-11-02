@@ -1,10 +1,10 @@
 ---
 change_id: find-tranne-by-first-and-lastname
 title: Find trainee by first and last name, with Collaborations-style result labels
-status: impl_reviewed
+status: archived
 created: 2026-11-02
 updated: 2026-11-02
-archived_at: null
+archived_at: 2026-11-02T11:20:39Z
 ---
 
 ## Notes
