@@ -22,7 +22,7 @@ Trainers can find a trainee in Find trainee by first name or last name as well a
 - **Name search.** In Find trainee, a trainer types "ada love", "lovelace ada", "LUKASZ zolty" or "ada@ex" and sees up to 10 unlinked trainees who match. Each match reads "Ada Lovelace" over "ada@example.com" (or the email alone when no name is saved). Matches are ordered by last name, then first name, then email. Choosing one fills the field with that email.
 - **Typed name submitted.** If the field holds text without "@" and the trainer presses Request access, nothing is sent. The field is marked invalid and a toast says "Choose a trainee from the list".
 - **Request for layout.** The four checkboxes sit in two columns.
-- **Choose trainee.** The button and its list show the same two-line rows, in the same name order, and the arrows follow that order. The tile's note names the chosen trainee ("Ada Lovelace · ada@example.com"), open or collapsed.
+- **Choose trainee.** The button and its list show one-line rows ("**Ada Lovelace** (ada@example.com)", or the email alone when that does not fit), in the same name order, and the arrows follow that order. The tile's note names the chosen trainee ("Ada Lovelace · ada@example.com"), open or collapsed.
 - **Headings.** They read "Measurements", "Weekly progression" and "Top progression" with no trainee name. The Settings component label reads "Measurements".
 - **Verification.** Unit tests, `astro check`, lint, build and the E2E suite pass, including a new E2E test that finds a named throwaway trainee by name.
 
@@ -221,7 +221,7 @@ The dialog's matches read like the Collaborations Trainee column, with the full 
 
 ### Overview
 
-Choose trainee uses the same two-line rows and name order, and its note names the chosen trainee. Tile headings and the list component's label drop the trainee.
+Choose trainee uses one-line name-and-email rows and the same name order, and its note names the chosen trainee. Tile headings and the list component's label drop the trainee.
 
 ### Changes Required:
 
@@ -235,9 +235,11 @@ Choose trainee uses the same two-line rows and name order, and its note names th
 
 #### 2. Picker rows
 
-**File**: `src/components/trainer/LinkedTraineeField.tsx`
+**Files**: `src/components/trainer/LinkedTraineeField.tsx`, `src/components/trainer/TraineeInlineLabel.tsx` (new)
 
-**Intent**: The closed button and every list row render `TraineeRowLabel` instead of the email. The button grows to fit two lines.
+**Intent**: The closed button and every list row render `TraineeInlineLabel` instead of the email. That is one line, the bold `traineeName` followed by the muted email in parentheses ("**Ada Lovelace** (ada@example.com)"). When the line does not fit, it shows the email alone. The button keeps its one-line height.
+
+> **Amended during implementation (7a62cdc, accepted in impl review F2).** The plan first reused the two-line `TraineeRowLabel` here. The picker uses the one-line label instead, so the button keeps its height. `TraineeRowLabel` stays the Find trainee match row.
 
 **Contract**: The button's `aria-label` reads `traineeName` plus the email when they differ ("Ada Lovelace, ada@example.com"). Current-row marking (`aria-current`) and scroll-to-selected stay.
 
@@ -272,9 +274,17 @@ Choose trainee uses the same two-line rows and name order, and its note names th
 **Files**: `src/pages/kitchen-sink/trainer.astro`, `src/lib/trainer-preview.test.ts`, `src/lib/components.test.ts`, `tests/e2e/component-settings.spec.ts`, and any E2E asserting picker rows by email or headings with "for"
 
 **Intent**:
-- Kitchen sink fixtures show the two-line picker and the name note. Its comments stop describing "… for A. Lovelace".
+- Kitchen sink fixtures show the one-line picker rows and the name note. Its comments stop describing "… for A. Lovelace".
 - Unit tests drop `traineeLabel`/`headingFor` cases, add a `selectTrainerPreview` name-order case, and expect "Measurements".
 - E2E lookups of "Measurements for" become "Measurements".
+
+#### 7. Addendum: changes made during implementation
+
+Commit 7a62cdc also made these changes, which were accepted in impl review F3:
+
+- `src/components/measurements/MeasurementBrowser.tsx`: the Measurements list row loses its extra top gap (`mt-6`).
+- `src/components/measurements/MeasurementBrowser.tsx`: the month button is disabled while there are no measurements yet (`noMeasurementsYet`). No test covers this.
+- `tests/e2e/measurement-seed-helpers.ts` (new): the "Progression off" test in `component-settings.spec.ts` seeds its own entry. It no longer relies on the current month's data, because Visualize shows only under a non-empty list.
 
 ### Success Criteria:
 
@@ -287,7 +297,7 @@ Choose trainee uses the same two-line rows and name order, and its note names th
 
 #### Manual Verification:
 
-- On `/measurements` as a trainer with two named trainees, Choose trainee lists them by last name in two-line rows, and the arrows follow that order
+- On `/measurements` as a trainer with two named trainees, Choose trainee lists them by last name in one-line rows (see the Phase 3 §2 amendment), and the arrows follow that order
 - With the picker collapsed, its note shows "Ada Lovelace · ada@example.com"
 - Headings read "Measurements", "Weekly progression" and "Top progression" with no name, on desktop and on a phone
 - Settings → Components lists "Measurements" for the trainer list tile

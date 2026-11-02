@@ -41,6 +41,15 @@ describe("searchUnlinkedTrainees", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
+  it("answers no trainees under three characters without calling the RPC", async () => {
+    const { supabase, rpc } = clientAnswering({ data: [], error: null });
+
+    const result = await searchUnlinkedTrainees(supabase, " a b ");
+
+    expect(result).toEqual({ ok: true, trainees: [] });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("fails on a malformed payload", async () => {
     const malformed: unknown[] = [
       null,

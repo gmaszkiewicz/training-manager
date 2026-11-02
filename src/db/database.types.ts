@@ -199,7 +199,6 @@ export type Database = {
     };
     Functions: {
       accept_trainer_link: { Args: { p_trainer_id: string }; Returns: boolean };
-      fold_search_text: { Args: { p_value: string }; Returns: string };
       list_linked_trainees: {
         Args: Record<PropertyKey, never>;
         Returns: {

@@ -9,6 +9,13 @@ export const findTraineeTriggerLabel = "Find trainee";
 export const requestForLabel = "Request for";
 export const requestAccessLabel = "Request access";
 
+/** Search answers nothing below this many characters (spaces aside), so a short query cannot list every trainee. */
+export const minTraineeQueryLength = 3;
+
+export function isSearchableTraineeQuery(query: string): boolean {
+  return query.replace(/\s+/g, "").length >= minTraineeQueryLength;
+}
+
 /** The Request for checkboxes, in dashboard order; a dashboard that has not shipped renders disabled. */
 export function requestForOptions(): DashboardConfig[] {
   return dashboards.map(({ id, label, enabled }) => ({ id, label, enabled }));

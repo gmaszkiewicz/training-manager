@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/db/database.types";
 import { collaborationPageSize, pageCountFor, toCollaboration, type CollaborationRow } from "@/lib/collaborations";
+import { isSearchableTraineeQuery } from "@/lib/find-trainee";
 import type { TrainerLink } from "@/lib/trainer-preview";
 import type { CollaborationPage, LinkRequestOutcome, Profile, TraineeMatch } from "@/types";
 
@@ -181,7 +182,7 @@ export async function searchUnlinkedTrainees(
   supabase: SupabaseClient<Database>,
   query: string,
 ): Promise<{ ok: true; trainees: TraineeMatch[] } | { ok: false }> {
-  if (query.trim() === "") {
+  if (!isSearchableTraineeQuery(query)) {
     return { ok: true, trainees: [] };
   }
 

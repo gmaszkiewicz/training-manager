@@ -17,9 +17,8 @@ as $$
   );
 $$;
 
-revoke all on function public.fold_search_text(text) from public, anon;
-
-grant execute on function public.fold_search_text(text) to authenticated;
+-- Only search_unlinked_trainees calls it, as its owner, so no API role may.
+revoke all on function public.fold_search_text(text) from public, anon, authenticated;
 
 create function public.search_unlinked_trainees(p_query text)
 returns table (
@@ -52,7 +51,8 @@ begin
     ''
   );
 
-  if v_words is null or pg_catalog.cardinality(v_words) = 0 then
+  -- At least 3 characters (spaces aside), so a one- or two-letter query cannot list every trainee.
+  if v_words is null or pg_catalog.char_length(pg_catalog.array_to_string(v_words, '')) < 3 then
     return;
   end if;
 

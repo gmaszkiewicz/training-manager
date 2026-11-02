@@ -4,6 +4,7 @@ import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import TraineeRowLabel from "@/components/trainer/TraineeRowLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isSearchableTraineeQuery } from "@/lib/find-trainee";
 import type { TraineeMatch } from "@/types";
 
 const EMPTY_EMAIL_MESSAGE = "Enter an email address";
@@ -83,8 +84,7 @@ export default function TraineeEmailSearch({ idPrefix, placeholder = "Find train
     if (chosenEmail.current === email) {
       return;
     }
-    const query = email.trim();
-    if (query === "") {
+    if (!isSearchableTraineeQuery(email)) {
       return;
     }
     const serial = ++requestSerial.current;
@@ -138,9 +138,11 @@ export default function TraineeEmailSearch({ idPrefix, placeholder = "Find train
     chosenEmail.current = null;
     requestSerial.current += 1;
     setEmail(next);
-    if (next.trim() === "") {
+    if (!isSearchableTraineeQuery(next)) {
       setMatches([]);
       setOpen(false);
+    }
+    if (next.trim() === "") {
       return;
     }
     clearError();
@@ -168,7 +170,7 @@ export default function TraineeEmailSearch({ idPrefix, placeholder = "Find train
   }, [email]);
 
   function reopenList() {
-    if (email.trim() === "") {
+    if (!isSearchableTraineeQuery(email)) {
       return;
     }
     const serial = ++requestSerial.current;

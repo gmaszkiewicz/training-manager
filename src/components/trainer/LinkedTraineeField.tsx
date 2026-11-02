@@ -95,6 +95,7 @@ export default function LinkedTraineeField({ links, selectedTraineeId }: Props) 
         >
           <ChevronDown className="invisible shrink-0" aria-hidden="true" />
           <TraineeInlineLabel
+            key={selected.email}
             email={selected.email}
             firstName={selected.firstName}
             lastName={selected.lastName}
