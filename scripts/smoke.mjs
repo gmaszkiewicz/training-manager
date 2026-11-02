@@ -948,6 +948,11 @@ const steps = [
   ],
   ["trainee link shows one failure sentence", followRedirect, { status: 200, body: "No trainee with that email" }],
   [
+    "trainee JSON link is forbidden",
+    () => request("/api/trainer-links", { method: "POST", form: { email }, accept: "application/json" }),
+    { status: 403, body: ['"outcome":"failed"', "Only trainers can request access to a trainee"] },
+  ],
+  [
     "trainee request rpc is not found",
     () => rpcWith(jar, "request_trainee_link", { p_email: email }),
     { status: 200, json: () => ({ value: "not_found" }) },

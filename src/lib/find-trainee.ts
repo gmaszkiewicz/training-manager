@@ -31,7 +31,7 @@ function isAnswerOutcome(value: unknown): value is (typeof ANSWER_OUTCOMES)[numb
   return ANSWER_OUTCOMES.some((outcome) => outcome === value);
 }
 
-/** Turns the JSON answer of POST /api/trainer-links into "close + toast" (sent) or "stay + message". */
+/** Turns the JSON answer of POST /api/trainer-links into "close + toast" (sent) or "stay + error toast". */
 export function readRequestAnswer(value: unknown): RequestAnswer {
   if (!isRecord(value) || !isAnswerOutcome(value.outcome)) {
     return { kind: "error", message: requestFailedMessage };

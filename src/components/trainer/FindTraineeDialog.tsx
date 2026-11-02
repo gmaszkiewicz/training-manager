@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { useState, type SubmitEvent } from "react";
+import { useEffect, useRef, useState, type SubmitEvent } from "react";
 import PageErrorToasts from "@/components/measurements/PageErrorToasts";
 import TraineeEmailSearch from "@/components/trainer/TraineeEmailSearch";
 import { Button } from "@/components/ui/button";
@@ -31,31 +31,37 @@ import type { Dashboard } from "@/types";
 
 const ID_PREFIX = "find-trainee-";
 
-async function sendRequest(form: HTMLFormElement): Promise<RequestAnswer> {
+// Resolves to null when the request was aborted because the dialog closed.
+async function sendRequest(form: HTMLFormElement, signal: AbortSignal): Promise<RequestAnswer | null> {
   try {
     const response = await fetch("/api/trainer-links", {
       method: "POST",
       headers: { Accept: "application/json" },
       body: new FormData(form),
       cache: "no-store",
+      signal,
     });
     const payload: unknown = await response.json();
-    return readRequestAnswer(payload);
+    return signal.aborted ? null : readRequestAnswer(payload);
   } catch {
-    return { kind: "error", message: requestFailedMessage };
+    return signal.aborted ? null : { kind: "error", message: requestFailedMessage };
   }
 }
 
 // Mounted only while the dialog is open, so every reopen starts from an empty email and Measurements checked.
-function FindTraineeForm({
-  onSent,
-  onFailed,
-}: {
-  onSent: (message: string) => void;
-  onFailed: (message: string | null) => void;
-}) {
+function FindTraineeForm({ onSent }: { onSent: (message: string) => void }) {
   const [selected, setSelected] = useState<Dashboard[]>(["measurements"]);
   const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState<{ id: number; message: string } | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
+
+  // A late answer must not act on a dialog that was closed (and maybe reopened) meanwhile.
+  useEffect(
+    () => () => {
+      requestRef.current?.abort();
+    },
+    [],
+  );
 
   function toggle(id: Dashboard, checked: boolean) {
     setSelected((current) => {
@@ -75,14 +81,19 @@ function FindTraineeForm({
     }
     const form = event.currentTarget;
     setSending(true);
-    onFailed(null);
-    void sendRequest(form).then((answer) => {
+    setFailed(null);
+    const controller = new AbortController();
+    requestRef.current = controller;
+    void sendRequest(form, controller.signal).then((answer) => {
+      if (answer === null) {
+        return;
+      }
       setSending(false);
       if (answer.kind === "sent") {
         onSent(answer.message);
         return;
       }
-      onFailed(answer.message);
+      setFailed((current) => ({ id: (current?.id ?? 0) + 1, message: answer.message }));
     });
   }
 
@@ -117,8 +128,27 @@ function FindTraineeForm({
           {requestAccessLabel}
         </Button>
       </div>
+      {/* Like every error in the app, not found, pending, granted and failed answers are toasts. Portaled out of the
+          dialog's transform to the bottom corner of the screen; the dialog stays open and the toast goes with it. */}
+      {failed ? (
+        <PageErrorToasts
+          key={failed.id}
+          portal
+          messages={[failed.message]}
+          onDismiss={() => {
+            setFailed(null);
+          }}
+        />
+      ) : null}
     </form>
   );
+}
+
+// Error toasts raised from the dialog are portaled to the body; a click on one is not a click outside the dialog.
+function keepOpenOnToast(event: { target: EventTarget | null; preventDefault: () => void }) {
+  if (event.target instanceof Element && event.target.closest("[data-error-toast-stack]")) {
+    event.preventDefault();
+  }
 }
 
 interface Props {
@@ -129,7 +159,6 @@ interface Props {
 export default function FindTraineeDialog({ compactLabel = false }: Props) {
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState<{ id: number; message: string } | null>(null);
-  const [failed, setFailed] = useState<{ id: number; message: string } | null>(null);
 
   return (
     <>
@@ -149,7 +178,7 @@ export default function FindTraineeDialog({ compactLabel = false }: Props) {
             </span>
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent onPointerDownOutside={keepOpenOnToast} onInteractOutside={keepOpenOnToast}>
           <DialogHeader>
             <DialogTitle>{findTraineeTitle}</DialogTitle>
             <DialogDescription>{findTraineeDescription}</DialogDescription>
@@ -158,9 +187,6 @@ export default function FindTraineeDialog({ compactLabel = false }: Props) {
             onSent={(message) => {
               setOpen(false);
               setSent((current) => ({ id: (current?.id ?? 0) + 1, message }));
-            }}
-            onFailed={(message) => {
-              setFailed((current) => (message === null ? null : { id: (current?.id ?? 0) + 1, message }));
             }}
           />
         </DialogContent>
@@ -172,17 +198,6 @@ export default function FindTraineeDialog({ compactLabel = false }: Props) {
           tone="notice"
           onDismiss={() => {
             setSent(null);
-          }}
-        />
-      ) : null}
-      {/* Raised while the modal is open, so portaled: clickable over the dialog and in the bottom corner of the screen. */}
-      {failed ? (
-        <PageErrorToasts
-          key={failed.id}
-          portal
-          messages={[failed.message]}
-          onDismiss={() => {
-            setFailed(null);
           }}
         />
       ) : null}

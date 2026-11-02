@@ -89,7 +89,13 @@ export const POST: APIRoute = async (context) => {
   }
 
   // The form may carry an optional `dashboards` field; only read access to measurements is requested for now.
+  // Read it before any early answer: an unread body breaks the next request on a kept-alive connection.
   const form = await context.request.formData();
+
+  // As GET does. The redirect branch keeps relying on the RPC, which answers not_found to anyone but a trainer.
+  if (asJson && (await readProfileRole(supabase, user.id)) !== "trainer") {
+    return json({ outcome: "failed", message: "Only trainers can request access to a trainee" }, 403);
+  }
   const submitted = form.get("email");
   if (typeof submitted !== "string" || submitted.trim() === "") {
     const message = "Enter an email address";

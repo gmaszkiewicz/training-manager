@@ -1,6 +1,7 @@
 // Find trainee in the top bar: a throwaway trainer opens the dialog from the trigger, closes it with Esc and with a click
 // outside, sees which dashboards it can request, and gets "No trainee with that email" as a toast outside the open
-// dialog for an unknown address. The seeded trainee (the default storage state) does not see the trigger.
+// dialog for an unknown address; dismissing a toast keeps the dialog open. The seeded trainee (the default storage
+// state) does not see the trigger.
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 
 const description = "Request access to a trainee's dashboards";
@@ -102,9 +103,28 @@ test.describe("find trainee as a trainer", () => {
     await expect(email).toHaveValue(unknownEmail);
     await dialog.getByRole("button", { name: "Request access", exact: true }).click();
 
-    const toast = page.locator("body > [data-error-toast-stack]").getByText("No trainee with that email");
+    const stack = page.locator("body > [data-error-toast-stack]");
+    const toast = stack.getByText("No trainee with that email");
     await expect(toast).toBeVisible();
     await expect(dialog.getByText("No trainee with that email")).toHaveCount(0);
+    await expect(dialog).toBeVisible();
+
+    await stack.getByRole("button", { name: "Dismiss error" }).click();
+    await expect(toast).toHaveCount(0);
+    await expect(dialog).toBeVisible();
+    await expect(email).toHaveValue(unknownEmail);
+  });
+
+  test("dismissing the empty-email toast keeps the dialog open", async ({ browser }) => {
+    const page = await signUpTrainer(browser);
+    const dialog = await openFindTrainee(page);
+
+    await dialog.getByRole("button", { name: "Request access", exact: true }).click();
+    const stack = page.locator("body > [data-error-toast-stack]");
+    await expect(stack.getByText("Enter an email address")).toBeVisible();
+
+    await stack.getByRole("button", { name: "Dismiss error" }).click();
+    await expect(stack.getByText("Enter an email address")).toHaveCount(0);
     await expect(dialog).toBeVisible();
   });
 });

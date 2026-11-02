@@ -304,6 +304,12 @@ No schema change. The POST redirect branch stays, so a page loaded before the de
 - Component registry: `src/lib/components.ts:49`, `:224-232`
 - Top bar: `src/components/Topbar.astro`, `src/components/TopbarActions.tsx`, `src/lib/topbar.ts`
 
+## Addendum (impl review, 2026-11-02)
+
+- Phase 1 item 5 changed: not found, pending, granted and failed answers are **error toasts**, not an in-dialog `aria-live` message. That keeps one error surface across the app (lesson "Show every error as a toast, also inside dialogs" in `context/foundation/lessons.md`). The toast is a portaled `PageErrorToasts` inside the form. `DialogContent` ignores outside-clicks on `[data-error-toast-stack]`, so dismissing a toast keeps the dialog and the typed email.
+- POST `/api/trainer-links` answers 403 JSON to a non-trainer (the redirect branch is unchanged). It reads the form body before that early answer.
+- An in-flight request is aborted when the dialog closes, so a late answer cannot close a reopened dialog.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
