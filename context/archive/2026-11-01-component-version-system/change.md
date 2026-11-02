@@ -1,10 +1,10 @@
 ---
 change_id: component-version-system
 title: Settings screen to toggle modules and pick component versions
-status: impl_reviewed
+status: archived
 created: 2026-11-01
-updated: 2026-11-01
-archived_at: null
+updated: 2026-11-02
+archived_at: 2026-11-02T03:57:46Z
 ---
 
 ## Notes
