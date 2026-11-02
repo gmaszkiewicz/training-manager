@@ -71,7 +71,7 @@ function FindTraineeForm({ onSent }: { onSent: (message: string) => void }) {
   }
 
   function onSubmit(event: SubmitEvent<HTMLFormElement>) {
-    // The email search prevents an empty submit itself and shows its own "Enter an email address" toast.
+    // The trainee search prevents an empty submit, or a typed name without "@", itself and shows its own toast.
     if (event.nativeEvent.defaultPrevented) {
       return;
     }
@@ -100,7 +100,8 @@ function FindTraineeForm({ onSent }: { onSent: (message: string) => void }) {
   return (
     <form method="post" action="/api/trainer-links" noValidate className="flex flex-col gap-4" onSubmit={onSubmit}>
       <TraineeEmailSearch idPrefix={ID_PREFIX} placeholder={findTraineePlaceholder} />
-      <fieldset className="flex flex-col gap-3">
+      {/* Two columns, row by row in dashboard order: Measurements | Nutrition, then Training | Planning. */}
+      <fieldset className="grid grid-cols-2 gap-3">
         <legend className="mb-3 text-sm font-medium">{requestForLabel}</legend>
         {requestForOptions().map((option) => {
           const id = `${ID_PREFIX}dashboard-${option.id}`;

@@ -221,10 +221,11 @@ for (const { name, viewport } of widths) {
           await trigger.click();
           await expect(dialog).toBeVisible({ timeout: 1_000 });
         }).toPass();
-        const email = dialog.getByRole("textbox", { name: "Email" });
+        const email = dialog.getByRole("textbox", { name: "Trainee" });
         // A React island drops input typed before it hydrates, and then no suggestion opens. Retry until the seeded
         // trainee's address shows as a match. Clear first: re-filling the same value fires no change event.
-        const match = dialog.getByRole("button", { name: traineeEmail, exact: true });
+        // The match reads the trainee's name over the email when names are saved, the email alone otherwise.
+        const match = dialog.getByRole("button").filter({ hasText: traineeEmail });
         await expect(async () => {
           await email.fill("");
           await email.fill(traineeEmail);

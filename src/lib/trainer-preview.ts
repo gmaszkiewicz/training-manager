@@ -17,6 +17,44 @@ export function traineeLabel(link: Pick<TrainerLink, "email" | "firstName" | "la
   return name === link.email ? link.email : `${name} (${link.email})`;
 }
 
+interface TraineeNames {
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+}
+
+/**
+ * The trainee's full name: "Ada Lovelace" with both names (first name as saved), the one saved name alone, otherwise
+ * the email. Differs from the Collaborations rule (`topbarName`) only when both names are saved.
+ */
+export function traineeName({ firstName, lastName, email }: TraineeNames): string {
+  const first = firstName?.trim() ?? "";
+  const last = lastName?.trim() ?? "";
+  if (first !== "" && last !== "") {
+    return `${first} ${last}`;
+  }
+  return last || first || email;
+}
+
+// Blank sorts last; otherwise case- and accent-insensitive, like the SQL fold.
+function compareName(a: string | null | undefined, b: string | null | undefined): number {
+  const left = a?.trim() ?? "";
+  const right = b?.trim() ?? "";
+  if (left === "" || right === "") {
+    return (left === "" ? 1 : 0) - (right === "" ? 1 : 0);
+  }
+  return left.localeCompare(right, "en", { sensitivity: "base" });
+}
+
+/** Orders trainees by last name, then first name (blank names last), then email, ignoring case and accents. */
+export function compareTrainees(a: TraineeNames, b: TraineeNames): number {
+  return (
+    compareName(a.lastName, b.lastName) ||
+    compareName(a.firstName, b.firstName) ||
+    a.email.trim().localeCompare(b.email.trim(), "en", { sensitivity: "base" })
+  );
+}
+
 /** A tile heading naming whose measurements it shows: "Weekly progression for A. Lovelace (ada@example.com)". */
 export function headingFor(title: string, subject: string | null | undefined): string {
   return subject ? `${title} for ${subject}` : title;

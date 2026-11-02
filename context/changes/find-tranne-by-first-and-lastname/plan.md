@@ -345,29 +345,29 @@ The migration is additive: the extension, the helper and the new function. The p
 
 #### Automated
 
-- [x] 1.1 Migration applies on a fresh local stack: `npx supabase db reset`
-- [x] 1.2 Migration check passes: `npm run migration-check`
-- [x] 1.3 Unit tests pass: `npm test`
-- [x] 1.4 Lint and types pass: `npm run lint` and `npx astro check`
+- [x] 1.1 Migration applies on a fresh local stack: `npx supabase db reset` — 224f826
+- [x] 1.2 Migration check passes: `npm run migration-check` — 224f826
+- [x] 1.3 Unit tests pass: `npm test` — 224f826
+- [x] 1.4 Lint and types pass: `npm run lint` and `npx astro check` — 224f826
 
 #### Manual
 
-- [x] 1.5 With local Supabase, calling the RPC as a trainer returns Ada Lovelace for "ada love", "lovelace ada" and "ADA@EX", and returns Łukasz Żółty for "lukasz zolty"
-- [x] 1.6 The RPC returns nothing for a trainee caller and nothing for an already-linked trainee
+- [x] 1.5 With local Supabase, calling the RPC as a trainer returns Ada Lovelace for "ada love", "lovelace ada" and "ADA@EX", and returns Łukasz Żółty for "lukasz zolty" — 224f826
+- [x] 1.6 The RPC returns nothing for a trainee caller and nothing for an already-linked trainee — 224f826
 
 ### Phase 2: Find trainee dialog
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build`
-- [ ] 2.3 E2E passes: `npx playwright test tests/e2e/find-trainee.spec.ts`
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build`
+- [x] 2.3 E2E passes: `npx playwright test tests/e2e/find-trainee.spec.ts`
 
 #### Manual
 
-- [ ] 2.4 In the dialog, "ada love" lists Ada Lovelace over ada@example.com, and a trainee without names shows the email alone
-- [ ] 2.5 On a phone width the match rows truncate without horizontal scroll, and Request for shows two columns
-- [ ] 2.6 Typing "Ada" and pressing Request access shows "Choose a trainee from the list" and keeps the dialog open
+- [x] 2.4 In the dialog, "ada love" lists Ada Lovelace over ada@example.com, and a trainee without names shows the email alone
+- [x] 2.5 On a phone width the match rows truncate without horizontal scroll, and Request for shows two columns
+- [x] 2.6 Typing "Ada" and pressing Request access shows "Choose a trainee from the list" and keeps the dialog open
 
 ### Phase 3: Choose trainee and headings
 

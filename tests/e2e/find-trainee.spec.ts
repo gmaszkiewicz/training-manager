@@ -1,7 +1,8 @@
 // Find trainee in the top bar: a throwaway trainer opens the dialog from the trigger, closes it with Esc and with a click
 // outside, sees which dashboards it can request, and gets "No trainee with that email" as a toast outside the open
-// dialog for an unknown address; dismissing a toast keeps the dialog open. The seeded trainee (the default storage
-// state) does not see the trigger.
+// dialog for an unknown address; dismissing a toast keeps the dialog open. It finds a named throwaway trainee by first
+// and last name, and a typed name without "@" is not sent. The seeded trainee (the default storage state) does not see
+// the trigger.
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 
 const description = "Request access to a trainee's dashboards";
@@ -54,9 +55,37 @@ test.describe("find trainee as a trainer", () => {
     return trainerPage;
   }
 
+  let traineeContext: BrowserContext | undefined;
+
+  // A throwaway trainee in its own signed-out context, with a unique first and last name saved on its profile.
+  async function signUpNamedTrainee(browser: Browser): Promise<{ email: string; firstName: string; lastName: string }> {
+    traineeContext = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const traineePage = await traineeContext.newPage();
+    const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+    const email = `e2e-find-named-${token}@example.com`;
+    const firstName = `Ada${token}`;
+    const lastName = `Lovelace${token}`;
+    const signup = await traineePage.request.post("/api/auth/signup", {
+      form: { email, password: "E2e-Find-Trainee-Passw0rd!", role: "trainee" },
+    });
+    expect(signup.ok(), `trainee signup failed: ${signup.status()}`).toBeTruthy();
+    test.skip(
+      !new URL(signup.url()).pathname.startsWith("/measurements"),
+      "Sign-up needs email confirmation on this Supabase; the name search needs a signed-in throwaway trainee.",
+    );
+    // The first /measurements visit creates the profile row the names are saved on.
+    await traineePage.goto("/measurements");
+    const saved = await traineePage.request.post("/api/profile", { form: { firstName, lastName } });
+    expect(saved.ok(), `saving the trainee's names failed: ${saved.status()}`).toBeTruthy();
+    expect(new URL(saved.url()).searchParams.get("notice")).toBe("profile-saved");
+    return { email, firstName, lastName };
+  }
+
   test.afterEach(async () => {
     await trainerContext?.close();
     trainerContext = undefined;
+    await traineeContext?.close();
+    traineeContext = undefined;
   });
 
   test("the trigger opens the dialog, and Esc or a click outside closes it", async ({ browser }) => {
@@ -98,7 +127,7 @@ test.describe("find trainee as a trainer", () => {
     const dialog = await openFindTrainee(page);
 
     const unknownEmail = `e2e-find-missing-${Date.now()}@example.com`;
-    const email = dialog.getByRole("textbox", { name: "Email" });
+    const email = dialog.getByRole("textbox", { name: "Trainee" });
     await email.fill(unknownEmail);
     await expect(email).toHaveValue(unknownEmail);
     await dialog.getByRole("button", { name: "Request access", exact: true }).click();
@@ -113,6 +142,58 @@ test.describe("find trainee as a trainer", () => {
     await expect(toast).toHaveCount(0);
     await expect(dialog).toBeVisible();
     await expect(email).toHaveValue(unknownEmail);
+  });
+
+  test("a first and last name find the trainee, and choosing the match fills in the email", async ({ browser }) => {
+    const trainee = await signUpNamedTrainee(browser);
+    const page = await signUpTrainer(browser);
+    const dialog = await openFindTrainee(page);
+
+    const field = dialog.getByRole("textbox", { name: "Trainee" });
+    const fullName = `${trainee.firstName} ${trainee.lastName}`;
+    const match = dialog.getByRole("button").filter({ hasText: trainee.email });
+    // A React island drops input typed before it hydrates, and then no match opens. Retry until the match shows.
+    // Clear first: re-filling the same value fires no change event.
+    await expect(async () => {
+      await field.fill("");
+      await field.fill(fullName);
+      await expect(match).toBeVisible({ timeout: 2_000 });
+    }).toPass();
+    await expect(match).toHaveCount(1);
+
+    // The full name sits over the email.
+    const name = match.getByText(fullName, { exact: true });
+    const address = match.getByText(trainee.email, { exact: true });
+    await expect(name).toBeVisible();
+    await expect(address).toBeVisible();
+    const nameBox = await name.boundingBox();
+    const addressBox = await address.boundingBox();
+    if (nameBox === null || addressBox === null) {
+      throw new Error("missing bounding box");
+    }
+    expect(nameBox.y).toBeLessThan(addressBox.y);
+
+    await match.click();
+    await expect(match).toHaveCount(0);
+    await expect(field).toHaveValue(trainee.email);
+  });
+
+  test("a typed name without @ is not sent and toasts Choose a trainee from the list", async ({ browser }) => {
+    const page = await signUpTrainer(browser);
+    const dialog = await openFindTrainee(page);
+
+    // A name nobody has, so no match list covers Request access.
+    const field = dialog.getByRole("textbox", { name: "Trainee" });
+    const typed = `Nobody${Date.now().toString(36)}`;
+    await field.fill(typed);
+    await expect(field).toHaveValue(typed);
+    await dialog.getByRole("button", { name: "Request access", exact: true }).click();
+
+    const stack = page.locator("body > [data-error-toast-stack]");
+    await expect(stack.getByText("Choose a trainee from the list")).toBeVisible();
+    await expect(dialog.getByText("Choose a trainee from the list")).toHaveCount(0);
+    await expect(dialog).toBeVisible();
+    await expect(field).toHaveAttribute("aria-invalid", "true");
   });
 
   test("dismissing the empty-email toast keeps the dialog open", async ({ browser }) => {
