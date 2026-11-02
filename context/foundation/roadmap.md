@@ -3,7 +3,7 @@ project: Training Manager
 version: 1
 status: draft
 created: 2026-09-26
-updated: 2026-11-01
+updated: 2026-11-02
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -123,7 +123,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-44 | role-view-in-profile | user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons | S-35 | MS-35 | done |
 | S-45 | app-small-redesign | user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme | S-11, S-35 | MS-36 | done |
 | S-46 | top-progress-charts | user can open a separate Top changes tile with four radial charts — top weight gain, top circumference gain, top weight loss, top circumference loss — for the selected week, month, year, or last 5 years, read each chart's legend, and filter which circumferences the circumference charts show | S-41, S-45 | MS-37 | done |
-| S-47 | component-version-system | user can open a Components screen beside Change password in Settings, switch each module — Measurements now, Nutrition, Training, and Planning off until built — on or off to show or hide it in the menu, pick off or a version for each component in one table saved with one button and a toast, and see a red preview badge with a warning tooltip on a preview tile; the add form and the entries list are separate New measurements and Measurements tiles | S-35, S-41, S-46 | MS-38 | in-progress |
+| S-47 | component-version-system | user can open a Components screen beside Change password in Settings, switch each module — Measurements now, Nutrition, Training, and Planning off until built — on or off to show or hide it in the menu, pick off or a version for each component in one table saved with one button and a toast, and see a red preview badge with a warning tooltip on a preview tile; the add form and the entries list are separate New measurements and Measurements tiles | S-35, S-41, S-46 | MS-38 | done |
 
 ## Streams
 
@@ -725,7 +725,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** where the choices are stored (a per-user table, or profile columns) and whether a linked trainer's view follows the trainee's choices or the trainer's own; whether a module switched off is also refused by its route or only hidden from the menu; whether a version choice only shows or hides a component today, since every component has one version; which component the "progression" entry names — the line charts tile, presumably; what the off module rows for Nutrition, Training, and Planning list while they have no components.
 - **Risk:** Hiding the Measurements module must not leave a signed-in user on a dead landing page or redirect loop, since `/measurements` is where sign-in lands. Splitting the add form and the list into two tiles must keep the S-33 default (add form open, five per page) and the Visualize/Clear pair under the list. The new table needs RLS with per-operation policies, and the migration must be backward compatible with the Worker it reaches first.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -846,3 +846,4 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **S-44: user can read their app role, trainee or trainer, in a read-only field above the email in Profile → Details, with a role icon that matches the other Details icons** — Archived 2026-10-30 → `context/archive/2026-10-30-role-view-in-profile/`. Lesson: —.
 - **S-45: user can see icons across the app drawn from Lucide through the shadcn/ui components, and switch the whole app to a dark theme** — Archived 2026-10-31 → `context/archive/2026-10-30-app-small-redesign/`. Lesson: —.
 - **S-46: user can open a separate Top changes tile with four radial charts — top weight gain, top circumference gain, top weight loss, top circumference loss — for the selected week, month, year, or last 5 years, read each chart's legend, and filter which circumferences the circumference charts show** — Archived 2026-11-01 → `context/archive/2026-11-01-top-progress-charts/`. Lesson: —.
+- **S-47: user can open a Components screen beside Change password in Settings, switch each module — Measurements now, Nutrition, Training, and Planning off until built — on or off to show or hide it in the menu, pick off or a version for each component in one table saved with one button and a toast, and see a red preview badge with a warning tooltip on a preview tile; the add form and the entries list are separate New measurements and Measurements tiles** — Archived 2026-11-02 → `context/archive/2026-11-01-component-version-system/`. Lesson: —.
