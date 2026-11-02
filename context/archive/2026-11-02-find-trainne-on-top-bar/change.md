@@ -1,10 +1,10 @@
 ---
 change_id: find-trainne-on-top-bar
 title: Move Find trainee into the top bar as a search field that opens a command-style dialog
-status: impl_reviewed
+status: archived
 created: 2026-11-02
 updated: 2026-11-02
-archived_at: null
+archived_at: 2026-11-02T09:49:33Z
 ---
 
 ## Notes
