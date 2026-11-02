@@ -9,6 +9,7 @@ const EMPTY_EMAIL_MESSAGE = "Enter an email address";
 interface Props {
   idPrefix: string;
   serverError?: string | null;
+  placeholder?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -45,7 +46,11 @@ async function fetchTraineeEmails(query: string): Promise<string[]> {
   }
 }
 
-export default function TraineeEmailSearch({ idPrefix, serverError = null }: Props) {
+export default function TraineeEmailSearch({
+  idPrefix,
+  serverError = null,
+  placeholder = "Find trainee by email",
+}: Props) {
   const arrivedEmpty = serverError === EMPTY_EMAIL_MESSAGE;
   const [email, setEmail] = useState("");
   const [emails, setEmails] = useState<string[]>([]);
@@ -176,7 +181,7 @@ export default function TraineeEmailSearch({ idPrefix, serverError = null }: Pro
           autoComplete="off"
           aria-label="Email"
           aria-invalid={invalid ? true : undefined}
-          placeholder="Find trainee by email"
+          placeholder={placeholder}
           className="pr-9"
           value={email}
           onFocus={reopenList}

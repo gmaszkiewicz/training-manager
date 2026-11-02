@@ -312,18 +312,18 @@ No schema change. The POST redirect branch stays, so a page loaded before the de
 
 #### Automated
 
-- [ ] 1.1 Unit tests for `find-trainee.ts` pass (options order and enabled flags, `canRequestAccess` with none / measurements / only disabled ids, `readRequestAnswer` for each outcome and malformed input): `npm test`
-- [ ] 1.2 Lint passes: `npm run lint`
-- [ ] 1.3 Type and Astro checks pass: `npx astro check`
-- [ ] 1.4 Production build passes: `npm run build`
-- [ ] 1.5 Smoke passes unchanged against the preview (redirect branch intact): `npm run smoke`
+- [x] 1.1 Unit tests for `find-trainee.ts` pass (options order and enabled flags, `canRequestAccess` with none / measurements / only disabled ids, `readRequestAnswer` for each outcome and malformed input): `npm test`
+- [x] 1.2 Lint passes: `npm run lint`
+- [x] 1.3 Type and Astro checks pass: `npx astro check`
+- [x] 1.4 Production build passes: `npm run build`
+- [x] 1.5 Smoke passes unchanged against the preview (redirect branch intact): `npm run smoke`
 
 #### Manual
 
-- [ ] 1.6 On `/kitchen-sink/trainer` the trigger opens a centered dialog with Find trainee, the subtitle, the search with the new placeholder, Request for with only Measurements enabled, and Request access
-- [ ] 1.7 Esc and a click on the overlay close the dialog and focus returns to the trigger
-- [ ] 1.8 Unchecking Measurements disables Request access; checking it again enables it
-- [ ] 1.9 Signed in as a trainer, sending a real trainee email closes the dialog and shows the sent toast without leaving the page; an unknown email keeps the dialog open with "No trainee with that email"
+- [x] 1.6 On `/kitchen-sink/trainer` the trigger opens a centered dialog with Find trainee, the subtitle, the search with the new placeholder, Request for with only Measurements enabled, and Request access
+- [x] 1.7 Esc and a click on the overlay close the dialog and focus returns to the trigger
+- [x] 1.8 Unchecking Measurements disables Request access; checking it again enables it
+- [x] 1.9 Signed in as a trainer, sending a real trainee email closes the dialog and shows the sent toast without leaving the page; an unknown email keeps the dialog open with "No trainee with that email"
 
 ### Phase 2: Top bar entry point
 

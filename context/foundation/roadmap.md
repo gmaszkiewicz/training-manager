@@ -127,7 +127,7 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-46 | top-progress-charts | user can open a separate Top changes tile with four radial charts — top weight gain, top circumference gain, top weight loss, top circumference loss — for the selected week, month, year, or last 5 years, read each chart's legend, and filter which circumferences the circumference charts show | S-41, S-45 | MS-37 | done |
 | S-47 | component-version-system | user can open a Components screen beside Change password in Settings, switch each module — Measurements now, Nutrition, Training, and Planning off until built — on or off to show or hide it in the menu, pick off or a version for each component in one table saved with one button and a toast, and see a red preview badge with a warning tooltip on a preview tile; the add form and the entries list are separate New measurements and Measurements tiles | S-35, S-41, S-46 | MS-38 | done |
 | S-48 | reorganization-of-component-placement | user can open the avatar menu, read their name with a profile icon as its first item above a separator and click it to open Profile, which replaces the separate Profile item, switch the theme from a Theme item with an icon above Sign out, set off by a separator, and no longer sees a Hello greeting on the left of the top bar | S-35, S-45 | MS-39 | done |
-| S-49 | find-trainne-on-top-bar | user can open Find trainee from a search field with a magnifier at the top left of the top bar (only the magnifier on a phone when the field does not fit), search trainees by email in a centered dialog that Esc or a click outside closes, tick Measurements under Request for (Nutrition, Training, and Planning disabled), and send the request with Request access | S-29, S-40, S-48 | MS-40 | planning |
+| S-49 | find-trainne-on-top-bar | user can open Find trainee from a search field with a magnifier at the top left of the top bar (only the magnifier on a phone when the field does not fit), search trainees by email in a centered dialog that Esc or a click outside closes, tick Measurements under Request for (Nutrition, Training, and Planning disabled), and send the request with Request access | S-29, S-40, S-48 | MS-40 | in-progress |
 
 ## Streams
 
@@ -753,7 +753,7 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Blockers:** —
 - **Unknowns:** whether the top-bar field shows for trainers only or also for trainees and guests; whether the old Find trainee field on the measurements screen and in Hub → Collaborations is removed or kept; whether a keyboard shortcut (as on ui.shadcn.com, Ctrl/⌘ K) opens the dialog; at what width the field collapses to the magnifier; whether the dialog closes and toasts after Request access or stays open for the next trainee; whether the placeholder mentions first and last name before that search exists.
 - **Risk:** The dialog must keep the S-29 search rules (at most the first 10 matches, no trainees already linked) and send the S-37/S-40 request for read access to measurements, not an instant link. The top bar must still fit on a phone beside the hamburger, the bell, and the avatar, and keep the S-34 first-tap fix on iOS Safari. E2E steps that find a trainee on the measurements screen or in the Hub must follow the new entry point, and the dialog must trap focus and restore it on close for keyboard and screen-reader users.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Backlog Handoff
 
