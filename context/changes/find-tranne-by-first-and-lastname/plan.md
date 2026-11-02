@@ -373,15 +373,15 @@ The migration is additive: the extension, the helper and the new function. The p
 
 #### Automated
 
-- [x] 3.1 No `headingFor`, `traineeLabel` or `"Measurements for"` remains in `src/` or `tests/`: `git grep -nE "headingFor|traineeLabel|Measurements for" -- src tests` returns nothing
-- [x] 3.2 Unit tests pass: `npm test`
-- [x] 3.3 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build`
-- [x] 3.4 Full E2E passes: `npx playwright test`
+- [x] 3.1 No `headingFor`, `traineeLabel` or `"Measurements for"` remains in `src/` or `tests/`: `git grep -nE "headingFor|traineeLabel|Measurements for" -- src tests` returns nothing — 7a62cdc
+- [x] 3.2 Unit tests pass: `npm test` — 7a62cdc
+- [x] 3.3 Lint, types and build pass: `npm run lint`, `npx astro check`, `npm run build` — 7a62cdc
+- [x] 3.4 Full E2E passes: `npx playwright test` — 7a62cdc
 
 #### Manual
 
-- [x] 3.5 On `/measurements` as a trainer with two named trainees, Choose trainee lists them by last name in two-line rows, and the arrows follow that order
-- [x] 3.6 With the picker collapsed, its note shows "Ada Lovelace · ada@example.com"
-- [x] 3.7 Headings read "Measurements", "Weekly progression" and "Top progression" with no name, on desktop and on a phone
-- [x] 3.8 Settings → Components lists "Measurements" for the trainer list tile
-- [x] 3.9 `/kitchen-sink/trainer` shows the new picker rows and note
+- [x] 3.5 On `/measurements` as a trainer with two named trainees, Choose trainee lists them by last name in two-line rows, and the arrows follow that order — 7a62cdc
+- [x] 3.6 With the picker collapsed, its note shows "Ada Lovelace · ada@example.com" — 7a62cdc
+- [x] 3.7 Headings read "Measurements", "Weekly progression" and "Top progression" with no name, on desktop and on a phone — 7a62cdc
+- [x] 3.8 Settings → Components lists "Measurements" for the trainer list tile — 7a62cdc
+- [x] 3.9 `/kitchen-sink/trainer` shows the new picker rows and note — 7a62cdc
