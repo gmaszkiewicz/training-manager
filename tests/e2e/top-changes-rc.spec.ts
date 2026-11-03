@@ -1,6 +1,7 @@
 // Top progression 0.9 (the release candidate, and the default) on the production preview: the arrows around its
 // Week/Month/Year/Years box step and stop at the ends and the choice survives a reload, and each circumference chart's
-// filter is remembered on its own across a reload. Each test pins 0.9 and restores the defaults afterwards.
+// filter is remembered on its own across a reload, and its charts are bar charts, not radars. Each test pins 0.9 and
+// restores the defaults afterwards.
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { restoreDefaultComponents, saveComponents } from "./component-settings-helpers";
@@ -120,6 +121,58 @@ test("each circumference filter is remembered on its own across a reload", async
     await expect(fieldItem(page, "Chest")).toBeChecked();
     await expect(fieldItem(page, "Waist")).not.toBeChecked();
     await closeFilter(page);
+  } finally {
+    await removeEntries(page, seeded);
+  }
+});
+
+test("the charts are bar charts, not radars", async ({ page }) => {
+  // The seeded weight drops from 71.0 to 70.0 kg this month, so the weight loss chart draws a series.
+  const seeded = await seedEntries(page, 2, "e2e-top-changes-rc-bars");
+  try {
+    await page.goto("/measurements");
+    const weightLoss = topTile(page).getByRole("figure", { name: "Top weight loss", exact: true });
+    // The plot is the chart labelled by the card's title; the pinned value axis beside it draws no data bars.
+    await expect(
+      weightLoss.locator('[data-slot="chart"][aria-labelledby] .recharts-bar-rectangle .recharts-rectangle').first(),
+    ).toBeVisible();
+    await expect(topTile(page).locator(".recharts-radar")).toHaveCount(0);
+  } finally {
+    await removeEntries(page, seeded);
+  }
+});
+
+test("on a narrow row the period box folds into a filter icon on the same line", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/measurements");
+  const icon = topTile(page).getByRole("button", { name: "Chart period: Month", exact: true });
+  await expect(icon).toBeVisible();
+  await expect(periodBox(page)).toBeHidden();
+
+  // The date picker and the icon share one line.
+  const previousDate = topTile(page).getByRole("button", { name: "Previous period", exact: true });
+  const [iconBox, dateBox] = await Promise.all([icon.boundingBox(), previousDate.boundingBox()]);
+  expect(Math.abs((iconBox?.y ?? 0) - (dateBox?.y ?? 100))).toBeLessThan(8);
+
+  await expect(async () => {
+    await icon.click();
+    await expect(page.getByRole("menu")).toBeVisible({ timeout: 1_000 });
+  }).toPass();
+  await page.getByRole("menuitemradio", { name: "Week", exact: true }).click();
+  await expect(topTile(page).getByRole("button", { name: "Chart period: Week", exact: true })).toBeVisible();
+
+  await page.reload();
+  await expect(topTile(page).getByRole("button", { name: "Chart period: Week", exact: true })).toBeVisible();
+});
+
+test("the circumference charts show a short title and keep the full name", async ({ page }) => {
+  const seeded = await seedEntries(page, 2, "e2e-top-changes-rc-titles");
+  try {
+    await page.goto("/measurements");
+    // Sighted users read the short title; the full name stays in the caption for assistive technology.
+    const gain = topTile(page).locator("figure").filter({ hasText: "Top circ. gain" });
+    await expect(gain.getByText("Top circ. gain", { exact: true })).toBeVisible();
+    await expect(gain.locator(".sr-only")).toHaveText("Top circumference gain");
   } finally {
     await removeEntries(page, seeded);
   }

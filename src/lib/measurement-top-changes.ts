@@ -26,7 +26,7 @@ export interface SubPeriodValue {
 export interface SubPeriodRow {
   /** The sub-period's first day (`YYYY-MM-DD`), month (`YYYY-MM`) or year (`YYYY`). */
   key: string;
-  /** The short axis name: `Mon 3`, `3–9 Nov`, a month day's `12 Nov` (`""` when unlabelled), `Mar` or `2026`. */
+  /** The short axis name: `Mon 3`, `3–9 Nov`, a month day's `12` (`""` when unlabelled), `Mar` or `2026`. */
   axisLabel: string;
   /** The full name for the tooltip and legend: `Mon 3 Nov`, `3–9 Nov`, `Thu 12 Nov`, `March` or `2026`. */
   label: string;
@@ -97,8 +97,9 @@ function subPeriodLabels(
   const ms = measuredOnMs(first);
   if (period === "week" || monthAxis === "days") {
     const weekday = SHORT_WEEKDAYS[new Date(ms).getUTCDay()];
-    // A month's day axes carry the day and short month (`12 Nov`); `labelMonthDays` then blanks the ones not named.
-    const axisLabel = period === "week" ? `${weekday} ${dayNumber(first)}` : chartTickLabel(ms, "day");
+    // A month's day axes carry the day number alone (`12`), so a month of bars stays uncrowded; `labelMonthDays` then
+    // blanks the ones not named.
+    const axisLabel = period === "week" ? `${weekday} ${dayNumber(first)}` : dayNumber(first);
     return { axisLabel, label: `${weekday} ${chartTickLabel(ms, "day")}` };
   }
   const lastLabel = chartTickLabel(measuredOnMs(last), "day");
@@ -181,7 +182,7 @@ export function subPeriodTotals(
 const MIN_LABELLED_DAYS = 6;
 
 /**
- * The month's day rows with only the chart's labelled days keeping their `12 Nov` name as `axisLabel` (`""` for the
+ * The month's day rows with only the chart's labelled days keeping their `12` name as `axisLabel` (`""` for the
  * rest). A day is labelled when any of the rows' fields changed on it. While fewer than 6 are, evenly spread anchor
  * days are added — the first, the last, then the inner ones (1, 31, 7, 13, 19, 25 for 31 days) — skipping an anchor
  * next to a progress day so labels do not crowd. Apply it per chart: gains and losses separately.
@@ -241,4 +242,69 @@ export function topChangeScale(...lists: (readonly SubPeriodRow[])[]): number {
     }
   }
   return scale;
+}
+
+/** About this many steps up the value axis, rounded to a 1, 2, 2.5 or 5 step. */
+const VALUE_AXIS_STEPS = 4;
+
+/** The value axis' ticks, 0 to the first round step at or above the pair's largest value, so a pair shares its axis. */
+export function valueAxisTicks(scale: number): number[] {
+  if (!Number.isFinite(scale) || scale <= 0) {
+    return [0, 1];
+  }
+  const rough = scale / VALUE_AXIS_STEPS;
+  const power = 10 ** Math.floor(Math.log10(rough));
+  const step = ([1, 2, 2.5, 5, 10].find((multiple) => multiple * power >= rough) ?? 10) * power;
+  const count = Math.ceil(scale / step - 1e-9);
+  return Array.from({ length: count + 1 }, (_, index) => Number((index * step).toFixed(2)));
+}
+
+/** Bars take this share of a sub-period's slot; the rest is the gap between groups. */
+export const BAR_GROUP_FILL = 0.8;
+/** The gap between two bars of one group, in pixels. */
+export const BAR_GAP = 1;
+const MIN_BAR_SIZE = 4;
+/** About the width of one `text-xs` character, and the room kept around an axis label, in pixels. */
+const AXIS_CHARACTER_WIDTH = 7;
+const AXIS_LABEL_PADDING = 8;
+
+export interface TopChangeBarLayout {
+  /** Every bar's width, the same in every chart and period. */
+  barSize: number;
+  /** The plot's width: the card's when the sub-periods fit, wider (scrolling) when they do not. */
+  contentWidth: number;
+}
+
+/**
+ * The bar charts' layout for a plot `plotWidth` pixels wide. Every bar is as wide as a circumference bar in a Last 5
+ * years chart with all 7 circumferences, so a month of days keeps the bars a span of years has. Each sub-period's slot
+ * fits its bars and its axis label, and the plot grows past the card when the slots need more room.
+ */
+export function topChangeBarLayout(
+  plotWidth: number,
+  rows: readonly Pick<SubPeriodRow, "axisLabel">[],
+  fieldCount: number,
+): TopChangeBarLayout {
+  const width = Math.max(0, plotWidth);
+  const allFields = circumferenceFields.length;
+  const yearsSlot = (width / YEARS_SPAN_LIMIT) * BAR_GROUP_FILL;
+  const barSize = Math.max(MIN_BAR_SIZE, Math.floor((yearsSlot - (allFields - 1) * BAR_GAP) / allFields));
+  const bars = Math.max(1, fieldCount);
+  const groupWidth = bars * barSize + (bars - 1) * BAR_GAP;
+  const slotWidth = Math.max(
+    groupWidth / BAR_GROUP_FILL,
+    ...rows.map((row) => row.axisLabel.length * AXIS_CHARACTER_WIDTH + AXIS_LABEL_PADDING),
+  );
+  return { barSize, contentWidth: Math.max(width, Math.ceil(rows.length * slotWidth)) };
+}
+
+/**
+ * Only the sub-periods in which any of the rows' fields changed, so a bar chart skips the empty days and months. A
+ * span of years keeps every year, so Last 5 years always reads as the full span.
+ */
+export function changedSubPeriods(rows: readonly SubPeriodRow[], period: ChartPeriod): SubPeriodRow[] {
+  if (period === "years") {
+    return [...rows];
+  }
+  return rows.filter((row) => Object.values(row.values).some((value) => value.count > 0));
 }

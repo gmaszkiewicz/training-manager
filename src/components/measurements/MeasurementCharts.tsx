@@ -1,6 +1,7 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 
 import { useChartPeriodRead } from "@/components/hooks/useChartPeriodRead";
+import { useLastSettled } from "@/components/hooks/useLastSettled";
 import { useMeasurementChartSelection } from "@/components/hooks/useMeasurementChartSelection";
 import ChartPeriodControls from "@/components/measurements/ChartPeriodControls";
 import MeasurementChart, { type ChartPoint } from "@/components/measurements/MeasurementChart";
@@ -179,8 +180,24 @@ export default function MeasurementCharts({
     }
   }, [selectedHint]);
 
+  // The last read that drew charts: while the next period loads the tile keeps it, dimmed, instead of collapsing.
+  const shown = useMemo(
+    () => (loading || failed || body === null || body.entries.length === 0 ? null : { body, period, selected }),
+    [loading, failed, body, period, selected],
+  );
+  const lastShown = useLastSettled(shown);
+
   let status: ReactNode;
-  if (loading) {
+  if (loading && lastShown !== null) {
+    status = (
+      <div aria-busy="true" className="opacity-60 transition-opacity">
+        <p role="status" className="sr-only">
+          Loading charts…
+        </p>
+        <ChartGrid body={lastShown.body} period={lastShown.period} selected={lastShown.selected} />
+      </div>
+    );
+  } else if (loading) {
     status = (
       <p role="status" className="text-muted-foreground animate-pulse text-sm">
         Loading charts…
@@ -208,6 +225,7 @@ export default function MeasurementCharts({
           today={todayValue}
           onChoosePeriod={choosePeriod}
           onChooseAnchor={setAnchor}
+          periodControl="picker"
         />
       )}
       {status}

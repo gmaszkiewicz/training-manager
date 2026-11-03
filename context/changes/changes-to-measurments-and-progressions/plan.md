@@ -24,8 +24,9 @@ Ship Top progression 0.9 as a release candidate: a new island beside the unchang
   - The date picker sits on the left. An arrowed Week/Month/Year/Years choice box sits on the right; ‹ is disabled on Week and › on Years.
   - Top circumference gain and Top circumference loss each have their own filter in the chart header, remembered separately. The weight charts have none.
   - In Month view every chart has one axis per day of the month. The legend names the day with the largest progress, and only days with progress are labelled, topped up to at least 3 with the first, last and middle days.
-- Every period choice box (Your measurements, Progression, both Top progression versions, and 0.9's period box) is exactly as wide as "September 2026" plus its chevrons. Longer labels truncate, and no box changes width when the period changes.
-- Under the measurements table: Visualize, Clear and "x of 15 selected" on the left. When the pager shows, a vertical divider and the pager follow on the right. The row wraps on a phone, and the divider then hides.
+  - The four charts are grouped bar charts in the style of the shadcn "Bar Chart - Multiple" (Phase 5), one bar per field, on the pair's shared scale with a visible value axis. The loss charts are negative bar charts ("Bar Chart - Negative"). Only sub-periods with a change are drawn, except on Last 5 years, which keeps all five years. 0.1 keeps its radars.
+- Every period choice box (Your measurements, Progression and both Top progression versions) is exactly as wide as "September 2026" plus its chevrons. 0.9's Week/Month/Year/Years box is as wide as "Month". Longer labels truncate, and no box changes width when the period changes.
+- Under the measurements table: Visualize and Clear on the left of one line that never wraps; when the pager shows, a vertical divider and a compact pager ("‹ 2 / 5 ›", read out as "Page 2 of 5") sit on its right. "x of 15 selected" sits on its own line below (Phase 5). On a row narrower than 20rem, Visualize and Clear show only their icons.
 
 ### Key Discoveries:
 
@@ -43,7 +44,10 @@ Ship Top progression 0.9 as a release candidate: a new island beside the unchang
 - No change to which periods the pickers offer. They already offer only periods with entries and grey out with the no-measurements message when there are none, and the shared picker keeps that behaviour.
 - No promotion of 0.9 to stable, and no removal of 0.1.
 - No schema change. The only migration updates data in the existing jsonb column.
-- No change to the Progression (line chart) layout beyond the shared picker.
+- No change to the Progression (line chart) layout beyond the shared picker and, in Phase 5, the Week/Month/Year/Years box.
+- No range select inside the 0.9 bar-chart cards: the tile's period pickers own the window.
+- No stacked bars, and no merged gain/loss chart: 0.9 keeps four cards with grouped series.
+- No bar charts in 0.1: it keeps its radars.
 
 ## Implementation Approach
 
@@ -276,6 +280,104 @@ Add a version stage, the yellow RC badge and the Settings label, render the chos
 
 ---
 
+## Phase 5: Bar Charts in Top Progression 0.9
+
+### Overview
+
+Replace 0.9's four radar charts with bar charts in the style of the shadcn "Bar Chart - Multiple", the loss pair drawn as negative bar charts. The data, the four cards, their filters, the shared pair scale and the legend stay as they are. 0.1 keeps its radars. (An area-chart version was tried first and dropped after review.)
+
+### Changes Required:
+
+#### 1. Shared chart helpers
+
+**File**: `src/components/measurements/TopChangeChart.tsx`, `src/components/measurements/top-change-chart-parts.tsx` (new)
+
+**Intent**: Move the pieces both chart kinds need out of the radar so the bar chart reuses them rather than copying them: the signed value ("+1.0 cm", "−0.5 kg"), the changes count, the legend list with each changed series' top sub-period, the tooltip content, and the card frame (caption with the optional header, empty state, `h-96` client-only plot slot, legend).
+
+**Contract**: Pure extraction. `TopChangeChart` renders the same DOM, aria, legend and tooltip as before, so 0.1 does not change.
+
+#### 2. Library: day labels, value ticks, bar layout, changed sub-periods
+
+**File**: `src/lib/measurement-top-changes.ts`, `src/lib/measurement-top-changes.test.ts`
+
+**Intent**: Pure helpers for the bar chart, each unit-tested.
+
+**Contract**:
+- A Month day row's `axisLabel` is the day number alone (`12`, not `12 Nov`); `label` keeps the full name (`Thu 12 Nov`). Only 0.9 uses day rows.
+- `valueAxisTicks(scale)`: 0 up to the first round step (1, 2, 2.5 or 5 × 10ⁿ, about 4 steps) at or above the pair's scale.
+- `topChangeBarLayout(plotWidth, rows, fieldCount)`: every bar is as wide as a circumference bar on Last 5 years with all 7 circumferences, in every chart and period (min 4 px). Each sub-period slot fits its bars and its axis label, and the plot grows past the card when the slots need more room.
+- `changedSubPeriods(rows, period)`: only the rows where any field changed; `years` keeps every year.
+
+#### 3. Bar chart card
+
+**File**: `src/components/measurements/TopChangeBarChart.tsx` (new)
+
+**Intent**: The 0.9 chart card. It takes the same props as `TopChangeChart` (`title`, `rows`, `fields`, `scale`, `direction`, `emptyText`, `header`).
+
+**Contract**:
+- Grouped (not stacked) rounded bars, one per field, horizontal-only grid, the shared tooltip, no range select.
+- A value axis with units (`0 kg … 3 kg`), pinned on the left while a wider plot scrolls sideways; the plot opens scrolled to the largest change. The top tick clears the card title.
+- Loss charts are negative: bars hang down from 0 and the axis reads `0 … −3 cm` with the typographic minus. The pair keeps one scale.
+- Each series' top sub-period bar is drawn at full strength; the others are dimmed.
+- The legend, empty state, caption with the optional filter header, `aria-labelledby` and the `h-96` server placeholder match `TopChangeChart`.
+
+#### 4. Wire into 0.9
+
+**File**: `src/components/measurements/TopChangesChartsRc.tsx`, `src/components/measurements/ChartPeriodControls.tsx`, `scripts/check-home-tokens.mjs`, `src/pages/kitchen-sink/journal.astro`
+
+**Intent**: The 0.9 grid renders `TopChangeBarChart` for all four cards with `changedSubPeriods` rows (the scale still comes from the full rows). The circumference cards show the short titles "Top circ. gain"/"Top circ. loss" while the full title stays their accessible name. The new files go on the token allowlist. The kitchen sink's "Top progression 0.9 (RC)" copy describes the bar charts.
+
+**Contract**: `TopChangesCharts` (0.1) still imports `TopChangeChart`. The filter aria-labels and storage keys are unchanged.
+
+#### 5. Period-type control and loading
+
+**File**: `src/components/measurements/ChartPeriodControls.tsx`, `src/components/measurements/MeasurementCharts.tsx`, `src/components/measurements/TopChangesChartsRc.tsx`, `src/components/hooks/useLastSettled.ts` (new), `src/components/hooks/useChartPeriodRead.ts`
+
+**Intent**: One period-type control for 0.9 and Progression that always fits on one line, and no collapsing tile while a period loads.
+
+**Contract**:
+- Progression switches to `periodControl="picker"` like 0.9 (0.1 keeps its buttons). The Week/Month/Year/Years box is as wide as "Month".
+- When the row (a container query, `@lg`) is too narrow for the box beside the date picker, the box folds into an icon button with the filter icon (aria-label "Chart period: <period>") opening a radio list of the four. The row never wraps.
+- While a new period loads, both islands keep the last drawn charts, dimmed and `aria-busy`, with a screen-reader-only "Loading charts…" status, instead of replacing them with the loading line. The kitchen sink's local read is memoised so its identity is stable between renders.
+
+#### 6. Measurements table footer
+
+**File**: `src/components/measurements/MeasurementBrowser.tsx`
+
+**Intent**: Keep the actions and the pager on one line by moving the count below and shortening the pager.
+
+**Contract**: First line, no wrap: Visualize and Clear, then (only when paged) a divider and the pager `‹ 2 / 5 ›` with `size-8` arrows, its text `aria-hidden` and a screen-reader-only "Page 2 of 5". Below it: "{n} of 15 selected". The footer is a container; under `@xs` (20rem) the two actions drop their words for their icons and keep `aria-label`s "Visualize" and "Clear". The arrows keep "Previous page"/"Next page".
+
+#### 7. E2E
+
+**File**: `tests/e2e/top-changes-rc.spec.ts`, `tests/e2e/top-changes-charts.spec.ts`
+
+**Intent**: Pin which chart kind each version draws.
+
+**Contract**: The 0.9 tile draws data bars in its plot and no radar (`.recharts-radar`). The 0.1 tile still renders radars and no bar series (`.recharts-bar`). At phone width the period box folds into the icon on the date picker's line, and choosing from its list is remembered. The circumference cards show the short title and keep the full one for assistive technology. The existing 0.9 period and filter tests stay green.
+
+### Success Criteria:
+
+#### Automated Verification:
+
+- `npm run lint` passes
+- `npm run check:home-tokens` passes
+- `npx astro check` passes
+- `npm test` passes
+- `npx playwright test tests/e2e/top-changes-rc.spec.ts tests/e2e/top-changes-charts.spec.ts tests/e2e/component-settings.spec.ts` passes
+
+#### Manual Verification:
+
+- Progression and 0.9 share the arrowed Week/Month/Year/Years box (as wide as "Month"), which folds into the filter icon on a narrow row; switching period no longer collapses either tile.
+- Under the measurements table, Visualize, Clear and the compact pager share one line at every width, with "x of 15 selected" below.
+- On `/kitchen-sink/journal` and `/measurements`, 0.9 shows four bar-chart cards with fixed-width bars, a visible value axis and negative loss charts. Each pair shares one scale, and the top bar is at full strength.
+- Only days or months with a change are drawn (all five years on Last 5 years). The tooltip shows the sub-period and each field's signed value and count. The per-chart filters still change only their chart.
+- The charts read well in light and dark themes and at phone width (the plot scrolls under a pinned axis), and 0.1 still shows radars.
+
+**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful.
+
+---
+
 ## Testing Strategy
 
 ### Unit Tests:
@@ -360,16 +462,34 @@ The data-only migration `20261102130000_top_changes_rc_default.sql` changes `"of
 
 #### Automated
 
-- [x] 4.1 `npm run lint` passes
-- [x] 4.2 `npm run check:home-tokens` passes
-- [x] 4.3 `npx astro check` passes
-- [x] 4.4 `npm test` passes
-- [x] 4.5 `npm run migration-check` passes with the new migration
-- [x] 4.6 `npx playwright test` passes
-- [x] 4.7 `npm run build` succeeds and `npm run smoke` passes against the preview
+- [x] 4.1 `npm run lint` passes — a79c643
+- [x] 4.2 `npm run check:home-tokens` passes — a79c643
+- [x] 4.3 `npx astro check` passes — a79c643
+- [x] 4.4 `npm test` passes — a79c643
+- [x] 4.5 `npm run migration-check` passes with the new migration — a79c643
+- [x] 4.6 `npx playwright test` passes — a79c643
+- [x] 4.7 `npm run build` succeeds and `npm run smoke` passes against the preview — a79c643
 
 #### Manual
 
-- [x] 4.8 Stored-Off user sees 0.9 with the RC badge after migration; a 0.1 user keeps 0.1 with Preview
-- [x] 4.9 RC badge is yellow and readable in light and dark, with the right tooltip
-- [x] 4.10 Trainer view of a linked trainee renders 0.9 the same way
+- [x] 4.8 Stored-Off user sees 0.9 with the RC badge after migration; a 0.1 user keeps 0.1 with Preview — a79c643
+- [x] 4.9 RC badge is yellow and readable in light and dark, with the right tooltip — a79c643
+- [x] 4.10 Trainer view of a linked trainee renders 0.9 the same way — a79c643
+
+### Phase 5: Bar Charts in Top Progression 0.9
+
+#### Automated
+
+- [x] 5.1 `npm run lint` passes
+- [x] 5.2 `npm run check:home-tokens` passes
+- [x] 5.3 `npx astro check` passes
+- [x] 5.4 `npm test` passes
+- [x] 5.5 `npx playwright test tests/e2e/top-changes-rc.spec.ts tests/e2e/top-changes-charts.spec.ts tests/e2e/component-settings.spec.ts` passes
+
+#### Manual
+
+- [x] 5.6 0.9 shows four bar-chart cards with fixed-width bars, a value axis, negative loss charts and a shared pair scale
+- [x] 5.7 Only changed days/months are drawn (all 5 years on Years); tooltip shows signed values and counts; filters change only their chart
+- [x] 5.8 Light, dark and phone width read well, and 0.1 still shows radars
+- [x] 5.9 Progression and 0.9 share the Month-wide period box that folds into the filter icon; switching period no longer collapses a tile
+- [x] 5.10 Table footer: Visualize, Clear and the compact pager on one line, "x of 15 selected" below; icon-only actions on a phone

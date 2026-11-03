@@ -331,10 +331,15 @@ const noProgressEntries: MeasurementWithDeltas[] = withDeltas(
           <code class="text-foreground">stage="rc"</code> on the same six entries as the default 0.1 tile. The header
           carries the yellow "RC" badge, whose tooltip reads "Release candidate - it may contain bugs". The month picker
           sits on the left and the Week/Month/Year/Years box on the right, with "Previous chart period" and "Next chart
-          period" arrows: ‹ is disabled on Week and › on Years, and the list offers all four. On a phone the row wraps.
-          Month radars have one axis per day of September, labelled only on the days with a change (2, 9, 16, 23 and
-          29), and each legend entry names its series' top day, e.g. "Wed 16 Sep". Each circumference chart has its own
-          filter icon ("Filter circumferences: Top circumference gain" and "… loss"); the weight charts have none.
+          period" arrows: ‹ is disabled on Week and › on Years, and the list offers all four. When the row is too narrow
+          for the box, it folds into a filter icon that opens the same list, so the row stays on one line. The
+          circumference cards read "Top circ. gain" and "Top circ. loss". The four cards are bar charts, not radars: a
+          group per sub-period with one rounded bar per series, a horizontal grid, a value axis in cm or kg on the
+          pair's shared scale, and each series' top bar at full strength while the others are dimmed. On Month they have
+          a group only for the days of September with a change (2, 9, 16, 23 and 29). The loss charts are negative bar
+          charts: their drops hang down from 0 on an axis reading −1 kg, −2 kg, and each legend entry names its series'
+          top day, e.g. "Wed 16 Sep". Each circumference chart has its own filter icon ("Filter circumferences: Top
+          circumference gain" and "… loss"); the weight charts have none.
         </p>
         <TopChangesTile
           readOnly={false}
@@ -353,8 +358,8 @@ const noProgressEntries: MeasurementWithDeltas[] = withDeltas(
         </h2>
         <p class="text-muted-foreground text-sm">
           Two entries, 28 Nov and 12 Dec, with <code class="text-foreground">month="2026-12"</code>: December changes
-          only on the 12th, so every radar has 31 day axes labelled 1, 7, 12, 19, 25 and 31, and each legend names "Sat
-          12 Dec". Weight, waist, thigh and hips rise; chest, arm, calf and navel drop.
+          only on the 12th, so every bar chart has a single day group, labelled 12, and each legend names "Sat 12 Dec".
+          Weight, waist, thigh and hips rise; chest, arm, calf and navel drop.
         </p>
         <TopChangesTile
           readOnly={false}
@@ -390,7 +395,7 @@ const noProgressEntries: MeasurementWithDeltas[] = withDeltas(
         </h2>
         <p class="text-muted-foreground text-sm">
           <code class="text-foreground">initialGainFields</code> set to waist, hips and navel and{" "}
-          <code class="text-foreground">initialLossFields</code> to chest and arm, so each circumference radar draws
+          <code class="text-foreground">initialLossFields</code> to chest and arm, so each circumference bar chart draws
           only its own selection, and the pair shares one scale over the union of both. Changing one chart's filter
           leaves the other alone.
         </p>

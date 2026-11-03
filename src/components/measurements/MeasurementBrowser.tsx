@@ -463,9 +463,10 @@ function DisabledVisualizeButton() {
             size="sm"
             aria-disabled="true"
             className="cursor-not-allowed opacity-50"
+            aria-label="Visualize"
           >
             <ChartLine aria-hidden="true" />
-            Visualize
+            <span className="hidden @xs:inline">Visualize</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>{VISUALIZE_OFF_TOOLTIP}</TooltipContent>
@@ -1171,71 +1172,84 @@ export default function MeasurementBrowser({
         </div>
       )}
       {noMeasurementsYet ? null : (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          {visualizeEnabled ? (
+        <div className="@container mt-4 flex flex-col gap-2">
+          {/* One line at every width: the actions on the left, a divider and the compact pager on the right. Below
+              20rem the actions drop their words for their icons, keeping their names for assistive technology. */}
+          <div className="flex flex-nowrap items-center gap-2">
+            {visualizeEnabled ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={checkedIds.length === 0}
+                aria-label="Visualize"
+                onClick={() => {
+                  visualize();
+                }}
+              >
+                <ChartLine aria-hidden="true" />
+                <span className="hidden @xs:inline">Visualize</span>
+              </Button>
+            ) : (
+              <DisabledVisualizeButton />
+            )}
             <Button
               type="button"
               variant="outline"
               size="sm"
-              disabled={checkedIds.length === 0}
+              disabled={checkedIds.length === 0 && visualizedIds.length === 0}
+              aria-label="Clear"
               onClick={() => {
-                visualize();
+                clear();
               }}
             >
-              <ChartLine aria-hidden="true" />
-              Visualize
+              <Eraser aria-hidden="true" />
+              <span className="hidden @xs:inline">Clear</span>
             </Button>
-          ) : (
-            <DisabledVisualizeButton />
-          )}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={checkedIds.length === 0 && visualizedIds.length === 0}
-            onClick={() => {
-              clear();
-            }}
-          >
-            <Eraser aria-hidden="true" />
-            Clear
-          </Button>
+            {showPager && !monthIsEmpty ? (
+              <div className="ml-auto flex shrink-0 items-center gap-1 text-sm">
+                <span aria-hidden="true" className="border-border mr-1 h-6 border-l" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Previous page"
+                  disabled={currentPage <= 1}
+                  onClick={() => {
+                    showPage(currentPage - 1);
+                  }}
+                >
+                  <ChevronLeft aria-hidden="true" />
+                </Button>
+                {/* "2 / 5" keeps the pager short enough for the actions' line; the full wording is read out. */}
+                <p className="min-w-10 text-center tabular-nums">
+                  <span aria-hidden="true">
+                    {currentPage} / {pageCount}
+                  </span>
+                  <span className="sr-only">
+                    Page {currentPage} of {pageCount}
+                  </span>
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Next page"
+                  disabled={currentPage >= pageCount}
+                  onClick={() => {
+                    showPage(currentPage + 1);
+                  }}
+                >
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </div>
+            ) : null}
+          </div>
           <p className="text-muted-foreground text-sm">
             {checkedIds.length} of {CHART_SELECTION_LIMIT} selected
           </p>
-          {showPager && !monthIsEmpty ? (
-            <div className="ml-auto flex items-center gap-2 text-sm">
-              {/* Shown only from the breakpoint where the row stays on one line, so a wrapped row has no stray divider. */}
-              <span aria-hidden="true" className="border-border measurement-row:block hidden h-6 border-l" />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                aria-label="Previous page"
-                disabled={currentPage <= 1}
-                onClick={() => {
-                  showPage(currentPage - 1);
-                }}
-              >
-                <ChevronLeft aria-hidden="true" />
-              </Button>
-              <p>
-                Page {currentPage} of {pageCount}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                aria-label="Next page"
-                disabled={currentPage >= pageCount}
-                onClick={() => {
-                  showPage(currentPage + 1);
-                }}
-              >
-                <ChevronRight aria-hidden="true" />
-              </Button>
-            </div>
-          ) : null}
         </div>
       )}
       {confirmingEntry === null ? null : (

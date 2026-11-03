@@ -150,6 +150,11 @@ test("the Top progression tile renders the seeded charts below the Charts tile",
     await expect(topTile(page).getByRole("figure", { name: "Top weight loss", exact: true })).not.toContainText(
       "No losses in this period",
     );
+    // v0.1 keeps its radars; the bar charts belong to 0.9.
+    await expect(
+      topTile(page).getByRole("figure", { name: "Top weight loss", exact: true }).locator(".recharts-radar").first(),
+    ).toBeVisible();
+    await expect(topTile(page).locator(".recharts-bar")).toHaveCount(0);
   } finally {
     await removeEntries(page, seeded);
   }
@@ -172,10 +177,10 @@ test("the period controls change the window and the choice survives a reload", a
     await expect(topTile(page).getByRole("button", { name: "Previous period", exact: true })).toBeDisabled();
     await expect(topTile(page).getByRole("button", { name: "Next period", exact: true })).toBeDisabled();
     await expect(weightLoss).toContainText(yearInLegend);
-    // The Charts tile keeps its own period.
+    // The Charts tile keeps its own period: its arrowed box still names Month.
     await expect(
       chartsTile(page).getByRole("group", { name: "Chart period" }).getByRole("button", { name: "Month", exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
+    ).toBeVisible();
 
     await page.reload();
     await expect(periodButton(page, "Years")).toHaveAttribute("aria-pressed", "true");

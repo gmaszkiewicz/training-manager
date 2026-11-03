@@ -1,6 +1,14 @@
+import { ListFilter } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import PeriodPicker from "@/components/measurements/PeriodPicker";
 import {
   chartKeyAnchor,
@@ -46,11 +54,9 @@ interface Props {
 /** The Week/Month/Year/Years choice box: arrows step to the neighbouring period, and the list offers all four. */
 function PeriodTypePicker({
   period,
-  widestLabel,
   onChoosePeriod,
 }: {
   period: ChartPeriod;
-  widestLabel: string;
   onChoosePeriod: (period: ChartPeriod) => void;
 }) {
   const index = chartPeriods.indexOf(period);
@@ -58,7 +64,8 @@ function PeriodTypePicker({
     <PeriodPicker
       groupLabel="Chart period"
       label={periodNames[period]}
-      widestLabel={widestLabel}
+      // The box is as wide as its widest name, "Month", not the date picker's "September 2026".
+      widestLabel={periodNames.month}
       options={chartPeriods.map((option) => ({ key: option, label: periodNames[option] }))}
       selectedKey={period}
       previous={{ ariaLabel: "Previous chart period", target: chartPeriods[index - 1] ?? null }}
@@ -70,6 +77,45 @@ function PeriodTypePicker({
         }
       }}
     />
+  );
+}
+
+/**
+ * The Week/Month/Year/Years choice as an icon button, for a row too narrow for the arrowed box: the same filter icon as
+ * a chart's own filter, opening a list of the four with the chosen one marked.
+ */
+function PeriodTypeMenu({
+  period,
+  onChoosePeriod,
+}: {
+  period: ChartPeriod;
+  onChoosePeriod: (period: ChartPeriod) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button type="button" variant="outline" size="icon" aria-label={`Chart period: ${periodNames[period]}`}>
+          <ListFilter aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuRadioGroup
+          value={period}
+          onValueChange={(value) => {
+            const chosen = chartPeriods.find((option) => option === value);
+            if (chosen !== undefined) {
+              onChoosePeriod(chosen);
+            }
+          }}
+        >
+          {chartPeriods.map((option) => (
+            <DropdownMenuRadioItem key={option} value={option}>
+              {periodNames[option]}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -128,17 +174,20 @@ export default function ChartPeriodControls({
   }
 
   if (periodControl === "picker") {
+    // One line at every width: the arrowed box when the row has room for it beside the date picker, otherwise the
+    // icon button. The row's own width decides, so a tile in a narrow column folds even on a wide screen.
     return (
-      <div className="measurement-row:flex-nowrap measurement-row:gap-4 flex w-full flex-wrap items-center gap-1 gap-y-2">
-        {picker}
-        <div className="ml-auto shrink-0">
-          <PeriodTypePicker
-            period={period}
-            widestLabel={widestMonthLabel(measurementMonth(today))}
-            onChoosePeriod={onChoosePeriod}
-          />
+      <div className="@container w-full">
+        <div className="flex w-full flex-nowrap items-center gap-1 @lg:gap-4">
+          {picker}
+          <div className="ml-auto hidden shrink-0 @lg:block">
+            <PeriodTypePicker period={period} onChoosePeriod={onChoosePeriod} />
+          </div>
+          <div className="ml-auto shrink-0 @lg:hidden">
+            <PeriodTypeMenu period={period} onChoosePeriod={onChoosePeriod} />
+          </div>
+          {extra === undefined || extra === null ? null : <div className="shrink-0">{extra}</div>}
         </div>
-        {extra === undefined || extra === null ? null : <div className="shrink-0">{extra}</div>}
       </div>
     );
   }

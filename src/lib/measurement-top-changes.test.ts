@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { chartWindow, lastYearsRange } from "@/lib/measurement-chart";
 import {
+  changedSubPeriods,
   circumferenceFields,
   labelMonthDays,
   subPeriodTotals,
+  topChangeBarLayout,
+  valueAxisTicks,
   topChangeScale,
   topSubPeriod,
   type SubPeriodRow,
@@ -255,9 +258,9 @@ function days(month: string, ...daysChanged: number[]): ChartMeasurement[] {
   );
 }
 
-/** The day numbers of the labelled day axes (`12 Nov` → `12`); the full axis label is pinned separately. */
+/** The day numbers of the labelled day axes; the full axis label is pinned separately. */
 function labelledDays(rows: readonly SubPeriodRow[]): string[] {
-  return rows.flatMap((row) => (row.axisLabel === "" ? [] : [row.axisLabel.split(" ")[0] ?? ""]));
+  return rows.flatMap((row) => (row.axisLabel === "" ? [] : [row.axisLabel]));
 }
 
 describe("subPeriodTotals day axes", () => {
@@ -276,18 +279,19 @@ describe("subPeriodTotals day axes", () => {
     expect(november[11]?.label).toBe("Thu 12 Nov");
   });
 
-  it("names a labelled day axis with the day and the short month", () => {
+  it("names a labelled day axis with the day number alone, keeping the month in the full label", () => {
     const rows = subPeriodTotals(days("2026-10", 12), ["waist_cm"], "month", october, "up", { monthAxis: "days" });
 
     expect(rows.map((row) => row.axisLabel).filter((label) => label !== "")).toEqual([
-      "1 Oct",
-      "7 Oct",
-      "12 Oct",
-      "19 Oct",
-      "25 Oct",
-      "31 Oct",
+      "1",
+      "7",
+      "12",
+      "19",
+      "25",
+      "31",
     ]);
     expect(rows[1]?.axisLabel).toBe("");
+    expect(rows[11]?.label).toBe("Mon 12 Oct");
   });
 
   it("labels 6 evenly spread days from the first to the last when nothing changed", () => {
@@ -472,5 +476,75 @@ describe("topChangeScale", () => {
   it("is 0 when nothing changed", () => {
     expect(topChangeScale(subPeriodTotals([], ["weight_kg"], "week", windowOf("week", "2026-11-04"), "up"))).toBe(0);
     expect(topChangeScale()).toBe(0);
+  });
+});
+
+describe("valueAxisTicks", () => {
+  it("steps by a round 1, 2, 2.5 or 5 multiple from 0 to at or above the scale", () => {
+    expect(valueAxisTicks(1)).toEqual([0, 0.25, 0.5, 0.75, 1]);
+    expect(valueAxisTicks(1.3)).toEqual([0, 0.5, 1, 1.5]);
+    expect(valueAxisTicks(3.6)).toEqual([0, 1, 2, 3, 4]);
+    expect(valueAxisTicks(7)).toEqual([0, 2, 4, 6, 8]);
+    expect(valueAxisTicks(20)).toEqual([0, 5, 10, 15, 20]);
+  });
+
+  it("falls back to 0 and 1 for an empty or broken scale", () => {
+    expect(valueAxisTicks(0)).toEqual([0, 1]);
+    expect(valueAxisTicks(Number.NaN)).toEqual([0, 1]);
+  });
+});
+
+describe("topChangeBarLayout", () => {
+  const labels = (...axisLabels: string[]) => axisLabels.map((axisLabel) => ({ axisLabel }));
+  const monthDays = labels(...Array.from({ length: 31 }, (_, day) => String(day + 1)));
+
+  it("gives every chart the bar a Last 5 years circumference bar has with all 7 fields", () => {
+    // 500 px / 5 years × 0.8 = 80 px of bars per year: 7 bars of 10 px with 6 gaps of 1 px.
+    expect(topChangeBarLayout(500, labels("2022", "2023", "2024", "2025", "2026"), 7)).toEqual({
+      barSize: 10,
+      contentWidth: 500,
+    });
+    expect(topChangeBarLayout(500, labels("2022", "2023", "2024", "2025", "2026"), 1).barSize).toBe(10);
+  });
+
+  it("widens a month past the card instead of narrowing its bars", () => {
+    // 7 bars: 76 px of bars in a 95 px slot, 31 times.
+    expect(topChangeBarLayout(500, monthDays, 7)).toEqual({ barSize: 10, contentWidth: 2945 });
+    // 1 bar: the slot is as wide as a two-digit label, 22 px, 31 times.
+    expect(topChangeBarLayout(500, monthDays, 1)).toEqual({ barSize: 10, contentWidth: 682 });
+  });
+
+  it("makes every slot fit its axis label", () => {
+    const week = labels("Mon 2", "Tue 3", "Wed 4", "Thu 5", "Fri 6", "Sat 7", "Sun 8");
+    expect(topChangeBarLayout(200, week, 1).contentWidth).toBe(7 * (5 * 7 + 8));
+  });
+
+  it("keeps a minimum bar on a very narrow card", () => {
+    expect(topChangeBarLayout(0, monthDays, 1).barSize).toBe(4);
+  });
+});
+
+describe("changedSubPeriods", () => {
+  it("keeps only the days, weeks or months in which a field changed", () => {
+    const rows = subPeriodTotals(days("2026-10", 5, 20), ["waist_cm"], "month", october, "up", { monthAxis: "days" });
+
+    expect(changedSubPeriods(rows, "month").map((row) => row.key)).toEqual(["2026-10-05", "2026-10-20"]);
+    expect(changedSubPeriods(rows, "month").map((row) => row.axisLabel)).toEqual(["5", "20"]);
+  });
+
+  it("keeps every year of a span, changed or not", () => {
+    const rows = [0, 1, 2, 3, 4].map((index) => ({
+      key: String(2022 + index),
+      axisLabel: String(2022 + index),
+      label: String(2022 + index),
+      values: { waist_cm: { difference: index === 2 ? 1 : 0, count: index === 2 ? 1 : 0 } },
+    }));
+
+    expect(changedSubPeriods(rows, "years")).toHaveLength(5);
+    expect(changedSubPeriods(rows, "year")).toHaveLength(1);
+  });
+
+  it("leaves nothing when nothing changed", () => {
+    expect(changedSubPeriods(subPeriodTotals([], ["waist_cm"], "month", october, "up"), "month")).toEqual([]);
   });
 });

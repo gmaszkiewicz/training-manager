@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   anchorWithEntries,
@@ -204,13 +204,16 @@ export function useChartPeriodRead({
   const local = entries !== undefined;
   const traineeId = readOnly ? subjectId : null;
   const daysQuery = withTrainee(new URLSearchParams({ days: "1" }), traineeId);
-  const years = lastYearsRange(todayValue);
+  const years = useMemo(() => lastYearsRange(todayValue), [todayValue]);
   // The charts keep their own week, month or year apart from the list; only a first visit starts from its month.
   const startAnchor = parseChartAnchor(initialAnchor) ?? monthAnchor(listMonth, todayValue);
   const [period, setPeriod] = useState<ChartPeriod>(initialPeriod);
   const [anchor, setAnchor] = useState(startAnchor);
   const [restored, setRestored] = useState(false);
-  const view: ChartView = overrideIds === null ? { kind: "period" } : { kind: "selected", ids: overrideIds };
+  const view = useMemo<ChartView>(
+    () => (overrideIds === null ? { kind: "period" } : { kind: "selected", ids: overrideIds }),
+    [overrideIds],
+  );
   // The server read the same period, anchor and years, so it seeds the first render under the same query.
   const [result, setResult] = useState<ChartResult | null>(() =>
     initialChart === null || local
@@ -315,11 +318,16 @@ export function useChartPeriodRead({
   }
 
   const selected = view.kind === "selected";
+  // The kitchen sink's local read is kept between renders, so the tile can tell a new read from the same one.
+  const localRead = useMemo(
+    () => (entries === undefined ? null : localBody(entries, view, period, anchor, years)),
+    [entries, view, period, anchor, years],
+  );
   let body: ChartBody | null = null;
   // Without the entry days the period picker cannot be built, so a failed days read is a failed tile.
   let failed = daysFailed && !selected;
   if (entries !== undefined) {
-    body = localBody(entries, view, period, anchor, years);
+    body = localRead;
   } else if (result !== null && result.query === query) {
     if (result.ok) {
       body = result.body;

@@ -39,6 +39,8 @@ const FILES = [
   "src/components/measurements/PeriodPicker.tsx",
   "src/components/hooks/useChartPeriodRead.ts",
   "src/components/measurements/TopChangeChart.tsx",
+  "src/components/measurements/TopChangeBarChart.tsx",
+  "src/components/measurements/top-change-chart-parts.tsx",
   "src/components/measurements/TopChangesCharts.tsx",
   "src/components/measurements/TopChangesChartsRc.tsx",
   "src/components/measurements/TopChangesTile.astro",
