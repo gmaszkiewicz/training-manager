@@ -39,9 +39,44 @@ interface Props {
   onChooseAnchor: (anchor: string) => void;
   /** Rendered after the period buttons, e.g. a tile's own filter. */
   extra?: ReactNode;
+  /** Week/Month/Year/Years as toggle buttons, or as an arrowed choice box on the right. */
+  periodControl?: "buttons" | "picker";
 }
 
-/** A chart tile's period row: the picker with previous/next arrows, then the Week/Month/Year/Years buttons. */
+/** The Week/Month/Year/Years choice box: arrows step to the neighbouring period, and the list offers all four. */
+function PeriodTypePicker({
+  period,
+  widestLabel,
+  onChoosePeriod,
+}: {
+  period: ChartPeriod;
+  widestLabel: string;
+  onChoosePeriod: (period: ChartPeriod) => void;
+}) {
+  const index = chartPeriods.indexOf(period);
+  return (
+    <PeriodPicker
+      groupLabel="Chart period"
+      label={periodNames[period]}
+      widestLabel={widestLabel}
+      options={chartPeriods.map((option) => ({ key: option, label: periodNames[option] }))}
+      selectedKey={period}
+      previous={{ ariaLabel: "Previous chart period", target: chartPeriods[index - 1] ?? null }}
+      next={{ ariaLabel: "Next chart period", target: chartPeriods[index + 1] ?? null }}
+      onChoose={(key) => {
+        const chosen = chartPeriods.find((option) => option === key);
+        if (chosen !== undefined) {
+          onChoosePeriod(chosen);
+        }
+      }}
+    />
+  );
+}
+
+/**
+ * A chart tile's period row: the picker with previous/next arrows, then the Week/Month/Year/Years buttons (or, with
+ * `periodControl="picker"`, an arrowed choice box on the right).
+ */
 export default function ChartPeriodControls({
   period,
   anchor,
@@ -50,6 +85,7 @@ export default function ChartPeriodControls({
   onChoosePeriod,
   onChooseAnchor,
   extra,
+  periodControl = "buttons",
 }: Props) {
   let picker: ReactNode;
   if (period === "years") {
@@ -88,6 +124,22 @@ export default function ChartPeriodControls({
           onChooseAnchor(chartKeyAnchor(single, key, today));
         }}
       />
+    );
+  }
+
+  if (periodControl === "picker") {
+    return (
+      <div className="measurement-row:flex-nowrap measurement-row:gap-4 flex w-full flex-wrap items-center gap-1 gap-y-2">
+        {picker}
+        <div className="ml-auto shrink-0">
+          <PeriodTypePicker
+            period={period}
+            widestLabel={widestMonthLabel(measurementMonth(today))}
+            onChoosePeriod={onChoosePeriod}
+          />
+        </div>
+        {extra === undefined || extra === null ? null : <div className="shrink-0">{extra}</div>}
+      </div>
     );
   }
 

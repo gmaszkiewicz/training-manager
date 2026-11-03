@@ -126,6 +126,16 @@ export function topChartsFieldsStorageKey(accountUserId: string, subjectTraineeI
   return `tm.measurements.topChartsFields.${accountUserId}.${subjectTraineeId}`;
 }
 
+/** Top progression 0.9's circumference gain chart filter, separate from 0.1's shared one. */
+export function topChartsGainFieldsStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.topChartsGainFields.${accountUserId}.${subjectTraineeId}`;
+}
+
+/** Top progression 0.9's circumference loss chart filter. */
+export function topChartsLossFieldsStorageKey(accountUserId: string, subjectTraineeId: string): string {
+  return `tm.measurements.topChartsLossFields.${accountUserId}.${subjectTraineeId}`;
+}
+
 /** Reads a stored comma-separated circumference selection in field order; nothing valid means all 7. */
 export function parseTopChartsFields(value: unknown): CircumferenceField[] {
   if (typeof value !== "string") {

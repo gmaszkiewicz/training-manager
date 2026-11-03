@@ -39,6 +39,7 @@ const FILES = [
   "src/components/hooks/useChartPeriodRead.ts",
   "src/components/measurements/TopChangeChart.tsx",
   "src/components/measurements/TopChangesCharts.tsx",
+  "src/components/measurements/TopChangesChartsRc.tsx",
   "src/components/measurements/TopChangesTile.astro",
   "src/components/trainer/TrainerPanel.astro",
   "src/components/trainer/LinkedTraineeField.tsx",

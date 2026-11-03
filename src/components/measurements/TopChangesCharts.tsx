@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ListFilter } from "lucide-react";
 
 import { useChartPeriodRead } from "@/components/hooks/useChartPeriodRead";
 import ChartPeriodControls from "@/components/measurements/ChartPeriodControls";
@@ -64,7 +64,7 @@ interface Props {
 }
 
 /** This island's own tile, found by tile id so another chart tile's heading is never touched. */
-function ownTile(root: HTMLElement | null): Element | null | undefined {
+export function ownTile(root: HTMLElement | null): Element | null | undefined {
   return root?.closest(`[data-tile="${topChangesTileId}"]`);
 }
 
@@ -73,23 +73,34 @@ function fieldLabel(field: CircumferenceField): string {
 }
 
 /** The weight radars' only series. */
-const weightSeries: readonly MeasurementField[] = ["weight_kg"];
+export const weightSeries: readonly MeasurementField[] = ["weight_kg"];
 
-/** The "Circumferences" filter: a checkbox per field; the last checked one cannot be unchecked. */
-function CircumferenceFilter({
+/**
+ * The circumference filter: a checkbox per field; the last checked one cannot be unchecked. It opens from a
+ * "Circumferences" button, or, given `iconLabel`, from a filter icon button with that aria-label.
+ */
+export function CircumferenceFilter({
   fields,
   onChange,
+  iconLabel,
 }: {
   fields: readonly CircumferenceField[];
   onChange: (fields: CircumferenceField[]) => void;
+  iconLabel?: string;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="outline" className="measurement-row:px-4 px-2">
-          Circumferences
-          <ChevronDown className="measurement-row:inline hidden shrink-0" aria-hidden="true" />
-        </Button>
+        {iconLabel === undefined ? (
+          <Button type="button" variant="outline" className="measurement-row:px-4 px-2">
+            Circumferences
+            <ChevronDown className="measurement-row:inline hidden shrink-0" aria-hidden="true" />
+          </Button>
+        ) : (
+          <Button type="button" variant="outline" size="icon" className="size-8" aria-label={iconLabel}>
+            <ListFilter aria-hidden="true" />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {circumferenceFields.map((field) => {

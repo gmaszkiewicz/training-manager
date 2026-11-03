@@ -255,8 +255,9 @@ function days(month: string, ...daysChanged: number[]): ChartMeasurement[] {
   );
 }
 
+/** The day numbers of the labelled day axes (`12 Nov` → `12`); the full axis label is pinned separately. */
 function labelledDays(rows: readonly SubPeriodRow[]): string[] {
-  return rows.flatMap((row) => (row.axisLabel === "" ? [] : [row.axisLabel]));
+  return rows.flatMap((row) => (row.axisLabel === "" ? [] : [row.axisLabel.split(" ")[0] ?? ""]));
 }
 
 describe("subPeriodTotals day axes", () => {
@@ -275,23 +276,45 @@ describe("subPeriodTotals day axes", () => {
     expect(november[11]?.label).toBe("Thu 12 Nov");
   });
 
-  it("labels the first, middle and last day when nothing changed", () => {
+  it("names a labelled day axis with the day and the short month", () => {
+    const rows = subPeriodTotals(days("2026-10", 12), ["waist_cm"], "month", october, "up", { monthAxis: "days" });
+
+    expect(rows.map((row) => row.axisLabel).filter((label) => label !== "")).toEqual([
+      "1 Oct",
+      "7 Oct",
+      "12 Oct",
+      "19 Oct",
+      "25 Oct",
+      "31 Oct",
+    ]);
+    expect(rows[1]?.axisLabel).toBe("");
+  });
+
+  it("labels 6 evenly spread days from the first to the last when nothing changed", () => {
     const options = { monthAxis: "days" } as const;
 
-    expect(labelledDays(subPeriodTotals([], ["waist_cm"], "month", october, "up", options))).toEqual(["1", "16", "31"]);
+    expect(labelledDays(subPeriodTotals([], ["waist_cm"], "month", october, "up", options))).toEqual([
+      "1",
+      "7",
+      "13",
+      "19",
+      "25",
+      "31",
+    ]);
     expect(
       labelledDays(subPeriodTotals([], ["waist_cm"], "month", windowOf("month", "2026-11-04"), "up", options)),
-    ).toEqual(["1", "15", "30"]);
+    ).toEqual(["1", "7", "13", "18", "24", "30"]);
     expect(
       labelledDays(subPeriodTotals([], ["waist_cm"], "month", windowOf("month", "2027-02-10"), "up", options)),
-    ).toEqual(["1", "14", "28"]);
+    ).toEqual(["1", "6", "12", "17", "23", "28"]);
   });
 
   it.each([
-    { changed: [12], labelled: ["1", "12", "31"] },
-    { changed: [5, 20], labelled: ["1", "5", "20"] },
-    { changed: [1], labelled: ["1", "16", "31"] },
-    { changed: [3, 9, 18, 27], labelled: ["3", "9", "18", "27"] },
+    { changed: [12], labelled: ["1", "7", "12", "19", "25", "31"] },
+    { changed: [5, 20], labelled: ["1", "5", "7", "13", "20", "31"] },
+    { changed: [1], labelled: ["1", "7", "13", "19", "25", "31"] },
+    { changed: [3, 9, 18, 27], labelled: ["1", "3", "9", "18", "27", "31"] },
+    { changed: [2, 6, 10, 14, 18, 22, 26], labelled: ["2", "6", "10", "14", "18", "22", "26"] },
   ])("labels days $labelled for progress on $changed", ({ changed, labelled }) => {
     const rows = subPeriodTotals(days("2026-10", ...changed), ["waist_cm"], "month", october, "up", {
       monthAxis: "days",
@@ -308,7 +331,7 @@ describe("subPeriodTotals day axes", () => {
     ];
     const rows = subPeriodTotals(entries, ["hips_cm", "chest_cm"], "month", october, "up", { monthAxis: "days" });
 
-    expect(labelledDays(rows)).toEqual(["1", "7", "9"]);
+    expect(labelledDays(rows)).toEqual(["1", "7", "9", "13", "19", "31"]);
   });
 
   it("labels the gain and loss charts independently", () => {
@@ -320,14 +343,21 @@ describe("subPeriodTotals day axes", () => {
     ];
     const options = { monthAxis: "days" } as const;
 
+    // Anchors 7 and 13 sit next to the gains on the 8th and 12th, and 19 next to the loss on the 20th, so they are skipped.
     expect(labelledDays(subPeriodTotals(entries, ["waist_cm"], "month", october, "up", options))).toEqual([
+      "1",
       "4",
       "8",
       "12",
+      "19",
+      "31",
     ]);
     expect(labelledDays(subPeriodTotals(entries, ["waist_cm"], "month", october, "down", options))).toEqual([
       "1",
+      "7",
+      "13",
       "20",
+      "25",
       "31",
     ]);
   });
@@ -371,10 +401,20 @@ describe("subPeriodTotals day axes", () => {
 });
 
 describe("labelMonthDays", () => {
-  it("adds the first, then the last, then the middle day until 3 are labelled", () => {
+  it("adds the first, then the last, then the inner anchor days until 6 are labelled", () => {
     const rows = subPeriodTotals(days("2026-10", 31), ["waist_cm"], "month", october, "up", { monthAxis: "days" });
 
-    expect(labelledDays(labelMonthDays(rows))).toEqual(["1", "16", "31"]);
+    expect(labelledDays(labelMonthDays(rows))).toEqual(["1", "7", "13", "19", "25", "31"]);
+  });
+
+  it("skips anchors beside progress days in a 28-day month", () => {
+    // Anchors 1, 6, 12, 17, 23, 28; progress on 2, 5 and 22 sits beside 1, 6 and 23.
+    const february = windowOf("month", "2027-02-10");
+    const rows = subPeriodTotals(days("2027-02", 2, 5, 22), ["waist_cm"], "month", february, "up", {
+      monthAxis: "days",
+    });
+
+    expect(labelledDays(labelMonthDays(rows))).toEqual(["2", "5", "12", "17", "22", "28"]);
   });
 });
 

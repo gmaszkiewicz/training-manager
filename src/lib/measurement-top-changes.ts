@@ -26,7 +26,7 @@ export interface SubPeriodValue {
 export interface SubPeriodRow {
   /** The sub-period's first day (`YYYY-MM-DD`), month (`YYYY-MM`) or year (`YYYY`). */
   key: string;
-  /** The short axis name: `Mon 3`, `3–9 Nov`, a month day's `12` (`""` when unlabelled), `Mar` or `2026`. */
+  /** The short axis name: `Mon 3`, `3–9 Nov`, a month day's `12 Nov` (`""` when unlabelled), `Mar` or `2026`. */
   axisLabel: string;
   /** The full name for the tooltip and legend: `Mon 3 Nov`, `3–9 Nov`, `Thu 12 Nov`, `March` or `2026`. */
   label: string;
@@ -97,8 +97,8 @@ function subPeriodLabels(
   const ms = measuredOnMs(first);
   if (period === "week" || monthAxis === "days") {
     const weekday = SHORT_WEEKDAYS[new Date(ms).getUTCDay()];
-    // A month's day axes carry only the day number; `labelMonthDays` then blanks the ones the chart does not name.
-    const axisLabel = period === "week" ? `${weekday} ${dayNumber(first)}` : dayNumber(first);
+    // A month's day axes carry the day and short month (`12 Nov`); `labelMonthDays` then blanks the ones not named.
+    const axisLabel = period === "week" ? `${weekday} ${dayNumber(first)}` : chartTickLabel(ms, "day");
     return { axisLabel, label: `${weekday} ${chartTickLabel(ms, "day")}` };
   }
   const lastLabel = chartTickLabel(measuredOnMs(last), "day");
@@ -178,12 +178,13 @@ export function subPeriodTotals(
 }
 
 /** At least this many day axes of a month carry a label, so the radar stays readable with little progress. */
-const MIN_LABELLED_DAYS = 3;
+const MIN_LABELLED_DAYS = 6;
 
 /**
- * The month's day rows with only the chart's labelled days keeping their day number as `axisLabel` (`""` for the
- * rest). A day is labelled when any of the rows' fields changed on it; while fewer than 3 are, the first day, then the
- * last, then the middle day (`ceil(daysInMonth / 2)`) are added. Apply it per chart: gains and losses separately.
+ * The month's day rows with only the chart's labelled days keeping their `12 Nov` name as `axisLabel` (`""` for the
+ * rest). A day is labelled when any of the rows' fields changed on it. While fewer than 6 are, evenly spread anchor
+ * days are added — the first, the last, then the inner ones (1, 31, 7, 13, 19, 25 for 31 days) — skipping an anchor
+ * next to a progress day so labels do not crowd. Apply it per chart: gains and losses separately.
  */
 export function labelMonthDays(rows: readonly SubPeriodRow[]): SubPeriodRow[] {
   const labelled = new Set<number>();
@@ -192,16 +193,22 @@ export function labelMonthDays(rows: readonly SubPeriodRow[]): SubPeriodRow[] {
       labelled.add(index);
     }
   });
-  const fallbacks = [0, rows.length - 1, Math.ceil(rows.length / 2) - 1];
-  for (const index of fallbacks) {
+  const progress = new Set(labelled);
+  const steps = Math.min(MIN_LABELLED_DAYS, rows.length) - 1;
+  const spread = Array.from({ length: steps + 1 }, (_, step) =>
+    steps === 0 ? 0 : Math.round((step * (rows.length - 1)) / steps),
+  );
+  const anchors = [...spread.slice(0, 1), ...spread.slice(-1), ...spread.slice(1, -1)];
+  // Anchors sit at least 4 days apart, so each progress day rules out at most one of them and 6 are always reached.
+  for (const index of anchors) {
     if (labelled.size >= MIN_LABELLED_DAYS) {
       break;
     }
-    if (index >= 0) {
+    if (!progress.has(index - 1) && !progress.has(index + 1)) {
       labelled.add(index);
     }
   }
-  return rows.map((row, index) => ({ ...row, axisLabel: labelled.has(index) ? dayNumber(row.key) : "" }));
+  return rows.map((row, index) => ({ ...row, axisLabel: labelled.has(index) ? row.axisLabel : "" }));
 }
 
 /** The sub-period with the field's largest sum; a tie goes to the later one; `null` when the field never changed. */

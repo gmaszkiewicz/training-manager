@@ -335,26 +335,26 @@ The data-only migration `20261102130000_top_changes_rc_default.sql` changes `"of
 
 #### Automated
 
-- [x] 2.1 `npm test` passes, including the new day-axis and label-rule cases
-- [x] 2.2 `npm run lint` passes
-- [x] 2.3 `npx astro check` passes
+- [x] 2.1 `npm test` passes, including the new day-axis and label-rule cases — a3191f6
+- [x] 2.2 `npm run lint` passes — a3191f6
+- [x] 2.3 `npx astro check` passes — a3191f6
 
 ### Phase 3: Top Progression 0.9 Island
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 `npm run check:home-tokens` passes
-- [ ] 3.3 `npx astro check` passes
-- [ ] 3.4 `npm test` passes, including the gain/loss field storage-key tests
-- [ ] 3.5 `npx playwright test tests/e2e/top-changes-charts.spec.ts` still passes (0.1 unchanged)
+- [x] 3.1 `npm run lint` passes
+- [x] 3.2 `npm run check:home-tokens` passes
+- [x] 3.3 `npx astro check` passes
+- [x] 3.4 `npm test` passes, including the gain/loss field storage-key tests
+- [x] 3.5 `npx playwright test tests/e2e/top-changes-charts.spec.ts` still passes (0.1 unchanged)
 
 #### Manual
 
-- [ ] 3.6 0.9 sink: date picker left, arrowed period box right, arrows stop at the ends
-- [ ] 3.7 Each circumference chart's filter changes only that chart; weight charts have no filter
-- [ ] 3.8 Month radars show day axes with the label rule and the top day in the legend
-- [ ] 3.9 Phone width: the period row wraps cleanly and the radars stay readable
+- [x] 3.6 0.9 sink: date picker left, arrowed period box right, arrows stop at the ends
+- [x] 3.7 Each circumference chart's filter changes only that chart; weight charts have no filter
+- [x] 3.8 Month radars show day axes with the label rule and the top day in the legend
+- [x] 3.9 Phone width: the period row wraps cleanly and the radars stay readable
 
 ### Phase 4: Release 0.9 as RC by Default
 

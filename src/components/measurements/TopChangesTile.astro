@@ -1,6 +1,7 @@
 ---
 import CollapsibleTile from "@/components/measurements/CollapsibleTile.astro";
 import TopChangesCharts, { topChangesHeading, topChangesTileId } from "@/components/measurements/TopChangesCharts";
+import TopChangesChartsRc from "@/components/measurements/TopChangesChartsRc";
 import type { ChartBody } from "@/types";
 import { defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
 import { topChartsOpenStorageKey } from "@/lib/measurement-page";
@@ -27,8 +28,14 @@ interface Props {
   initialDays?: string[] | null;
   /** The chosen version is a preview: the tile carries the Preview badge. */
   preview?: boolean;
-  /** The circumferences from the preference cookie; all 7 when absent. */
+  /** 0.1: the shared circumference filter. The circumferences from the preference cookie; all 7 when absent. */
   initialFields?: readonly CircumferenceField[];
+  /** Which island the tile shows: 0.1, or the 0.9 release candidate. */
+  version?: "0.1" | "0.9";
+  /** 0.9: the circumference gain chart's fields from the preference cookie; all 7 when absent. */
+  initialGainFields?: readonly CircumferenceField[];
+  /** 0.9: the circumference loss chart's fields from the preference cookie; all 7 when absent. */
+  initialLossFields?: readonly CircumferenceField[];
 }
 
 const {
@@ -46,6 +53,9 @@ const {
   initialDays = null,
   preview = false,
   initialFields = circumferenceFields,
+  version = "0.1",
+  initialGainFields = circumferenceFields,
+  initialLossFields = circumferenceFields,
 } = Astro.props;
 
 const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null;
@@ -59,19 +69,38 @@ const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null
   preview={preview}
   tileId={topChangesTileId}
 >
-  <TopChangesCharts
-    accountUserId={accountUserId}
-    subjectTraineeId={subjectTraineeId}
-    readOnly={readOnly}
-    month={month}
-    today={today}
-    entries={entries}
-    forceLoading={forceLoading}
-    initialPeriod={initialPeriod}
-    initialAnchor={initialAnchor}
-    initialChart={initialChart}
-    initialDays={initialDays}
-    initialFields={initialFields}
-    client:load
-  />
+  {version === "0.9" ? (
+    <TopChangesChartsRc
+      accountUserId={accountUserId}
+      subjectTraineeId={subjectTraineeId}
+      readOnly={readOnly}
+      month={month}
+      today={today}
+      entries={entries}
+      forceLoading={forceLoading}
+      initialPeriod={initialPeriod}
+      initialAnchor={initialAnchor}
+      initialChart={initialChart}
+      initialDays={initialDays}
+      initialGainFields={initialGainFields}
+      initialLossFields={initialLossFields}
+      client:load
+    />
+  ) : (
+    <TopChangesCharts
+      accountUserId={accountUserId}
+      subjectTraineeId={subjectTraineeId}
+      readOnly={readOnly}
+      month={month}
+      today={today}
+      entries={entries}
+      forceLoading={forceLoading}
+      initialPeriod={initialPeriod}
+      initialAnchor={initialAnchor}
+      initialChart={initialChart}
+      initialDays={initialDays}
+      initialFields={initialFields}
+      client:load
+    />
+  )}
 </CollapsibleTile>

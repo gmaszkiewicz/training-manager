@@ -1,4 +1,4 @@
-import { useId, useSyncExternalStore } from "react";
+import { useId, useSyncExternalStore, type ReactNode } from "react";
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "recharts";
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
@@ -18,6 +18,8 @@ interface Props {
   direction: TopChangeDirection;
   /** Shown under the title when there are no changes, e.g. "No gains in this period". */
   emptyText: string;
+  /** Rendered beside the title, e.g. the chart's own filter. */
+  header?: ReactNode;
 }
 
 /** Overlapping series stay readable through each other. */
@@ -65,7 +67,7 @@ function subscribeToNothing(): () => void {
  * legend names each changed series with its top sub-period and signed value, and that point gets a larger dot. Gains
  * and losses share the line charts' field colours: no good/bad colouring.
  */
-export default function TopChangeChart({ title, rows, fields, scale, direction, emptyText }: Props) {
+export default function TopChangeChart({ title, rows, fields, scale, direction, emptyText, header }: Props) {
   const titleId = `top-change-chart-${useId().replace(/:/g, "")}`;
   // Recharts measures the browser, so the server renders the card at its final height and the radar paints on hydration.
   const onClient = useSyncExternalStore(
@@ -73,6 +75,21 @@ export default function TopChangeChart({ title, rows, fields, scale, direction, 
     () => true,
     () => false,
   );
+
+  // Without a header the caption is the title itself, as it always was; with one the title keeps the id the chart is
+  // labelled by, so the header's own label never joins the chart's name.
+  const caption =
+    header === undefined || header === null ? (
+      <figcaption id={titleId} className="text-card-foreground text-sm font-semibold">
+        {title}
+      </figcaption>
+    ) : (
+      <figcaption className="text-card-foreground flex items-center justify-between gap-2 text-sm font-semibold">
+        <span id={titleId}>{title}</span>
+        {/* The negative margin keeps the caption one text line tall, level with the weight card beside it. */}
+        <span className="-my-1.5 shrink-0">{header}</span>
+      </figcaption>
+    );
 
   // Largest first for the legend; the sort is stable, so equal sums keep field order.
   const changed = fields
@@ -85,9 +102,7 @@ export default function TopChangeChart({ title, rows, fields, scale, direction, 
   if (changed.length === 0) {
     return (
       <figure className="border-border bg-card flex min-w-0 flex-col gap-2 rounded-md border p-3">
-        <figcaption id={titleId} className="text-card-foreground text-sm font-semibold">
-          {title}
-        </figcaption>
+        {caption}
         <div className="flex h-96 w-full items-center justify-center">
           <p className="text-muted-foreground text-sm">{emptyText}</p>
         </div>
@@ -128,9 +143,7 @@ export default function TopChangeChart({ title, rows, fields, scale, direction, 
   );
   return (
     <figure className="border-border bg-card flex min-w-0 flex-col gap-2 rounded-md border p-3">
-      <figcaption id={titleId} className="text-card-foreground text-sm font-semibold">
-        {title}
-      </figcaption>
+      {caption}
       <div className="h-96 w-full">
         {onClient ? (
           <ChartContainer config={config} className="aspect-auto h-96 w-full" aria-labelledby={titleId}>
