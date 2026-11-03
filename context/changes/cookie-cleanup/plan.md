@@ -187,27 +187,27 @@ Existing one-year cookies of the current account are shortened to 30 days on the
 
 #### Automated
 
-- [x] 1.1 Unit tests for `staleAccountCookieNames` pass: `npm test`
-- [x] 1.2 No `31536000` literal remains in `src/`: `grep -rn 31536000 src` returns nothing
-- [x] 1.3 Lint passes: `npm run lint`
-- [x] 1.4 Type check passes: `npx astro check`
+- [x] 1.1 Unit tests for `staleAccountCookieNames` pass: `npm test` — 9266528
+- [x] 1.2 No `31536000` literal remains in `src/`: `grep -rn 31536000 src` returns nothing — 9266528
+- [x] 1.3 Lint passes: `npm run lint` — 9266528
+- [x] 1.4 Type check passes: `npx astro check` — 9266528
 
 #### Manual
 
-- [x] 1.5 After toggling a tile and changing the page size on `/measurements`, DevTools shows the `tm.*` cookies expiring about 30 days from now
+- [x] 1.5 After toggling a tile and changing the page size on `/measurements`, DevTools shows the `tm.*` cookies expiring about 30 days from now — 9266528
 
 ### Phase 2: Middleware cleanup and e2e proof
 
 #### Automated
 
-- [ ] 2.1 New spec passes: `npx playwright test tests/e2e/cookie-cleanup.spec.ts`
-- [ ] 2.2 Full e2e suite still passes (remembered choices unaffected): `npx playwright test`
-- [ ] 2.3 Unit tests pass: `npm test`
-- [ ] 2.4 Lint passes: `npm run lint`
-- [ ] 2.5 Type check passes: `npx astro check`
-- [ ] 2.6 Build succeeds: `npm run build`
+- [x] 2.1 New spec passes: `npx playwright test tests/e2e/cookie-cleanup.spec.ts`
+- [x] 2.2 Full e2e suite still passes (remembered choices unaffected): `npx playwright test`
+- [x] 2.3 Unit tests pass: `npm test`
+- [x] 2.4 Lint passes: `npm run lint`
+- [x] 2.5 Type check passes: `npx astro check`
+- [x] 2.6 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 2.7 Sign in as account A, open `/measurements`, change a preference; sign out, sign in as account B and open `/measurements`: DevTools shows no `tm.*` cookie with A's id, and B's choices still render
-- [ ] 2.8 Sign back in as A: A's tile and page-size choices are restored from localStorage
+- [x] 2.7 Sign in as account A, open `/measurements`, change a preference; sign out, sign in as account B and open `/measurements`: DevTools shows no `tm.*` cookie with A's id, and B's choices still render
+- [x] 2.8 Sign back in as A: A's tile and page-size choices are restored from localStorage

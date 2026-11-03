@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { staleAccountCookieNames } from "@/lib/preference-cookies";
 import { sessionUserFromClaims } from "@/lib/session-user";
 import { createClient } from "@/lib/supabase";
 
@@ -21,6 +22,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.user = error ? null : sessionUserFromClaims(data?.claims);
   } else {
     context.locals.user = null;
+  }
+
+  // Expire other accounts' `tm.*` preference cookies. Not on /api/auth/*: a sign-in made while another session is
+  // still valid resolves the previous account here and would expire the incoming account's cookies.
+  if (context.locals.user && !context.url.pathname.startsWith("/api/auth/")) {
+    for (const name of staleAccountCookieNames(context.request.headers.get("cookie"), context.locals.user.id)) {
+      try {
+        // The exact header name and path, so the Set-Cookie replaces the browser's cookie.
+        context.cookies.delete(name, { path: "/" });
+      } catch {
+        // A name Set-Cookie cannot carry (e.g. inner whitespace) cannot be expired from here; never fail the request.
+      }
+    }
   }
 
   if (PROTECTED_ROUTES.some((route) => context.url.pathname.startsWith(route))) {
