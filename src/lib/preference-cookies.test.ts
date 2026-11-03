@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import * as measurementPage from "@/lib/measurement-page";
 import { PREFERENCE_COOKIE_MAX_AGE, staleAccountCookieNames } from "@/lib/preference-cookies";
 
 const own = "11111111-1111-1111-1111-111111111111";
@@ -53,6 +54,17 @@ describe("staleAccountCookieNames", () => {
   it("treats a tm name without an account segment as stale", () => {
     const header = "tm.measurements=1; tm.measurements.pageSize=10";
     expect(staleAccountCookieNames(header, own)).toEqual(["tm.measurements", "tm.measurements.pageSize"]);
+  });
+
+  it("keeps every key the measurement page builds for the account itself", () => {
+    const builders = Object.entries(measurementPage).filter(
+      (entry): entry is [string, (accountUserId: string, subjectTraineeId: string) => string] =>
+        entry[0].endsWith("StorageKey") && typeof entry[1] === "function",
+    );
+    expect(builders.length).toBeGreaterThan(0);
+    const keys = builders.map(([, build]) => build(own, trainee));
+    expect(keys.every((key) => key.startsWith("tm."))).toBe(true);
+    expect(staleAccountCookieNames(keys.map((key) => `${key}=1`).join("; "), own)).toEqual([]);
   });
 
   it("handles whitespace and = inside values", () => {

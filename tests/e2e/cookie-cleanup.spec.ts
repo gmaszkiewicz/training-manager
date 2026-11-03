@@ -43,3 +43,20 @@ test("visiting /measurements expires another account's tm.* cookies and keeps th
   expect(own?.expires).toBeGreaterThan(0);
   expect(own?.expires).toBeLessThanOrEqual(Date.now() / 1000 + THIRTY_DAYS_S + MARGIN_S);
 });
+
+test.describe("as a guest", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("visiting / leaves another account's tm.* cookie in place", async ({ page, context, baseURL }) => {
+    if (!baseURL) {
+      throw new Error("baseURL is not set");
+    }
+    const otherPageSize = `${PAGE_SIZE_PREFIX}${crypto.randomUUID()}`;
+    await context.addCookies([{ name: otherPageSize, value: "15", url: baseURL }]);
+
+    const response = await page.goto("/");
+    expect(response?.ok()).toBe(true);
+
+    expect((await context.cookies()).map((c) => c.name)).toContain(otherPageSize);
+  });
+});
