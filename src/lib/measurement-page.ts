@@ -48,6 +48,8 @@ export function parsePageSize(value: unknown): PageSize {
   return defaultPageSize;
 }
 
+// Every `tm.*` key must be `tm.measurements.<name>.<accountId>[.<traineeId>]`: the middleware expires any `tm.*`
+// cookie whose 4th segment is not the signed-in account (see staleAccountCookieNames in @/lib/preference-cookies).
 export function pageSizeStorageKey(accountUserId: string): string {
   return `tm.measurements.pageSize.${accountUserId}`;
 }

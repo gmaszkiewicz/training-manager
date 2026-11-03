@@ -1,5 +1,6 @@
 ---
 import VersionBadge from "@/components/measurements/VersionBadge";
+import { PREFERENCE_COOKIE_MAX_AGE } from "@/lib/preference-cookies";
 import type { VersionStage } from "@/types";
 
 interface Props {
@@ -41,6 +42,7 @@ const hasNote = note !== undefined;
       aria-labelledby={`${headingId}-title`}
       data-tile={tileId}
       data-storage-key={storageKey}
+      data-cookie-max-age={PREFERENCE_COOKIE_MAX_AGE}
       data-restore={restore ? "true" : undefined}
       open={startsOpen}
     >
@@ -95,6 +97,9 @@ const hasNote = note !== undefined;
         var key = details.getAttribute("data-storage-key");
         if (!key) return;
         var restore = details.getAttribute("data-restore") === "true";
+        // Without a lifetime the cookie is a session cookie: it still covers this visit.
+        var maxAge = details.getAttribute("data-cookie-max-age");
+        var lifetime = maxAge ? "; Max-Age=" + maxAge : "";
         function remember(value) {
           try {
             localStorage.setItem(key, value);
@@ -103,7 +108,7 @@ const hasNote = note !== undefined;
           }
           try {
             document.cookie =
-              encodeURIComponent(key) + "=" + encodeURIComponent(value) + "; Path=/; Max-Age=31536000; SameSite=Lax";
+              encodeURIComponent(key) + "=" + encodeURIComponent(value) + "; Path=/" + lifetime + "; SameSite=Lax";
           } catch (error) {
             // The choice still stays for this visit.
           }

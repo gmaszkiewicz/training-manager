@@ -68,6 +68,8 @@ milestone_status: open
   - MS-40: Find trainee moves into the top bar, at the top left, as a search field with a magnifier icon and the label Find trainee. Clicking it opens a centered dialog like the Search documentation dialog on ui.shadcn.com; Esc or a click outside closes it. On a phone the field stays if it fits, otherwise only the magnifier shows. The dialog is titled Find trainee, with Request access to a trainee's dashboards below it, and a search field with the placeholder Find trainee by email, first name or last name (search by first and last name comes in a later task). Under it, Request for: four checkboxes — Measurements, Nutrition, Training, and Planning — all disabled except Measurements, and a Request access button at the end.
   - MS-41: Find trainee also searches trainees by first name and last name, not only by email. Each result reads like the Trainee column in Hub → Collaborations, except that a saved first name is shown in full. The trainee choice on the measurements screen presents trainees the same way. Tile headings no longer name the selected trainee, and the module checkboxes under Request for sit in two columns.
   - MS-42: Top progress ships as 0.9 (RC), on by default, with a yellow badge on its tile and the description "Release candidate - it may contain bugs"; the previous Top progress version stays selectable and unchanged. The Circumferences choice box becomes a filter on every Top progress chart, and the Week, Month, Year, and Years choice becomes an arrowed choice box on the right of the tile, like the picker on the left. Month view labels the weight and circumference axis with the days of the largest progress only, at least the first, middle, and last day of the month. In every measurements tile the week, month, year, and last-5-years choice boxes share the width of the longest value ("September 2026") and offer only periods with journal entries, grey with the no-measurements message when there are none. Visualize, Clear, and "x of 15 selected" sit under the measurements table on the left, with a divider line when pagination shows.
+  - MS-43: The request header no longer carries `tm.*` cookies of other accounts used in the same browser, and `tm.*` preference cookies are not kept indefinitely.
+  - MS-44: On every Top progress chart, bars of the same series keep the colour of their first occurrence when changes span more than one day, instead of turning faded. The legend shows only the colour and what the series describes (weight, a body part), without the gain or loss value and the date.
 
 ## Vision recap
 
@@ -132,6 +134,8 @@ The north star — the smallest end-to-end slice that proves the product works, 
 | S-49 | find-trainne-on-top-bar                         | user can open Find trainee from a search field with a magnifier at the top left of the top bar (only the magnifier on a phone when the field does not fit), search trainees by email in a centered dialog that Esc or a click outside closes, tick Measurements under Request for (Nutrition, Training, and Planning disabled), and send the request with Request access                                                                                                                               | S-29, S-40, S-48       | MS-40                                | done     |
 | S-50 | find-tranne-by-first-and-lastname               | user can find a trainee in Find trainee by first name or last name as well as by email, and read each match, and each trainee in the linked trainee choice, as in the Trainee column of Hub → Collaborations but with the full first name ("Ada Lovelace (ada@example.com)"), read tile headings without the selected trainee's name, and see the Request for checkboxes in two columns                                                                                                                | S-49                   | MS-41                                | done     |
 | S-51 | changes-to-measurments-and-progressions         | user can open Top progress 0.9 (RC), on by default with a yellow release-candidate badge, filter every chart by circumference, pick the period with an arrowed choice box on the right of the tile, read Month charts labelled by the days of top progress, and still choose the previous Top progress version; every measurements tile uses same-width period choice boxes that offer only periods with entries, and Visualize, Clear, and the selection count sit on the left under the table        | S-41, S-46, S-47       | MS-42                                | done        |
+| S-52 | cookie-cleanup                                  | user can sign in on a browser where another account was used, and the request header no longer carries that account's `tm.*` cookies; `tm.*` preference cookies expire instead of living a year after each write                                                                                                                                                                                                                                                                                       | —                      | MS-43                                | in-progress |
+| S-53 | fixes-for-top-progression                       | user can read every Top progress chart with each series' bars in the colour of its first occurrence even when changes span more than one day, and a legend that shows only the colour and what the series describes, without the gain or loss value and the date                                                                                                                                                                                                                                       | S-51                   | MS-44                                | ready       |
 
 ## Streams
 
@@ -783,6 +787,30 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 - **Risk:** Turning the RC on by default must not override saved component choices without a decision, and any migration must be backward compatible. Lists of periods with entries must not walk the whole journal on each render (S-24). The yellow badge needs a role token for light and dark, not a literal colour. E2E and unit tests that assert the old period toggle, the Circumferences choice box, or the Visualize/Clear placement must follow the new layout.
 - **Status:** done
 
+### S-52: Clear other accounts' tm.* cookies and stop keeping them indefinitely
+
+- **Outcome:** user can sign in on a browser where another account was used, and the request header no longer carries that account's `tm.*` cookies; `tm.*` preference cookies expire instead of living a year after each write
+- **Change ID:** cookie-cleanup
+- **PRD refs:** MS-43
+- **Prerequisites:** —
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** when the cleanup runs (sign-in, sign-out, or any request); what lifetime replaces the one-year `Max-Age`; whether cookies keyed by a trainee id for the current trainer count as the current account's; whether `localStorage` copies are cleared too.
+- **Risk:** Clearing must never drop the current account's choices or Supabase auth cookies (`sb-*`). Per-trainee cookies multiply with linked trainees, so the header can grow past limits on a shared device. E2E and unit tests that assert remembered choices must still pass.
+- **Status:** in-progress
+
+### S-53: Top progress charts keep series colours across days and show a simpler legend
+
+- **Outcome:** user can read every Top progress chart with each series' bars in the colour of its first occurrence even when changes span more than one day, and a legend that shows only the colour and what the series describes, without the gain or loss value and the date
+- **Change ID:** fixes-for-top-progression
+- **PRD refs:** MS-44
+- **Prerequisites:** S-51
+- **Parallel with:** S-52
+- **Blockers:** —
+- **Unknowns:** whether the fading was meant to tell days apart, and if so what replaces it (tooltip only?); whether the previous Top progress version changes too or only 0.9 (RC); whether the legend lists each series once after the dates are dropped.
+- **Risk:** Same-coloured bars from different days must still be distinguishable through the tooltip or axis labels. Colours must stay role tokens. Unit and E2E tests that assert the legend text or bar opacity must follow.
+- **Status:** ready
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                                       | Suggested issue title                                                                                            | Ready for `/10x-plan` | Notes                                                                                                                                                                                                                                              |
@@ -837,6 +865,8 @@ No foundation items. The app shell, sign-in, and deployment are already in place
 | S-48       | reorganization-of-component-placement           | Reorganize the avatar menu                                                                                       | yes                   | [#177](https://github.com/gmaszkiewicz/training-manager/issues/177). On MS-39. Change folder exists. Run `/10x-plan reorganization-of-component-placement`.                                                                                        |
 | S-49       | find-trainne-on-top-bar                         | Find trainee in the top bar                                                                                      | yes                   | [#181](https://github.com/gmaszkiewicz/training-manager/issues/181). On MS-40. Change folder exists. Run `/10x-plan find-trainne-on-top-bar`.                                                                                                      |
 | S-51       | changes-to-measurments-and-progressions         | Top progress 0.9 release candidate and unified period pickers                                                    | yes                   | [#187](https://github.com/gmaszkiewicz/training-manager/issues/187). On MS-42. Change folder exists. Run `/10x-plan changes-to-measurments-and-progressions`.                                                                                      |
+| S-52       | cookie-cleanup                                  | Clear other accounts' tm.* cookies and stop keeping them indefinitely                                            | yes                   | [#192](https://github.com/gmaszkiewicz/training-manager/issues/192). On MS-43. Change folder exists. Run `/10x-plan cookie-cleanup`.                                                                                                               |
+| S-53       | fixes-for-top-progression                       | Top progress charts keep series colours across days and show a simpler legend                                    | yes                   | [#193](https://github.com/gmaszkiewicz/training-manager/issues/193). On MS-44. Change folder exists. Run `/10x-plan fixes-for-top-progression`.                                                                                                    |
 
 ## Open Roadmap Questions
 

@@ -56,6 +56,7 @@ import { createClient } from "@/lib/supabase";
 import { latestMeasuredOnBound } from "@/lib/measurement-input";
 import { measurementNoticeMessage } from "@/lib/measurement-notice";
 import { measurementValues } from "@/lib/measurement-previous";
+import { PREFERENCE_COOKIE_MAX_AGE } from "@/lib/preference-cookies";
 import { circumferenceFields } from "@/lib/measurement-top-changes";
 import { preferredTraineeId, selectTrainerPreview, type TrainerLink } from "@/lib/trainer-preview";
 import type {
@@ -346,7 +347,7 @@ if (supabase && user) {
           if (selectedLink !== null && traineeParam === selectedLink.traineeId) {
             Astro.cookies.set(selectedTraineeStorageKey(user.id), selectedLink.traineeId, {
               path: "/",
-              maxAge: 31536000,
+              maxAge: PREFERENCE_COOKIE_MAX_AGE,
               sameSite: "lax",
               httpOnly: true,
             });
