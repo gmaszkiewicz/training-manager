@@ -320,16 +320,16 @@ The data-only migration `20261102130000_top_changes_rc_default.sql` changes `"of
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` passes
-- [ ] 1.2 `npm run check:home-tokens` passes
-- [ ] 1.3 `npx astro check` passes
-- [ ] 1.4 `npm test` passes
-- [ ] 1.5 `npx playwright test tests/e2e/measurement-charts.spec.ts tests/e2e/top-changes-charts.spec.ts` passes
+- [x] 1.1 `npm run lint` passes
+- [x] 1.2 `npm run check:home-tokens` passes
+- [x] 1.3 `npx astro check` passes
+- [x] 1.4 `npm test` passes
+- [x] 1.5 `npx playwright test tests/e2e/measurement-charts.spec.ts tests/e2e/top-changes-charts.spec.ts` passes
 
 #### Manual
 
-- [ ] 1.6 Period boxes in all tiles share one width and don't resize between labels
-- [ ] 1.7 Footer row: actions left, divider + pager right when paged; wraps on a phone without a stray divider
+- [x] 1.6 Period boxes in all tiles share one width and don't resize between labels
+- [x] 1.7 Footer row: actions left, divider + pager right when paged; wraps on a phone without a stray divider
 
 ### Phase 2: Daily Month Axes in the Top-Changes Library
 
