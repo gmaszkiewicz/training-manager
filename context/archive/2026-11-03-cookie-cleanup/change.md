@@ -1,10 +1,10 @@
 ---
 change_id: cookie-cleanup
 title: Clear other accounts' tm.* cookies and stop keeping them indefinitely
-status: impl_reviewed
+status: archived
 created: 2026-11-03
 updated: 2026-11-03
-archived_at: null
+archived_at: 2026-11-03T15:23:15Z
 ---
 
 ## Notes
