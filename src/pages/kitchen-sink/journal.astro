@@ -81,6 +81,34 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
     ) as Record<MeasurementField, number>),
   })),
 ).reverse();
+
+// Top progression 0.9: two entries, so December changes only on the 12th. Even fields rise and odd fields drop, so
+// every chart has one progress day and the day axes are labelled 1, 7, 12, 19, 25 and 31.
+const singleDayEntries: MeasurementWithDeltas[] = withDeltas(
+  ["2026-11-28T07:30:00", "2026-12-12T07:20:00"].map((measuredOn, step) => ({
+    id: `sink-single-day-${String(step + 1)}`,
+    measured_on: measuredOn,
+    created_at: `${measuredOn}.000Z`,
+    note: null,
+    ...(Object.fromEntries(
+      measurementFields.map((definition, index) => [
+        definition.field,
+        Math.round((fieldValues[definition.field] + step * (index % 2 === 0 ? 0.8 : -0.6)) * 10) / 10,
+      ]),
+    ) as Record<MeasurementField, number>),
+  })),
+).reverse();
+
+// Top progression 0.9: two July entries with the same values, so the month has measurements but no progress.
+const noProgressEntries: MeasurementWithDeltas[] = withDeltas(
+  ["2026-07-03T07:30:00", "2026-07-20T07:20:00"].map((measuredOn, step) => ({
+    id: `sink-no-progress-${String(step + 1)}`,
+    measured_on: measuredOn,
+    created_at: `${measuredOn}.000Z`,
+    note: null,
+    ...fieldValues,
+  })),
+).reverse();
 ---
 
 <Layout title="Kitchen sink — journal">
@@ -291,6 +319,95 @@ const lossEntries: MeasurementWithDeltas[] = withDeltas(
           startsOpen={true}
           entries={[]}
           forceLoading={true}
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-rc-default">
+        <h2 id="state-top-rc-default" class="border-border border-b pb-2 text-lg font-semibold">
+          Top progression 0.9 (RC), populated month
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          TopChangesTile with <code class="text-foreground">version="0.9"</code> and{" "}
+          <code class="text-foreground">stage="rc"</code> on the same six entries as the default 0.1 tile. The header
+          carries the yellow "RC" badge, whose tooltip reads "Release candidate - it may contain bugs.". The month
+          picker sits on the left and the Week/Month/Year/Years box on the right, with "Previous chart period" and "Next
+          chart period" arrows: ‹ is disabled on Week and › on Years, and the list offers all four. When the row is too
+          narrow for the box, it folds into a filter icon that opens the same list, so the row stays on one line. The
+          circumference cards read "Top circ. gain" and "Top circ. loss". The four cards are bar charts, not radars: a
+          group per sub-period with one rounded bar per series, a horizontal grid, a value axis in cm or kg on the
+          pair's shared scale, and each series' top bar at full strength while the others are dimmed. On Month they have
+          a group only for the days of September with a change (2, 9, 16, 23 and 29). The loss charts are negative bar
+          charts: their drops hang down from 0 on an axis reading −1 kg, −2 kg, and each legend entry names its series'
+          top day, e.g. "Wed 16 Sep". Each circumference chart has its own filter icon ("Filter circumferences: Top
+          circumference gain" and "… loss"); the weight charts have none.
+        </p>
+        <TopChangesTile
+          readOnly={false}
+          month="2026-09"
+          today="2026-09-30"
+          startsOpen={true}
+          entries={chartEntries}
+          version="0.9"
+          stage="rc"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-rc-single-day">
+        <h2 id="state-top-rc-single-day" class="border-border border-b pb-2 text-lg font-semibold">
+          Top progression 0.9 (RC), single progress day
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Two entries, 28 Nov and 12 Dec, with <code class="text-foreground">month="2026-12"</code>: December changes
+          only on the 12th, so every bar chart has a single day group, labelled 12, and each legend names "Sat 12 Dec".
+          Weight, waist, thigh and hips rise; chest, arm, calf and navel drop.
+        </p>
+        <TopChangesTile
+          readOnly={false}
+          month="2026-12"
+          today="2026-12-31"
+          startsOpen={true}
+          entries={singleDayEntries}
+          version="0.9"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-rc-no-progress">
+        <h2 id="state-top-rc-no-progress" class="border-border border-b pb-2 text-lg font-semibold">
+          Top progression 0.9 (RC), no progress
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          Two July entries with the same values: the month has measurements but no change, so the four cards say "No
+          gains in this period" and "No losses in this period". The circumference cards keep their filter icons.
+        </p>
+        <TopChangesTile
+          readOnly={false}
+          month="2026-07"
+          today="2026-07-31"
+          startsOpen={true}
+          entries={noProgressEntries}
+          version="0.9"
+        />
+      </section>
+
+      <section class="flex flex-col gap-4" aria-labelledby="state-top-rc-filtered">
+        <h2 id="state-top-rc-filtered" class="border-border border-b pb-2 text-lg font-semibold">
+          Top progression 0.9 (RC), filtered circumferences
+        </h2>
+        <p class="text-muted-foreground text-sm">
+          <code class="text-foreground">initialGainFields</code> set to waist, hips and navel and{" "}
+          <code class="text-foreground">initialLossFields</code> to chest and arm, so each circumference bar chart draws
+          only its own selection, and the pair shares one scale over the union of both. Changing one chart's filter
+          leaves the other alone.
+        </p>
+        <TopChangesTile
+          readOnly={false}
+          month="2026-09"
+          today="2026-09-30"
+          startsOpen={true}
+          entries={chartEntries}
+          version="0.9"
+          initialGainFields={["waist_cm", "hips_cm", "navel_cm"]}
+          initialLossFields={["chest_cm", "arms_cm"]}
         />
       </section>
 

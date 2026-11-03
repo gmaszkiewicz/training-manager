@@ -1,5 +1,5 @@
-// Settings → Components on the production preview: the defaults on the screen, the Top progression preview with its
-// badge and tooltip, a component switched off hiding its tile, every component off showing the empty-state card, and
+// Settings → Components on the production preview: the defaults on the screen, the Top progression release candidate
+// with its yellow RC badge and tooltip, its v0.1 preview with the red Preview badge and the 0.1 layout, a component switched off hiding its tile, every component off showing the empty-state card, and
 // the Measurements module off removing the menu link and sending /measurements to Hub. Every test restores the
 // defaults, since the specs share the one throwaway trainee.
 import { expect, test, type Locator, type Page } from "@playwright/test";
@@ -61,7 +61,7 @@ test("the screen shows the trainee's defaults", async ({ page }) => {
   await expect(versionSelect(page, "Edit measurement")).toHaveText("v1.0");
   await expect(versionSelect(page, "Your measurements")).toHaveText("v1.0");
   await expect(versionSelect(page, "Progression")).toHaveText("v1.0");
-  await expect(versionSelect(page, "Top progression")).toHaveText("Off");
+  await expect(versionSelect(page, "Top progression")).toHaveText("v0.9 (RC)");
   // Only the trainee's rows.
   await expect(versionSelect(page, "Find trainee")).toHaveCount(0);
   await expect(versionSelect(page, "Choose trainee")).toHaveCount(0);
@@ -73,43 +73,73 @@ test("the screen shows the trainee's defaults", async ({ page }) => {
   }
 });
 
-test("Top progression is hidden by default and its preview carries the badge", async ({ page }) => {
-  await page.goto("/measurements");
-  await expect(chartsTile(page)).toBeVisible();
-  await expect(topTile(page)).toHaveCount(0);
+/** A version badge in a tile's card: it sits outside the tile's <details>, so it is found through the card. */
+function badge(page: Page, tileId: string, name: "RC" | "Preview"): Locator {
+  return page.locator(`[data-tile-card="${tileId}"]`).getByRole("button", { name, exact: true });
+}
 
-  await page.goto("/settings/components");
-  await choose(page, "Top progression", "v0.1 (preview)");
-  await save(page);
-
+test("Top progression shows the 0.9 release candidate by default with the yellow RC badge", async ({ page }) => {
   await page.goto("/measurements");
-  // The badge sits in the tile's card, outside its <details>, so it is found through the card.
-  const badge = page.locator('[data-tile-card="top-changes"]').getByRole("button", { name: "Preview", exact: true });
+  const rc = badge(page, "top-changes", "RC");
   const periods = topTile(page).getByRole("group", { name: "Chart period" });
-  await expect(badge).toBeVisible();
-  await expect(periods).toBeVisible();
-  // The line charts are not a preview.
-  await expect(
-    page.locator('[data-tile-card="charts"]').getByRole("button", { name: "Preview", exact: true }),
-  ).toHaveCount(0);
+  await expect(rc).toBeVisible();
+  await expect(rc).toHaveAttribute("data-rc-badge", "");
+  await expect(rc).toHaveAttribute("data-preview-badge");
+  await expect(rc).toHaveAttribute("data-variant", "warning");
+  await expect(badge(page, "top-changes", "Preview")).toHaveCount(0);
+  // 0.9's period box: Week/Month/Year/Years between arrows, not 0.1's row of buttons.
+  await expect(periods.getByRole("button", { name: "Previous chart period", exact: true })).toBeVisible();
+  // The line charts are stable: no badge.
+  await expect(badge(page, "charts", "RC")).toHaveCount(0);
+  await expect(badge(page, "charts", "Preview")).toHaveCount(0);
 
   const tooltip = page.getByRole("tooltip");
   await expect(async () => {
-    await badge.hover();
-    await expect(tooltip).toHaveText("Preview version — it may contain bugs.", { timeout: 1_000 });
+    await rc.hover();
+    await expect(tooltip).toHaveText("Release candidate - it may contain bugs.", { timeout: 1_000 });
   }).toPass();
 
   // Keyboard focus alone opens it too: a fresh load has no hover.
   await page.reload();
   await expect(tooltip).toHaveCount(0);
   await expect(async () => {
-    await badge.blur();
-    await badge.focus();
+    await rc.blur();
+    await rc.focus();
+    await expect(tooltip).toHaveText("Release candidate - it may contain bugs.", { timeout: 1_000 });
+  }).toPass();
+
+  // A click on the badge does not collapse the tile.
+  await rc.click();
+  await expect(periods).toBeVisible();
+});
+
+test("choosing v0.1 shows the red Preview badge and the 0.1 layout", async ({ page }) => {
+  await page.goto("/settings/components");
+  await choose(page, "Top progression", "v0.1 (preview)");
+  await save(page);
+
+  await page.goto("/measurements");
+  const preview = badge(page, "top-changes", "Preview");
+  const periods = topTile(page).getByRole("group", { name: "Chart period" });
+  await expect(preview).toBeVisible();
+  await expect(preview).toHaveAttribute("data-variant", "destructive");
+  await expect(preview).not.toHaveAttribute("data-rc-badge");
+  await expect(badge(page, "top-changes", "RC")).toHaveCount(0);
+  // 0.1's row of period buttons, without 0.9's arrowed box.
+  await expect(periods.getByRole("button", { name: "Week", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    /true|false/,
+  );
+  await expect(periods.getByRole("button", { name: "Previous chart period", exact: true })).toHaveCount(0);
+
+  const tooltip = page.getByRole("tooltip");
+  await expect(async () => {
+    await preview.hover();
     await expect(tooltip).toHaveText("Preview version — it may contain bugs.", { timeout: 1_000 });
   }).toPass();
 
   // A click on the badge does not collapse the tile.
-  await badge.click();
+  await preview.click();
   await expect(periods).toBeVisible();
 });
 

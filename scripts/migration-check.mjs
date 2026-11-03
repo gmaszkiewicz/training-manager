@@ -1,4 +1,5 @@
-// Proves the newest local migration leaves one known measurement row unchanged.
+// Proves the newest local migration leaves one known measurement row unchanged, and, for a migration listed in
+// profileSettingsChecks, that it moves the profile's component settings as intended and is idempotent.
 // Zero npm dependencies. Requires a running local Supabase stack.
 
 import { Buffer } from "node:buffer";
@@ -14,8 +15,24 @@ const email = "migration-check@example.com";
 const password = "migration-check-password";
 const preservedToken = "migration-check-preserved";
 const measurementsReadyToken = "migration-check-measurements-ready";
+const settingsMigratedToken = "migration-check-settings-migrated";
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const migrationNamePattern = /^([0-9]+)_.+\.sql$/;
+
+// A migration that changes profile data names its fixture here: the profile starts with `before`, and holds `after`
+// once the migration has run, and still after it runs a second time.
+const profileSettingsChecks = {
+  "20261102130000_top_changes_rc_default.sql": {
+    before: {
+      modules: { measurements: true },
+      components: { progression: "1.0", "top-changes": "off", "new-measurement": "1.0" },
+    },
+    after: {
+      modules: { measurements: true },
+      components: { progression: "1.0", "top-changes": "0.9", "new-measurement": "1.0" },
+    },
+  },
+};
 
 function printOut(line) {
   writeSync(1, `${line}\n`);
@@ -188,10 +205,40 @@ end;
 `;
 }
 
-function profileSql(userId) {
-  return `insert into public.profiles (id, role)
+function jsonLiteral(value) {
+  return `'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`;
+}
+
+function profileSql(userId, settings) {
+  if (!settings) {
+    return `insert into public.profiles (id, role)
 values ('${userId}'::uuid, 'trainee');
 `;
+  }
+  return `insert into public.profiles (id, role, component_settings)
+values ('${userId}'::uuid, 'trainee', ${jsonLiteral(settings)});
+`;
+}
+
+function settingsMigratedSql(userId, settings) {
+  return `select case
+  when count(*) = 1 and bool_and(component_settings = ${jsonLiteral(settings)})
+  then 'migration-check-' || 'settings-migrated'
+  else 'migration-check-settings-wrong'
+end
+from public.profiles
+where id = '${userId}'::uuid;
+`;
+}
+
+function checkSettings(tempDir, name, userId, settings) {
+  const migrated = runQuery(tempDir, name, settingsMigratedSql(userId, settings));
+  if (commandFailed(migrated.args, migrated.result)) return false;
+  if (!outputHas(migrated.result, settingsMigratedToken)) {
+    console.error("profile component settings were not migrated as expected");
+    return false;
+  }
+  return true;
 }
 
 function measurementSql(userId) {
@@ -286,7 +333,8 @@ async function main() {
       return 1;
     }
 
-    const profile = runQuery(tempDir, "profile.sql", profileSql(userId));
+    const settingsCheck = profileSettingsChecks[newestName] ?? null;
+    const profile = runQuery(tempDir, "profile.sql", profileSql(userId, settingsCheck?.before));
     if (commandFailed(profile.args, profile.result)) return 1;
 
     const measurement = runQuery(tempDir, "measurement.sql", measurementSql(userId));
@@ -314,6 +362,15 @@ async function main() {
     if (!outputHas(preserved.result, preservedToken)) {
       console.error("measurement row was not preserved");
       return 1;
+    }
+
+    if (settingsCheck !== null) {
+      if (!checkSettings(tempDir, "settings.sql", userId, settingsCheck.after)) return 1;
+      // A second run must change nothing.
+      const rerunArgs = ["db", "query", "--local", "--file", join(migrationsDir, newestName)];
+      if (commandFailed(rerunArgs, runSupabase(rerunArgs, { capture: true }))) return 1;
+      if (!checkSettings(tempDir, "settings-rerun.sql", userId, settingsCheck.after)) return 1;
+      printOut(`Profile settings migrated by ${newestName}.`);
     }
     return 0;
   } finally {

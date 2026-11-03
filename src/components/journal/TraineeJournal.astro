@@ -43,9 +43,12 @@ interface Props {
   topChartsAnchor?: string | null;
   /** The server's Top progression read for the tile's first render; its picker shares `chartDays`. */
   topChartInitial?: ChartBody | null;
-  /** The circumferences from the preference cookie; all 7 when absent. */
+  /** 0.1: the circumferences from the preference cookie; all 7 when absent. */
   topChartsFields?: readonly CircumferenceField[];
-  /** Which tiles render and which carry the Preview badge, by the trainee's own settings; every tile when absent. */
+  /** 0.9: each circumference chart's fields from its preference cookie; all 7 when absent. */
+  topChartsGainFields?: readonly CircumferenceField[];
+  topChartsLossFields?: readonly CircumferenceField[];
+  /** Which tiles render and which carry a version badge, by the trainee's own settings; every tile when absent. */
   shown?: ComponentTiles;
 }
 
@@ -78,6 +81,8 @@ const {
   topChartsAnchor = null,
   topChartInitial = null,
   topChartsFields,
+  topChartsGainFields,
+  topChartsLossFields,
   shown = {},
 } = Astro.props;
 
@@ -125,7 +130,7 @@ const chartsRender = measurementsLoaded && !editing;
         note="Report a new measurement"
         tileId="new-measurement"
         restore={serverError === null}
-        preview={newTile.preview}
+        stage={newTile.stage}
       >
         <MeasurementForm serverError={serverError} idPrefix={idPrefix} previousEntry={previousEntry} client:load />
       </CollapsibleTile>
@@ -137,7 +142,7 @@ const chartsRender = measurementsLoaded && !editing;
         title="Your measurements"
         note="Measurements reported so far"
         tileId="measurements"
-        preview={listTile.preview}
+        stage={listTile.stage}
       >
         <MeasurementBrowser
           entries={entries}
@@ -180,7 +185,7 @@ const chartsRender = measurementsLoaded && !editing;
     initialAnchor={chartsAnchor}
     initialChart={chartInitial}
     initialDays={chartDays}
-    preview={chartsTile.preview}
+    stage={chartsTile.stage}
   />
 ) : null}
 {chartsRender && topChartsTile.shown && accountUserId && subjectTraineeId ? (
@@ -196,6 +201,9 @@ const chartsRender = measurementsLoaded && !editing;
     initialChart={topChartInitial}
     initialDays={chartDays}
     initialFields={topChartsFields}
-    preview={topChartsTile.preview}
+    version={topChartsTile.version}
+    initialGainFields={topChartsTile.version === "0.9" ? topChartsGainFields : undefined}
+    initialLossFields={topChartsTile.version === "0.9" ? topChartsLossFields : undefined}
+    stage={topChartsTile.stage}
   />
 ) : null}

@@ -86,9 +86,10 @@ describe("parseComponentSettingsForm", () => {
 });
 
 describe("version labels", () => {
-  it("marks a preview version", () => {
-    expect(versionOptionLabel({ id: "0.1", label: "0.1", preview: true })).toBe("v0.1 (preview)");
-    expect(versionOptionLabel({ id: "1.0", label: "1.0", preview: false })).toBe("v1.0");
+  it("marks a preview and a release candidate version", () => {
+    expect(versionOptionLabel({ id: "0.1", label: "0.1", stage: "preview" })).toBe("v0.1 (preview)");
+    expect(versionOptionLabel({ id: "0.9", label: "0.9", stage: "rc" })).toBe("v0.9 (RC)");
+    expect(versionOptionLabel({ id: "1.0", label: "1.0", stage: "stable" })).toBe("v1.0");
   });
 });
 

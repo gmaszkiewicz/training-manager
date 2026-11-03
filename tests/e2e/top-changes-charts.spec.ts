@@ -1,6 +1,7 @@
 // The Top progression tile on the production preview: it renders the seeded radar charts, its period controls change the
 // window and survive a reload, its circumference filter survives a reload, and its closed state survives a reload.
-// The tile is off by default, so each test first chooses its v0.1 preview and restores the defaults afterwards.
+// The tile defaults to the 0.9 release candidate, so each test first chooses the v0.1 preview and restores the defaults
+// afterwards. 0.9 has its own spec, top-changes-rc.spec.ts.
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { restoreDefaultComponents, saveComponents } from "./component-settings-helpers";
@@ -149,6 +150,11 @@ test("the Top progression tile renders the seeded charts below the Charts tile",
     await expect(topTile(page).getByRole("figure", { name: "Top weight loss", exact: true })).not.toContainText(
       "No losses in this period",
     );
+    // v0.1 keeps its radars; the bar charts belong to 0.9.
+    await expect(
+      topTile(page).getByRole("figure", { name: "Top weight loss", exact: true }).locator(".recharts-radar").first(),
+    ).toBeVisible();
+    await expect(topTile(page).locator(".recharts-bar")).toHaveCount(0);
   } finally {
     await removeEntries(page, seeded);
   }
@@ -171,10 +177,10 @@ test("the period controls change the window and the choice survives a reload", a
     await expect(topTile(page).getByRole("button", { name: "Previous period", exact: true })).toBeDisabled();
     await expect(topTile(page).getByRole("button", { name: "Next period", exact: true })).toBeDisabled();
     await expect(weightLoss).toContainText(yearInLegend);
-    // The Charts tile keeps its own period.
+    // The Charts tile keeps its own period: its arrowed box still names Month.
     await expect(
       chartsTile(page).getByRole("group", { name: "Chart period" }).getByRole("button", { name: "Month", exact: true }),
-    ).toHaveAttribute("aria-pressed", "true");
+    ).toBeVisible();
 
     await page.reload();
     await expect(periodButton(page, "Years")).toHaveAttribute("aria-pressed", "true");

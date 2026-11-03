@@ -1,45 +1,26 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 
 import { useChartPeriodRead } from "@/components/hooks/useChartPeriodRead";
+import { useStoredFields } from "@/components/hooks/useStoredFields";
 import ChartPeriodControls from "@/components/measurements/ChartPeriodControls";
 import TopChangeChart from "@/components/measurements/TopChangeChart";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { readStored, writePreference } from "@/lib/browser-storage";
+  CircumferenceFilter,
+  ownTile,
+  topChangesHeading,
+  weightSeries,
+} from "@/components/measurements/top-change-chart-parts";
 import {
   chartWindow,
   defaultChartPeriod,
   lastYearsRange,
-  type ChartHeading,
   type ChartPeriod,
   type ChartWindow,
 } from "@/lib/measurement-chart";
-import { measurementFields } from "@/lib/measurement-input";
-import {
-  parseTopChartsFields,
-  topChartsFieldsStorageKey,
-  topChartsFieldsValue,
-  topChartsPeriodStorageKey,
-  utcToday,
-} from "@/lib/measurement-page";
+import { topChartsFieldsStorageKey, topChartsPeriodStorageKey, utcToday } from "@/lib/measurement-page";
 import { circumferenceFields, subPeriodTotals, topChangeScale } from "@/lib/measurement-top-changes";
 import { namedId } from "@/lib/utils";
-import type { ChartBody, CircumferenceField, MeasurementField, MeasurementWithDeltas } from "@/types";
-
-/** The Top progression tile's id on its `CollapsibleTile`, so this island only rewrites its own heading. */
-export const topChangesTileId = "top-changes";
-
-/** The tile's summary heading: the title and the muted note naming the change measure. */
-export const topChangesHeading: ChartHeading = {
-  title: "Top progression",
-  note: "Summed changes versus the previous entry",
-};
+import type { ChartBody, CircumferenceField, MeasurementWithDeltas } from "@/types";
 
 interface Props {
   accountUserId?: string | null;
@@ -61,60 +42,6 @@ interface Props {
   initialDays?: string[] | null;
   /** The circumferences from the preference cookie; all 7 when absent. */
   initialFields?: readonly CircumferenceField[];
-}
-
-/** This island's own tile, found by tile id so another chart tile's heading is never touched. */
-function ownTile(root: HTMLElement | null): Element | null | undefined {
-  return root?.closest(`[data-tile="${topChangesTileId}"]`);
-}
-
-function fieldLabel(field: CircumferenceField): string {
-  return measurementFields.find((definition) => definition.field === field)?.label ?? field;
-}
-
-/** The weight radars' only series. */
-const weightSeries: readonly MeasurementField[] = ["weight_kg"];
-
-/** The "Circumferences" filter: a checkbox per field; the last checked one cannot be unchecked. */
-function CircumferenceFilter({
-  fields,
-  onChange,
-}: {
-  fields: readonly CircumferenceField[];
-  onChange: (fields: CircumferenceField[]) => void;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button type="button" variant="outline" className="measurement-row:px-4 px-2">
-          Circumferences
-          <ChevronDown className="measurement-row:inline hidden shrink-0" aria-hidden="true" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {circumferenceFields.map((field) => {
-          const checked = fields.includes(field);
-          return (
-            <DropdownMenuCheckboxItem
-              key={field}
-              checked={checked}
-              disabled={checked && fields.length <= 1}
-              onSelect={(event) => {
-                // Keep the menu open so several fields can be toggled in a row.
-                event.preventDefault();
-              }}
-              onCheckedChange={(next) => {
-                const selection = next ? [...fields, field] : fields.filter((current) => current !== field);
-                onChange(circumferenceFields.filter((candidate) => selection.includes(candidate)));
-              }}
-            >
-              {fieldLabel(field)}
-            </DropdownMenuCheckboxItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }
 
 function TopChangesGrid({
@@ -214,32 +141,9 @@ export default function TopChangesCharts({
     initialDays,
     periodStorageKey: topChartsPeriodStorageKey,
   });
-  const [fields, setFields] = useState<CircumferenceField[]>(() =>
-    parseTopChartsFields(topChartsFieldsValue(initialFields)),
-  );
-  const [fieldsRestored, setFieldsRestored] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-
   // The circumference filter is a browser preference, applied after the hydration render.
-  /* eslint-disable react-hooks/set-state-in-effect -- storage is applied after the hydration render */
-  useEffect(() => {
-    if (accountId !== null && subjectId !== null) {
-      const stored = readStored(topChartsFieldsStorageKey(accountId, subjectId));
-      if (stored !== null) {
-        setFields(parseTopChartsFields(stored));
-      }
-    }
-    setFieldsRestored(true);
-  }, [accountId, subjectId]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  // Remember the filter in storage and in the cookie the next document request renders from.
-  useEffect(() => {
-    if (!fieldsRestored || accountId === null || subjectId === null) {
-      return;
-    }
-    writePreference(topChartsFieldsStorageKey(accountId, subjectId), topChartsFieldsValue(fields));
-  }, [fieldsRestored, accountId, subjectId, fields]);
+  const [fields, setFields] = useStoredFields(initialFields, accountId, subjectId, topChartsFieldsStorageKey);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   // The summary heading belongs to the server-rendered tile around this island. Its title and note name the change
   // measure, which no period changes, so the island writes them once to its own tile only.

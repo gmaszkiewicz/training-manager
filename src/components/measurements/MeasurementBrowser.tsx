@@ -2,7 +2,6 @@ import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStor
 import { createPortal } from "react-dom";
 import {
   ChartLine,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Ellipsis,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import PeriodPicker from "@/components/measurements/PeriodPicker";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -463,9 +463,10 @@ function DisabledVisualizeButton() {
             size="sm"
             aria-disabled="true"
             className="cursor-not-allowed opacity-50"
+            aria-label="Visualize"
           >
             <ChartLine aria-hidden="true" />
-            Visualize
+            <span className="hidden @xs:inline">Visualize</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>{VISUALIZE_OFF_TOOLTIP}</TooltipContent>
@@ -828,9 +829,6 @@ export default function MeasurementBrowser({
   const [remoteDates, setRemoteDates] = useState<string[]>(datesProp ?? []);
   const [remotePageCount, setRemotePageCount] = useState(pageCountProp ?? 1);
   const [remoteEntries, setRemoteEntries] = useState<MeasurementWithDeltas[]>(entries);
-  const [monthListOpen, setMonthListOpen] = useState(false);
-  const monthFieldRef = useRef<HTMLDivElement>(null);
-  const monthListRef = useRef<HTMLDivElement>(null);
   const requestSerial = useRef(0);
 
   const loadPage = useCallback(
@@ -977,44 +975,6 @@ export default function MeasurementBrowser({
   const monthIsEmpty = paged ? remoteEntries.length === 0 : monthRows.length === 0;
   const previousMonth = earlierMonth(month, dates);
   const nextMonth = laterMonth(month, dates);
-  const monthListScrolls = dates.length > 6;
-
-  useEffect(() => {
-    if (!monthListOpen) {
-      return;
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setMonthListOpen(false);
-      }
-    }
-    function onPointerDown(event: PointerEvent) {
-      const target = event.target;
-      if (!(target instanceof Node) || monthFieldRef.current?.contains(target)) {
-        return;
-      }
-      setMonthListOpen(false);
-    }
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("pointerdown", onPointerDown);
-    };
-  }, [monthListOpen]);
-
-  useEffect(() => {
-    if (!monthListOpen || !monthListScrolls) {
-      return;
-    }
-    const container = monthListRef.current;
-    const selected = container?.querySelector<HTMLElement>("[aria-pressed='true']");
-    if (container === null || selected === null || selected === undefined) {
-      return;
-    }
-    const nextTop = selected.offsetTop - container.clientHeight / 2 + selected.clientHeight / 2;
-    container.scrollTop = Math.max(0, nextTop);
-  }, [monthListOpen, monthListScrolls, month]);
 
   const cancelHref = measurementCancelHref(openEditingId);
   const confirmingEntry =
@@ -1033,7 +993,6 @@ export default function MeasurementBrowser({
   }
 
   function chooseMonth(nextMonth: string) {
-    setMonthListOpen(false);
     if (nextMonth === month || !dates.includes(nextMonth)) {
       return;
     }
@@ -1109,91 +1068,20 @@ export default function MeasurementBrowser({
   return (
     <div className="w-full">
       <div className="measurement-row:flex-nowrap measurement-row:gap-4 flex w-full flex-wrap items-center gap-1 gap-y-2">
-        <div ref={monthFieldRef} className="relative z-20 w-auto min-w-0 flex-none">
-          <div className="measurement-row:gap-2 flex min-w-0 items-center gap-1" role="group" aria-label="Month">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="measurement-row:size-9 size-8"
-              aria-label="Previous month"
-              disabled={previousMonth === null}
-              onClick={() => {
-                if (previousMonth !== null) {
-                  chooseMonth(previousMonth);
-                }
-              }}
-            >
-              <ChevronLeft aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="measurement-row:px-4 grid w-auto max-w-none min-w-0 flex-none shrink-0 overflow-visible px-2"
-              aria-expanded={monthListOpen}
-              aria-label={monthLabel(month)}
-              disabled={noMeasurementsYet}
-              onClick={() => {
-                setMonthListOpen((open) => !open);
-              }}
-            >
-              <span aria-hidden="true" className="invisible col-start-1 row-start-1 flex items-center gap-2">
-                <ChevronDown className="measurement-row:inline invisible hidden shrink-0" aria-hidden="true" />
-                <span className="text-center">{widestMonthLabel(month)}</span>
-                <ChevronDown className="measurement-row:inline invisible hidden shrink-0" aria-hidden="true" />
-              </span>
-              <span className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
-                <ChevronDown className="measurement-row:inline invisible hidden shrink-0" aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate text-center">{monthLabel(month)}</span>
-                <ChevronDown
-                  className={cn("measurement-row:inline hidden shrink-0", monthListOpen && "rotate-180")}
-                  aria-hidden="true"
-                />
-              </span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="measurement-row:size-9 size-8"
-              aria-label="Next month"
-              disabled={nextMonth === null}
-              onClick={() => {
-                if (nextMonth !== null) {
-                  chooseMonth(nextMonth);
-                }
-              }}
-            >
-              <ChevronRight aria-hidden="true" />
-            </Button>
-          </div>
-          {monthListOpen ? (
-            <div
-              ref={monthListRef}
-              className={cn(
-                "bg-popover text-popover-foreground border-border absolute top-full left-0 z-10 mt-2 flex w-full flex-col gap-2 rounded-md border p-2 shadow-md",
-                monthListScrolls && "max-h-68 overflow-x-hidden overflow-y-auto",
-              )}
-            >
-              {dates.map((listedMonth) => {
-                const pressed = listedMonth === month;
-                return (
-                  <Button
-                    key={listedMonth}
-                    type="button"
-                    variant={pressed ? "default" : "outline"}
-                    aria-pressed={pressed}
-                    onClick={() => {
-                      chooseMonth(listedMonth);
-                    }}
-                  >
-                    {monthLabel(listedMonth)}
-                  </Button>
-                );
-              })}
-            </div>
-          ) : null}
-        </div>
+        <PeriodPicker
+          groupLabel="Month"
+          label={monthLabel(month)}
+          widestLabel={widestMonthLabel(month)}
+          // No measurements yet keeps the box disabled, as an empty list does.
+          options={
+            noMeasurementsYet ? [] : dates.map((listedMonth) => ({ key: listedMonth, label: monthLabel(listedMonth) }))
+          }
+          selectedKey={month}
+          previous={{ ariaLabel: "Previous month", target: previousMonth }}
+          next={{ ariaLabel: "Next month", target: nextMonth }}
+          onChoose={chooseMonth}
+          listRows={6}
+        />
         <div className="ml-auto shrink-0">
           <div className="measurement-row:gap-2 flex gap-1" role="group" aria-label="Entries per page">
             {pageSizes.map((size) => (
@@ -1218,134 +1106,147 @@ export default function MeasurementBrowser({
       ) : monthIsEmpty ? (
         <p className="text-muted-foreground mt-6 text-sm">No measurements in this month</p>
       ) : (
-        <>
-          <div
-            data-measurement-table
-            className="border-border bg-background mt-6 w-full max-w-full min-w-0 overflow-hidden rounded-md border"
+        <div
+          data-measurement-table
+          className="border-border bg-background mt-6 w-full max-w-full min-w-0 overflow-hidden rounded-md border"
+        >
+          <Table
+            containerClassName="overflow-x-clip"
+            className="measurement-row:w-full measurement-row:table-fixed w-max min-w-full"
           >
-            <Table
-              containerClassName="overflow-x-clip"
-              className="measurement-row:w-full measurement-row:table-fixed w-max min-w-full"
-            >
-              <TableHeader>
-                <TableRow className="bg-muted hover:bg-muted">
-                  <TableHead className={cn("w-10 px-0 text-center", stickyHeaderClass, "left-0")}>
-                    <Checkbox
-                      checked={headerChecked}
-                      onCheckedChange={(checked) => {
-                        setVisibleSelected(checked === true);
-                      }}
-                      aria-label="Select all"
-                    />
-                  </TableHead>
-                  <TableHead
-                    className={cn(
-                      dateColumnClass,
-                      stickyHeaderClass,
-                      "measurement-row:px-3 measurement-row:text-center left-10 px-2",
-                    )}
-                  >
-                    <span className="measurement-row:hidden">Date</span>
-                    <span className="measurement-row:inline hidden">Date and time</span>
-                  </TableHead>
-                  {measurementFields.map((field) => (
-                    <TableHead
-                      key={field.field}
-                      className={cn(metricColumnClass, "h-auto px-1 py-2 text-center whitespace-normal")}
-                    >
-                      <MetricHeader field={field} />
-                    </TableHead>
-                  ))}
-                  <TableHead className="measurement-row:table-cell hidden h-auto px-2 py-2 text-center">Note</TableHead>
-                  {readOnly ? null : <TableHead className="measurement-row:table-cell hidden w-16" />}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleEntries.map((entry, index) => (
-                  <MeasurementEntry
-                    key={entry.id}
-                    entry={entry}
-                    readOnly={readOnly}
-                    editEnabled={editEnabled}
-                    openEditingId={openEditingId}
-                    noteOpen={openNoteId === entry.id}
-                    selected={selectedIds.has(entry.id)}
-                    selectDisabled={selectionFull && !selectedIds.has(entry.id)}
-                    isLast={index === visibleEntries.length - 1}
-                    onOpenNote={() => {
-                      setOpenNoteId((current) => (current === entry.id ? null : entry.id));
+            <TableHeader>
+              <TableRow className="bg-muted hover:bg-muted">
+                <TableHead className={cn("w-10 px-0 text-center", stickyHeaderClass, "left-0")}>
+                  <Checkbox
+                    checked={headerChecked}
+                    onCheckedChange={(checked) => {
+                      setVisibleSelected(checked === true);
                     }}
-                    onSelectedChange={(selected) => {
-                      setEntrySelected(entry.id, selected);
-                    }}
+                    aria-label="Select all"
                   />
+                </TableHead>
+                <TableHead
+                  className={cn(
+                    dateColumnClass,
+                    stickyHeaderClass,
+                    "measurement-row:px-3 measurement-row:text-center left-10 px-2",
+                  )}
+                >
+                  <span className="measurement-row:hidden">Date</span>
+                  <span className="measurement-row:inline hidden">Date and time</span>
+                </TableHead>
+                {measurementFields.map((field) => (
+                  <TableHead
+                    key={field.field}
+                    className={cn(metricColumnClass, "h-auto px-1 py-2 text-center whitespace-normal")}
+                  >
+                    <MetricHeader field={field} />
+                  </TableHead>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-          {showPager ? (
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-2 text-sm">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                aria-label="Previous page"
-                disabled={currentPage <= 1}
-                onClick={() => {
-                  showPage(currentPage - 1);
-                }}
-              >
-                <ChevronLeft aria-hidden="true" />
-              </Button>
-              <p>
-                Page {currentPage} of {pageCount}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                aria-label="Next page"
-                disabled={currentPage >= pageCount}
-                onClick={() => {
-                  showPage(currentPage + 1);
-                }}
-              >
-                <ChevronRight aria-hidden="true" />
-              </Button>
-            </div>
-          ) : null}
-        </>
+                <TableHead className="measurement-row:table-cell hidden h-auto px-2 py-2 text-center">Note</TableHead>
+                {readOnly ? null : <TableHead className="measurement-row:table-cell hidden w-16" />}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visibleEntries.map((entry, index) => (
+                <MeasurementEntry
+                  key={entry.id}
+                  entry={entry}
+                  readOnly={readOnly}
+                  editEnabled={editEnabled}
+                  openEditingId={openEditingId}
+                  noteOpen={openNoteId === entry.id}
+                  selected={selectedIds.has(entry.id)}
+                  selectDisabled={selectionFull && !selectedIds.has(entry.id)}
+                  isLast={index === visibleEntries.length - 1}
+                  onOpenNote={() => {
+                    setOpenNoteId((current) => (current === entry.id ? null : entry.id));
+                  }}
+                  onSelectedChange={(selected) => {
+                    setEntrySelected(entry.id, selected);
+                  }}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
       {noMeasurementsYet ? null : (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          {visualizeEnabled ? (
+        <div className="@container mt-4 flex flex-col gap-2">
+          {/* One line at every width: the actions on the left, a divider and the compact pager on the right. Below
+              20rem the actions drop their words for their icons, keeping their names for assistive technology. */}
+          <div className="flex flex-nowrap items-center gap-2">
+            {visualizeEnabled ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={checkedIds.length === 0}
+                aria-label="Visualize"
+                onClick={() => {
+                  visualize();
+                }}
+              >
+                <ChartLine aria-hidden="true" />
+                <span className="hidden @xs:inline">Visualize</span>
+              </Button>
+            ) : (
+              <DisabledVisualizeButton />
+            )}
             <Button
               type="button"
               variant="outline"
               size="sm"
-              disabled={checkedIds.length === 0}
+              disabled={checkedIds.length === 0 && visualizedIds.length === 0}
+              aria-label="Clear"
               onClick={() => {
-                visualize();
+                clear();
               }}
             >
-              <ChartLine aria-hidden="true" />
-              Visualize
+              <Eraser aria-hidden="true" />
+              <span className="hidden @xs:inline">Clear</span>
             </Button>
-          ) : (
-            <DisabledVisualizeButton />
-          )}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={checkedIds.length === 0 && visualizedIds.length === 0}
-            onClick={() => {
-              clear();
-            }}
-          >
-            <Eraser aria-hidden="true" />
-            Clear
-          </Button>
+            {showPager && !monthIsEmpty ? (
+              <div className="ml-auto flex shrink-0 items-center gap-1 text-sm">
+                <span aria-hidden="true" className="border-border mr-1 h-6 border-l" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Previous page"
+                  disabled={currentPage <= 1}
+                  onClick={() => {
+                    showPage(currentPage - 1);
+                  }}
+                >
+                  <ChevronLeft aria-hidden="true" />
+                </Button>
+                {/* "2 / 5" keeps the pager short enough for the actions' line; the full wording is read out. */}
+                <p className="min-w-10 text-center tabular-nums">
+                  <span aria-hidden="true">
+                    {currentPage} / {pageCount}
+                  </span>
+                  <span className="sr-only">
+                    Page {currentPage} of {pageCount}
+                  </span>
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Next page"
+                  disabled={currentPage >= pageCount}
+                  onClick={() => {
+                    showPage(currentPage + 1);
+                  }}
+                >
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </div>
+            ) : null}
+          </div>
           <p className="text-muted-foreground text-sm">
             {checkedIds.length} of {CHART_SELECTION_LIMIT} selected
           </p>

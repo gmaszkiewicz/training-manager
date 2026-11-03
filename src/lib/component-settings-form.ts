@@ -17,9 +17,15 @@ export const componentFieldName = (componentId: ComponentId): string => `${COMPO
 
 export const OFF_OPTION_LABEL = "Off";
 
-/** The select label of a version: "v1.0", or "v0.1 (preview)" for a preview version. */
+/** The select label of a version: "v1.0", "v0.1 (preview)" for a preview or "v0.9 (RC)" for a release candidate. */
 export function versionOptionLabel(version: ComponentVersion): string {
-  return version.preview ? `v${version.label} (preview)` : `v${version.label}`;
+  if (version.stage === "preview") {
+    return `v${version.label} (preview)`;
+  }
+  if (version.stage === "rc") {
+    return `v${version.label} (RC)`;
+  }
+  return `v${version.label}`;
 }
 
 /**

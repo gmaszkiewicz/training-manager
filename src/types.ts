@@ -64,13 +64,20 @@ export interface ComponentSettings {
   components: Record<ComponentId, string>;
 }
 
-/** How a component's tile renders on `/measurements`: whether it shows, and whether its version is a preview. */
+/** How far a component version is from release: stable, a release candidate, or a preview. */
+export type VersionStage = "stable" | "rc" | "preview";
+
+/**
+ * How a component's tile renders on `/measurements`: whether it shows, its version's stage (the badge) and the version
+ * id (which island renders). `stage` and `version` are `null` when the tile is not shown.
+ */
 export interface ComponentTile {
   shown: boolean;
-  preview: boolean;
+  stage: VersionStage | null;
+  version: string | null;
 }
 
-/** Per-component tile states; a missing key renders as shown and not a preview (the kitchen sinks). */
+/** Per-component tile states; a missing key renders as shown, stable and of no particular version (the kitchen sinks). */
 export type ComponentTiles = Partial<Record<ComponentId, ComponentTile>>;
 
 export type AccessType = "read";

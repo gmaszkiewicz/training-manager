@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { chartWindow, lastYearsRange } from "@/lib/measurement-chart";
 import {
+  changedSubPeriods,
   circumferenceFields,
+  labelMonthDays,
   subPeriodTotals,
+  topChangeBarLayout,
+  valueAxisTicks,
   topChangeScale,
   topSubPeriod,
   type SubPeriodRow,
@@ -243,6 +247,181 @@ describe("subPeriodTotals values", () => {
   });
 });
 
+// October 2026 has 31 days, November 2026 30 and February 2027 28.
+const october = windowOf("month", "2026-10-15");
+
+function days(month: string, ...daysChanged: number[]): ChartMeasurement[] {
+  return daysChanged.map((day) =>
+    entry(`${month}-${day}`, `${month}-${String(day).padStart(2, "0")}T08:00:00`, `${month}-01T07:00:00`, {
+      waist_cm: up(1),
+    }),
+  );
+}
+
+/** The day numbers of the labelled day axes; the full axis label is pinned separately. */
+function labelledDays(rows: readonly SubPeriodRow[]): string[] {
+  return rows.flatMap((row) => (row.axisLabel === "" ? [] : [row.axisLabel]));
+}
+
+describe("subPeriodTotals day axes", () => {
+  it("has one row per day of 28-, 30- and 31-day months", () => {
+    const options = { monthAxis: "days" } as const;
+    const february = subPeriodTotals([], ["waist_cm"], "month", windowOf("month", "2027-02-10"), "up", options);
+    const november = subPeriodTotals([], ["waist_cm"], "month", windowOf("month", "2026-11-04"), "up", options);
+    const rows = subPeriodTotals([], ["waist_cm"], "month", october, "up", options);
+
+    expect(february).toHaveLength(28);
+    expect(november).toHaveLength(30);
+    expect(rows).toHaveLength(31);
+    expect(rows[0]?.key).toBe("2026-10-01");
+    expect(rows[30]?.key).toBe("2026-10-31");
+    expect(november[11]?.key).toBe("2026-11-12");
+    expect(november[11]?.label).toBe("Thu 12 Nov");
+  });
+
+  it("names a labelled day axis with the day number alone, keeping the month in the full label", () => {
+    const rows = subPeriodTotals(days("2026-10", 12), ["waist_cm"], "month", october, "up", { monthAxis: "days" });
+
+    expect(rows.map((row) => row.axisLabel).filter((label) => label !== "")).toEqual([
+      "1",
+      "7",
+      "12",
+      "19",
+      "25",
+      "31",
+    ]);
+    expect(rows[1]?.axisLabel).toBe("");
+    expect(rows[11]?.label).toBe("Mon 12 Oct");
+  });
+
+  it("labels 6 evenly spread days from the first to the last when nothing changed", () => {
+    const options = { monthAxis: "days" } as const;
+
+    expect(labelledDays(subPeriodTotals([], ["waist_cm"], "month", october, "up", options))).toEqual([
+      "1",
+      "7",
+      "13",
+      "19",
+      "25",
+      "31",
+    ]);
+    expect(
+      labelledDays(subPeriodTotals([], ["waist_cm"], "month", windowOf("month", "2026-11-04"), "up", options)),
+    ).toEqual(["1", "7", "13", "18", "24", "30"]);
+    expect(
+      labelledDays(subPeriodTotals([], ["waist_cm"], "month", windowOf("month", "2027-02-10"), "up", options)),
+    ).toEqual(["1", "6", "12", "17", "23", "28"]);
+  });
+
+  it.each([
+    { changed: [12], labelled: ["1", "7", "12", "19", "25", "31"] },
+    { changed: [5, 20], labelled: ["1", "5", "7", "13", "20", "31"] },
+    { changed: [1], labelled: ["1", "7", "13", "19", "25", "31"] },
+    { changed: [3, 9, 18, 27], labelled: ["1", "3", "9", "18", "27", "31"] },
+    { changed: [2, 6, 10, 14, 18, 22, 26], labelled: ["2", "6", "10", "14", "18", "22", "26"] },
+  ])("labels days $labelled for progress on $changed", ({ changed, labelled }) => {
+    const rows = subPeriodTotals(days("2026-10", ...changed), ["waist_cm"], "month", october, "up", {
+      monthAxis: "days",
+    });
+
+    expect(labelledDays(rows)).toEqual(labelled);
+  });
+
+  it("labels a day when any of the chart's fields changed on it", () => {
+    const entries = [
+      entry("a", "2026-10-07T08:00:00", "2026-10-01T07:00:00", { hips_cm: up(1) }),
+      entry("b", "2026-10-09T08:00:00", "2026-10-07T08:00:00", { chest_cm: up(1) }),
+      entry("c", "2026-10-11T08:00:00", "2026-10-09T08:00:00", { arms_cm: up(1) }),
+    ];
+    const rows = subPeriodTotals(entries, ["hips_cm", "chest_cm"], "month", october, "up", { monthAxis: "days" });
+
+    expect(labelledDays(rows)).toEqual(["1", "7", "9", "13", "19", "31"]);
+  });
+
+  it("labels the gain and loss charts independently", () => {
+    const entries = [
+      entry("a", "2026-10-04T08:00:00", "2026-10-01T07:00:00", { waist_cm: up(1) }),
+      entry("b", "2026-10-08T08:00:00", "2026-10-04T08:00:00", { waist_cm: up(1) }),
+      entry("c", "2026-10-12T08:00:00", "2026-10-08T08:00:00", { waist_cm: up(1) }),
+      entry("d", "2026-10-20T08:00:00", "2026-10-12T08:00:00", { waist_cm: down(2) }),
+    ];
+    const options = { monthAxis: "days" } as const;
+
+    // Anchors 7 and 13 sit next to the gains on the 8th and 12th, and 19 next to the loss on the 20th, so they are skipped.
+    expect(labelledDays(subPeriodTotals(entries, ["waist_cm"], "month", october, "up", options))).toEqual([
+      "1",
+      "4",
+      "8",
+      "12",
+      "19",
+      "31",
+    ]);
+    expect(labelledDays(subPeriodTotals(entries, ["waist_cm"], "month", october, "down", options))).toEqual([
+      "1",
+      "7",
+      "13",
+      "20",
+      "25",
+      "31",
+    ]);
+  });
+
+  it("names the top day in the legend label, a tie going to the later day", () => {
+    const entries = [
+      entry("a", "2026-11-03T08:00:00", "2026-10-28T08:00:00", { waist_cm: up(1) }),
+      entry("b", "2026-11-12T08:00:00", "2026-11-03T08:00:00", { waist_cm: up(1) }),
+    ];
+    const rows = subPeriodTotals(entries, ["waist_cm"], "month", windowOf("month", "2026-11-04"), "up", {
+      monthAxis: "days",
+    });
+
+    expect(topSubPeriod(rows, "waist_cm")?.label).toBe("Thu 12 Nov");
+  });
+
+  it("sums a day's entries into its row", () => {
+    const entries = [
+      entry("a", "2026-10-12T08:00:00", "2026-10-01T07:00:00", { waist_cm: up(0.1) }),
+      entry("b", "2026-10-12T20:00:00", "2026-10-12T08:00:00", { waist_cm: up(0.2) }),
+    ];
+    const rows = subPeriodTotals(entries, ["waist_cm"], "month", october, "up", { monthAxis: "days" });
+
+    expect(rows[11]?.values.waist_cm).toEqual({ difference: 0.3, count: 2 });
+  });
+
+  it("keeps calendar weeks by default and ignores the option outside Month", () => {
+    const november = windowOf("month", "2026-11-04");
+
+    expect(subPeriodTotals([], ["waist_cm"], "month", november, "up", { monthAxis: "weeks" })).toEqual(
+      subPeriodTotals([], ["waist_cm"], "month", november, "up"),
+    );
+    for (const period of ["week", "year", "years"] as const) {
+      const window = windowOf(period, "2026-11-04");
+
+      expect(subPeriodTotals([], ["waist_cm"], period, window, "up", { monthAxis: "days" })).toEqual(
+        subPeriodTotals([], ["waist_cm"], period, window, "up"),
+      );
+    }
+  });
+});
+
+describe("labelMonthDays", () => {
+  it("adds the first, then the last, then the inner anchor days until 6 are labelled", () => {
+    const rows = subPeriodTotals(days("2026-10", 31), ["waist_cm"], "month", october, "up", { monthAxis: "days" });
+
+    expect(labelledDays(labelMonthDays(rows))).toEqual(["1", "7", "13", "19", "25", "31"]);
+  });
+
+  it("skips anchors beside progress days in a 28-day month", () => {
+    // Anchors 1, 6, 12, 17, 23, 28; progress on 2, 5 and 22 sits beside 1, 6 and 23.
+    const february = windowOf("month", "2027-02-10");
+    const rows = subPeriodTotals(days("2027-02", 2, 5, 22), ["waist_cm"], "month", february, "up", {
+      monthAxis: "days",
+    });
+
+    expect(labelledDays(labelMonthDays(rows))).toEqual(["2", "5", "12", "17", "22", "28"]);
+  });
+});
+
 describe("topSubPeriod", () => {
   it("picks the sub-period with the largest sum for the field", () => {
     const window = windowOf("month", "2026-11-04");
@@ -297,5 +476,75 @@ describe("topChangeScale", () => {
   it("is 0 when nothing changed", () => {
     expect(topChangeScale(subPeriodTotals([], ["weight_kg"], "week", windowOf("week", "2026-11-04"), "up"))).toBe(0);
     expect(topChangeScale()).toBe(0);
+  });
+});
+
+describe("valueAxisTicks", () => {
+  it("steps by a round 1, 2, 2.5 or 5 multiple from 0 to at or above the scale", () => {
+    expect(valueAxisTicks(1)).toEqual([0, 0.25, 0.5, 0.75, 1]);
+    expect(valueAxisTicks(1.3)).toEqual([0, 0.5, 1, 1.5]);
+    expect(valueAxisTicks(3.6)).toEqual([0, 1, 2, 3, 4]);
+    expect(valueAxisTicks(7)).toEqual([0, 2, 4, 6, 8]);
+    expect(valueAxisTicks(20)).toEqual([0, 5, 10, 15, 20]);
+  });
+
+  it("falls back to 0 and 1 for an empty or broken scale", () => {
+    expect(valueAxisTicks(0)).toEqual([0, 1]);
+    expect(valueAxisTicks(Number.NaN)).toEqual([0, 1]);
+  });
+});
+
+describe("topChangeBarLayout", () => {
+  const labels = (...axisLabels: string[]) => axisLabels.map((axisLabel) => ({ axisLabel }));
+  const monthDays = labels(...Array.from({ length: 31 }, (_, day) => String(day + 1)));
+
+  it("gives every chart the bar a Last 5 years circumference bar has with all 7 fields", () => {
+    // 500 px / 5 years × 0.8 = 80 px of bars per year: 7 bars of 10 px with 6 gaps of 1 px.
+    expect(topChangeBarLayout(500, labels("2022", "2023", "2024", "2025", "2026"), 7)).toEqual({
+      barSize: 10,
+      contentWidth: 500,
+    });
+    expect(topChangeBarLayout(500, labels("2022", "2023", "2024", "2025", "2026"), 1).barSize).toBe(10);
+  });
+
+  it("widens a month past the card instead of narrowing its bars", () => {
+    // 7 bars: 76 px of bars in a 95 px slot, 31 times.
+    expect(topChangeBarLayout(500, monthDays, 7)).toEqual({ barSize: 10, contentWidth: 2945 });
+    // 1 bar: the slot is as wide as a two-digit label, 22 px, 31 times.
+    expect(topChangeBarLayout(500, monthDays, 1)).toEqual({ barSize: 10, contentWidth: 682 });
+  });
+
+  it("makes every slot fit its axis label", () => {
+    const week = labels("Mon 2", "Tue 3", "Wed 4", "Thu 5", "Fri 6", "Sat 7", "Sun 8");
+    expect(topChangeBarLayout(200, week, 1).contentWidth).toBe(7 * (5 * 7 + 8));
+  });
+
+  it("keeps a minimum bar on a very narrow card", () => {
+    expect(topChangeBarLayout(0, monthDays, 1).barSize).toBe(4);
+  });
+});
+
+describe("changedSubPeriods", () => {
+  it("keeps only the days, weeks or months in which a field changed", () => {
+    const rows = subPeriodTotals(days("2026-10", 5, 20), ["waist_cm"], "month", october, "up", { monthAxis: "days" });
+
+    expect(changedSubPeriods(rows, "month").map((row) => row.key)).toEqual(["2026-10-05", "2026-10-20"]);
+    expect(changedSubPeriods(rows, "month").map((row) => row.axisLabel)).toEqual(["5", "20"]);
+  });
+
+  it("keeps every year of a span, changed or not", () => {
+    const rows = [0, 1, 2, 3, 4].map((index) => ({
+      key: String(2022 + index),
+      axisLabel: String(2022 + index),
+      label: String(2022 + index),
+      values: { waist_cm: { difference: index === 2 ? 1 : 0, count: index === 2 ? 1 : 0 } },
+    }));
+
+    expect(changedSubPeriods(rows, "years")).toHaveLength(5);
+    expect(changedSubPeriods(rows, "year")).toHaveLength(1);
+  });
+
+  it("leaves nothing when nothing changed", () => {
+    expect(changedSubPeriods(subPeriodTotals([], ["waist_cm"], "month", october, "up"), "month")).toEqual([]);
   });
 });

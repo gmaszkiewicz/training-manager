@@ -32,6 +32,8 @@ import {
   parseTopChartsFields,
   topChartsFieldsStorageKey,
   topChartsFieldsValue,
+  topChartsGainFieldsStorageKey,
+  topChartsLossFieldsStorageKey,
   topChartsOpenStorageKey,
   topChartsPeriodStorageKey,
   utcToday,
@@ -123,6 +125,30 @@ describe("top changes preferences", () => {
     expect(topChartsOpenStorageKey("account-1")).not.toBe(chartsOpenStorageKey("account-1"));
     expect(topChartsPeriodStorageKey("account-1", "trainee-2")).not.toBe(
       chartsPeriodStorageKey("account-1", "trainee-2"),
+    );
+  });
+
+  it("keeps the 0.9 gain and loss filters under their own account- and trainee-scoped keys", () => {
+    expect(topChartsGainFieldsStorageKey("account-1", "trainee-2")).toBe(
+      "tm.measurements.topChartsGainFields.account-1.trainee-2",
+    );
+    expect(topChartsLossFieldsStorageKey("account-1", "trainee-2")).toBe(
+      "tm.measurements.topChartsLossFields.account-1.trainee-2",
+    );
+    expect(topChartsGainFieldsStorageKey("account-1", "trainee-2")).not.toBe(
+      topChartsLossFieldsStorageKey("account-1", "trainee-2"),
+    );
+    expect(topChartsGainFieldsStorageKey("account-1", "trainee-2")).not.toBe(
+      topChartsFieldsStorageKey("account-1", "trainee-2"),
+    );
+    expect(topChartsLossFieldsStorageKey("account-1", "trainee-2")).not.toBe(
+      topChartsFieldsStorageKey("account-1", "trainee-2"),
+    );
+    expect(topChartsGainFieldsStorageKey("account-1", "trainee-3")).not.toBe(
+      topChartsGainFieldsStorageKey("account-1", "trainee-2"),
+    );
+    expect(topChartsLossFieldsStorageKey("account-4", "trainee-2")).not.toBe(
+      topChartsLossFieldsStorageKey("account-1", "trainee-2"),
     );
   });
 

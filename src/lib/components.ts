@@ -1,14 +1,23 @@
 import { z } from "zod";
 
 import { dashboards } from "@/lib/dashboards";
-import type { ComponentId, ComponentSettings, ComponentTile, ComponentTiles, ModuleId, Profile } from "@/types";
+import type {
+  ComponentId,
+  ComponentSettings,
+  ComponentTile,
+  ComponentTiles,
+  ModuleId,
+  Profile,
+  VersionStage,
+} from "@/types";
 
 export const COMPONENT_OFF = "off";
 
 export interface ComponentVersion {
   id: string;
   label: string;
-  preview: boolean;
+  /** `stable` carries no badge, a release candidate the yellow "RC" one, a preview the red "Preview" one. */
+  stage: VersionStage;
 }
 
 export interface ComponentConfig {
@@ -31,7 +40,7 @@ export interface ComponentModule {
   components: readonly ComponentConfig[];
 }
 
-const STABLE: readonly ComponentVersion[] = [{ id: "1.0", label: "1.0", preview: false }];
+const STABLE: readonly ComponentVersion[] = [{ id: "1.0", label: "1.0", stage: "stable" }];
 
 const MODULE_COMPONENTS: Record<ModuleId, { defaultOn: boolean; components: readonly ComponentConfig[] }> = {
   measurements: {
@@ -73,8 +82,11 @@ const MODULE_COMPONENTS: Record<ModuleId, { defaultOn: boolean; components: read
         id: "top-changes",
         label: "Top progression",
         roles: ["trainee", "trainer"],
-        versions: [{ id: "0.1", label: "0.1", preview: true }],
-        defaultVersion: COMPONENT_OFF,
+        versions: [
+          { id: "0.1", label: "0.1", stage: "preview" },
+          { id: "0.9", label: "0.9", stage: "rc" },
+        ],
+        defaultVersion: "0.9",
       },
     ],
   },
@@ -233,29 +245,32 @@ export function isComponentShown(settings: ComponentSettings, componentId: Compo
 export function shownVersion(
   settings: ComponentSettings,
   componentId: ComponentId,
-): { label: string; preview: boolean } | null {
+): { id: string; label: string; stage: VersionStage } | null {
   if (!isComponentShown(settings, componentId)) {
     return null;
   }
   const version = componentConfig(componentId).versions.find(
     (candidate) => candidate.id === settings.components[componentId],
   );
-  return version ? { label: version.label, preview: version.preview } : null;
+  return version ? { id: version.id, label: version.label, stage: version.stage } : null;
 }
 
-/** Every component's tile state for the given settings: shown when on, and a preview when its version is one. */
+/** Every component's tile state for the given settings: shown when on, with the shown version's stage and id. */
 export function componentTiles(settings: ComponentSettings): Required<ComponentTiles> {
   const tiles = {} as Required<ComponentTiles>;
   for (const component of allComponents) {
     const version = shownVersion(settings, component.id);
-    tiles[component.id] = { shown: version !== null, preview: version?.preview ?? false };
+    tiles[component.id] =
+      version === null
+        ? { shown: false, stage: null, version: null }
+        : { shown: true, stage: version.stage, version: version.id };
   }
   return tiles;
 }
 
-const defaultTile: ComponentTile = { shown: true, preview: false };
+const defaultTile: ComponentTile = { shown: true, stage: "stable", version: null };
 
-/** A tile's state from a partial map; a missing key is shown and not a preview. */
+/** A tile's state from a partial map; a missing key is shown, stable and of no particular version. */
 export function tileOf(tiles: ComponentTiles, componentId: ComponentId): ComponentTile {
   return tiles[componentId] ?? defaultTile;
 }
