@@ -12,7 +12,7 @@ const baseURL = `http://localhost:${PORT}`;
 
 // Every spec shares the one throwaway trainee. These specs change its Settings → Components choices, so they run in
 // their own project, one at a time and after every other spec, never alongside a spec that expects the defaults.
-const settingsSpecs = [/component-settings\.spec\.ts/, /top-changes-charts\.spec\.ts/];
+const settingsSpecs = [/component-settings\.spec\.ts/, /top-changes-charts\.spec\.ts/, /top-changes-rc\.spec\.ts/];
 const signedIn = { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" };
 
 export default defineConfig({

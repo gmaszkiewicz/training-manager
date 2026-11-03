@@ -343,33 +343,33 @@ The data-only migration `20261102130000_top_changes_rc_default.sql` changes `"of
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 `npm run check:home-tokens` passes
-- [x] 3.3 `npx astro check` passes
-- [x] 3.4 `npm test` passes, including the gain/loss field storage-key tests
-- [x] 3.5 `npx playwright test tests/e2e/top-changes-charts.spec.ts` still passes (0.1 unchanged)
+- [x] 3.1 `npm run lint` passes — 26b5897
+- [x] 3.2 `npm run check:home-tokens` passes — 26b5897
+- [x] 3.3 `npx astro check` passes — 26b5897
+- [x] 3.4 `npm test` passes, including the gain/loss field storage-key tests — 26b5897
+- [x] 3.5 `npx playwright test tests/e2e/top-changes-charts.spec.ts` still passes (0.1 unchanged) — 26b5897
 
 #### Manual
 
-- [x] 3.6 0.9 sink: date picker left, arrowed period box right, arrows stop at the ends
-- [x] 3.7 Each circumference chart's filter changes only that chart; weight charts have no filter
-- [x] 3.8 Month radars show day axes with the label rule and the top day in the legend
-- [x] 3.9 Phone width: the period row wraps cleanly and the radars stay readable
+- [x] 3.6 0.9 sink: date picker left, arrowed period box right, arrows stop at the ends — 26b5897
+- [x] 3.7 Each circumference chart's filter changes only that chart; weight charts have no filter — 26b5897
+- [x] 3.8 Month radars show day axes with the label rule and the top day in the legend — 26b5897
+- [x] 3.9 Phone width: the period row wraps cleanly and the radars stay readable — 26b5897
 
 ### Phase 4: Release 0.9 as RC by Default
 
 #### Automated
 
-- [ ] 4.1 `npm run lint` passes
-- [ ] 4.2 `npm run check:home-tokens` passes
-- [ ] 4.3 `npx astro check` passes
-- [ ] 4.4 `npm test` passes
-- [ ] 4.5 `npm run migration-check` passes with the new migration
-- [ ] 4.6 `npx playwright test` passes
-- [ ] 4.7 `npm run build` succeeds and `npm run smoke` passes against the preview
+- [x] 4.1 `npm run lint` passes
+- [x] 4.2 `npm run check:home-tokens` passes
+- [x] 4.3 `npx astro check` passes
+- [x] 4.4 `npm test` passes
+- [x] 4.5 `npm run migration-check` passes with the new migration
+- [x] 4.6 `npx playwright test` passes
+- [x] 4.7 `npm run build` succeeds and `npm run smoke` passes against the preview
 
 #### Manual
 
-- [ ] 4.8 Stored-Off user sees 0.9 with the RC badge after migration; a 0.1 user keeps 0.1 with Preview
-- [ ] 4.9 RC badge is yellow and readable in light and dark, with the right tooltip
-- [ ] 4.10 Trainer view of a linked trainee renders 0.9 the same way
+- [x] 4.8 Stored-Off user sees 0.9 with the RC badge after migration; a 0.1 user keeps 0.1 with Preview
+- [x] 4.9 RC badge is yellow and readable in light and dark, with the right tooltip
+- [x] 4.10 Trainer view of a linked trainee renders 0.9 the same way

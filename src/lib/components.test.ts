@@ -25,7 +25,7 @@ const DEFAULTS = {
     "trainee-picker": "1.0",
     "trainee-measurements": "1.0",
     progression: "1.0",
-    "top-changes": "off",
+    "top-changes": "0.9",
   },
 };
 
@@ -93,7 +93,14 @@ describe("resolveComponentSettings", () => {
   it("falls back to the default for an unknown version", () => {
     const settings = resolveComponentSettings({ components: { progression: "9.9", "top-changes": "1.0" } });
     expect(settings.components.progression).toBe("1.0");
-    expect(settings.components["top-changes"]).toBe("off");
+    expect(settings.components["top-changes"]).toBe("0.9");
+  });
+
+  it("defaults Top progression to the 0.9 release candidate and keeps a stored off or 0.1", () => {
+    expect(resolveComponentSettings(null).components["top-changes"]).toBe("0.9");
+    expect(resolveComponentSettings({ components: {} }).components["top-changes"]).toBe("0.9");
+    expect(resolveComponentSettings({ components: { "top-changes": "off" } }).components["top-changes"]).toBe("off");
+    expect(resolveComponentSettings({ components: { "top-changes": "0.1" } }).components["top-changes"]).toBe("0.1");
   });
 
   it("never resolves a required component to off", () => {
@@ -111,11 +118,11 @@ describe("isComponentShown and shownVersion", () => {
   it("shows a component whose module is on and version is not off", () => {
     const settings = defaultComponentSettings();
     expect(isComponentShown(settings, "progression")).toBe(true);
-    expect(shownVersion(settings, "progression")).toEqual({ label: "1.0", preview: false });
+    expect(shownVersion(settings, "progression")).toEqual({ id: "1.0", label: "1.0", stage: "stable" });
   });
 
   it("hides a component set to off", () => {
-    const settings = defaultComponentSettings();
+    const settings = resolveComponentSettings({ components: { "top-changes": "off" } });
     expect(isComponentShown(settings, "top-changes")).toBe(false);
     expect(shownVersion(settings, "top-changes")).toBeNull();
   });
@@ -133,7 +140,11 @@ describe("isComponentShown and shownVersion", () => {
 
   it("reports a preview version", () => {
     const settings = resolveComponentSettings({ components: { "top-changes": "0.1" } });
-    expect(shownVersion(settings, "top-changes")).toEqual({ label: "0.1", preview: true });
+    expect(shownVersion(settings, "top-changes")).toEqual({ id: "0.1", label: "0.1", stage: "preview" });
+  });
+
+  it("reports the default release candidate", () => {
+    expect(shownVersion(defaultComponentSettings(), "top-changes")).toEqual({ id: "0.9", label: "0.9", stage: "rc" });
   });
 });
 
@@ -157,6 +168,7 @@ describe("componentSettingsSchema", () => {
   it("rejects an unknown version", () => {
     expect(componentSettingsSchema.safeParse({ components: { progression: "2.0" } }).success).toBe(false);
     expect(componentSettingsSchema.safeParse({ components: { "top-changes": "1.0" } }).success).toBe(false);
+    expect(componentSettingsSchema.safeParse({ components: { "top-changes": "0.9" } }).success).toBe(true);
   });
 
   it("rejects a switch on an unbuilt module", () => {
@@ -191,18 +203,24 @@ describe("storedComponentSettings", () => {
 });
 
 describe("componentTiles", () => {
-  it("shows the default components, hides Top progression and marks no preview", () => {
+  it("shows the default components as stable and Top progression as the 0.9 release candidate", () => {
     const tiles = componentTiles(defaultComponentSettings());
 
-    expect(tiles.progression).toEqual({ shown: true, preview: false });
-    expect(tiles["new-measurement"]).toEqual({ shown: true, preview: false });
-    expect(tiles["top-changes"]).toEqual({ shown: false, preview: false });
+    expect(tiles.progression).toEqual({ shown: true, stage: "stable", version: "1.0" });
+    expect(tiles["new-measurement"]).toEqual({ shown: true, stage: "stable", version: "1.0" });
+    expect(tiles["top-changes"]).toEqual({ shown: true, stage: "rc", version: "0.9" });
   });
 
   it("marks the Top progression preview once chosen", () => {
     const tiles = componentTiles(resolveComponentSettings({ components: { "top-changes": "0.1" } }));
 
-    expect(tiles["top-changes"]).toEqual({ shown: true, preview: true });
+    expect(tiles["top-changes"]).toEqual({ shown: true, stage: "preview", version: "0.1" });
+  });
+
+  it("has no stage or version for a tile switched off", () => {
+    const tiles = componentTiles(resolveComponentSettings({ components: { "top-changes": "off" } }));
+
+    expect(tiles["top-changes"]).toEqual({ shown: false, stage: null, version: null });
   });
 
   it("hides every tile when the module is off", () => {
@@ -213,11 +231,12 @@ describe("componentTiles", () => {
 });
 
 describe("tileOf", () => {
-  it("treats a missing key as shown and not a preview", () => {
-    expect(tileOf({}, "progression")).toEqual({ shown: true, preview: false });
-    expect(tileOf({ progression: { shown: false, preview: false } }, "progression")).toEqual({
+  it("treats a missing key as shown, stable and of no particular version", () => {
+    expect(tileOf({}, "progression")).toEqual({ shown: true, stage: "stable", version: null });
+    expect(tileOf({ progression: { shown: false, stage: null, version: null } }, "progression")).toEqual({
       shown: false,
-      preview: false,
+      stage: null,
+      version: null,
     });
   });
 });

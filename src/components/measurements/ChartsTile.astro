@@ -1,7 +1,7 @@
 ---
 import CollapsibleTile from "@/components/measurements/CollapsibleTile.astro";
 import MeasurementCharts, { chartsTileId } from "@/components/measurements/MeasurementCharts";
-import type { ChartBody } from "@/types";
+import type { ChartBody, VersionStage } from "@/types";
 import { chartHeading, defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
 import { chartsOpenStorageKey } from "@/lib/measurement-page";
 import type { MeasurementWithDeltas } from "@/types";
@@ -24,8 +24,8 @@ interface Props {
   /** The server's chart read for `initialPeriod`; `null` leaves the read to the island. */
   initialChart?: ChartBody | null;
   initialDays?: string[] | null;
-  /** The chosen version is a preview: the tile carries the Preview badge. */
-  preview?: boolean;
+  /** The chosen version's stage: a preview carries the Preview badge, a release candidate the RC badge. */
+  stage?: VersionStage | null;
 }
 
 const {
@@ -41,7 +41,7 @@ const {
   initialAnchor = null,
   initialChart = null,
   initialDays = null,
-  preview = false,
+  stage = "stable",
 } = Astro.props;
 
 const storageKey = accountUserId ? chartsOpenStorageKey(accountUserId) : null;
@@ -53,7 +53,7 @@ const heading = chartHeading(initialPeriod);
   startsOpen={startsOpen}
   title={heading.title}
   note={heading.note}
-  preview={preview}
+  stage={stage}
   tileId={chartsTileId}
 >
   <MeasurementCharts

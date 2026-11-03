@@ -12,7 +12,7 @@ type ComponentKey =
   | "progression"
   | "top-changes";
 
-/** The registry defaults: every component at v1.0 except Top progression, which is off. */
+/** The registry defaults: every component at v1.0 except Top progression, which is the 0.9 release candidate. */
 export const DEFAULT_COMPONENTS: Record<ComponentKey, string> = {
   "new-measurement": "1.0",
   "edit-measurement": "1.0",
@@ -21,7 +21,7 @@ export const DEFAULT_COMPONENTS: Record<ComponentKey, string> = {
   "trainee-picker": "1.0",
   "trainee-measurements": "1.0",
   progression: "1.0",
-  "top-changes": "off",
+  "top-changes": "0.9",
 };
 
 /** Every trainee component off, the module left on. */

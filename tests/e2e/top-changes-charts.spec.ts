@@ -1,6 +1,7 @@
 // The Top progression tile on the production preview: it renders the seeded radar charts, its period controls change the
 // window and survive a reload, its circumference filter survives a reload, and its closed state survives a reload.
-// The tile is off by default, so each test first chooses its v0.1 preview and restores the defaults afterwards.
+// The tile defaults to the 0.9 release candidate, so each test first chooses the v0.1 preview and restores the defaults
+// afterwards. 0.9 has its own spec, top-changes-rc.spec.ts.
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { restoreDefaultComponents, saveComponents } from "./component-settings-helpers";

@@ -327,13 +327,14 @@ const noProgressEntries: MeasurementWithDeltas[] = withDeltas(
           Top progression 0.9 (RC), populated month
         </h2>
         <p class="text-muted-foreground text-sm">
-          TopChangesTile with <code class="text-foreground">version="0.9"</code> on the same six entries as the default
-          0.1 tile. The month picker sits on the left and the Week/Month/Year/Years box on the right, with "Previous
-          chart period" and "Next chart period" arrows: ‹ is disabled on Week and › on Years, and the list offers all
-          four. On a phone the row wraps. Month radars have one axis per day of September, labelled only on the days
-          with a change (2, 9, 16, 23 and 29), and each legend entry names its series' top day, e.g. "Wed 16 Sep". Each
-          circumference chart has its own filter icon ("Filter circumferences: Top circumference gain" and "… loss");
-          the weight charts have none.
+          TopChangesTile with <code class="text-foreground">version="0.9"</code> and{" "}
+          <code class="text-foreground">stage="rc"</code> on the same six entries as the default 0.1 tile. The header
+          carries the yellow "RC" badge, whose tooltip reads "Release candidate - it may contain bugs". The month picker
+          sits on the left and the Week/Month/Year/Years box on the right, with "Previous chart period" and "Next chart
+          period" arrows: ‹ is disabled on Week and › on Years, and the list offers all four. On a phone the row wraps.
+          Month radars have one axis per day of September, labelled only on the days with a change (2, 9, 16, 23 and
+          29), and each legend entry names its series' top day, e.g. "Wed 16 Sep". Each circumference chart has its own
+          filter icon ("Filter circumferences: Top circumference gain" and "… loss"); the weight charts have none.
         </p>
         <TopChangesTile
           readOnly={false}
@@ -342,6 +343,7 @@ const noProgressEntries: MeasurementWithDeltas[] = withDeltas(
           startsOpen={true}
           entries={chartEntries}
           version="0.9"
+          stage="rc"
         />
       </section>
 

@@ -24,6 +24,8 @@ import {
   parsePageSize,
   parseTopChartsFields,
   topChartsFieldsStorageKey,
+  topChartsGainFieldsStorageKey,
+  topChartsLossFieldsStorageKey,
   topChartsOpenStorageKey,
   topChartsPeriodStorageKey,
   utcToday,
@@ -115,6 +117,8 @@ let topChartsPeriod: ChartPeriod = defaultChartPeriod;
 let topChartsAnchor: string | null = null;
 let topChartInitial: ChartBody | null = null;
 let topChartsFields: CircumferenceField[] = [...circumferenceFields];
+let topChartsGainFields: CircumferenceField[] = [...circumferenceFields];
+let topChartsLossFields: CircumferenceField[] = [...circumferenceFields];
 let tiles: ComponentTiles = {};
 const now = new Date();
 const today = utcToday(now);
@@ -166,6 +170,15 @@ function preferredTopChartsPeriod(accountUserId: string, subjectTraineeId: strin
 
 function preferredTopChartsFields(accountUserId: string, subjectTraineeId: string): CircumferenceField[] {
   return parseTopChartsFields(cookieValue(topChartsFieldsStorageKey(accountUserId, subjectTraineeId)));
+}
+
+// 0.9 keeps a filter per circumference chart, each in its own cookie.
+function preferredTopChartsGainFields(accountUserId: string, subjectTraineeId: string): CircumferenceField[] {
+  return parseTopChartsFields(cookieValue(topChartsGainFieldsStorageKey(accountUserId, subjectTraineeId)));
+}
+
+function preferredTopChartsLossFields(accountUserId: string, subjectTraineeId: string): CircumferenceField[] {
+  return parseTopChartsFields(cookieValue(topChartsLossFieldsStorageKey(accountUserId, subjectTraineeId)));
 }
 
 type MeasurementDaysRead = ReturnType<typeof readMeasurementDays>;
@@ -225,6 +238,8 @@ async function readInitialCharts(
   topChartsPeriod = topPreference.period;
   topChartsAnchor = topPreference.anchor ?? firstAnchor;
   topChartsFields = preferredTopChartsFields(accountUserId, subjectTraineeId);
+  topChartsGainFields = preferredTopChartsGainFields(accountUserId, subjectTraineeId);
+  topChartsLossFields = preferredTopChartsLossFields(accountUserId, subjectTraineeId);
   const rangeRead = shownCharts.charts ? readChartRange(client, subjectTraineeId, chartsPeriod, chartsAnchor) : null;
   let topRangeRead: MeasurementRangeRead | null = null;
   if (shownCharts.topCharts) {
@@ -401,6 +416,8 @@ if (supabase && user) {
       topChartsAnchor={topChartsAnchor}
       topChartInitial={topChartInitial}
       topChartsFields={topChartsFields}
+      topChartsGainFields={topChartsGainFields}
+      topChartsLossFields={topChartsLossFields}
       today={today}
       dates={dates}
       page={page}
@@ -432,6 +449,8 @@ if (supabase && user) {
       topChartsAnchor={topChartsAnchor}
       topChartInitial={topChartInitial}
       topChartsFields={topChartsFields}
+      topChartsGainFields={topChartsGainFields}
+      topChartsLossFields={topChartsLossFields}
       today={today}
       dates={dates}
       page={page}

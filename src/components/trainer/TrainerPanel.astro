@@ -49,11 +49,14 @@ interface Props {
   topChartsAnchor?: string | null;
   /** The server's Top progression read for the tile's first render; its picker shares `chartDays`. */
   topChartInitial?: ChartBody | null;
-  /** The circumferences from the preference cookie; all 7 when absent. */
+  /** 0.1: the circumferences from the preference cookie; all 7 when absent. */
   topChartsFields?: readonly CircumferenceField[];
+  /** 0.9: each circumference chart's fields from its preference cookie; all 7 when absent. */
+  topChartsGainFields?: readonly CircumferenceField[];
+  topChartsLossFields?: readonly CircumferenceField[];
   /** Kitchen-sink local mode for the charts tile. */
   chartEntries?: MeasurementWithDeltas[];
-  /** Which tiles render and which carry the Preview badge, by the trainer's own settings; every tile when absent. */
+  /** Which tiles render and which carry a version badge, by the trainer's own settings; every tile when absent. */
   shown?: ComponentTiles;
 }
 
@@ -86,6 +89,8 @@ const {
   topChartsAnchor = null,
   topChartInitial = null,
   topChartsFields,
+  topChartsGainFields,
+  topChartsLossFields,
   chartEntries,
   shown = {},
 } = Astro.props;
@@ -157,7 +162,7 @@ const requestNotice =
     title="Choose trainee"
     note={pickerNote}
     tileId="trainee-picker"
-    preview={pickerTile.preview}
+    stage={pickerTile.stage}
   >
     <div class="mt-3 flex justify-center">
       <LinkedTraineeField links={trainerLinks} selectedTraineeId={selectedLink.traineeId} client:load />
@@ -186,7 +191,7 @@ const requestNotice =
     title="Measurements"
     note="Measurements reported by the chosen trainee"
     tileId="measurements"
-    preview={listTile.preview}
+    stage={listTile.stage}
   >
     {trainerMeasurementsLoaded ? (
       <MeasurementBrowser
@@ -220,7 +225,7 @@ const requestNotice =
     initialChart={chartInitial}
     initialDays={chartDays}
     entries={chartEntries}
-    preview={chartsTile.preview}
+    stage={chartsTile.stage}
   />
 ) : null}
 {topChartsRender ? (
@@ -236,7 +241,10 @@ const requestNotice =
     initialChart={topChartInitial}
     initialDays={chartDays}
     initialFields={topChartsFields}
+    version={topChartsTile.version}
+    initialGainFields={topChartsTile.version === "0.9" ? topChartsGainFields : undefined}
+    initialLossFields={topChartsTile.version === "0.9" ? topChartsLossFields : undefined}
     entries={chartEntries}
-    preview={topChartsTile.preview}
+    stage={topChartsTile.stage}
   />
 ) : null}

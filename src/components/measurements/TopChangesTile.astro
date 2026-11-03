@@ -2,7 +2,7 @@
 import CollapsibleTile from "@/components/measurements/CollapsibleTile.astro";
 import TopChangesCharts, { topChangesHeading, topChangesTileId } from "@/components/measurements/TopChangesCharts";
 import TopChangesChartsRc from "@/components/measurements/TopChangesChartsRc";
-import type { ChartBody } from "@/types";
+import type { ChartBody, VersionStage } from "@/types";
 import { defaultChartPeriod, type ChartPeriod } from "@/lib/measurement-chart";
 import { topChartsOpenStorageKey } from "@/lib/measurement-page";
 import { circumferenceFields } from "@/lib/measurement-top-changes";
@@ -26,12 +26,12 @@ interface Props {
   /** The server's chart read for `initialPeriod`; `null` leaves the read to the island. */
   initialChart?: ChartBody | null;
   initialDays?: string[] | null;
-  /** The chosen version is a preview: the tile carries the Preview badge. */
-  preview?: boolean;
+  /** The chosen version's stage: a preview carries the Preview badge, a release candidate the RC badge. */
+  stage?: VersionStage | null;
   /** 0.1: the shared circumference filter. The circumferences from the preference cookie; all 7 when absent. */
   initialFields?: readonly CircumferenceField[];
-  /** Which island the tile shows: 0.1, or the 0.9 release candidate. */
-  version?: "0.1" | "0.9";
+  /** The chosen version id: "0.9" shows the release candidate's island, anything else (0.1, or none) the 0.1 one. */
+  version?: string | null;
   /** 0.9: the circumference gain chart's fields from the preference cookie; all 7 when absent. */
   initialGainFields?: readonly CircumferenceField[];
   /** 0.9: the circumference loss chart's fields from the preference cookie; all 7 when absent. */
@@ -51,7 +51,7 @@ const {
   initialAnchor = null,
   initialChart = null,
   initialDays = null,
-  preview = false,
+  stage = "stable",
   initialFields = circumferenceFields,
   version = "0.1",
   initialGainFields = circumferenceFields,
@@ -66,7 +66,7 @@ const storageKey = accountUserId ? topChartsOpenStorageKey(accountUserId) : null
   startsOpen={startsOpen}
   title={topChangesHeading.title}
   note={topChangesHeading.note}
-  preview={preview}
+  stage={stage}
   tileId={topChangesTileId}
 >
   {version === "0.9" ? (
