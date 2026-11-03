@@ -16,7 +16,8 @@ if (process.env.WORKERS_CI_BRANCH === "main") {
     console.error("SUPABASE_DB_URL is not set; refusing to build main without applying migrations.");
     process.exit(1);
   }
-  run("npx", ["supabase", "db", "push", "--db-url", dbUrl]);
+  // Supabase CLI v3: hosted pushes need --yes when not run from a terminal; --db-url is deprecated.
+  run("npx", ["supabase", "db", "push", `--remote=${dbUrl}`, "--yes"]);
 }
 
 run("npm", ["run", "build"]);
