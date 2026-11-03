@@ -1,10 +1,97 @@
 import { useId, useSyncExternalStore, type ReactNode } from "react";
+import { ChevronDown, ListFilter } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
-import { chartFieldColor } from "@/lib/measurement-chart";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { chartFieldColor, type ChartHeading } from "@/lib/measurement-chart";
 import { measurementFields } from "@/lib/measurement-input";
-import { topSubPeriod, type SubPeriodRow, type TopChangeDirection } from "@/lib/measurement-top-changes";
-import type { MeasurementField } from "@/types";
+import {
+  circumferenceFields,
+  topSubPeriod,
+  type SubPeriodRow,
+  type TopChangeDirection,
+} from "@/lib/measurement-top-changes";
+import type { CircumferenceField, MeasurementField } from "@/types";
+
+/** The Top progression tile's id on its `CollapsibleTile`, so an island only rewrites its own heading. */
+export const topChangesTileId = "top-changes";
+
+/** The tile's summary heading: the title and the muted note naming the change measure. */
+export const topChangesHeading: ChartHeading = {
+  title: "Top progression",
+  note: "Summed changes versus the previous entry",
+};
+
+/** The island's own tile, found by tile id so another chart tile's heading is never touched. */
+export function ownTile(root: HTMLElement | null): Element | null | undefined {
+  return root?.closest(`[data-tile="${topChangesTileId}"]`);
+}
+
+/** The weight charts' only series. */
+export const weightSeries: readonly MeasurementField[] = ["weight_kg"];
+
+function circumferenceLabel(field: CircumferenceField): string {
+  return measurementFields.find((definition) => definition.field === field)?.label ?? field;
+}
+
+/**
+ * The circumference filter: a checkbox per field; the last checked one cannot be unchecked. It opens from a
+ * "Circumferences" button, or, given `iconLabel`, from a filter icon button with that aria-label.
+ */
+export function CircumferenceFilter({
+  fields,
+  onChange,
+  iconLabel,
+}: {
+  fields: readonly CircumferenceField[];
+  onChange: (fields: CircumferenceField[]) => void;
+  iconLabel?: string;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {iconLabel === undefined ? (
+          <Button type="button" variant="outline" className="measurement-row:px-4 px-2">
+            Circumferences
+            <ChevronDown className="measurement-row:inline hidden shrink-0" aria-hidden="true" />
+          </Button>
+        ) : (
+          <Button type="button" variant="outline" size="icon" className="size-8" aria-label={iconLabel}>
+            <ListFilter aria-hidden="true" />
+          </Button>
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {circumferenceFields.map((field) => {
+          const checked = fields.includes(field);
+          return (
+            <DropdownMenuCheckboxItem
+              key={field}
+              checked={checked}
+              disabled={checked && fields.length <= 1}
+              onSelect={(event) => {
+                // Keep the menu open so several fields can be toggled in a row.
+                event.preventDefault();
+              }}
+              onCheckedChange={(next) => {
+                const selection = next ? [...fields, field] : fields.filter((current) => current !== field);
+                onChange(circumferenceFields.filter((candidate) => selection.includes(candidate)));
+              }}
+            >
+              {circumferenceLabel(field)}
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 /** A series with at least one change, and the sub-period it changed most in. */
 export interface ChangedSeries {

@@ -19,7 +19,7 @@ Ship Top progression 0.9 as a release candidate: a new island beside the unchang
 ## Desired End State
 
 - Settings lists Top progression as `Off`, `v0.1 (preview)` and `v0.9 (RC)`. A never-saved user, and every user whose stored value was `"off"`, sees 0.9. Users who chose 0.1 keep 0.1, and it looks and behaves as it does today, apart from the shared picker width.
-- 0.9's tile header carries a yellow "RC" badge whose tooltip reads "Release candidate - it may contain bugs" on hover and keyboard focus. The badge uses a `--warning` role token for light and dark.
+- 0.9's tile header carries a yellow "RC" badge whose tooltip reads "Release candidate - it may contain bugs." on hover and keyboard focus. The badge uses a `--warning` role token for light and dark.
 - In 0.9:
   - The date picker sits on the left. An arrowed Week/Month/Year/Years choice box sits on the right; ‹ is disabled on Week and › on Years.
   - Top circumference gain and Top circumference loss each have their own filter in the chart header, remembered separately. The weight charts have none.
@@ -126,6 +126,8 @@ Let `subPeriodTotals` build one axis per day for Month, with the label rule from
 
 **Contract**: A day is labelled when any of the chart's fields has `count > 0` on it. When fewer than 3 days are labelled, add the first day, then the last, then the middle day (day `ceil(daysInMonth / 2)`, so 16 for a 31-day month, 15 for 30 and 14 for 28), skipping any already labelled, until at least 3 are labelled. Examples for a 31-day month: no progress gives 1, 16, 31. Progress on the 12th gives 1, 12, 31. Progress on the 5th and 20th gives 1, 5, 20. Progress on the 1st gives 1, 31, 16. Progress on 4 days labels only those 4. `topSubPeriod` is unchanged, so the legend names the day with the largest sum (a tie goes to the later day).
 
+**Addendum (2026-11-03, impl review F1):** Phase 3 (26b5897) raised the minimum from 3 to 6 labelled days so a Month radar stays readable. While fewer than 6 days are labelled, evenly spread anchors are added in this order: first, last, then the inner ones (1, 31, 7, 13, 19, 25 for 31 days). An anchor next to a progress day is skipped. Progress on 4 days therefore labels 6. Since Phase 5 draws only changed days, the anchors no longer render in 0.9. `MIN_LABELLED_DAYS` in `measurement-top-changes.ts` and its unit tests are the source of truth, and the worked examples above are superseded.
+
 #### 3. Unit tests
 
 **File**: `src/lib/measurement-top-changes.test.ts`
@@ -227,7 +229,7 @@ Add a version stage, the yellow RC badge and the Settings label, render the chos
 
 **File**: `src/styles/global.css`, `src/components/measurements/VersionBadge.tsx` (replaces `PreviewBadge.tsx`), `src/components/ui/badge.tsx`, `src/components/measurements/CollapsibleTile.astro`
 
-**Intent**: Add `--warning`/`--warning-foreground` for light and dark (registered as `--color-warning*`) and a `warning` badge variant. Generalise the badge so a preview shows the red "Preview" and an RC shows the yellow "RC" with the tooltip "Release candidate - it may contain bugs".
+**Intent**: Add `--warning`/`--warning-foreground` for light and dark (registered as `--color-warning*`) and a `warning` badge variant. Generalise the badge so a preview shows the red "Preview" and an RC shows the yellow "RC" with the tooltip "Release candidate - it may contain bugs.".
 
 **Contract**: `CollapsibleTile` takes `stage` instead of `preview`. Neither badge toggles `<details>`, and both keep the `data-preview-badge` hook (the RC badge adds `data-rc-badge`). The Preview tooltip text is unchanged. The yellow must meet WCAG AA contrast with its foreground in both themes.
 
@@ -273,7 +275,7 @@ Add a version stage, the yellow RC badge and the Settings label, render the chos
 #### Manual Verification:
 
 - A user with saved settings stored as Off sees Top progression 0.9 with the yellow RC badge after the migration, and a user on 0.1 still sees 0.1 with the red Preview badge.
-- The RC badge is readable and yellow in both light and dark themes, and its tooltip reads "Release candidate - it may contain bugs".
+- The RC badge is readable and yellow in both light and dark themes, and its tooltip reads "Release candidate - it may contain bugs.".
 - As a trainer viewing a linked trainee, 0.9 renders the same way.
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful.
@@ -405,6 +407,8 @@ Day rows make a Month radar 28–31 axes, built in one pass over the entries alr
 ## Migration Notes
 
 The data-only migration `20261102130000_top_changes_rc_default.sql` changes `"off"` to `"0.9"` for `top-changes`. It is safe if run twice. The previous Worker reads `"0.9"` as unknown and falls back to `off`, so no schema or code coupling breaks during rollout. A user who deliberately switched Top progression off sees 0.9 once and can switch it off again. This was accepted during planning.
+
+**Release note (for the PR description, impl review F4):** "Top progression 0.9 (RC) is now on by default. If you had switched Top progression off, it is back on. Switch it off again in Settings → Components."
 
 ## References
 

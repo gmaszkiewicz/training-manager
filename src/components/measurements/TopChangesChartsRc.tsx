@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 
 import { useChartPeriodRead } from "@/components/hooks/useChartPeriodRead";
 import { useLastSettled } from "@/components/hooks/useLastSettled";
+import { useStoredFields } from "@/components/hooks/useStoredFields";
 import ChartPeriodControls from "@/components/measurements/ChartPeriodControls";
 import TopChangeBarChart from "@/components/measurements/TopChangeBarChart";
 import {
@@ -9,8 +10,7 @@ import {
   ownTile,
   topChangesHeading,
   weightSeries,
-} from "@/components/measurements/TopChangesCharts";
-import { readStored, writePreference } from "@/lib/browser-storage";
+} from "@/components/measurements/top-change-chart-parts";
 import {
   chartWindow,
   defaultChartPeriod,
@@ -19,8 +19,6 @@ import {
   type ChartWindow,
 } from "@/lib/measurement-chart";
 import {
-  parseTopChartsFields,
-  topChartsFieldsValue,
   topChartsGainFieldsStorageKey,
   topChartsLossFieldsStorageKey,
   topChartsPeriodStorageKey,
@@ -52,41 +50,6 @@ interface Props {
   initialGainFields?: readonly CircumferenceField[];
   /** The circumference loss chart's fields from the preference cookie; all 7 when absent. */
   initialLossFields?: readonly CircumferenceField[];
-}
-
-/**
- * One circumference chart's filter selection: restored from its own storage key after hydration, then remembered in
- * storage and in the cookie the next document request renders from.
- */
-function useStoredFields(
-  initial: readonly CircumferenceField[],
-  accountId: string | null,
-  subjectId: string | null,
-  storageKey: (accountUserId: string, subjectTraineeId: string) => string,
-): [CircumferenceField[], (fields: CircumferenceField[]) => void] {
-  const [fields, setFields] = useState<CircumferenceField[]>(() => parseTopChartsFields(topChartsFieldsValue(initial)));
-  const [restored, setRestored] = useState(false);
-
-  /* eslint-disable react-hooks/set-state-in-effect -- storage is applied after the hydration render */
-  useEffect(() => {
-    if (accountId !== null && subjectId !== null) {
-      const stored = readStored(storageKey(accountId, subjectId));
-      if (stored !== null) {
-        setFields(parseTopChartsFields(stored));
-      }
-    }
-    setRestored(true);
-  }, [accountId, subjectId, storageKey]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  useEffect(() => {
-    if (!restored || accountId === null || subjectId === null) {
-      return;
-    }
-    writePreference(storageKey(accountId, subjectId), topChartsFieldsValue(fields));
-  }, [restored, accountId, subjectId, storageKey, fields]);
-
-  return [fields, setFields];
 }
 
 function TopChangesGridRc({

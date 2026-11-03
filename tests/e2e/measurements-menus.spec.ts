@@ -14,8 +14,11 @@ test.describe("360×800 menus", () => {
     // By its aria-label: Astro's dev toolbar, which `astro preview` can inject, has its own button named "Menu".
     const menu = page.getByLabel("Menu", { exact: true });
     await expect(menu).toBeVisible();
-    await menu.click();
-    await expect(page.getByRole("menuitem", { name: "Home" })).toBeVisible();
+    // A click before the island hydrates opens nothing. Retry until the menu shows.
+    await expect(async () => {
+      await menu.click();
+      await expect(page.getByRole("menuitem", { name: "Home" })).toBeVisible({ timeout: 1_000 });
+    }).toPass();
     await expect(page.getByRole("menuitem", { name: "Measurements" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Sign out" })).toHaveCount(0);
     await page.keyboard.press("Escape");
@@ -23,9 +26,13 @@ test.describe("360×800 menus", () => {
 
     const account = page.getByRole("button", { name: "Account menu" });
     await expect(account).toBeVisible();
-    await account.click();
     // The first item names the user and links to Profile; other specs may change the name.
-    await expect(page.getByRole("menu").getByRole("menuitem").first()).toHaveAttribute("href", "/profile");
+    const nameItem = page.getByRole("menu").getByRole("menuitem").first();
+    await expect(async () => {
+      await account.click();
+      await expect(nameItem).toBeVisible({ timeout: 1_000 });
+    }).toPass();
+    await expect(nameItem).toHaveAttribute("href", "/profile");
     await expect(page.getByRole("menuitem", { name: "Hub" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Theme" })).toBeVisible();
@@ -35,8 +42,10 @@ test.describe("360×800 menus", () => {
 
     const actions = page.getByRole("button", { name: /^Actions for measurement from / }).first();
     await expect(actions).toBeVisible();
-    await actions.click();
-    await expect(page.getByRole("menuitem", { name: "Edit" })).toBeVisible();
+    await expect(async () => {
+      await actions.click();
+      await expect(page.getByRole("menuitem", { name: "Edit" })).toBeVisible({ timeout: 1_000 });
+    }).toPass();
     await expect(page.getByRole("menuitem", { name: "Delete" })).toBeVisible();
   });
 });

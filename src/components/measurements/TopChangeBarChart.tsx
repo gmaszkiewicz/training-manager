@@ -136,7 +136,8 @@ function BarPlot({ titleId, rows, fields, scale, direction, changed, config }: B
   }, [scrollRef, scrollWidth, contentWidth, topIndex, rows.length]);
 
   return (
-    <div ref={scrollRef} className="h-full w-full overflow-x-auto">
+    // Focusable so a keyboard can scroll a plot wider than the card; named by the card title.
+    <div ref={scrollRef} className="h-full w-full overflow-x-auto" role="region" aria-labelledby={titleId} tabIndex={0}>
       {layout === null ? null : (
         <div className="flex h-full" style={{ width: VALUE_AXIS_WIDTH + layout.contentWidth }}>
           {/* The value axis stays in view while the bars scroll; it repeats the bars' scale, so it is hidden from AT. */}
@@ -162,7 +163,7 @@ function BarPlot({ titleId, rows, fields, scale, direction, changed, config }: B
           </div>
           <div className="h-full" style={{ width: layout.contentWidth }}>
             <ChartContainer config={config} className="aspect-auto h-full w-full" aria-labelledby={titleId}>
-              <BarChart data={data} margin={PLOT_MARGIN} barGap={BAR_GAP} barSize={layout.barSize}>
+              <BarChart accessibilityLayer data={data} margin={PLOT_MARGIN} barGap={BAR_GAP} barSize={layout.barSize}>
                 <CartesianGrid vertical={false} />
                 {/* Every tick renders: on Month only the labelled days carry text, the rest are blank. */}
                 <XAxis

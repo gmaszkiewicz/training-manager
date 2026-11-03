@@ -5,7 +5,7 @@ import type { VersionStage } from "@/types";
 export const PREVIEW_BADGE_LABEL = "Preview";
 export const PREVIEW_BADGE_TOOLTIP = "Preview version — it may contain bugs.";
 export const RC_BADGE_LABEL = "RC";
-export const RC_BADGE_TOOLTIP = "Release candidate - it may contain bugs";
+export const RC_BADGE_TOOLTIP = "Release candidate - it may contain bugs.";
 
 interface Props {
   /** A preview shows the red "Preview" mark, a release candidate the yellow "RC" one. */

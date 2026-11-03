@@ -96,7 +96,7 @@ test("Top progression shows the 0.9 release candidate by default with the yellow
   const tooltip = page.getByRole("tooltip");
   await expect(async () => {
     await rc.hover();
-    await expect(tooltip).toHaveText("Release candidate - it may contain bugs", { timeout: 1_000 });
+    await expect(tooltip).toHaveText("Release candidate - it may contain bugs.", { timeout: 1_000 });
   }).toPass();
 
   // Keyboard focus alone opens it too: a fresh load has no hover.
@@ -105,7 +105,7 @@ test("Top progression shows the 0.9 release candidate by default with the yellow
   await expect(async () => {
     await rc.blur();
     await rc.focus();
-    await expect(tooltip).toHaveText("Release candidate - it may contain bugs", { timeout: 1_000 });
+    await expect(tooltip).toHaveText("Release candidate - it may contain bugs.", { timeout: 1_000 });
   }).toPass();
 
   // A click on the badge does not collapse the tile.
