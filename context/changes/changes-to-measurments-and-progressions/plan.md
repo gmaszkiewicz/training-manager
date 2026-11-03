@@ -480,16 +480,16 @@ The data-only migration `20261102130000_top_changes_rc_default.sql` changes `"of
 
 #### Automated
 
-- [x] 5.1 `npm run lint` passes
-- [x] 5.2 `npm run check:home-tokens` passes
-- [x] 5.3 `npx astro check` passes
-- [x] 5.4 `npm test` passes
-- [x] 5.5 `npx playwright test tests/e2e/top-changes-rc.spec.ts tests/e2e/top-changes-charts.spec.ts tests/e2e/component-settings.spec.ts` passes
+- [x] 5.1 `npm run lint` passes — ece635b
+- [x] 5.2 `npm run check:home-tokens` passes — ece635b
+- [x] 5.3 `npx astro check` passes — ece635b
+- [x] 5.4 `npm test` passes — ece635b
+- [x] 5.5 `npx playwright test tests/e2e/top-changes-rc.spec.ts tests/e2e/top-changes-charts.spec.ts tests/e2e/component-settings.spec.ts` passes — ece635b
 
 #### Manual
 
-- [x] 5.6 0.9 shows four bar-chart cards with fixed-width bars, a value axis, negative loss charts and a shared pair scale
-- [x] 5.7 Only changed days/months are drawn (all 5 years on Years); tooltip shows signed values and counts; filters change only their chart
-- [x] 5.8 Light, dark and phone width read well, and 0.1 still shows radars
-- [x] 5.9 Progression and 0.9 share the Month-wide period box that folds into the filter icon; switching period no longer collapses a tile
-- [x] 5.10 Table footer: Visualize, Clear and the compact pager on one line, "x of 15 selected" below; icon-only actions on a phone
+- [x] 5.6 0.9 shows four bar-chart cards with fixed-width bars, a value axis, negative loss charts and a shared pair scale — ece635b
+- [x] 5.7 Only changed days/months are drawn (all 5 years on Years); tooltip shows signed values and counts; filters change only their chart — ece635b
+- [x] 5.8 Light, dark and phone width read well, and 0.1 still shows radars — ece635b
+- [x] 5.9 Progression and 0.9 share the Month-wide period box that folds into the filter icon; switching period no longer collapses a tile — ece635b
+- [x] 5.10 Table footer: Visualize, Clear and the compact pager on one line, "x of 15 selected" below; icon-only actions on a phone — ece635b
