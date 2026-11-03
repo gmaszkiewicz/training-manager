@@ -1,5 +1,7 @@
 // localStorage and cookie writes that never throw: storage can be blocked, and the controls still update on screen.
 
+import { PREFERENCE_COOKIE_MAX_AGE } from "@/lib/preference-cookies";
+
 export function readStored(key: string): string | null {
   try {
     return localStorage.getItem(key);
@@ -18,7 +20,7 @@ export function writeStored(key: string, value: string): void {
 
 export function writeCookie(name: string, value: string): void {
   try {
-    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=${PREFERENCE_COOKIE_MAX_AGE}; SameSite=Lax`;
   } catch {
     // The next document request then renders the default.
   }
