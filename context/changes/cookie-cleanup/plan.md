@@ -200,14 +200,14 @@ Existing one-year cookies of the current account are shortened to 30 days on the
 
 #### Automated
 
-- [x] 2.1 New spec passes: `npx playwright test tests/e2e/cookie-cleanup.spec.ts`
-- [x] 2.2 Full e2e suite still passes (remembered choices unaffected): `npx playwright test`
-- [x] 2.3 Unit tests pass: `npm test`
-- [x] 2.4 Lint passes: `npm run lint`
-- [x] 2.5 Type check passes: `npx astro check`
-- [x] 2.6 Build succeeds: `npm run build`
+- [x] 2.1 New spec passes: `npx playwright test tests/e2e/cookie-cleanup.spec.ts` — 26d0813
+- [x] 2.2 Full e2e suite still passes (remembered choices unaffected): `npx playwright test` — 26d0813
+- [x] 2.3 Unit tests pass: `npm test` — 26d0813
+- [x] 2.4 Lint passes: `npm run lint` — 26d0813
+- [x] 2.5 Type check passes: `npx astro check` — 26d0813
+- [x] 2.6 Build succeeds: `npm run build` — 26d0813
 
 #### Manual
 
-- [x] 2.7 Sign in as account A, open `/measurements`, change a preference; sign out, sign in as account B and open `/measurements`: DevTools shows no `tm.*` cookie with A's id, and B's choices still render
-- [x] 2.8 Sign back in as A: A's tile and page-size choices are restored from localStorage
+- [x] 2.7 Sign in as account A, open `/measurements`, change a preference; sign out, sign in as account B and open `/measurements`: DevTools shows no `tm.*` cookie with A's id, and B's choices still render — 26d0813
+- [x] 2.8 Sign back in as A: A's tile and page-size choices are restored from localStorage — 26d0813
