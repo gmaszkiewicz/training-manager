@@ -1,10 +1,10 @@
 ---
 change_id: changes-to-measurments-and-progressions
 title: Top progress 0.9 release candidate and unified period pickers across measurement tiles
-status: impl_reviewed
+status: archived
 created: 2026-11-02
 updated: 2026-11-03
-archived_at: null
+archived_at: 2026-11-03T07:11:37Z
 ---
 
 ## Notes
