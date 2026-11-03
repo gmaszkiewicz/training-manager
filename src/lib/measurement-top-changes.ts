@@ -26,12 +26,20 @@ export interface SubPeriodValue {
 export interface SubPeriodRow {
   /** The sub-period's first day (`YYYY-MM-DD`), month (`YYYY-MM`) or year (`YYYY`). */
   key: string;
-  /** The short axis name: `Mon 3`, `3–9 Nov`, `Mar` or `2026`. */
+  /** The short axis name: `Mon 3`, `3–9 Nov`, a month day's `12` (`""` when unlabelled), `Mar` or `2026`. */
   axisLabel: string;
-  /** The full name for the tooltip and legend: `Mon 3 Nov`, `3–9 Nov`, `March` or `2026`. */
+  /** The full name for the tooltip and legend: `Mon 3 Nov`, `3–9 Nov`, `Thu 12 Nov`, `March` or `2026`. */
   label: string;
   /** Every requested field, 0 and `count` 0 where nothing matched. */
   values: Partial<Record<MeasurementField, SubPeriodValue>>;
+}
+
+/** How a Month window's axes split: one per calendar week (clipped to the month) or one per day. */
+export type MonthAxis = "weeks" | "days";
+
+export interface SubPeriodTotalsOptions {
+  /** Month only; Week, Year and Years ignore it. Defaults to `"weeks"`. */
+  monthAxis?: MonthAxis;
 }
 
 export { circumferenceFields };
@@ -47,11 +55,11 @@ function roundSum(value: number): number {
 }
 
 /**
- * The sub-period a day falls in: the day in a week, its calendar week (Mon–Sun) clipped to its month in a month, its
- * month in a year, its year in a span of years.
+ * The sub-period a day falls in: the day in a week, its calendar week (Mon–Sun) clipped to its month in a month (or the
+ * day itself with `"days"` month axes), its month in a year, its year in a span of years.
  */
-function subPeriodKey(day: string, period: ChartPeriod): string {
-  if (period === "week") {
+function subPeriodKey(day: string, period: ChartPeriod, monthAxis: MonthAxis): string {
+  if (period === "week" || (period === "month" && monthAxis === "days")) {
     return day;
   }
   if (period === "month") {
@@ -75,6 +83,7 @@ function subPeriodLabels(
   first: string,
   last: string,
   period: ChartPeriod,
+  monthAxis: MonthAxis,
 ): Pick<SubPeriodRow, "axisLabel" | "label"> {
   if (period === "years") {
     return { axisLabel: key, label: key };
@@ -86,9 +95,11 @@ function subPeriodLabels(
     };
   }
   const ms = measuredOnMs(first);
-  if (period === "week") {
+  if (period === "week" || monthAxis === "days") {
     const weekday = SHORT_WEEKDAYS[new Date(ms).getUTCDay()];
-    return { axisLabel: `${weekday} ${dayNumber(first)}`, label: `${weekday} ${chartTickLabel(ms, "day")}` };
+    // A month's day axes carry only the day number; `labelMonthDays` then blanks the ones the chart does not name.
+    const axisLabel = period === "week" ? `${weekday} ${dayNumber(first)}` : dayNumber(first);
+    return { axisLabel, label: `${weekday} ${chartTickLabel(ms, "day")}` };
   }
   const lastLabel = chartTickLabel(measuredOnMs(last), "day");
   const label = first === last ? lastLabel : `${dayNumber(first)}–${lastLabel}`;
@@ -96,7 +107,11 @@ function subPeriodLabels(
 }
 
 /** Every sub-period of the window, oldest first, with its first and last day. */
-function windowSubPeriods(period: ChartPeriod, window: ChartWindow): { key: string; first: string; last: string }[] {
+function windowSubPeriods(
+  period: ChartPeriod,
+  window: ChartWindow,
+  monthAxis: MonthAxis,
+): { key: string; first: string; last: string }[] {
   const start = measuredOnMs(window.start);
   const end = measuredOnMs(window.end);
   if (!Number.isFinite(start) || !Number.isFinite(end)) {
@@ -106,7 +121,7 @@ function windowSubPeriods(period: ChartPeriod, window: ChartWindow): { key: stri
   const firstDay = Math.floor(start / MILLISECONDS_PER_DAY) * MILLISECONDS_PER_DAY;
   for (let index = 0, ms = firstDay; ms < end && index < MAX_WINDOW_DAYS; index += 1, ms += MILLISECONDS_PER_DAY) {
     const day = bucketKey(ms, "week");
-    const key = subPeriodKey(day, period);
+    const key = subPeriodKey(day, period, monthAxis);
     const current = subPeriods.at(-1);
     if (current?.key === key) {
       current.last = day;
@@ -121,7 +136,7 @@ function windowSubPeriods(period: ChartPeriod, window: ChartWindow): { key: stri
  * One row per sub-period of the window (a week's 7 days, a month's calendar weeks clipped to the month, a year's 12
  * months, each year of a span), in time order, with each requested field's summed `direction` deltas. Gains and drops
  * are summed separately, so +1 then −1 counts 1 each way. Entries outside the window, with no deltas or with no change
- * are skipped.
+ * are skipped. With `monthAxis: "days"` a month has one row per day, axis-labelled by `labelMonthDays`.
  */
 export function subPeriodTotals(
   entries: readonly DeltaEntry[],
@@ -129,14 +144,16 @@ export function subPeriodTotals(
   period: ChartPeriod,
   window: ChartWindow,
   direction: TopChangeDirection,
+  options: SubPeriodTotalsOptions = {},
 ): SubPeriodRow[] {
+  const monthAxis = options.monthAxis ?? "weeks";
   const requested = [...new Set(fields)];
   const sums = new Map<string, Partial<Record<MeasurementField, SubPeriodValue>>>();
   for (const entry of entries) {
     if (entry.deltas === null || !Number.isFinite(measuredOnMs(entry.measured_on))) {
       continue;
     }
-    const key = subPeriodKey(entry.measured_on.replace(" ", "T").slice(0, 10), period);
+    const key = subPeriodKey(entry.measured_on.replace(" ", "T").slice(0, 10), period, monthAxis);
     const values = sums.get(key) ?? {};
     for (const field of requested) {
       const delta = entry.deltas[field];
@@ -147,7 +164,7 @@ export function subPeriodTotals(
     }
     sums.set(key, values);
   }
-  return windowSubPeriods(period, window).map(({ key, first, last }) => {
+  const rows = windowSubPeriods(period, window, monthAxis).map(({ key, first, last }) => {
     const sum = sums.get(key);
     const values: Partial<Record<MeasurementField, SubPeriodValue>> = {};
     for (const field of requested) {
@@ -155,8 +172,36 @@ export function subPeriodTotals(
       values[field] =
         value === undefined ? { difference: 0, count: 0 } : { ...value, difference: roundSum(value.difference) };
     }
-    return { key, ...subPeriodLabels(key, first, last, period), values };
+    return { key, ...subPeriodLabels(key, first, last, period, monthAxis), values };
   });
+  return period === "month" && monthAxis === "days" ? labelMonthDays(rows) : rows;
+}
+
+/** At least this many day axes of a month carry a label, so the radar stays readable with little progress. */
+const MIN_LABELLED_DAYS = 3;
+
+/**
+ * The month's day rows with only the chart's labelled days keeping their day number as `axisLabel` (`""` for the
+ * rest). A day is labelled when any of the rows' fields changed on it; while fewer than 3 are, the first day, then the
+ * last, then the middle day (`ceil(daysInMonth / 2)`) are added. Apply it per chart: gains and losses separately.
+ */
+export function labelMonthDays(rows: readonly SubPeriodRow[]): SubPeriodRow[] {
+  const labelled = new Set<number>();
+  rows.forEach((row, index) => {
+    if (Object.values(row.values).some((value) => value.count > 0)) {
+      labelled.add(index);
+    }
+  });
+  const fallbacks = [0, rows.length - 1, Math.ceil(rows.length / 2) - 1];
+  for (const index of fallbacks) {
+    if (labelled.size >= MIN_LABELLED_DAYS) {
+      break;
+    }
+    if (index >= 0) {
+      labelled.add(index);
+    }
+  }
+  return rows.map((row, index) => ({ ...row, axisLabel: labelled.has(index) ? dayNumber(row.key) : "" }));
 }
 
 /** The sub-period with the field's largest sum; a tie goes to the later one; `null` when the field never changed. */
